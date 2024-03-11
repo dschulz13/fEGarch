@@ -2,8 +2,9 @@ e_spec <- function(
   variance.model = list(
     model = "eGARCH",
     garchOrder = c(1, 1),
-    powerTransf = c(TRUE, TRUE),
-    longMemo = FALSE
+    powerTransf = c(NA, NA),
+    longMemo = NA,
+    modulus = NA
   ),
   mean.model = list(
     include.mean = TRUE

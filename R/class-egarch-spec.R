@@ -28,6 +28,25 @@ egarch_spec <- function(
   distribution = "norm",
   include_mean = TRUE
 ) {
+  if (is.null(model)) {
+    model <- "eGARCH"
+  }
+  if (is.null(garch_order)) {
+    garch_order <- c(1, 1)
+  }
+  if (is.null(power_transf) || all(is.na(power_transf))) {
+    power_transf <- c(model_defaults[model, "powerTransf1"], model_defaults[model, "powerTransf2"])
+  }
+  if (is.null(long_memo) || is.na(long_memo)) {
+    long_memo <- model_defaults[model, "longMemo"]
+  }
+  if (is.null(modulus) || is.na(modulus)) {
+    modulus <- model_defaults[model, "modulus"]
+  }
+  if (is.null(include_mean)) {
+    include_mean <- TRUE
+  }
+
   new("egarch_spec",
     model = model,
     garch_order = garch_order,
