@@ -1,11 +1,20 @@
 Package: fEGarch
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Title: Application of a Broad Family of EGARCH Models
+Version: 1.0.0
+Authors@R: 
+    c(person(given = "Yuanhua",
+             family = "Feng",
+             role = "aut",
+             comment = "Paderborn University, Germany"),
+      person(given = "Dominik",
+             family = "Schulz",
+             role = c("aut", "cre"),
+             email = "dominik.schulz@uni-paderborn.de",
+             comment = "Paderborn University, Germany"))
+Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
