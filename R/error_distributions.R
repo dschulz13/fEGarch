@@ -1,8 +1,10 @@
-### Constant E(|Zt|) for different error distributions
+### Constant E(|Zt|^p) for different error distributions
 
 ### Standard normal distribution
 
-E_zt_ <- sqrt(2 / pi)
+E_zt_ <- function(power) {
+  2 * exp(0.5 * power^2) * pnorm(power, mean = 0, sd = 1)
+}
 
 ### Standardized t-distribution
 
