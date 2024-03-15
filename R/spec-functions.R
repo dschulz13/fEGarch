@@ -1,3 +1,10 @@
+#'EGARCH Model Specification
+#'
+#'@export
+#'
+#'
+
+
 e_spec <- function(
   variance.model = list(
     model = "eGARCH",
