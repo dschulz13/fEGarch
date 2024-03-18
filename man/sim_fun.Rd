@@ -4,7 +4,7 @@
 \alias{sim_fun}
 \title{EGARCH Family Simulation Function}
 \usage{
-sim_fun(spec, n = 1000, n_start = 1000)
+sim_fun(spec, n = 500, n_start = 1000)
 }
 \description{
 EGARCH Family Simulation Function

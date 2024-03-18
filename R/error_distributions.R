@@ -2,15 +2,14 @@
 
 ### Standard normal distribution
 
-pdf_norm <- function(x, df, shape, skew_par) {
-  dnorm(x)
+pdf_norm <- function(x, ...) {
+  pdf_norm_cpp(x)
 }
 
 ### Standardized t-distribution
 
-pdf_std <- function(x, df, shape, skew_par) {
-  sd <- sqrt(df / (df - 2))
-  dt(x * sd, df = df) * sd
+pdf_std <- function(x, df, ...) {
+  pdf_std_cpp(x, df)
 }
 
 
@@ -39,9 +38,8 @@ pdf_sstd <- function(x, df, shape, skew_par) {
 
 # GED (standardized)
 
-pdf_ged <- function(x, df, shape, skew_par) {
-  scale <- sqrt(1 / (gamma(3 / shape) / gamma(1 / shape)))
-  shape / (2 * scale * gamma(1 / shape)) * exp(-(abs(x) / scale)^shape)
+pdf_ged <- function(x, shape, ...) {
+  pdf_ged_cpp(x, shape)
 }
 
 # Skew-GED distribution (standardized)
