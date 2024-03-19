@@ -21,6 +21,46 @@ Elnz2 <- function(dist, df, shape) {
   )
 }
 
+
+llhood <- function(parameters, rt, p, q, include_mean, dist) {
+
+  if (include_mean) {
+    i_p1 <- 2 + 2 * p + q + 1
+  } else {
+    i_p1 <- 2 + 2 * p + q
+  }
+  i_p2 <- i_p1 + 1
+  power1 <- parameters[[i_p1]]
+  power2 <- parameters[[i_p2]]
+
+  df <- 0
+  shape <- 0
+  skew <- 0
+
+  if (dist == "std") {
+    df <- parameters[[i_p2 + 1]]
+  } else if (dist == "ged") {
+    shape <- parameters[[i_p2 + 1]]
+  }
+
+  # Obtain E(|z_t|^p), where z_t are the innovations with mean zero and variance
+  # one and where p is a power term
+  E1 <- 0     # adjust later on for non-symmetric densities
+  E2 <- E_zt_f(dist, power2, df = df, shape = shape, skew_par = skew)
+
+  # Select the log-likelihood function according to the conditional distribution
+  llh <- switch(dist,
+    "norm" = llhNORM,
+    "std" = llhSTD,
+    "ged" = llhGED
+  )
+
+  # Call to the log-likelihood C++ function
+  llh(parameters, rt, p, q, include_mean, E1, E2)
+
+}
+
+
 # Under standard normal innovations
 
 llh_norm <- function(parameters, rt, p, q, dist) {

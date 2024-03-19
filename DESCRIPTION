@@ -2,7 +2,7 @@ Package: fEGarch
 Type: Package
 Title: Application of a Broad Family of EGARCH Models
 Version: 1.0.0
-Authors@R: 
+Authors@R:
     c(person(given = "Yuanhua",
              family = "Feng",
              role = "aut",
@@ -13,8 +13,8 @@ Authors@R:
              email = "dominik.schulz@uni-paderborn.de",
              comment = "Paderborn University, Germany"))
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
+  such as a PEGARCH (double-power EGARCH), FIEGARCH (fractionally integrated EGARCH), PFIEGARCH (double-power FIEGARCH), and more.
 License: GPL-3
 Imports: Rcpp (>= 1.0.9)
 LinkingTo: Rcpp, RcppArmadillo

@@ -5,15 +5,35 @@ rnorm_fEGarch <- function(n) {
     .Call('_fEGarch_rnorm_fEGarch', PACKAGE = 'fEGarch', n)
 }
 
-llhNORM <- function(obs, mean, volas, include_mean) {
-    .Call('_fEGarch_llhNORM', PACKAGE = 'fEGarch', obs, mean, volas, include_mean)
+sign_cpp <- function(x) {
+    .Call('_fEGarch_sign_cpp', PACKAGE = 'fEGarch', x)
 }
 
-llhSTD <- function(obs, mean, df, volas, include_mean) {
-    .Call('_fEGarch_llhSTD', PACKAGE = 'fEGarch', obs, mean, df, volas, include_mean)
+obtain_volas <- function(parameters, obs, p, q, include_mean, E1, E2) {
+    .Call('_fEGarch_obtain_volas', PACKAGE = 'fEGarch', parameters, obs, p, q, include_mean, E1, E2)
 }
 
-llhGED <- function(obs, mean, shape, volas, include_mean) {
-    .Call('_fEGarch_llhGED', PACKAGE = 'fEGarch', obs, mean, shape, volas, include_mean)
+llhNORM <- function(parameters, obs, p, q, include_mean, E1, E2) {
+    .Call('_fEGarch_llhNORM', PACKAGE = 'fEGarch', parameters, obs, p, q, include_mean, E1, E2)
+}
+
+llhSTD <- function(parameters, obs, p, q, include_mean, E1, E2) {
+    .Call('_fEGarch_llhSTD', PACKAGE = 'fEGarch', parameters, obs, p, q, include_mean, E1, E2)
+}
+
+llhGED <- function(parameters, obs, p, q, include_mean, E1, E2) {
+    .Call('_fEGarch_llhGED', PACKAGE = 'fEGarch', parameters, obs, p, q, include_mean, E1, E2)
+}
+
+pdf_norm_cpp <- function(x) {
+    .Call('_fEGarch_pdf_norm_cpp', PACKAGE = 'fEGarch', x)
+}
+
+pdf_std_cpp <- function(x, df) {
+    .Call('_fEGarch_pdf_std_cpp', PACKAGE = 'fEGarch', x, df)
+}
+
+pdf_ged_cpp <- function(x, shape) {
+    .Call('_fEGarch_pdf_ged_cpp', PACKAGE = 'fEGarch', x, shape)
 }
 

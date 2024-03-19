@@ -52,14 +52,14 @@ pdf_sged <- function(x, df, shape, skew_par) {
 ### Obtain E(|z_t|^p), where z_t are the innovations with mean zero and variance
 ### one and where p is a power term
 
-E_zt_f <- function(dist, power, df = 10, shape = 0, skew_par = 0) {
+E_zt_f <- function(dist, power, df, shape, skew_par) {
   g <- switch(dist,
-    "norm" = pdf_norm,
-    "std" = pdf_std,
-    "ged" = pdf_ged,
-    "snorm" = pdf_snorm,
-    "sstd" = pdf_sstd,
-    "sged" = pdf_sged
+    "norm" = pdf_norm_cpp,
+    "std" = pdf_std_cpp,
+    "ged" = pdf_ged_cpp#,
+    # "snorm" = pdf_snorm,
+    # "sstd" = pdf_sstd,
+    # "sged" = pdf_sged
   )
 
   if (dist %in% c("snorm", "sstd", "sged")) {
