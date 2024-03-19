@@ -71,11 +71,17 @@ arma::vec obtain_volas(arma::rowvec& parameters, const arma::vec& obs, const int
   const arma::rowvec beta_rev = arma::reverse(beta);
   arma::vec sigma(n);
   double innov_i;
+  double term1;
+  double term2;
+  double term3;
 
   for (int i = l; i < n + l; ++i) {
-    lnsig2(i) = omega + kappa_rev * innovs_c_1.subvec(i - p, i - 1) / power1 +
-      gamma_rev * innovs_c_2.subvec(i - p, i - 1) / power2 +
-      beta_rev * lnsig2.subvec(i - q, i - 1);
+    term1 = arma::as_scalar(kappa_rev * innovs_c_1.subvec(i - p, i - 1));
+    term2 = arma::as_scalar(gamma_rev * innovs_c_2.subvec(i - p, i - 1));
+    term3 = arma::as_scalar(beta_rev * lnsig2.subvec(i - q, i - 1));
+    lnsig2(i) = omega + term1 / power1 +
+      term2 / power2 +
+      term3;
     sigma(i - l) = exp(lnsig2(i) / 2);
     innov_i = (obs(i - l) - mean) / sigma(i);
     innovs_c_1(i) = sign_cpp(innov_i) * std::pow(std::abs(innov_i), power1) - E1;
