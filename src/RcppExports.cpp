@@ -34,12 +34,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // obtain_volas
-arma::vec obtain_volas(arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
+arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
 RcppExport SEXP _fEGarch_obtain_volas(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::rowvec& >::type parameters(parametersSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const int >::type p(pSEXP);
     Rcpp::traits::input_parameter< const int >::type q(qSEXP);

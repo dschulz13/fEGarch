@@ -14,7 +14,7 @@ int sign_cpp(const double x) {
 }
 
 // [[Rcpp::export]]
-arma::vec obtain_volas(arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
+arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
 
   double mean;
   arma::rowvec kappa;

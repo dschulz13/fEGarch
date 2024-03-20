@@ -1,18 +1,5 @@
 ### PDFs of different error distributions
 
-### Standard normal distribution
-
-pdf_norm <- function(x, ...) {
-  pdf_norm_cpp(x)
-}
-
-### Standardized t-distribution
-
-pdf_std <- function(x, df, ...) {
-  pdf_std_cpp(x, df)
-}
-
-
 # Skew-normal distribution (standardized)
 
 pdf_snorm <- function(x, df, shape, skew_par) {
@@ -36,12 +23,6 @@ pdf_sstd <- function(x, df, shape, skew_par) {
 
 }
 
-# GED (standardized)
-
-pdf_ged <- function(x, shape, ...) {
-  pdf_ged_cpp(x, shape)
-}
-
 # Skew-GED distribution (standardized)
 
 pdf_sged <- function(x, df, shape, skew_par) {
@@ -56,22 +37,31 @@ E_zt_f <- function(dist, power, df, shape, skew_par) {
   g <- switch(dist,
     "norm" = pdf_norm_cpp,
     "std" = pdf_std_cpp,
-    "ged" = pdf_ged_cpp#,
-    # "snorm" = pdf_snorm,
-    # "sstd" = pdf_sstd,
-    # "sged" = pdf_sged
+    "ged" = pdf_ged_cpp
   )
 
-  if (dist %in% c("snorm", "sstd", "sged")) {
-    f <- Vectorize(g, vectorize.args = c("x"))
-  } else {
-    f <- g
+  # if (dist %in% c("snorm", "sstd", "sged")) {
+  #   f <- Vectorize(g, vectorize.args = c("x"))
+  # } else {
+    func <- g
+  #}
+
+  if (dist == "norm") {
+    int_f <- function(x, power, func) {
+      abs(x)^power * func(x = x)
+    }
+    out <- integrate(int_f, -Inf, Inf, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
+  } else if (dist == "std") {
+    int_f <- function(x, df, power, func) {
+      abs(x)^power * func(x = x, df = df)
+    }
+    out <- integrate(int_f, -Inf, Inf, df = df, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
+  } else if (dist == "ged") {
+    int_f <- function(x, shape, power, func) {
+      abs(x)^power * func(x = x, shape = shape)
+    }
+    out <- integrate(int_f, -Inf, Inf, shape = shape, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
   }
 
-  int_f <- function(x, power, df, shape, skew_par) {
-    abs(x)^power * f(x = x, df = df, shape = shape, skew_par = skew_par)
-  }
-  integrate(int_f, -Inf, Inf, power = power, df = df, shape = shape, skew_par = skew_par, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
+  out
 }
-
-E_zt_f("snorm", power = 1, skew_par = 30)
