@@ -101,38 +101,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pdf_norm_cpp
-NumericVector pdf_norm_cpp(NumericVector x);
-RcppExport SEXP _fEGarch_pdf_norm_cpp(SEXP xSEXP) {
+// pdfnormcpp
+NumericVector pdfnormcpp(NumericVector x);
+RcppExport SEXP _fEGarch_pdfnormcpp(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(pdf_norm_cpp(x));
+    rcpp_result_gen = Rcpp::wrap(pdfnormcpp(x));
     return rcpp_result_gen;
 END_RCPP
 }
-// pdf_std_cpp
-NumericVector pdf_std_cpp(NumericVector x, const double df);
-RcppExport SEXP _fEGarch_pdf_std_cpp(SEXP xSEXP, SEXP dfSEXP) {
+// pdfstdcpp
+NumericVector pdfstdcpp(NumericVector x, const double df);
+RcppExport SEXP _fEGarch_pdfstdcpp(SEXP xSEXP, SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< const double >::type df(dfSEXP);
-    rcpp_result_gen = Rcpp::wrap(pdf_std_cpp(x, df));
+    rcpp_result_gen = Rcpp::wrap(pdfstdcpp(x, df));
     return rcpp_result_gen;
 END_RCPP
 }
-// pdf_ged_cpp
-NumericVector pdf_ged_cpp(NumericVector x, const double shape);
-RcppExport SEXP _fEGarch_pdf_ged_cpp(SEXP xSEXP, SEXP shapeSEXP) {
+// pdfgedcpp
+NumericVector pdfgedcpp(NumericVector x, const double shape);
+RcppExport SEXP _fEGarch_pdfgedcpp(SEXP xSEXP, SEXP shapeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< const double >::type shape(shapeSEXP);
-    rcpp_result_gen = Rcpp::wrap(pdf_ged_cpp(x, shape));
+    rcpp_result_gen = Rcpp::wrap(pdfgedcpp(x, shape));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -144,9 +144,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_llhNORM", (DL_FUNC) &_fEGarch_llhNORM, 7},
     {"_fEGarch_llhSTD", (DL_FUNC) &_fEGarch_llhSTD, 7},
     {"_fEGarch_llhGED", (DL_FUNC) &_fEGarch_llhGED, 7},
-    {"_fEGarch_pdf_norm_cpp", (DL_FUNC) &_fEGarch_pdf_norm_cpp, 1},
-    {"_fEGarch_pdf_std_cpp", (DL_FUNC) &_fEGarch_pdf_std_cpp, 2},
-    {"_fEGarch_pdf_ged_cpp", (DL_FUNC) &_fEGarch_pdf_ged_cpp, 2},
+    {"_fEGarch_pdfnormcpp", (DL_FUNC) &_fEGarch_pdfnormcpp, 1},
+    {"_fEGarch_pdfstdcpp", (DL_FUNC) &_fEGarch_pdfstdcpp, 2},
+    {"_fEGarch_pdfgedcpp", (DL_FUNC) &_fEGarch_pdfgedcpp, 2},
     {NULL, NULL, 0}
 };
 

@@ -25,15 +25,15 @@ llhGED <- function(parameters, obs, p, q, include_mean, E1, E2) {
     .Call('_fEGarch_llhGED', PACKAGE = 'fEGarch', parameters, obs, p, q, include_mean, E1, E2)
 }
 
-pdf_norm_cpp <- function(x) {
-    .Call('_fEGarch_pdf_norm_cpp', PACKAGE = 'fEGarch', x)
+pdfnormcpp <- function(x) {
+    .Call('_fEGarch_pdfnormcpp', PACKAGE = 'fEGarch', x)
 }
 
-pdf_std_cpp <- function(x, df) {
-    .Call('_fEGarch_pdf_std_cpp', PACKAGE = 'fEGarch', x, df)
+pdfstdcpp <- function(x, df) {
+    .Call('_fEGarch_pdfstdcpp', PACKAGE = 'fEGarch', x, df)
 }
 
-pdf_ged_cpp <- function(x, shape) {
-    .Call('_fEGarch_pdf_ged_cpp', PACKAGE = 'fEGarch', x, shape)
+pdfgedcpp <- function(x, shape) {
+    .Call('_fEGarch_pdfgedcpp', PACKAGE = 'fEGarch', x, shape)
 }
 

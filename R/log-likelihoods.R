@@ -21,7 +21,7 @@ Elnz2 <- function(dist, df, shape) {
   )
 }
 
-llhood <- function(pars, rt, p, q, include_mean, dist) {
+llikhood <- function(pars, rt, p, q, include_mean, dist) {
 
   if (include_mean) {
     i_p1 <- 2 + 2 * p + q + 1

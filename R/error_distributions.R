@@ -35,9 +35,9 @@ pdf_sged <- function(x, df, shape, skew_par) {
 
 E_zt_f <- function(dist, power, df, shape, skew_par) {
   g <- switch(dist,
-    "norm" = pdf_norm_cpp,
-    "std" = pdf_std_cpp,
-    "ged" = pdf_ged_cpp
+    "norm" = pdfnormcpp,
+    "std" = pdfstdcpp,
+    "ged" = pdfgedcpp
   )
 
   # if (dist %in% c("snorm", "sstd", "sged")) {
