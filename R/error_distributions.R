@@ -50,17 +50,17 @@ E_zt_f <- function(dist, power, df, shape, skew_par) {
     int_f <- function(x, power, func) {
       abs(x)^power * func(x = x)
     }
-    out <- integrate(int_f, -Inf, Inf, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
+    out <- integrate(int_f, lower = -Inf, upper = Inf, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
   } else if (dist == "std") {
     int_f <- function(x, df, power, func) {
       abs(x)^power * func(x = x, df = df)
     }
-    out <- integrate(int_f, -Inf, Inf, df = df, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
+    out <- integrate(int_f, lower = -Inf, upper = Inf, df = df, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
   } else if (dist == "ged") {
     int_f <- function(x, shape, power, func) {
       abs(x)^power * func(x = x, shape = shape)
     }
-    out <- integrate(int_f, -Inf, Inf, shape = shape, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
+    out <- integrate(int_f, lower = -Inf, upper = Inf, shape = shape, power = power, func = func, subdivisions = 1000L, abs.tol = 1e-20)[[1]]
   }
 
   out

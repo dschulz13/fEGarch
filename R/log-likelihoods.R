@@ -17,7 +17,7 @@ Elnz2 <- function(dist, df, shape) {
   switch(dist,
     "norm" = digamma(0.5) - log(0.5),
     "std" = log(df - 2) + digamma(0.5) - digamma(df / 2),
-    "ged" = integrate(ged_dens, -Inf, Inf, shape = shape, abs.tol = 1e-20)[[1]]
+    "ged" = integrate(ged_dens, lower = -Inf, upper = Inf, shape = shape, abs.tol = 1e-20)[[1]]
   )
 }
 

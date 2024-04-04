@@ -51,12 +51,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // llhNORM
-double llhNORM(const arma::vec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
+double llhNORM(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
 RcppExport SEXP _fEGarch_llhNORM(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type parameters(parametersSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const int >::type p(pSEXP);
     Rcpp::traits::input_parameter< const int >::type q(qSEXP);
@@ -68,12 +68,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // llhSTD
-double llhSTD(const arma::vec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
+double llhSTD(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
 RcppExport SEXP _fEGarch_llhSTD(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type parameters(parametersSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const int >::type p(pSEXP);
     Rcpp::traits::input_parameter< const int >::type q(qSEXP);
@@ -85,12 +85,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // llhGED
-double llhGED(const arma::vec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
+double llhGED(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
 RcppExport SEXP _fEGarch_llhGED(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type parameters(parametersSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const int >::type p(pSEXP);
     Rcpp::traits::input_parameter< const int >::type q(qSEXP);

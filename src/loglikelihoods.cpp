@@ -35,6 +35,8 @@ arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, con
   const double omega = parameters(j);
   j = j + 1;
 
+  Rcout << "1\n";
+
   if (p > 0) {
     kappa = parameters.subvec(j, j + p - 1);
     j = j + p;
@@ -44,24 +46,24 @@ arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, con
     kappa = arma::zeros<arma::rowvec>(1);
     gamma = arma::zeros<arma::rowvec>(1);
   }
-
+  Rcout << "2\n";
   if (q > 0) {
     beta = parameters.subvec(j, j + q - 1);
     j = j + q;
   } else {
     beta = arma::zeros<arma::rowvec>(1);
   }
-
+  Rcout << "3\n";
   const double power1 = parameters(j);
   const double power2 = parameters(j + 1);
-
+  Rcout << "4\n";
   const double Elnsig2 = omega / (1.0 - arma::accu(beta)); // Theoretical expectation of ln(sig_t^2)
 
   const int ps = kappa.size();
   const int qs = beta.size();
 
   const int l = std::max(ps, qs);
-
+  Rcout << "5\n";
   arma::vec lnsig2(l + n, arma::fill::value(Elnsig2));
   arma::vec innovs_c_1 = arma::zeros<arma::vec>(l + n);
   arma::vec innovs_c_2 = arma::zeros<arma::vec>(l + n);
@@ -83,7 +85,7 @@ arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, con
       term2 / power2 +
       term3;
     sigma(i - l) = exp(lnsig2(i) / 2);
-    innov_i = (obs(i - l) - mean) / sigma(i);
+    innov_i = (obs(i - l) - mean) / sigma(i - l);
     innovs_c_1(i) = sign_cpp(innov_i) * std::pow(std::abs(innov_i), power1) - E1;
     innovs_c_2(i) = std::pow(std::abs(innov_i), power2) - E2;
   }
@@ -93,7 +95,7 @@ arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, con
 }
 
 // [[Rcpp::export]]
-double llhNORM(const arma::vec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
+double llhNORM(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
 
   double mean = 0;
   if (include_mean == 1) {
@@ -115,7 +117,7 @@ double llhNORM(const arma::vec& parameters, const arma::vec& obs, const int p, c
 }
 
 // [[Rcpp::export]]
-double llhSTD(const arma::vec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
+double llhSTD(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
 
   double mean;
   double df;
@@ -141,7 +143,7 @@ double llhSTD(const arma::vec& parameters, const arma::vec& obs, const int p, co
 }
 
 // [[Rcpp::export]]
-double llhGED(const arma::vec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
+double llhGED(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2) {
 
   double mean;
   double shape;
