@@ -35,8 +35,6 @@ arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, con
   const double omega = parameters(j);
   j = j + 1;
 
-  Rcout << "1\n";
-
   if (p > 0) {
     kappa = parameters.subvec(j, j + p - 1);
     j = j + p;
@@ -46,24 +44,24 @@ arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, con
     kappa = arma::zeros<arma::rowvec>(1);
     gamma = arma::zeros<arma::rowvec>(1);
   }
-  Rcout << "2\n";
+
   if (q > 0) {
     beta = parameters.subvec(j, j + q - 1);
     j = j + q;
   } else {
     beta = arma::zeros<arma::rowvec>(1);
   }
-  Rcout << "3\n";
+
   const double power1 = parameters(j);
   const double power2 = parameters(j + 1);
-  Rcout << "4\n";
+
   const double Elnsig2 = omega / (1.0 - arma::accu(beta)); // Theoretical expectation of ln(sig_t^2)
 
   const int ps = kappa.size();
   const int qs = beta.size();
 
   const int l = std::max(ps, qs);
-  Rcout << "5\n";
+
   arma::vec lnsig2(l + n, arma::fill::value(Elnsig2));
   arma::vec innovs_c_1 = arma::zeros<arma::vec>(l + n);
   arma::vec innovs_c_2 = arma::zeros<arma::vec>(l + n);
@@ -104,7 +102,7 @@ double llhNORM(const arma::rowvec& parameters, const arma::vec& obs, const int p
 
   const int n = obs.size();
 
-  const arma::vec volas = obtain_volas(parameters, obs, include_mean, p, q, E1, E2);
+  const arma::vec volas = obtain_volas(parameters, obs, p, q, include_mean, E1, E2);
 
   const arma::vec inv_volas = arma::pow(volas, -1.0);
 

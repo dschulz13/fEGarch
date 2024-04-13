@@ -45,6 +45,8 @@ llikhood <- function(pars, rt, p, q, include_mean, dist) {
   # Obtain E(|z_t|^p), where z_t are the innovations with mean zero and variance
   # one and where p is a power term
   E1 <- 0     # adjust later on for non-symmetric densities
+  cat("\np1=", power1, "\n")
+  cat("\np2=", power2, "\n")
   E2 <- E_zt_f(dist, power2, df = df, shape = shape, skew_par = skew)
 
   # Select the log-likelihood function according to the conditional distribution
@@ -53,6 +55,8 @@ llikhood <- function(pars, rt, p, q, include_mean, dist) {
     "std" = llhSTD,
     "ged" = llhGED
   )
+
+  cat("\n pars=", pars, "\n")
 
   # Call to the log-likelihood C++ function
   llh(pars, rt, p, q, include_mean, E1, E2)
