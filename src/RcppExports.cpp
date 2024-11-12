@@ -11,142 +11,234 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rnorm_fEGarch
-arma::vec rnorm_fEGarch(const int n);
-RcppExport SEXP _fEGarch_rnorm_fEGarch(SEXP nSEXP) {
+// pdf_norm
+arma::vec pdf_norm(const arma::vec& rt, const double mu, const arma::vec& sigt);
+RcppExport SEXP _fEGarch_pdf_norm(SEXP rtSEXP, SEXP muSEXP, SEXP sigtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(rnorm_fEGarch(n));
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sigt(sigtSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_norm(rt, mu, sigt));
     return rcpp_result_gen;
 END_RCPP
 }
-// sign_cpp
-int sign_cpp(const double x);
-RcppExport SEXP _fEGarch_sign_cpp(SEXP xSEXP) {
+// pdf_norm_v1
+arma::vec pdf_norm_v1(const arma::vec& rt);
+RcppExport SEXP _fEGarch_pdf_norm_v1(SEXP rtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const double >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(sign_cpp(x));
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_norm_v1(rt));
     return rcpp_result_gen;
 END_RCPP
 }
-// obtain_volas
-arma::vec obtain_volas(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
-RcppExport SEXP _fEGarch_obtain_volas(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
+// pdf_std
+arma::vec pdf_std(const arma::vec& rt, const double mu, const arma::vec& sigt, const double df);
+RcppExport SEXP _fEGarch_pdf_std(SEXP rtSEXP, SEXP muSEXP, SEXP sigtSEXP, SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< const int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const int >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const int >::type include_mean(include_meanSEXP);
-    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
-    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
-    rcpp_result_gen = Rcpp::wrap(obtain_volas(parameters, obs, p, q, include_mean, E1, E2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// llhNORM
-double llhNORM(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
-RcppExport SEXP _fEGarch_llhNORM(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< const int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const int >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const int >::type include_mean(include_meanSEXP);
-    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
-    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
-    rcpp_result_gen = Rcpp::wrap(llhNORM(parameters, obs, p, q, include_mean, E1, E2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// llhSTD
-double llhSTD(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
-RcppExport SEXP _fEGarch_llhSTD(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< const int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const int >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const int >::type include_mean(include_meanSEXP);
-    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
-    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
-    rcpp_result_gen = Rcpp::wrap(llhSTD(parameters, obs, p, q, include_mean, E1, E2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// llhGED
-double llhGED(const arma::rowvec& parameters, const arma::vec& obs, const int p, const int q, const int include_mean, const double E1, const double E2);
-RcppExport SEXP _fEGarch_llhGED(SEXP parametersSEXP, SEXP obsSEXP, SEXP pSEXP, SEXP qSEXP, SEXP include_meanSEXP, SEXP E1SEXP, SEXP E2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::rowvec& >::type parameters(parametersSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< const int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const int >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const int >::type include_mean(include_meanSEXP);
-    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
-    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
-    rcpp_result_gen = Rcpp::wrap(llhGED(parameters, obs, p, q, include_mean, E1, E2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pdfnormcpp
-NumericVector pdfnormcpp(NumericVector x);
-RcppExport SEXP _fEGarch_pdfnormcpp(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(pdfnormcpp(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pdfstdcpp
-NumericVector pdfstdcpp(NumericVector x, const double df);
-RcppExport SEXP _fEGarch_pdfstdcpp(SEXP xSEXP, SEXP dfSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sigt(sigtSEXP);
     Rcpp::traits::input_parameter< const double >::type df(dfSEXP);
-    rcpp_result_gen = Rcpp::wrap(pdfstdcpp(x, df));
+    rcpp_result_gen = Rcpp::wrap(pdf_std(rt, mu, sigt, df));
     return rcpp_result_gen;
 END_RCPP
 }
-// pdfgedcpp
-NumericVector pdfgedcpp(NumericVector x, const double shape);
-RcppExport SEXP _fEGarch_pdfgedcpp(SEXP xSEXP, SEXP shapeSEXP) {
+// pdf_std_v1
+arma::vec pdf_std_v1(const arma::vec& rt, const double df);
+RcppExport SEXP _fEGarch_pdf_std_v1(SEXP rtSEXP, SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< const double >::type df(dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_std_v1(rt, df));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_ged
+arma::vec pdf_ged(const arma::vec& rt, const double mu, const arma::vec& sigt, const double shape);
+RcppExport SEXP _fEGarch_pdf_ged(SEXP rtSEXP, SEXP muSEXP, SEXP sigtSEXP, SEXP shapeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sigt(sigtSEXP);
     Rcpp::traits::input_parameter< const double >::type shape(shapeSEXP);
-    rcpp_result_gen = Rcpp::wrap(pdfgedcpp(x, shape));
+    rcpp_result_gen = Rcpp::wrap(pdf_ged(rt, mu, sigt, shape));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_ged_v1
+arma::vec pdf_ged_v1(const arma::vec& rt, const double shape);
+RcppExport SEXP _fEGarch_pdf_ged_v1(SEXP rtSEXP, SEXP shapeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< const double >::type shape(shapeSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_ged_v1(rt, shape));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_skew_snorm
+arma::vec pdf_skew_snorm(const arma::vec& x, const double skew);
+RcppExport SEXP _fEGarch_pdf_skew_snorm(SEXP xSEXP, SEXP skewSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type skew(skewSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_skew_snorm(x, skew));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_skew_sstd
+arma::vec pdf_skew_sstd(const arma::vec& x, const double df, const double skew);
+RcppExport SEXP _fEGarch_pdf_skew_sstd(SEXP xSEXP, SEXP dfSEXP, SEXP skewSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< const double >::type skew(skewSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_skew_sstd(x, df, skew));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_skew_sged
+arma::vec pdf_skew_sged(const arma::vec& x, const double shape, const double skew);
+RcppExport SEXP _fEGarch_pdf_skew_sged(SEXP xSEXP, SEXP shapeSEXP, SEXP skewSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type shape(shapeSEXP);
+    Rcpp::traits::input_parameter< const double >::type skew(skewSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_skew_sged(x, shape, skew));
+    return rcpp_result_gen;
+END_RCPP
+}
+// signCpp
+int signCpp(const double val);
+RcppExport SEXP _fEGarch_signCpp(SEXP valSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double >::type val(valSEXP);
+    rcpp_result_gen = Rcpp::wrap(signCpp(val));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_fiegarchCpp
+arma::vec sigt_fiegarchCpp(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double Elnsig2);
+RcppExport SEXP _fEGarch_sigt_fiegarchCpp(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP Elnsig2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_fiegarchCpp(x, mu, alpha, beta, E1, Elnsig2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_filoggarchCpp
+arma::vec sigt_filoggarchCpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf, const double E1, const double Elnsig2);
+RcppExport SEXP _fEGarch_sigt_filoggarchCpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP E1SEXP, SEXP Elnsig2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_filoggarchCpp(x, mu, coef_inf, E1, Elnsig2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_mafiloggarchCpp
+arma::vec sigt_mafiloggarchCpp(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2);
+RcppExport SEXP _fEGarch_sigt_mafiloggarchCpp(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_mafiloggarchCpp(x, mu, alpha, beta, E1, E2, Elnsig2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_megarchCpp
+arma::vec sigt_megarchCpp(const arma::vec& x, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2);
+RcppExport SEXP _fEGarch_sigt_megarchCpp(SEXP xSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_megarchCpp(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_mloggarchCpp
+arma::vec sigt_mloggarchCpp(const arma::vec& x, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2);
+RcppExport SEXP _fEGarch_sigt_mloggarchCpp(SEXP xSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_mloggarchCpp(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_fEGarch_rnorm_fEGarch", (DL_FUNC) &_fEGarch_rnorm_fEGarch, 1},
-    {"_fEGarch_sign_cpp", (DL_FUNC) &_fEGarch_sign_cpp, 1},
-    {"_fEGarch_obtain_volas", (DL_FUNC) &_fEGarch_obtain_volas, 7},
-    {"_fEGarch_llhNORM", (DL_FUNC) &_fEGarch_llhNORM, 7},
-    {"_fEGarch_llhSTD", (DL_FUNC) &_fEGarch_llhSTD, 7},
-    {"_fEGarch_llhGED", (DL_FUNC) &_fEGarch_llhGED, 7},
-    {"_fEGarch_pdfnormcpp", (DL_FUNC) &_fEGarch_pdfnormcpp, 1},
-    {"_fEGarch_pdfstdcpp", (DL_FUNC) &_fEGarch_pdfstdcpp, 2},
-    {"_fEGarch_pdfgedcpp", (DL_FUNC) &_fEGarch_pdfgedcpp, 2},
+    {"_fEGarch_pdf_norm", (DL_FUNC) &_fEGarch_pdf_norm, 3},
+    {"_fEGarch_pdf_norm_v1", (DL_FUNC) &_fEGarch_pdf_norm_v1, 1},
+    {"_fEGarch_pdf_std", (DL_FUNC) &_fEGarch_pdf_std, 4},
+    {"_fEGarch_pdf_std_v1", (DL_FUNC) &_fEGarch_pdf_std_v1, 2},
+    {"_fEGarch_pdf_ged", (DL_FUNC) &_fEGarch_pdf_ged, 4},
+    {"_fEGarch_pdf_ged_v1", (DL_FUNC) &_fEGarch_pdf_ged_v1, 2},
+    {"_fEGarch_pdf_skew_snorm", (DL_FUNC) &_fEGarch_pdf_skew_snorm, 2},
+    {"_fEGarch_pdf_skew_sstd", (DL_FUNC) &_fEGarch_pdf_skew_sstd, 3},
+    {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},
+    {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
+    {"_fEGarch_sigt_fiegarchCpp", (DL_FUNC) &_fEGarch_sigt_fiegarchCpp, 6},
+    {"_fEGarch_sigt_filoggarchCpp", (DL_FUNC) &_fEGarch_sigt_filoggarchCpp, 5},
+    {"_fEGarch_sigt_mafiloggarchCpp", (DL_FUNC) &_fEGarch_sigt_mafiloggarchCpp, 7},
+    {"_fEGarch_sigt_megarchCpp", (DL_FUNC) &_fEGarch_sigt_megarchCpp, 9},
+    {"_fEGarch_sigt_mloggarchCpp", (DL_FUNC) &_fEGarch_sigt_mloggarchCpp, 9},
     {NULL, NULL, 0}
 };
 

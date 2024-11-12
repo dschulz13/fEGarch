@@ -11,7 +11,18 @@ Authors@R:
              family = "Schulz",
              role = c("aut", "cre"),
              email = "dominik.schulz@uni-paderborn.de",
-             comment = "Paderborn University, Germany"))
+             comment = "Paderborn University, Germany"),
+      person(given = "Oliver",
+             middle = "Kojo",
+             family = "Ayensu",
+             role = c("aut"),
+             email = "oliver.kojo.ayensu@uni-paderborn.de",
+             comment = "Paderborn University, Germany"),
+      person(given = "Christian",
+             family = "Peitz",
+             role = c("aut"),
+             email = "christian.peitz@uni-paderborn.de",
+             comment = "Paderborn University, Germany"))             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
   such as a PEGARCH (double-power EGARCH), FIEGARCH (fractionally integrated EGARCH), PFIEGARCH (double-power FIEGARCH), and more.
@@ -24,14 +35,11 @@ RoxygenNote: 7.2.3
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
-  'input_checkers.R'
-  'model_defaults.R'
-  'class-egarch-spec.R'
-  'spec-functions.R'
-  'error_distributions.R'
-  'log-likelihoods.R'
+  'DistributionFunctions.R'
+  'FittingHelpers.R'
   'fitting-function.R'
-  'fitting_operator.R'
-  'innovations_simulation.R'
-  'skew_density.R'
-  'simulation.R'
+Depends: 
+    R (>= 2.10),
+    Rcpp,
+    Rsolnp,
+    esemifar
