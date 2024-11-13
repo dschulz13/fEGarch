@@ -2,19 +2,36 @@
 % Please edit documentation in R/fitting-function.R
 \name{fEGarchFit}
 \alias{fEGarchFit}
-\title{Fitting Function}
+\title{Fitting Function for Models of the Broader EGARCH Family}
 \usage{
-fEGarchFit(
-  rt,
-  model = c("mloggarch", "megarch", "filoggarch", "fiegarch", "mafiloggarch"),
-  order = c(1L, 1L),
-  include_mean = TRUE,
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-  start_pars = NULL,
-  LB = NULL,
-  UB = NULL
-)
+fEGarchFit(rt, spec = egarch_spec(), start_pars = NULL, LB = NULL, UB = NULL)
+}
+\arguments{
+\item{rt}{the input time series to fit the model to ordered from
+past to present.}
+
+\item{spec}{an S4 object of class \code{"egarch_spec"} that can
+be created via the function \code{egarch_spec()}.}
+
+\item{start_pars}{a vector with starting parameters for the
+optimization; must be of the same length as the output vector of
+parameters; the default NULL uses internally saved default sets
+of starting values.}
+
+\item{LB}{a vector with lower boundaries for parameters; must be
+of the same length as the output vector of
+parameters; the default NULL uses internally saved default sets
+of lower boundary values.}
+
+\item{UB}{a vector with upper boundaries for parameters; must be
+of the same length as the output vector of
+parameters; the default NULL uses internally saved default sets
+of upper boundary values.}
 }
 \description{
-Fitting Function
+Use maximum-likelihood estimation to fit a model from the
+broader EGARCH family to some observed time series.
+}
+\details{
+To be filled soon.
 }

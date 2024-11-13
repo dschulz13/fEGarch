@@ -386,9 +386,9 @@ filoggarchFit <- function(rt, order = c(1L, 1L),
 
     start_pars <- c(
       list(NULL, 0.0001)[[include_mean + 1]],
-      -9,
-      rep(0, p),
-      rep(0, q),
+      -11,
+      rep(0.2, p),
+      rep(-0.1, q),
       0.1,
       sval,
       list(NULL, 1)[[skew_par + 1]]

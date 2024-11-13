@@ -1,18 +1,37 @@
-#'Fitting Function
+#'Fitting Function for Models of the Broader EGARCH Family
+#'
+#'Use maximum-likelihood estimation to fit a model from the
+#'broader EGARCH family to some observed time series.
+#'
+#'@param rt the input time series to fit the model to ordered from
+#'past to present.
+#'@param spec an S4 object of class \code{"egarch_spec"} that can
+#'be created via the function \code{egarch_spec()}.
+#'@param start_pars a vector with starting parameters for the
+#'optimization; must be of the same length as the output vector of
+#'parameters; the default NULL uses internally saved default sets
+#'of starting values.
+#'@param LB a vector with lower boundaries for parameters; must be
+#'of the same length as the output vector of
+#'parameters; the default NULL uses internally saved default sets
+#'of lower boundary values.
+#'@param UB a vector with upper boundaries for parameters; must be
+#'of the same length as the output vector of
+#'parameters; the default NULL uses internally saved default sets
+#'of upper boundary values.
 #'
 #'@export
 #'
 #'@importFrom Rcpp evalCpp
 #'@useDynLib fEGarch
 #'
+#'@details
+#'To be filled soon.
+#'
 
 
 fEGarchFit <- function(rt,
-    model = c("mloggarch", "megarch", "filoggarch", "fiegarch",
-              "mafiloggarch"),
-    order = c(1L, 1L),
-    include_mean = TRUE,
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    spec = egarch_spec(),
     start_pars = NULL, LB = NULL, UB = NULL) {
 
   model <- match.arg(model)

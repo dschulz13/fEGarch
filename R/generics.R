@@ -1,0 +1,67 @@
+#'Generics for Model Specification Accessors
+#'
+#'A collection of generics for accessors of the model specification
+#'objects.
+#'
+#'@param x the input object or object to modify.
+#'@param value the value to modify the object \code{x} with.
+#'
+#'@details
+#'These generics are intended to provide a basis to construct methods
+#'for adjusting the the output of model specification objects like
+#'\code{egarch_spec()}.
+#'
+#'@name spec_generics
+#'
+#'@return
+#'These generics themselves do not return anything and are just the
+#'foundation for more sophisticated methods.
+#'
+#'@export
+setGeneric("model", function(x) {standardGeneric("model")})
+#'@export
+#'@rdname spec_generics
+setGeneric("orders", function(x) {standardGeneric("orders")})
+#'@export
+#'@rdname spec_generics
+setGeneric("powers", function(x) {standardGeneric("powers")})
+#'@export
+#'@rdname spec_generics
+setGeneric("long_memo", function(x) {standardGeneric("long_memo")})
+#'@export
+#'@rdname spec_generics
+setGeneric("modulus", function(x) {standardGeneric("modulus")})
+#'@export
+#'@rdname spec_generics
+setGeneric("model_type", function(x) {standardGeneric("model_type")})
+#'@export
+#'@rdname spec_generics
+setGeneric("cond_dist", function(x) {standardGeneric("cond_dist")})
+#'@export
+#'@rdname spec_generics
+setGeneric("include_mean", function(x) {standardGeneric("include_mean")})
+
+#'@export
+#'@rdname spec_generics
+setGeneric("model<-", function(x, value) {standardGeneric("model<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("orders<-", function(x, value) {standardGeneric("orders<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("powers<-", function(x, value) {standardGeneric("powers<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("long_memo<-", function(x, value) {standardGeneric("long_memo<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("modulus<-", function(x, value) {standardGeneric("modulus<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("model_type<-", function(x, value) {standardGeneric("model_type<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("cond_dist<-", function(x, value) {standardGeneric("cond_dist<-")})
+#'@export
+#'@rdname spec_generics
+setGeneric("include_mean<-", function(x, value) {standardGeneric("include_mean<-")})

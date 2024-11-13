@@ -62,4 +62,20 @@ fitFUNS <- list(
   "mafiloggarch" = fEGarch:::mafiloggarchFit
 )
 
-#usethis::use_data(lookup_table, fitFUNS, internal = TRUE, overwrite = TRUE)
+model_defaults <- data.frame(
+    Model = c("eGARCH", "meGARCH", "mlogGARCH", "filogGARCH",
+              "fieGARCH", "mafilogGARCH", "feGARCH", "logGARCH"),
+    powerTransf1 = c(1, 0, 0, 0, 1, 0, NA_real_, 0),
+    powerTransf2 = c(1, 1, 0, 0, 1, 0, NA_real_, 0),
+    longMemo = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE),
+    modulus1 = c(FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, FALSE, FALSE),
+    modulus2 = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
+    model_type = c(2, 2, 2, 1, 2, 2, 2, 1)
+  )
+
+rnames <- model_defaults[, 1]
+model_defaults <- model_defaults[, -1]
+row.names(model_defaults) <- rnames
+
+
+#usethis::use_data(lookup_table, fitFUNS, model_defaults, internal = TRUE, overwrite = TRUE)
