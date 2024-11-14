@@ -65,7 +65,7 @@ the broader EGARCH family.
 Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\sigma_t \eta_t \text{ with } \eta_t \sim \text{IID}(0,1), \text{ where}}
-\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\left[\phi(B)\right]^{-1}\left(1-B\right)^{-d}\psi(B)g(\eta_{t-1}).}
+\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\phi^{-1}(B)\left(1-B\right)^{-d}\psi(B)g(\eta_{t-1}).}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 \eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -96,6 +96,24 @@ parameters. Nonetheless, the functions \eqn{g_a\left(\cdot\right)} and
 \eqn{g_a\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\ln\left(\left|\eta_t\right| + 1 \right)}
 and \eqn{g_m\left(\eta_t\right)=g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right]},
 where \eqn{\text{sgn}\left(\eta_t\right)} returns the sign of \eqn{\eta_t}.
+
+Generally, we consider cases, where
+\deqn{g_a\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left(\left|\eta_t\right| + 1 \right)^{p_a} / p_{a} \text{ and}}
+\deqn{g_m\left(\eta_t\right)=\left(\left|\eta_t\right| + 1 \right)^{p_m} / p_{m} - E\left[\left(\left|\eta_t\right| + 1 \right)^{p_m} / p_{m}\right],}
+where \eqn{p_{a}} and \eqn{p_{m}} are suitable positive real-valued
+power parameters. For some exponent \eqn{p_p = 0} we consider
+\eqn{\ln\left(\left|\eta_t \right|+1\right)} for the term
+\eqn{\left(\left|\eta_t\right| + 1 \right)^{p_p} / p_{p}}. This describes
+the broader EGARCH model family (type I models).
+
+As additional specifications of a Log-GARCH and a FILog-GARCH, we also
+allow for
+\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\left\{\phi^{-1}(B)\left(1-B\right)^{-d}\psi(B) - 1 \right\}\xi_t,}
+where \eqn{\phi(B)} is defined as above and \eqn{\psi(B)} is a polynomial
+of order \eqn{q} instead of \eqn{q-1}. Furthermore,
+\eqn{\xi_t=\ln\left(\eta_t^2\right) - E\left[\ln\left(\eta_t^2\right)\right]}.
+This describes the established Log-GARCH models as close relatives to the
+EGARCH family (type II models).
 }
 \examples{
 spec <- egarch_spec()
