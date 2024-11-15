@@ -26,29 +26,16 @@ setClass("egarch_spec",
 #'Create an object with specifications for a model from
 #'the broader EGARCH family.
 #'
-#'@param model a named member of the broader EGARCH family; available
-#'are the basic EGARCH (\code{"eGARCH"}), the basic Log-GARCH
-#'(\code{"logGARCH"}), the FIEGARCH
-#'(\code{"fieGARCH"}), the FILog-GARCH (\code{"filogGARCH"}),
-#'the MLog-GARCH (\code{"mlogGARCH"}), the
-#'MEGARCH (\code{"meGARCH"}), and the MAFILog-GARCH
-#'(\code{"mafilogGARCH"}); the default of the other arguments matches
-#'the corresponding specifications of these models, however, they can
-#'be freely adjusted in order to diverge from these named models.
+#'@param model_type a character value (either \code{"feGARCH"} or
+#'\code{"logGARCH"}) that indicates the type of model to
+#'implement (see Details for more information).
 #'@param orders a two-element numeric vector with the model
 #'orders; the first element is the order for the term based on
 #'\eqn{\ln\left(\sigma_t^2\right)}, i.e. the log-transformed
 #'conditional variance, while the second element is the order for
 #'the innovation-based term (see Details below for more information).
-#'@param powers a two-element numeric vector that states the
-#'exponents in the power-transformations of the asymmetry and the
-#'magnitude terms in that order (see Details for more information).
 #'@param long_memo a logical value that indicates whether the
 #'long-memory version of the model should be considered or not.
-#'@param modulus a two-element logical vector indicating if the
-#'innovations in the asymmetry and the magnitude terms (in that
-#'order) should use a log-modulus transformation (see Details for
-#'more information).
 #'@param cond_dist a character value stating the underlying
 #'conditional distribution to consider; available are a normal
 #'distribution (\code{"norm"}), a \eqn{t}-distribution
@@ -59,6 +46,13 @@ setClass("egarch_spec",
 #'not to include the mean in the estimation procedure; for
 #'\code{include_mean = FALSE}, the mean of the series
 #'\code{rt} is fixed to zero and not being estimated.
+#'@param powers a two-element numeric vector that states the
+#'exponents in the power-transformations of the asymmetry and the
+#'magnitude terms in that order (see Details for more information).
+#'@param modulus a two-element logical vector indicating if the
+#'innovations in the asymmetry and the magnitude terms (in that
+#'order) should use a log-modulus transformation (see Details for
+#'more information).
 #'
 #'@export
 #'
@@ -86,53 +80,78 @@ setClass("egarch_spec",
 #'
 #'\eqn{g\left(\cdot\right)} can be defined in different ways. Commonly,
 #'following a (FI)EGARCH specification, we have
-#'\deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{\left|g_m\left(\eta_t\right)\right|-E\left[\left| g_m\left(\eta_t\right)\right|\right]\right\}}
+#'\deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{g_m\left(\eta_t\right)-E\left[ g_m\left(\eta_t\right)\right]\right\}}
 #'with \eqn{g_a\left(\eta_t\right)=g_m\left(\eta_t\right)=\eta_t} and consequently
 #'\eqn{E\left[g_a\left(\eta_t\right)\right] = E\left(\eta_t\right) = 0} and
 #'\eqn{E\left[\left|g_m\left( \eta_t \right)\right|\right] = E\left(\left| \eta_t\right|\right)},
 #'where \eqn{\kappa} and \eqn{\gamma} are two additional real-valued
 #'parameters. Nonetheless, the functions \eqn{g_a\left(\cdot\right)} and
 #'\eqn{g_m\left(\cdot\right)} can be any suitable transformation of
-#'\eqn{\eta_t}, for example a log-modulus transformation with
-#'\eqn{g_a\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\ln\left(\left|\eta_t\right| + 1 \right)}
-#'and \eqn{g_m\left(\eta_t\right)=g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right]},
-#'where \eqn{\text{sgn}\left(\eta_t\right)} returns the sign of \eqn{\eta_t}.
+#'\eqn{\eta_t}.
 #'
-#'Generally, we consider cases, where
-#'\deqn{g_a\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left(\left|\eta_t\right| + 1 \right)^{p_a} / p_{a} \text{ and}}
-#'\deqn{g_m\left(\eta_t\right)=\left(\left|\eta_t\right| + 1 \right)^{p_m} / p_{m} - E\left[\left(\left|\eta_t\right| + 1 \right)^{p_m} / p_{m}\right],}
-#'where \eqn{p_{a}} and \eqn{p_{m}} are suitable positive real-valued
-#'power parameters. For some exponent \eqn{p_p = 0} we consider
-#'\eqn{\ln\left(\left|\eta_t \right|+1\right)} for the term
-#'\eqn{\left(\left|\eta_t\right| + 1 \right)^{p_p} / p_{p}}. This describes
-#'the broader EGARCH model family (type I models).
+#'Generally, we consider two cases:
+#'\deqn{g_{1,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left|\eta_t\right|^{p_a}/p_a \text{ and}}
+#'\deqn{g_{2,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left(\left|\eta_t\right| + 1\right)^{p_a} / p_{a}}
+#'whereas
+#'\deqn{g_{1,m}\left(\eta_t\right)=\left|\eta_t\right|^{p_m}/p_m \text{ and}}
+#'\deqn{g_{2,m}\left(\eta_t\right)=\left(\left|\eta_t\right| + 1\right)^{p_m} / p_{m}.}
+#'Note that \eqn{\text{sgn}\left(\eta_t\right)} denotes the sign of
+#'\eqn{\eta_t}. \eqn{g_{1,\cdot}} incorporates a power transformation
+#'and \eqn{g_{2,\cdot}} a modulus transformation together with a power
+#'transformation. The choices
+#'\eqn{g_{1,a}} and \eqn{g_{2,a}} correspond to
+#'setting the first element in \code{modulus} to \code{FALSE} or
+#'\code{TRUE}, respectively, under
+#'\code{model_type = "fegarch"}, where \eqn{p_a} can be selected
+#'via the first element in \code{powers}. As a special case, for
+#'\eqn{p_a = 0}, a log-transformation is employed and the division
+#'through \eqn{p_a} is dropped, i.e.
+#'\eqn{g_{1,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\ln\left(\left|\eta_t\right|\right)}
+#'and \eqn{g_{2,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\ln\left(\left|\eta_t\right|+1\right)}
+#'are employed for \eqn{p_a=0}. Completely analogous
+#'thoughts hold for \eqn{g_{1,m}} and \eqn{g_{2,m}} and the second
+#'elements in the arguments \code{modulus} and \code{powers}. The aforementioned
+#'model family is a type I model selectable through
+#'\code{model_type = "feGARCH"}.
 #'
-#'As additional specifications of a Log-GARCH and a FILog-GARCH, we also
-#'allow for
-#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\left\{\phi^{-1}(B)\left(1-B\right)^{-d}\psi(B) - 1 \right\}\xi_t,}
-#'where \eqn{\phi(B)} is defined as above and \eqn{\psi(B)} is a polynomial
-#'of order \eqn{q} instead of \eqn{q-1}. Furthermore,
-#'\eqn{\xi_t=\ln\left(\eta_t^2\right) - E\left[\ln\left(\eta_t^2\right)\right]}.
-#'This describes the established Log-GARCH models as close relatives to the
-#'EGARCH family (type II models).
+#'As additional specifications of a Log-GARCH and a FILog-GARCH, we redefine
+#'\deqn{\psi(B) = 1+\sum_{j=1}^{q}\psi_{j}B^{j}}
+#'now as a polynomial of order \eqn{q} and
+#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\left[\phi^{-1}(B)(1-B)^{-d}\psi(B) - 1\right]g\left(\eta_t\right),}
+#'where \eqn{g(\cdot)} is now defined through
+#'\deqn{g\left(\eta_t\right)=\ln\left(\eta_t^2\right)-E\left[\ln\left(\eta_t^2\right)\right].}
+#'Everything else is defined as before. This describes the
+#'established Log-GARCH models as close relatives to the EGARCH family
+#'(type II models; \code{model_type = "logGARCH"}).
+#'
+#'While the arguments \code{powers} and \code{modulus} are only relevant
+#'under a type I model, i.e. for \code{model_type = "feGARCH"}, the arguments
+#'\code{orders}, \code{long_memo}, \code{cond_dist} and
+#'\code{include_mean} are meaningful for both \code{model_type = "feGARCH"}
+#'and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
+#'The first element of the two-element vector orders is the order \eqn{p},
+#'while the second element is the order \eqn{q}. Furthermore, for
+#'\code{long_memo = TRUE}, the metnioned models are kept as they are, while
+#'for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
+#'\code{cond_dist} controls the conditional distribution and for
+#'\code{include_mean = FALSE}, \eqn{\mu} is not being estimated and fixed
+#'to zero.
 #'
 #'@examples
-#'spec <- egarch_spec()
+#'spec <- fegarch_spec()
 #'
 #'
 
 
 
-egarch_spec <- function(
-  model = c("eGARCH", "fieGARCH", "logGARCH", "filogGARCH",
-            "mlogGARCH", "meGARCH", "mafilogGARCH", "feGARCH"),
+fegarch_spec <- function(
+  model_type = c("feGARCH", "logGARCH"),
   orders = c(1, 1),
-  powers = c(NA_real_, NA_real_),
-  long_memo = NA,
-  modulus = c(NA, NA),
-  model_type = NA_real_,
+  long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-  include_mean = TRUE
+  include_mean = TRUE,
+  powers = c(1, 1),
+  modulus = c(FALSE, FALSE)
 ) {
   model <- match.arg(model)
   if (is.null(model) || is.na(model)) {
