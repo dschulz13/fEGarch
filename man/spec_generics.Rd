@@ -2,25 +2,19 @@
 % Please edit documentation in R/generics.R
 \name{spec_generics}
 \alias{spec_generics}
-\alias{orders}
 \alias{powers}
 \alias{long_memo}
 \alias{modulus}
-\alias{model_type}
 \alias{cond_dist}
 \alias{include_mean}
-\alias{model<-}
 \alias{orders<-}
 \alias{powers<-}
 \alias{long_memo<-}
 \alias{modulus<-}
-\alias{model_type<-}
 \alias{cond_dist<-}
 \alias{include_mean<-}
 \title{Generics for Model Specification Accessors}
 \usage{
-model(x)
-
 orders(x)
 
 powers(x)
@@ -29,13 +23,9 @@ long_memo(x)
 
 modulus(x)
 
-model_type(x)
-
 cond_dist(x)
 
 include_mean(x)
-
-model(x) <- value
 
 orders(x) <- value
 
@@ -44,8 +34,6 @@ powers(x) <- value
 long_memo(x) <- value
 
 modulus(x) <- value
-
-model_type(x) <- value
 
 cond_dist(x) <- value
 

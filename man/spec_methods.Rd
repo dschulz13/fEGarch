@@ -2,54 +2,42 @@
 % Please edit documentation in R/class-egarch-spec.R
 \name{spec_methods}
 \alias{spec_methods}
-\alias{orders,egarch_spec-method}
-\alias{powers,egarch_spec-method}
-\alias{long_memo,egarch_spec-method}
-\alias{modulus,egarch_spec-method}
-\alias{model_type,egarch_spec-method}
-\alias{cond_dist,egarch_spec-method}
-\alias{include_mean,egarch_spec-method}
-\alias{model<-,egarch_spec-method}
-\alias{orders<-,egarch_spec-method}
-\alias{powers<-,egarch_spec-method}
-\alias{long_memo<-,egarch_spec-method}
-\alias{modulus<-,egarch_spec-method}
-\alias{model_type<-,egarch_spec-method}
-\alias{cond_dist<-,egarch_spec-method}
-\alias{include_mean<-,egarch_spec-method}
-\title{Accessors for Class \code{"egarch_spec"}}
+\alias{powers,egarch_type_spec-method}
+\alias{long_memo,base_garch_spec-method}
+\alias{modulus,egarch_type_spec-method}
+\alias{cond_dist,base_garch_spec-method}
+\alias{include_mean,base_garch_spec-method}
+\alias{orders<-,base_garch_spec-method}
+\alias{powers<-,egarch_type_spec-method}
+\alias{long_memo<-,base_garch_spec-method}
+\alias{modulus<-,egarch_type_spec-method}
+\alias{cond_dist<-,base_garch_spec-method}
+\alias{include_mean<-,base_garch_spec-method}
+\title{Accessors for Classes \code{"base_garch_spec"} and \code{"egarch_spec"}}
 \usage{
-\S4method{model}{egarch_spec}(x)
+\S4method{orders}{base_garch_spec}(x)
 
-\S4method{orders}{egarch_spec}(x)
+\S4method{powers}{egarch_type_spec}(x)
 
-\S4method{powers}{egarch_spec}(x)
+\S4method{long_memo}{base_garch_spec}(x)
 
-\S4method{long_memo}{egarch_spec}(x)
+\S4method{modulus}{egarch_type_spec}(x)
 
-\S4method{modulus}{egarch_spec}(x)
+\S4method{cond_dist}{base_garch_spec}(x)
 
-\S4method{model_type}{egarch_spec}(x)
+\S4method{include_mean}{base_garch_spec}(x)
 
-\S4method{cond_dist}{egarch_spec}(x)
+\S4method{orders}{base_garch_spec}(x) <- value
 
-\S4method{include_mean}{egarch_spec}(x)
+\S4method{powers}{egarch_type_spec}(x) <- value
 
-\S4method{model}{egarch_spec}(x) <- value
+\S4method{long_memo}{base_garch_spec}(x) <- value
 
-\S4method{orders}{egarch_spec}(x) <- value
+\S4method{modulus}{egarch_type_spec}(x) <- value
 
-\S4method{powers}{egarch_spec}(x) <- value
+\S4method{cond_dist}{base_garch_spec}(x) <- value
 
-\S4method{long_memo}{egarch_spec}(x) <- value
-
-\S4method{modulus}{egarch_spec}(x) <- value
-
-\S4method{model_type}{egarch_spec}(x) <- value
-
-\S4method{cond_dist}{egarch_spec}(x) <- value
-
-\S4method{include_mean}{egarch_spec}(x) <- value
+\S4method{include_mean}{base_garch_spec}(x) <- value
 }
 \arguments{
 \item{x}{the input object or object to modify.}

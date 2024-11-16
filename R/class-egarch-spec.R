@@ -1,25 +1,116 @@
-setClass("egarch_spec",
+setClass("base_garch_spec",
   slots = c(
-    model = "character",
     orders = "numeric",
-    powers = "numeric",
     long_memo = "logical",
-    modulus = "logical",
-    model_type = "numeric",
     cond_dist = "character",
     include_mean = "logical"
   ),
   prototype = list(
-    model = "eGARCH",
     orders = c(1, 1),
-    powers = c(NA_real_, NA_real_),
-    long_memo = NA,
-    modulus = c(NA, NA),
-    model_type = NA_real_,
+    long_memo = FALSE,
     cond_dist = "norm",
     include_mean = TRUE
   )
 )
+
+setValidity("base_garch_spec", function(object){
+  if (order_checker(object@orders)) {
+    "@orders must be of length two and both elements must be at least one"
+  } else if (lmemo_checker(object@long_memo)) {
+    "@long_memo must be of length one"
+  } else if (distr_checker(object@cond_dist)) {
+    "@cond_dist must be of length one and from the available model options"
+  } else if (mean_checker(object@include_mean)) {
+    "@include_mean must be of length one"
+  } else {
+    TRUE
+  }
+})
+
+base_garch_spec <- function(
+    orders = c(1, 1),
+    long_memo = TRUE,
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  cond_dist <- match.arg(cond_dist)
+
+  new("base_garch_spec",
+    orders = orders,
+    long_memo = long_memo,
+    cond_dist = cond_dist,
+    include_mean = include_mean
+  )
+
+}
+
+setClass("loggarch_type_spec",
+  contains = "base_garch_spec"
+)
+
+setClass("egarch_type_spec",
+  contains = "base_garch_spec",
+  slots = c(
+    powers = "numeric",
+    modulus = "logical"
+  ),
+  prototype = list(
+    powers = c(NA_real_, NA_real_),
+    modulus = c(NA, NA)
+  )
+)
+
+setValidity("egarch_type_spec", function(object){
+  if (power_checker(object@powers)) {
+    "@powers should have length two"
+  } else if (modulus_checker(object@modulus)){
+    "@modulus must be a logical two-element vector"
+  } else {
+    TRUE
+  }
+})
+
+#'@export
+egarch_type_spec <- function(
+  orders = c(1, 1),
+  long_memo = TRUE,
+  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  include_mean = TRUE,
+  powers = c(1, 1),
+  modulus = c(FALSE, FALSE)
+) {
+
+  cond_dist <- match.arg(cond_dist)
+
+  new("egarch_type_spec",
+    orders = orders,
+    long_memo = long_memo,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = powers,
+    modulus = modulus
+  )
+
+}
+
+#'@export
+loggarch_type_spec <- function(
+  orders = c(1, 1),
+  long_memo = TRUE,
+  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  include_mean = TRUE
+) {
+
+  cond_dist <- match.arg(cond_dist)
+
+  new("loggarch_type_spec",
+    orders = orders,
+    long_memo = long_memo,
+    cond_dist = cond_dist,
+    include_mean = include_mean
+  )
+
+}
 
 #'EGARCH Family Model Specification
 #'
@@ -137,15 +228,18 @@ setClass("egarch_spec",
 #'\code{include_mean = FALSE}, \eqn{\mu} is not being estimated and fixed
 #'to zero.
 #'
+#'@return
+#'An object of either class \code{"egarch_type_spec"} or
+#'\code{"loggarch_type_spec"} is returned, depending on the
+#'choice for the input argument \code{model_type}.
+#'
 #'@examples
-#'spec <- fegarch_spec()
+#'spec <- fEGarch_spec()
 #'
 #'
 
-
-
-fegarch_spec <- function(
-  model_type = c("feGARCH", "logGARCH"),
+fEGarch_spec <- function(
+  model_type = c("eGARCH", "logGARCH"),
   orders = c(1, 1),
   long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -153,65 +247,52 @@ fegarch_spec <- function(
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
 ) {
-  model <- match.arg(model)
-  if (is.null(model) || is.na(model)) {
-    model <- "eGARCH"
+  model_type <- match.arg(model_type)
+  if (is.null(model_type) || is.na(model_type)) {
+    model_type <- "eGARCH"
   }
   if (is.null(orders) || all(is.na(orders))) {
     orders <- c(1, 1)
   }
-  if ((is.null(powers) || all(is.na(powers))) && !(model == "feGARCH")) {
-    powers <- c(model_defaults[model, "powerTransf1"], model_defaults[model, "powerTransf2"])
-  }
   if (is.null(long_memo) || is.na(long_memo)) {
-    long_memo <- model_defaults[model, "longMemo"]
+    long_memo <- FALSE
   }
-  if (is.null(modulus) || all(is.na(modulus))) {
-    modulus <- c(model_defaults[model, "modulus1"], model_defaults[model, "modulus2"])
-  }
-  if (is.null(model_type) || is.na(model_type)) {
-    model_type <- model_defaults[model, "model_type"]
+  if ((is.null(modulus) || all(is.na(modulus))) && (model_type == "eGARCH")) {
+    modulus <- c(FALSE, FALSE)
   }
   cond_dist <- match.arg(cond_dist)
   if (is.null(include_mean) || is.na(include_mean)) {
     include_mean <- TRUE
   }
+  if ((is.null(powers) || all(is.na(powers))) && (model_type == "eGARCH")) {
+    powers <- c(1, 1)
+  }
 
-  new("egarch_spec",
-    model = model,
-    orders = orders,
-    powers = powers,
-    long_memo = long_memo,
-    modulus = modulus,
-    model_type = model_type,
-    cond_dist = cond_dist,
-    include_mean = include_mean
-  )
+  if (model_type == "eGARCH") {
+    out <- egarch_type_spec(
+      orders = orders,
+      long_memo = long_memo,
+      cond_dist = cond_dist,
+      include_mean = include_mean,
+      powers = powers,
+      modulus = modulus
+    )
+  } else if (model_type == "logGARCH") {
+    out <- loggarch_type_spec(
+      orders = orders,
+      long_memo = long_memo,
+      cond_dist = cond_dist,
+      include_mean = include_mean
+    )
+  }
+
+  out
+
 }
 
-setValidity("egarch_spec", function(object){
-  if (model_checker(object@model)) {
-    "@model is not from the allowed models or longer than one"
-  } else if (order_checker(object@orders)) {
-    "@orders must be of length two and both elements must be at least one"
-  } else if (power_checker(object@powers)) {
-    "@powers should have length two"
-  } else if (lmemo_checker(object@long_memo)) {
-    "@long_memo must be of length one"
-  } else if (modulus_checker(object@modulus)) {
-    "@modulus must be of length two"
-  } else if (model_type_checker(object@model_type)) {
-    "@model_type must be either 1 or 2"
-  } else if (distr_checker(object@cond_dist)) {
-    "@cond_dist must be of length one and from the available model options"
-  } else if (mean_checker(object@include_mean)) {
-    "@include_mean must be of length one"
-  } else {
-    TRUE
-  }
-})
 
-#'Accessors for Class \code{"egarch_spec"}
+
+#'Accessors for Classes \code{"base_garch_spec"} and \code{"egarch_spec"}
 #'
 #'Access and change elements in objects of class \code{"egarch_spec"}.
 #'The method names represent the name of the element to access /
@@ -227,9 +308,9 @@ setValidity("egarch_spec", function(object){
 #'@name spec_methods
 #'
 #'@return
-#'These methods either return an object of class \code{"egarch_spec"}
-#'or the corresponding element of an object of class
-#'\code{"egarch_spec"}.
+#'These methods either return an object of class \code{"egarch_type_spec"}
+#'or \code{"loggarch_type_spec"} or the corresponding element of
+#'object of such class objects.
 #'
 #'@export
 #'
@@ -239,51 +320,153 @@ setValidity("egarch_spec", function(object){
 #'orders(test_obj) <- c(2, 1)
 #'orders(test_obj)
 #'
-setMethod("model", "egarch_spec", function(x) {x@model})
+setMethod("orders", "base_garch_spec", function(x) {x@orders})
 #'@export
 #'@rdname spec_methods
-setMethod("orders", "egarch_spec", function(x) {x@orders})
+setMethod("powers", "egarch_type_spec", function(x) {x@powers})
 #'@export
 #'@rdname spec_methods
-setMethod("powers", "egarch_spec", function(x) {x@powers})
+setMethod("long_memo", "base_garch_spec", function(x) {x@long_memo})
 #'@export
 #'@rdname spec_methods
-setMethod("long_memo", "egarch_spec", function(x) {x@long_memo})
+setMethod("modulus", "egarch_type_spec", function(x) {x@modulus})
 #'@export
 #'@rdname spec_methods
-setMethod("modulus", "egarch_spec", function(x) {x@modulus})
+setMethod("cond_dist", "base_garch_spec", function(x) {x@cond_dist})
 #'@export
 #'@rdname spec_methods
-setMethod("model_type", "egarch_spec", function(x) {x@model_type})
-#'@export
-#'@rdname spec_methods
-setMethod("cond_dist", "egarch_spec", function(x) {x@cond_dist})
-#'@export
-#'@rdname spec_methods
-setMethod("include_mean", "egarch_spec", function(x) {x@include_mean})
-
+setMethod("include_mean", "base_garch_spec", function(x) {x@include_mean})
 
 #'@export
 #'@rdname spec_methods
-setMethod("model<-", "egarch_spec", function(x, value) {x@model <- value; validObject(x); x})
+setMethod("orders<-", "base_garch_spec", function(x, value) {x@orders <- value; validObject(x); x})
 #'@export
 #'@rdname spec_methods
-setMethod("orders<-", "egarch_spec", function(x, value) {x@orders <- value; validObject(x); x})
+setMethod("powers<-", "egarch_type_spec", function(x, value) {x@powers <- value; validObject(x); x})
 #'@export
 #'@rdname spec_methods
-setMethod("powers<-", "egarch_spec", function(x, value) {x@powers <- value; validObject(x); x})
+setMethod("long_memo<-", "base_garch_spec", function(x, value) {x@long_memo <- value; validObject(x); x})
 #'@export
 #'@rdname spec_methods
-setMethod("long_memo<-", "egarch_spec", function(x, value) {x@long_memo <- value; validObject(x); x})
+setMethod("modulus<-", "egarch_type_spec", function(x, value) {x@modulus <- value; validObject(x); x})
 #'@export
 #'@rdname spec_methods
-setMethod("modulus<-", "egarch_spec", function(x, value) {x@modulus <- value; validObject(x); x})
+setMethod("cond_dist<-", "base_garch_spec", function(x, value) {x@cond_dist <- value; validObject(x); x})
 #'@export
 #'@rdname spec_methods
-setMethod("model_type<-", "egarch_spec", function(x, value) {x@model_type <- value; validObject(x); x})
+setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mean <- value; validObject(x); x})
+
 #'@export
-#'@rdname spec_methods
-setMethod("cond_dist<-", "egarch_spec", function(x, value) {x@cond_dist <- value; validObject(x); x})
+megarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "eGARCH",
+    orders = orders,
+    long_memo = FALSE,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = c(0, 1),
+    modulus = c(TRUE, FALSE)
+  )
+}
+
 #'@export
-#'@rdname spec_methods
-setMethod("include_mean<-", "egarch_spec", function(x, value) {x@include_mean <- value; validObject(x); x})
+egarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "eGARCH",
+    orders = orders,
+    long_memo = FALSE,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = c(1, 1),
+    modulus = c(FALSE, FALSE)
+  )
+}
+
+#'@export
+fiegarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "eGARCH",
+    orders = orders,
+    long_memo = TRUE,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = c(1, 1),
+    modulus = c(FALSE, FALSE)
+  )
+}
+
+#'@export
+mloggarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "eGARCH",
+    orders = orders,
+    long_memo = FALSE,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = c(0, 0),
+    modulus = c(TRUE, TRUE)
+  )
+}
+
+#'@export
+mafiloggarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "eGARCH",
+    orders = orders,
+    long_memo = TRUE,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = c(0, 0),
+    modulus = c(TRUE, TRUE)
+  )
+}
+
+#'@export
+loggarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "logGARCH",
+    orders = orders,
+    long_memo = FALSE,
+    cond_dist = cond_dist,
+    include_mean = include_mean
+  )
+}
+
+#'@export
+filoggarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "logGARCH",
+    orders = orders,
+    long_memo = TRUE,
+    cond_dist = cond_dist,
+    include_mean = include_mean
+  )
+}

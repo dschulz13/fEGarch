@@ -18,8 +18,6 @@
 #'foundation for more sophisticated methods.
 #'
 #'@export
-setGeneric("model", function(x) {standardGeneric("model")})
-#'@export
 #'@rdname spec_generics
 setGeneric("orders", function(x) {standardGeneric("orders")})
 #'@export
@@ -33,17 +31,11 @@ setGeneric("long_memo", function(x) {standardGeneric("long_memo")})
 setGeneric("modulus", function(x) {standardGeneric("modulus")})
 #'@export
 #'@rdname spec_generics
-setGeneric("model_type", function(x) {standardGeneric("model_type")})
-#'@export
-#'@rdname spec_generics
 setGeneric("cond_dist", function(x) {standardGeneric("cond_dist")})
 #'@export
 #'@rdname spec_generics
 setGeneric("include_mean", function(x) {standardGeneric("include_mean")})
 
-#'@export
-#'@rdname spec_generics
-setGeneric("model<-", function(x, value) {standardGeneric("model<-")})
 #'@export
 #'@rdname spec_generics
 setGeneric("orders<-", function(x, value) {standardGeneric("orders<-")})
@@ -56,9 +48,6 @@ setGeneric("long_memo<-", function(x, value) {standardGeneric("long_memo<-")})
 #'@export
 #'@rdname spec_generics
 setGeneric("modulus<-", function(x, value) {standardGeneric("modulus<-")})
-#'@export
-#'@rdname spec_generics
-setGeneric("model_type<-", function(x, value) {standardGeneric("model_type<-")})
 #'@export
 #'@rdname spec_generics
 setGeneric("cond_dist<-", function(x, value) {standardGeneric("cond_dist<-")})
