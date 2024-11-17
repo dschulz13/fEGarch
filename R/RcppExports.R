@@ -41,51 +41,19 @@ signCpp <- function(val) {
     .Call('_fEGarch_signCpp', PACKAGE = 'fEGarch', val)
 }
 
-sigt_egarch_short_pp <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus) {
-    .Call('_fEGarch_sigt_egarch_short_pp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus)
+sigt_egarch_short <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus, mode) {
+    .Call('_fEGarch_sigt_egarch_short', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus, mode)
 }
 
-sigt_egarch_short_loglog <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, modulus) {
-    .Call('_fEGarch_sigt_egarch_short_loglog', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, modulus)
+sigt_egarch_long <- function(x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus, mode) {
+    .Call('_fEGarch_sigt_egarch_long', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus, mode)
 }
 
-sigt_egarch_short_plog <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow1, modulus) {
-    .Call('_fEGarch_sigt_egarch_short_plog', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow1, modulus)
+sigt_loggarch_long <- function(x, mu, coef_inf, E1, Elnsig2) {
+    .Call('_fEGarch_sigt_loggarch_long', PACKAGE = 'fEGarch', x, mu, coef_inf, E1, Elnsig2)
 }
 
-sigt_egarch_short_logp <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow2, modulus) {
-    .Call('_fEGarch_sigt_egarch_short_logp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow2, modulus)
-}
-
-sigt_egarch_long_pp <- function(x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus) {
-    .Call('_fEGarch_sigt_egarch_long_pp', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus)
-}
-
-sigt_egarch_long_loglog <- function(x, mu, alpha, beta, E1, E2, Elnsig2, modulus) {
-    .Call('_fEGarch_sigt_egarch_long_loglog', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, modulus)
-}
-
-sigt_egarch_long_plog <- function(x, mu, alpha, beta, E1, E2, Elnsig2, pow1, modulus) {
-    .Call('_fEGarch_sigt_egarch_long_plog', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, pow1, modulus)
-}
-
-sigt_egarch_long_logp <- function(x, mu, alpha, beta, E1, E2, Elnsig2, pow2, modulus) {
-    .Call('_fEGarch_sigt_egarch_long_logp', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, pow2, modulus)
-}
-
-sigt_filoggarchCpp <- function(x, mu, coef_inf, E1, Elnsig2) {
-    .Call('_fEGarch_sigt_filoggarchCpp', PACKAGE = 'fEGarch', x, mu, coef_inf, E1, Elnsig2)
-}
-
-sigt_mafiloggarchCpp <- function(x, mu, alpha, beta, E1, E2, Elnsig2) {
-    .Call('_fEGarch_sigt_mafiloggarchCpp', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2)
-}
-
-sigt_megarchCpp <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2) {
-    .Call('_fEGarch_sigt_megarchCpp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2)
-}
-
-sigt_mloggarchCpp <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2) {
-    .Call('_fEGarch_sigt_mloggarchCpp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2)
+sigt_loggarch_short <- function(x, mu, omega, phi, psi, E1, Elnsig2) {
+    .Call('_fEGarch_sigt_loggarch_short', PACKAGE = 'fEGarch', x, mu, omega, phi, psi, E1, Elnsig2)
 }
 
