@@ -41,8 +41,36 @@ signCpp <- function(val) {
     .Call('_fEGarch_signCpp', PACKAGE = 'fEGarch', val)
 }
 
-sigt_fiegarchCpp <- function(x, mu, alpha, beta, E1, Elnsig2) {
-    .Call('_fEGarch_sigt_fiegarchCpp', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, Elnsig2)
+sigt_egarch_short_pp <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus) {
+    .Call('_fEGarch_sigt_egarch_short_pp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus)
+}
+
+sigt_egarch_short_loglog <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, modulus) {
+    .Call('_fEGarch_sigt_egarch_short_loglog', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, modulus)
+}
+
+sigt_egarch_short_plog <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow1, modulus) {
+    .Call('_fEGarch_sigt_egarch_short_plog', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow1, modulus)
+}
+
+sigt_egarch_short_logp <- function(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow2, modulus) {
+    .Call('_fEGarch_sigt_egarch_short_logp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow2, modulus)
+}
+
+sigt_egarch_long_pp <- function(x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus) {
+    .Call('_fEGarch_sigt_egarch_long_pp', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus)
+}
+
+sigt_egarch_long_loglog <- function(x, mu, alpha, beta, E1, E2, Elnsig2, modulus) {
+    .Call('_fEGarch_sigt_egarch_long_loglog', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, modulus)
+}
+
+sigt_egarch_long_plog <- function(x, mu, alpha, beta, E1, E2, Elnsig2, pow1, modulus) {
+    .Call('_fEGarch_sigt_egarch_long_plog', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, pow1, modulus)
+}
+
+sigt_egarch_long_logp <- function(x, mu, alpha, beta, E1, E2, Elnsig2, pow2, modulus) {
+    .Call('_fEGarch_sigt_egarch_long_logp', PACKAGE = 'fEGarch', x, mu, alpha, beta, E1, E2, Elnsig2, pow2, modulus)
 }
 
 sigt_filoggarchCpp <- function(x, mu, coef_inf, E1, Elnsig2) {

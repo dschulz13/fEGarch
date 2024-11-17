@@ -38,6 +38,7 @@ Collate:
   'generics.R'
   'input_checkers_egarch_spec.R'  
   'class-egarch-spec.R'
+  'goal-function-creator.R'
   'FittingHelpers.R'
   'fitting-function.R'
   'sim-functions.R'

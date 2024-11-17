@@ -136,9 +136,92 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigt_fiegarchCpp
-arma::vec sigt_fiegarchCpp(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double Elnsig2);
-RcppExport SEXP _fEGarch_sigt_fiegarchCpp(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP Elnsig2SEXP) {
+// sigt_egarch_short_pp
+arma::vec sigt_egarch_short_pp(const arma::vec& x, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const arma::vec& powers, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_short_pp(SEXP xSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP powersSEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type powers(powersSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_short_pp(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, powers, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_short_loglog
+arma::vec sigt_egarch_short_loglog(const arma::vec& x, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_short_loglog(SEXP xSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_short_loglog(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_short_plog
+arma::vec sigt_egarch_short_plog(const arma::vec& x, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const double pow1, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_short_plog(SEXP xSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP pow1SEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const double >::type pow1(pow1SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_short_plog(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow1, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_short_logp
+arma::vec sigt_egarch_short_logp(const arma::vec& x, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const double pow2, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_short_logp(SEXP xSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP pow2SEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const double >::type pow2(pow2SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_short_logp(x, mu, omega, phi, alpha, beta, E1, E2, Elnsig2, pow2, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_long_pp
+arma::vec sigt_egarch_long_pp(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const arma::vec& powers, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_long_pp(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP powersSEXP, SEXP modulusSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -147,8 +230,67 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
     Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_fiegarchCpp(x, mu, alpha, beta, E1, Elnsig2));
+    Rcpp::traits::input_parameter< const arma::vec& >::type powers(powersSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_long_pp(x, mu, alpha, beta, E1, E2, Elnsig2, powers, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_long_loglog
+arma::vec sigt_egarch_long_loglog(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_long_loglog(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_long_loglog(x, mu, alpha, beta, E1, E2, Elnsig2, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_long_plog
+arma::vec sigt_egarch_long_plog(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const double pow1, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_long_plog(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP pow1SEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const double >::type pow1(pow1SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_long_plog(x, mu, alpha, beta, E1, E2, Elnsig2, pow1, modulus));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sigt_egarch_long_logp
+arma::vec sigt_egarch_long_logp(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E1, const double E2, const double Elnsig2, const double pow2, const arma::vec& modulus);
+RcppExport SEXP _fEGarch_sigt_egarch_long_logp(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E1SEXP, SEXP E2SEXP, SEXP Elnsig2SEXP, SEXP pow2SEXP, SEXP modulusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type E1(E1SEXP);
+    Rcpp::traits::input_parameter< const double >::type E2(E2SEXP);
+    Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
+    Rcpp::traits::input_parameter< const double >::type pow2(pow2SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_long_logp(x, mu, alpha, beta, E1, E2, Elnsig2, pow2, modulus));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -234,7 +376,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_skew_sstd", (DL_FUNC) &_fEGarch_pdf_skew_sstd, 3},
     {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},
     {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
-    {"_fEGarch_sigt_fiegarchCpp", (DL_FUNC) &_fEGarch_sigt_fiegarchCpp, 6},
+    {"_fEGarch_sigt_egarch_short_pp", (DL_FUNC) &_fEGarch_sigt_egarch_short_pp, 11},
+    {"_fEGarch_sigt_egarch_short_loglog", (DL_FUNC) &_fEGarch_sigt_egarch_short_loglog, 10},
+    {"_fEGarch_sigt_egarch_short_plog", (DL_FUNC) &_fEGarch_sigt_egarch_short_plog, 11},
+    {"_fEGarch_sigt_egarch_short_logp", (DL_FUNC) &_fEGarch_sigt_egarch_short_logp, 11},
+    {"_fEGarch_sigt_egarch_long_pp", (DL_FUNC) &_fEGarch_sigt_egarch_long_pp, 9},
+    {"_fEGarch_sigt_egarch_long_loglog", (DL_FUNC) &_fEGarch_sigt_egarch_long_loglog, 8},
+    {"_fEGarch_sigt_egarch_long_plog", (DL_FUNC) &_fEGarch_sigt_egarch_long_plog, 9},
+    {"_fEGarch_sigt_egarch_long_logp", (DL_FUNC) &_fEGarch_sigt_egarch_long_logp, 9},
     {"_fEGarch_sigt_filoggarchCpp", (DL_FUNC) &_fEGarch_sigt_filoggarchCpp, 5},
     {"_fEGarch_sigt_mafiloggarchCpp", (DL_FUNC) &_fEGarch_sigt_mafiloggarchCpp, 7},
     {"_fEGarch_sigt_megarchCpp", (DL_FUNC) &_fEGarch_sigt_megarchCpp, 9},
