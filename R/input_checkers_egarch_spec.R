@@ -1,11 +1,9 @@
 # For class "egarch_spec"
 
-model_checker <- function(model) {
-  !(model %in% c("eGARCH", "mlogGARCH", "meGARCH", "fieGARCH", "filogGARCH", "mafilogGARCH", "feGARCH") & length(model) == 1)
-}
+
 
 order_checker <- function(garch_order) {
-  !((length(garch_order) == 2) & (garch_order[[1]] > 0 && garch_order[[2]] > 0))
+  !((length(garch_order) == 2) && (garch_order[[1]] > 0 && garch_order[[2]] > 0))
 }
 
 power_checker <- function(power_transf) {

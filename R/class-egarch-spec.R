@@ -112,18 +112,18 @@ loggarch_type_spec <- function(
 
 }
 
-#'EGARCH Family Model Specification
+#'General EGARCH Family Model Specification
 #'
 #'Create an object with specifications for a model from
 #'the broader EGARCH family.
 #'
-#'@param model_type a character value (either \code{"feGARCH"} or
+#'@param model_type a character value (either \code{"eGARCH"} or
 #'\code{"logGARCH"}) that indicates the type of model to
 #'implement (see Details for more information).
 #'@param orders a two-element numeric vector with the model
-#'orders; the first element is the order for the term based on
+#'orders; the first element is the order \eqn{p} for the term based on
 #'\eqn{\ln\left(\sigma_t^2\right)}, i.e. the log-transformed
-#'conditional variance, while the second element is the order for
+#'conditional variance, while the second element is the order \eqn{q} for
 #'the innovation-based term (see Details below for more information).
 #'@param long_memo a logical value that indicates whether the
 #'long-memory version of the model should be considered or not.
@@ -142,7 +142,7 @@ loggarch_type_spec <- function(
 #'magnitude terms in that order (see Details for more information).
 #'@param modulus a two-element logical vector indicating if the
 #'innovations in the asymmetry and the magnitude terms (in that
-#'order) should use a log-modulus transformation (see Details for
+#'order) should use a modulus transformation (see Details for
 #'more information).
 #'
 #'@export
@@ -151,26 +151,39 @@ loggarch_type_spec <- function(
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\sigma_t \eta_t \text{ with } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\phi^{-1}(B)\left(1-B\right)^{-d}\psi(B)g(\eta_{t-1}).}
+#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\theta(B)g(\eta_{t-1}).}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 #'deviations in \eqn{r_t}. Note that \eqn{\ln\left(\cdot\right)} denotes the natural logarithm.
-#'Moreover,
-#'\deqn{\phi(B) = 1-\sum_{i=1}^{p}\phi_{i}B^{i} \text{ and}}
-#'\deqn{\psi(B) = 1+\sum_{j=1}^{q-1}\psi_{j}B^{j},}
-#'where \eqn{B} is the backshift operator, are characteristic polynomials
-#'with real coefficients \eqn{\phi_{0},\dots,\phi_{p},\psi_{0},\dots,\psi_{q-1}},
-#'by fixing \eqn{\phi_{0}=\psi_{0}=1}, and without common roots. Furthermore,
-#'we have \eqn{\mu = E\left(r_t\right)} as a real-valued parameter and the
-#'long-memory parameter \eqn{d \in [0,0.5)}. If we consider
-#'\eqn{\left\{g\left(\eta_t\right)\right\}} to be a series of iid variables
-#'with mean zero and finite variance, then the real-valued parameter
+#'Moreover, \eqn{B} is the backshift operator and
+#'\eqn{\theta(B) = 1 +\sum_{i=1}^{\infty}\theta_i B^{i}}, where
+#'\eqn{\theta_i}, \eqn{i=1,2,\dots}, are real-valued coefficients.
+#'\eqn{g\left(\eta_{t-1}\right)} is a suitable function in \eqn{\eta_{t-1}}.
+#'Generally, \eqn{\left\{g\left(\eta_{t}\right)\right\}} should be an iid
+#'zero-mean sequence with finite variance.
+#'We have \eqn{\mu = E\left(r_t\right)} as a real-valued parameter.
+#'The real-valued parameter
 #'\eqn{\omega_{\sigma}} is in fact
 #'\eqn{\omega_{\sigma}=E\left[\ln\left(\sigma_t^2\right)\right]}.
+#'This previous set of
+#'equations defines the broader family of EGARCH models, from which
+#'subtypes are described in the following that depend on the choice of
+#'\eqn{g}.
 #'
-#'\eqn{g\left(\cdot\right)} can be defined in different ways. Commonly,
-#'following a (FI)EGARCH specification, we have
+#'\eqn{\textbf{Type I}:}
+#'
+#'We have \eqn{\theta(B) = \phi^{-1}(B)(1-B)^{-d}\psi(B)}, where
+#'\deqn{\phi(B) = 1-\sum_{i=1}^{p}\phi_{i}B^{i} \text{ and}}
+#'\deqn{\psi(B) = 1+\sum_{j=1}^{q-1}\psi_{j}B^{j},}
+#'are characteristic polynomials
+#'with real coefficients \eqn{\phi_{0},\dots,\phi_{p},\psi_{0},\dots,\psi_{q-1}},
+#'by fixing \eqn{\phi_{0}=\psi_{0}=1}, and without common roots. Furthermore,
+#'the
+#'long-memory parameter is \eqn{d \in [0,0.5)}.
+#'
+#'\eqn{g\left(\cdot\right)} can be defined in different ways.
+#'Following a type I specification (\code{model_type = "eGARCH"}), we have
 #'\deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{g_m\left(\eta_t\right)-E\left[ g_m\left(\eta_t\right)\right]\right\}}
 #'with \eqn{g_a\left(\eta_t\right)=g_m\left(\eta_t\right)=\eta_t} and consequently
 #'\eqn{E\left[g_a\left(\eta_t\right)\right] = E\left(\eta_t\right) = 0} and
@@ -193,7 +206,7 @@ loggarch_type_spec <- function(
 #'\eqn{g_{1,a}} and \eqn{g_{2,a}} correspond to
 #'setting the first element in \code{modulus} to \code{FALSE} or
 #'\code{TRUE}, respectively, under
-#'\code{model_type = "fegarch"}, where \eqn{p_a} can be selected
+#'\code{model_type = "eGARCH"}, where \eqn{p_a} can be selected
 #'via the first element in \code{powers}. As a special case, for
 #'\eqn{p_a = 0}, a log-transformation is employed and the division
 #'through \eqn{p_a} is dropped, i.e.
@@ -203,22 +216,35 @@ loggarch_type_spec <- function(
 #'thoughts hold for \eqn{g_{1,m}} and \eqn{g_{2,m}} and the second
 #'elements in the arguments \code{modulus} and \code{powers}. The aforementioned
 #'model family is a type I model selectable through
-#'\code{model_type = "feGARCH"}.
+#'\code{model_type = "eGARCH"}.
 #'
-#'As additional specifications of a Log-GARCH and a FILog-GARCH, we redefine
+#'\eqn{\textbf{Type II}:}
+#'
+#'As additional specifications of a Log-GARCH and a FILog-GARCH, which belong
+#'to the broader EGARCH family, we redefine
 #'\deqn{\psi(B) = 1+\sum_{j=1}^{q}\psi_{j}B^{j}}
 #'now as a polynomial of order \eqn{q} and
-#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\left[\phi^{-1}(B)(1-B)^{-d}\psi(B) - 1\right]g\left(\eta_t\right),}
-#'where \eqn{g(\cdot)} is now defined through
-#'\deqn{g\left(\eta_t\right)=\ln\left(\eta_t^2\right)-E\left[\ln\left(\eta_t^2\right)\right].}
-#'Everything else is defined as before. This describes the
-#'established Log-GARCH models as close relatives to the EGARCH family
+#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\left[\phi^{-1}(B)(1-B)^{-d}\psi(B) - 1\right]\xi_t,}
+#'where
+#'\deqn{\xi_t=\ln\left(\eta_t^2\right)-E\left[\ln\left(\eta_t^2\right)\right].}
+#'Everything else is defined as before. Since
+#'\deqn{\phi^{-1}(B)(1-B)^{-d}\psi(B) - 1=\sum_{i=1}^{\infty}\gamma_i B^{i}=\gamma_1 B\left[\sum_{i=1}^{\infty}(\gamma_i/\gamma_1)B^{i-1}\right]=\gamma_1 B\left[1+\sum_{i=1}^{\infty}\theta_i B^{i}\right]=\theta(B)\gamma_1 B,}
+#'where \eqn{\theta_i = \gamma_{i+1}/\gamma_{1}}, \eqn{i=0,1,\dots}, and by defining
+#'\deqn{g\left(\eta_{t-1}\right)=\gamma_1\left\{\ln\left(\eta_{t-1}^2\right)-E\left[\ln\left(\eta_{t-1}^2\right)\right]\right\},}
+#'the equation of \eqn{\ln\left(\sigma_t^2\right)} can be stated to be
+#'\deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\theta(B)g(\eta_{t-1})}
+#'as in the broad EGARCH family at the very beginning.
+#'
+#'This describes the
+#'established Log-GARCH models as part of the broad EGARCH family
 #'(type II models; \code{model_type = "logGARCH"}).
 #'
+#'\eqn{\textbf{General information}:}
+#'
 #'While the arguments \code{powers} and \code{modulus} are only relevant
-#'under a type I model, i.e. for \code{model_type = "feGARCH"}, the arguments
+#'under a type I model, i.e. for \code{model_type = "eGARCH"}, the arguments
 #'\code{orders}, \code{long_memo}, \code{cond_dist} and
-#'\code{include_mean} are meaningful for both \code{model_type = "feGARCH"}
+#'\code{include_mean} are meaningful for both \code{model_type = "eGARCH"}
 #'and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
 #'The first element of the two-element vector orders is the order \eqn{p},
 #'while the second element is the order \eqn{q}. Furthermore, for
@@ -227,6 +253,13 @@ loggarch_type_spec <- function(
 #'\code{cond_dist} controls the conditional distribution and for
 #'\code{include_mean = FALSE}, \eqn{\mu} is not being estimated and fixed
 #'to zero.
+#'
+#'See also the closely related spec-functions that immediately create
+#'specifications of specific submodels of the broad EGARCH family. These
+#'functions are \code{egarch_spec()}, \code{fiegarch_spec()},
+#'\code{loggarch_spec()},\code{filoggarch_spec()}, \code{megarch_spec()},
+#'\code{mloggarch_spec()} and \code{mafiloggarch_spec()}, which are all
+#'wrappers for \code{fEGarch_spec()}.
 #'
 #'@return
 #'An object of either class \code{"egarch_type_spec"} or
@@ -356,7 +389,82 @@ setMethod("cond_dist<-", "base_garch_spec", function(x, value) {x@cond_dist <- v
 #'@rdname spec_methods
 setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mean <- value; validObject(x); x})
 
+#'EGARCH Family Submodel Specification
+#'
+#'Wrappers of \code{fEGarch_spec()} that create
+#'specifications of specific submodels of the broad
+#'EGARCH family.
+#'
+#'@param orders a two-element numeric vector with the model
+#'orders.
+#'@param cond_dist a character value stating the underlying
+#'conditional distribution to consider; available are a normal
+#'distribution (\code{"norm"}), a \eqn{t}-distribution
+#'(\code{"std"}), a generalized error distribution
+#'(\code{"ged"}) and the skewed versions of them
+#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}).
+#'@param include_mean a logical value indicating whether or
+#'not to include the mean in the estimation procedure; for
+#'\code{include_mean = FALSE}, the mean of the series
+#'\code{rt} is fixed to zero and not being estimated.
+#'
 #'@export
+#'
+#'@details
+#'Available are shortcut specification functions for
+#'EGARCH \code{egarch_spec()}, FIEGARCH \code{fiegarch_spec()},
+#'MEGARCH \code{megarch_spec()}, Log-GARCH \code{loggarch_spec()},
+#'FILog-GARCH \code{filoggarch_spec()}, MLog-GARCH \code{mloggarch_spec()} and
+#'MAFILog-GARCH \code{mafiloggarch_spec()}.
+#'
+#'The following descriptions are following the descriptions in the
+#'documentation of the more general \code{fEGarch_spec()}. Please go there
+#'first to understand the following descriptions on the arguments of
+#'\code{fEGarch_spec()} to obtain these wrappers.
+#'
+#'\eqn{\textbf{EGARCH:}}
+#'
+#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
+#'
+#'\eqn{\textbf{FIEGARCH:}}
+#'
+#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
+#'
+#'\eqn{\textbf{MEGARCH:}}
+#'
+#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
+#'
+#'\eqn{\textbf{Log-GARCH:}}
+#'
+#'\code{model_type = "logGARCH"}, \code{long_memo = FALSE}
+#'
+#'\eqn{\textbf{FILog-GARCH:}}
+#'
+#'\code{model_type = "logGARCH"}, \code{long_memo = TRUE}
+#'
+#'\eqn{\textbf{MLog-GARCH:}}
+#'
+#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
+#'
+#'\eqn{\textbf{MAFILog-GARCH:}}
+#'
+#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
+#'
+#'@name submodel-specs
+#'
+#'@return
+#'Depending on the spec-fun function, either an object of class
+#'\code{"egarch-type-spec"} or \code{"loggarch-type-spec"} is returned.
+#'
+#'@examples
+#'spec <- megarch_spec(cond_dist = "std")
+#'
+
 megarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -374,6 +482,7 @@ megarch_spec <- function(
 }
 
 #'@export
+#'@rdname submodel-specs
 egarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -391,6 +500,7 @@ egarch_spec <- function(
 }
 
 #'@export
+#'@rdname submodel-specs
 fiegarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -408,6 +518,7 @@ fiegarch_spec <- function(
 }
 
 #'@export
+#'@rdname submodel-specs
 mloggarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -425,6 +536,7 @@ mloggarch_spec <- function(
 }
 
 #'@export
+#'@rdname submodel-specs
 mafiloggarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -442,6 +554,7 @@ mafiloggarch_spec <- function(
 }
 
 #'@export
+#'@rdname submodel-specs
 loggarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
@@ -457,6 +570,7 @@ loggarch_spec <- function(
 }
 
 #'@export
+#'@rdname submodel-specs
 filoggarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),

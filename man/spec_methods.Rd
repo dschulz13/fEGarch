@@ -45,9 +45,9 @@
 \item{value}{the value to modify the object \code{x} with.}
 }
 \value{
-These methods either return an object of class \code{"egarch_spec"}
-or the corresponding element of an object of class
-\code{"egarch_spec"}.
+These methods either return an object of class \code{"egarch_type_spec"}
+or \code{"loggarch_type_spec"} or the corresponding element of
+object of such class objects.
 }
 \description{
 Access and change elements in objects of class \code{"egarch_spec"}.
