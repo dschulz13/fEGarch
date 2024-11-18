@@ -609,10 +609,10 @@ sigt_mafiloggarch <- function(theta, x, dfun1, dfun2, p, q, include_mean,
 }
 
 # p, q are now model orders
-goal_fun_mafiloggarch <- function(theta, x, dfun1, dfun2, p, q, include_mean,
-                             extra_par, skew_par) {
+goal_fun <- function(theta, x, dfun1, dfun2, p, q, include_mean,
+                             extra_par, skew_par, sigt_fun) {
 
-  res_list <- sigt_mafiloggarch(theta, x, dfun1, dfun2, p, q,
+  res_list <- sigt_fun(theta, x, dfun1, dfun2, p, q,
                 include_mean, extra_par, skew_par)
 
   sigt <- res_list$sigt

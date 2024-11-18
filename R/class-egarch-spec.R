@@ -584,3 +584,742 @@ filoggarch_spec <- function(
     include_mean = include_mean
   )
 }
+
+sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pows, mods,
+              mode) {
+
+  imean <- !incl_mean
+
+  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  step0 <- 2 - imean
+  omega_sig <- theta[[step0]]
+  step1 <- step0 + p
+  step2 <- step1 + q - 1
+
+  phi <- theta[(step0 + 1):step1]
+
+  if (q > 1) {
+    psi <- c(1, theta[(step1 + 1):step2])
+  } else {
+    psi <- 1
+  }
+  kappa <- theta[[(step2 + 1)]]
+  gamma <- theta[[step2 + 2]]
+  if (extra_par) {
+    shape <- theta[[step2 + 3]]
+  } else {
+    shape <- 0
+  }
+  if (skew_par) {
+    skew <- theta[[step2 + 3 + extra_par]]
+  } else {
+    skew <- 0
+  }
+
+  alpha <- psi * kappa
+  beta <- psi * gamma
+
+  E_asy <- integrate(int_fun_asy, -Inf, Inf, shape = shape, skew = skew,
+                  dfun = dfun1, pow = pows[[1]],
+                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+  E_mag <- integrate(int_fun_mag, -Inf, Inf, shape = shape, skew = skew,
+                  dfun = dfun1, pow = pows[[2]],
+                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+
+  Elnsig2 <- omega_sig
+  omega <- Elnsig2 * (1- sum(phi))
+
+  sigt <- c(sigt_egarch_shortCpp(
+    x = x,
+    mu = mu,
+    omega = omega,
+    phi = phi,
+    alpha = alpha,
+    beta = beta,
+    E_asy = E_asy,
+    E_mag = E_mag,
+    Elnsig2,
+    pows, mods, mode
+  ))
+
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+
+}
+
+sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pows, mods,
+              mode) {
+
+
+  imean <- !incl_mean
+
+  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  step0 <- 2 - imean
+  Elnsig2 <- theta[[step0]]   # The expectation of ln(sig_t^2)
+  step1 <- step0 + p
+  step2 <- step1 + q - 1
+
+  phi <- theta[(step0 + 1):step1]
+
+  if (q > 1) {
+    psi <- c(1, theta[(step1 + 1):step2])
+    psi_2 <- psi[-1]
+  } else {
+    psi <- 1
+    psi_2 <- numeric(0)
+  }
+  kappa <- theta[[(step2 + 1)]]
+  gamma <- theta[[step2 + 2]]
+  d <- theta[[step2 + 3]]
+  if (extra_par) {
+    shape <- theta[[step2 + 4]]
+  } else {
+    shape <- 0
+  }
+  if (skew_par) {
+    skew <- theta[[step2 + 4 + extra_par]]
+  } else {
+    skew <- 0
+  }
+
+  n <- length(x)
+  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
+                                     max_i = n - 1)
+
+  alpha <- coef_inf * kappa
+  beta <- coef_inf * gamma
+
+  E_asy <- integrate(int_fun_asy, -Inf, Inf, shape = shape, skew = skew,
+                  dfun = dfun1, pow = pows[[1]],
+                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+  E_mag <- integrate(int_fun_mag, -Inf, Inf, shape = shape, skew = skew,
+                  dfun = dfun1, pow = pows[[1]],
+                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+
+  sigt <- c(sigt_egarch_longCpp(
+    x = x,
+    mu = mu,
+    alpha = alpha,
+    beta = beta,
+    E_asy = E_asy,
+    E_mag = E_mag,
+    Elnsig2 = Elnsig2,
+    powers = pows,
+    modulus = mods,
+    mode = mode
+  ))
+
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+
+}
+
+goal_fun_creator_egarch <- function(
+    theta,
+    x,
+    dfun1,
+    dfun2,
+    p,
+    q,
+    incl_mean,
+    extra_par,
+    skew_par,
+    int_fun_asy,
+    int_fun_mag,
+    sigt_fun,
+    pows, mods,
+    mode
+) {
+
+  res_list <- sigt_fun(theta, x, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pows, mods,
+              mode)
+
+  sigt <- res_list$sigt
+  mu <- res_list$mu
+  skew <- res_list$skew
+  shape <- res_list$shape
+
+  out <- -sum(log(dfun2(x, mu, sigt, shape, skew)))
+
+  out
+
+}
+
+
+
+setMethod("fEGarch_fit", "egarch_type_spec",
+  function(spec = egarch_spec(), rt, start_pars = NULL, LB = NULL,
+    UB = NULL) {
+
+  rt_core <- zoo::coredata(rt)
+
+  order <- orders(spec)
+  p <- order[[1]]
+  q <- order[[2]]
+  cond_d <- cond_dist(spec)
+
+  dfun1 <- lookup_table[["fun1"]][[cond_d]]
+  dfun2 <- lookup_table[["fun2"]][[cond_d]]
+
+  skew_par <- lookup_table[["skew_par"]][[cond_d]]
+  extra_par <- lookup_table[["extra_par"]][[cond_d]]
+
+  lm <- long_memo(spec)
+  sigt_fun <- sigt_funs_egarch[[lm + 1]]
+
+  mod <- modulus(spec)
+  mod_asy <- mod[[1]]
+  mod_mag <- mod[[2]]
+
+  pow <- powers(spec)
+  pow_asy <- pow[[1]]
+  pow_mag <- pow[[2]]
+  pow_asy_check <- (pow_asy != 0) + 1
+  pow_mag_check <- (pow_mag != 0) + 1
+
+  int_fun_asy <- exp_funs[["asy"]][[mod_asy + 1]][[pow_asy_check]]
+  int_fun_mag <- exp_funs[["mag"]][[mod_mag + 1]][[pow_mag_check]]
+
+  mode <- mode_mat[pow_asy_check, pow_mag_check]
+
+  incl_mean <- include_mean(spec)
+
+  goal_fun <- function(theta, rt) {
+    goal_fun_creator_egarch(
+      theta = theta,
+      x = rt,
+      dfun1 = dfun1,
+      dfun2 = dfun2,
+      p = p,
+      q = q,
+      incl_mean = incl_mean,
+      extra_par = extra_par,
+      skew_par = skew_par,
+      int_fun_asy = int_fun_asy,
+      int_fun_mag = int_fun_mag,
+      sigt_fun = sigt_fun,
+      pows = pow,
+      mods = mod,
+      mode = mode
+    )
+  }
+
+  vals <- lookup_table[["vals"]][[cond_d]]
+
+  sval <- vals[[1]]
+  lval <- vals[[2]]
+  uval <- vals[[3]]
+
+  if (lm) {
+    d_spar <- 0.1
+    d_low <- 0
+    d_up <- 0.4999
+    d_name <- "d"
+  } else {
+    d_spar <- d_low <- d_up <- numeric(0)
+    d_name <- character(0)
+  }
+
+  if (is.null(start_pars)) {
+
+    start_pars <- c(
+      list(NULL, 0)[[incl_mean + 1]],
+      -11,
+      rep(0, p),
+      rep(0, q - 1),
+      rep(0, 2),
+      d_spar,
+      sval,
+      list(NULL, 1)[[skew_par + 1]]
+    )
+
+  }
+
+  if (is.null(LB)) {
+
+    LB <- c(
+      list(NULL, -2)[[incl_mean + 1]],
+      -20,
+      rep(-2, p),
+      rep(-2, q - 1),
+      rep(-2, 2),
+      d_low,
+      lval,
+      list(NULL, 1e-15)[[skew_par + 1]]
+    )
+
+  }
+
+  if (is.null(UB)) {
+
+    UB <- c(
+      list(NULL, 2)[[incl_mean + 1]],
+      20,
+      rep(2, p),
+      rep(2, q - 1),
+      rep(2, 2),
+      d_up,
+      uval,
+      list(NULL, Inf)[[skew_par + 1]]
+    )
+
+  }
+
+  result <- suppressWarnings(Rsolnp::solnp(
+    pars = start_pars,
+    fun = goal_fun,
+    LB = LB,
+    UB = UB,
+    control = list(trace = FALSE),
+    rt = rt_core
+  ))
+
+  pars <- result$pars
+  llhood <- -tail(result$values, 1)
+
+  sigt <- sigt_fun(unname(pars), rt_core, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pow, mod,
+              mode)$sigt
+
+  mu <- c(0, pars[[1]])[[incl_mean + 1]]
+  etat <- (rt - mu) / sigt
+
+  if (q > 1) {
+    psi_names <- paste0("psi", 2:q)
+  } else {
+    psi_names <- NULL
+  }
+
+  par_names <- c(
+    list(NULL, "mu")[[incl_mean + 1]],
+    "omega_sig",
+    paste0("phi", 1:p),
+    psi_names,
+    "kappa",
+    "gamma",
+    d_name,
+    list(NULL, c("shape", "df")[[(cond_d %in% c("std", "sstd")) + 1]])[[extra_par + 1]],
+    list(NULL, "skew")[[skew_par + 1]]
+  )
+
+  serrors <- sqrt(diag(solve(result$hessian)))
+  names(pars) <- par_names
+  names(serrors) <- par_names
+
+  k <- length(pars)
+  n <- length(rt)
+
+  m2llhood <- -2 * llhood
+  bic <- (m2llhood + k * log(n)) / n
+  aic <- (m2llhood + 2 * k) / n
+
+  if (inherits(rt, what = "zoo")) {
+    tp <- as.Date(time(rt))
+    sigt <- zoo::zoo(sigt, order.by = tp)
+    etat <- zoo::zoo(etat, order.by = tp)
+  }
+
+  list_out <- fEGarch_fit_egarch(
+    pars = pars,
+    se = serrors,
+    rt = rt,
+    sigt = sigt,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = c("aic" = aic, "bic" = bic),
+    cond_dist = cond_d,
+    orders = order,
+    powers = pow,
+    modulus = mod,
+    long_memo = lm
+  )
+
+  list_out
+
+})
+
+sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun) {
+
+  imean <- !incl_mean
+  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  step0 <- 2 - imean
+  omega_sig <- theta[[step0]]
+  step1 <- step0 + p
+  step2 <- step1 + q
+  phi <- theta[(step0 + 1):step1]
+  psi <- theta[(step1 + 1):step2]
+
+  if (extra_par) {
+    shape <- theta[[step2 + 1]]
+  } else {
+    shape <- 0
+  }
+  if (skew_par) {
+    skew <- theta[[step2 + 1 + extra_par]]
+  } else {
+    skew <- 0
+  }
+
+  Elneta2 <- integrate(int_fun, -Inf, Inf, shape = shape, skew = skew,
+                  dfun = dfun1,
+                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+
+  Elnsig2 <- omega_sig
+  omega <- omega_sig * (1 - sum(phi))
+
+  sigt <- c(sigt_loggarch_short(
+    x = x,
+    mu = mu,
+    omega = omega,
+    phi = phi,
+    psi = psi,
+    Elneta2 = Elneta2,
+    Elnsig2 = Elnsig2
+  ))
+
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+
+}
+
+sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun) {
+
+
+  imean <- !incl_mean
+  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  step0 <- 2 - imean
+  omega_sig <- theta[[step0]]
+  step1 <- step0 + p
+  step2 <- step1 + q
+  phi <- theta[(step0 + 1):step1]
+  psi <- theta[(step1 + 1):step2]
+  d <- theta[[step2 + 1]]
+  if (extra_par) {
+    shape <- theta[[step2 + 2]]
+  } else {
+    shape <- 0
+  }
+  if (skew_par) {
+    skew <- theta[[step2 + 2 + extra_par]]
+  } else {
+    skew <- 0
+  }
+
+  Elneta2 <- integrate(int_fun, -Inf, Inf, shape = shape, skew = skew,
+                  dfun = dfun1,
+                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+
+  n <- length(x)
+  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
+                                     max_i = n)[-1]
+
+  Elnsig2 <- omega_sig
+
+  sigt <- c(sigt_loggarch_long(
+    x = x,
+    mu = mu,
+    coef_inf = coef_inf,
+    Elneta2 = Elneta2,
+    Elnsig2 = Elnsig2
+  ))
+
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+
+}
+
+goal_fun_creator_loggarch <- function(
+    theta,
+    x,
+    dfun1,
+    dfun2,
+    p,
+    q,
+    incl_mean,
+    extra_par,
+    skew_par,
+    int_fun,
+    sigt_fun
+) {
+
+  res_list <- sigt_fun(theta, x, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun)
+
+  sigt <- res_list$sigt
+  mu <- res_list$mu
+  skew <- res_list$skew
+  shape <- res_list$shape
+
+  out <- -sum(log(dfun2(x, mu, sigt, shape, skew)))
+
+  out
+
+}
+
+setMethod("fEGarch_fit", "loggarch_type_spec",
+  function(spec = loggarch_spec(), rt, start_pars = NULL, LB = NULL, UB = NULL) {
+  rt_core <- zoo::coredata(rt)
+
+  order <- orders(spec)
+  p <- order[[1]]
+  q <- order[[2]]
+  cond_d <- cond_dist(spec)
+
+  dfun1 <- lookup_table[["fun1"]][[cond_d]]
+  dfun2 <- lookup_table[["fun2"]][[cond_d]]
+
+  skew_par <- lookup_table[["skew_par"]][[cond_d]]
+  extra_par <- lookup_table[["extra_par"]][[cond_d]]
+
+  lm <- long_memo(spec)
+  sigt_fun <- sigt_funs_loggarch[[lm + 1]]
+
+  int_fun <- function(x, shape, skew, dfun) {
+    log(x^2) * dfun(x, shape = shape, skew = skew)
+  }
+
+  incl_mean <- include_mean(spec)
+
+  goal_fun <- function(theta, rt) {
+    goal_fun_creator_loggarch(
+      theta = theta,
+      x = rt,
+      dfun1 = dfun1,
+      dfun2 = dfun2,
+      p = p,
+      q = q,
+      incl_mean = incl_mean,
+      extra_par = extra_par,
+      skew_par = skew_par,
+      int_fun = int_fun,
+      sigt_fun = sigt_fun
+    )
+  }
+
+  vals <- lookup_table[["vals"]][[cond_d]]
+
+  sval <- vals[[1]]
+  lval <- vals[[2]]
+  uval <- vals[[3]]
+
+  if (lm) {
+    d_spar <- 0.1
+    d_low <- 0
+    d_up <- 0.4999
+    d_name <- "d"
+  } else {
+    d_spar <- d_low <- d_up <- numeric(0)
+    d_name <- character(0)
+  }
+
+  if (is.null(start_pars)) {
+
+    start_pars <- c(
+      list(NULL, 0.0001)[[incl_mean + 1]],
+      -11,
+      rep(0.2, p),
+      rep(-0.1, q),
+      d_spar,
+      sval,
+      list(NULL, 1)[[skew_par + 1]]
+    )
+
+  }
+
+  if (is.null(LB)) {
+
+    LB <- c(
+      list(NULL, -0.1)[[incl_mean + 1]],
+      -15,
+      rep(-2, p),
+      rep(-2, q),
+      d_low,
+      lval,
+      list(NULL, 1e-15)[[skew_par + 1]]
+    )
+
+  }
+
+  if (is.null(UB)) {
+
+    UB <- c(
+      list(NULL, 0.1)[[incl_mean + 1]],
+      -3,
+      rep(2, p),
+      rep(2, q),
+      d_up,
+      uval,
+      list(NULL, Inf)[[skew_par + 1]]
+    )
+
+  }
+
+  result <- suppressWarnings(Rsolnp::solnp(
+    pars = start_pars,
+    fun = goal_fun,
+    LB = LB,
+    UB = UB,
+    control = list(trace = FALSE),
+    rt = rt_core
+  ))
+
+  pars <- result$pars
+  llhood <- -tail(result$values, 1)
+
+  sigt <- sigt_fun(unname(pars), rt_core, dfun1, p, q,
+              incl_mean, extra_par, skew_par,
+              int_fun)$sigt
+
+  mu <- c(0, pars[[1]])[[incl_mean + 1]]
+  etat <- (rt - mu) / sigt
+
+  par_names <- c(
+    list(NULL, "mu")[[incl_mean + 1]],
+    "omega_sig",
+    paste0("phi", 1:p),
+    paste0("psi", 1:q),
+    d_name,
+    list(NULL, c("shape", "df")[[(cond_d %in% c("std", "sstd")) + 1]])[[extra_par + 1]],
+    list(NULL, "skew")[[skew_par + 1]]
+  )
+
+  serrors <- sqrt(diag(solve(result$hessian)))
+  names(pars) <- par_names
+  names(serrors) <- par_names
+
+  k <- length(pars)
+  n <- length(rt)
+
+  m2llhood <- -2 * llhood
+  bic <- (m2llhood + k * log(n)) / n
+  aic <- (m2llhood + 2 * k) / n
+
+  if (inherits(rt, what = "zoo")) {
+    tp <- as.Date(time(rt))
+    sigt <- zoo::zoo(sigt, order.by = tp)
+    etat <- zoo::zoo(etat, order.by = tp)
+  }
+
+  list_out <- fEGarch_fit_loggarch(
+    pars = pars,
+    se = serrors,
+    rt = rt,
+    sigt = sigt,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = c("aic" = aic, "bic" = bic),
+    cond_dist = cond_d,
+    orders = order,
+    long_memo = lm
+  )
+
+  list_out
+  })
+
+#'@export
+setMethod(
+  "show",
+  "fEGarch_fit_egarch",
+  function(object) {
+  x <- object
+  par_names <- names(x@pars)
+  se <- unname(x@se)
+  pars <- unname(x@pars)
+
+  tvals <- pars / se
+  atvals <- abs(tvals)
+
+  pvals <- 2 * (1 - pnorm(atvals))
+
+  df <- data.frame(
+    par = sprintf("%.4f", pars),
+    se = sprintf("%.4f", se),
+    tval = sprintf("%.4f", tvals),
+    pval = sprintf("%.4f", pvals)
+  )
+  row.names(df) <- par_names
+
+  part1 <- paste0(
+    "*************************************\n",
+    "*     Fitted EGARCH Family Model    *\n",
+    "*************************************\n",
+    " \n",
+    "Type: eGARCH\n",
+    "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
+    "Modulus: (", x@modulus[[1]], ", ", x@modulus[[2]], ")\n",
+    "Powers: (", x@powers[[1]], ", ", x@powers[[2]], ")\n",
+    "Long memory: ", x@long_memo, "\n",
+    "Cond. distribution: ", x@cond_dist, "\n",
+    " \n",
+    "Fitted parameters:\n"
+  )
+
+  part2 <- paste0(
+    " \n",
+    "Information criteria:\n",
+    "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
+    ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
+  )
+
+  cat(part1, fill = TRUE)
+  print(df)
+  cat(part2, fill = TRUE)
+  }
+)
+
+#'@export
+setMethod(
+  "show",
+  "fEGarch_fit_loggarch",
+  function(object) {
+  x <- object
+  par_names <- names(x@pars)
+  se <- unname(x@se)
+  pars <- unname(x@pars)
+
+  tvals <- pars / se
+  atvals <- abs(tvals)
+
+  pvals <- 2 * (1 - pnorm(atvals))
+
+  df <- data.frame(
+    par = sprintf("%.4f", pars),
+    se = sprintf("%.4f", se),
+    tval = sprintf("%.4f", tvals),
+    pval = sprintf("%.4f", pvals)
+  )
+  row.names(df) <- par_names
+
+  part1 <- paste0(
+    "*************************************\n",
+    "*     Fitted EGARCH Family Model    *\n",
+    "*************************************\n",
+    " \n",
+    "Type: logGARCH\n",
+    "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
+    "Long memory: ", x@long_memo, "\n",
+    "Cond. distribution: ", x@cond_dist, "\n",
+    " \n",
+    "Fitted parameters:\n"
+  )
+
+  part2 <- paste0(
+    " \n",
+    "Information criteria:\n",
+    "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
+    ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
+  )
+
+  cat(part1, fill = TRUE)
+  print(df)
+  cat(part2, fill = TRUE)
+  }
+)

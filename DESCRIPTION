@@ -36,7 +36,8 @@ Collate:
   'RcppExports.R'
   'DistributionFunctions.R'
   'generics.R'
-  'input_checkers_egarch_spec.R'  
+  'input_checkers_egarch_spec.R' 
+  'fEGarch_fit.R'
   'class-egarch-spec.R'
   'goal-function-creator.R'
   'FittingHelpers.R'
@@ -46,4 +47,5 @@ Depends:
     R (>= 2.10),
     Rcpp,
     Rsolnp,
-    esemifar
+    esemifar,
+    zoo

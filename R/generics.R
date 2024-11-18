@@ -54,3 +54,30 @@ setGeneric("cond_dist<-", function(x, value) {standardGeneric("cond_dist<-")})
 #'@export
 #'@rdname spec_generics
 setGeneric("include_mean<-", function(x, value) {standardGeneric("include_mean<-")})
+
+
+#====================================================#
+
+#'An EGARCH Family Fitting Generic
+#'
+#'A base generic to build further EGARCH fitting methods.
+#'It is in itself without use.
+#'
+#'@param spec the model specification object.
+#'@param rt the (log-)return series.
+#'@param start_pars a vector of the length of the output parameter
+#'vector with suitable, corresponding starting values for the
+#'optimization procedure.
+#'@param LB a vector of the length of the output parameter
+#'vector with suitable, corresponding lower boundary values for the
+#'optimization procedure.
+#'@param UB a vector of the length of the output parameter
+#'vector with suitable, corresponding upper boundary values for the
+#'optimization procedure.
+#'
+#'@details
+#'This generic itself is without use.
+#'
+#'
+#'
+setGeneric("fEGarch_fit", function(spec, rt, start_pars = NULL, LB = NULL, UB = NULL) {standardGeneric("fEGarch_fit")})

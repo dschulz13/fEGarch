@@ -54,28 +54,66 @@ lookup_table <- list(
   )
 )
 
-fitFUNS <- list(
-  "mloggarch" = fEGarch:::mloggarchFit,
-  "megarch" = fEGarch:::megarchFit,
-  "fiegarch" = fEGarch:::fiegarchFit,
-  "filoggarch" = fEGarch:::filoggarchFit,
-  "mafiloggarch" = fEGarch:::mafiloggarchFit
+# fitFUNS <- list(
+#   "mloggarch" = fEGarch:::mloggarchFit,
+#   "megarch" = fEGarch:::megarchFit,
+#   "fiegarch" = fEGarch:::fiegarchFit,
+#   "filoggarch" = fEGarch:::filoggarchFit,
+#   "mafiloggarch" = fEGarch:::mafiloggarchFit
+# )
+#
+# model_defaults <- data.frame(
+#     Model = c("eGARCH", "meGARCH", "mlogGARCH", "filogGARCH",
+#               "fieGARCH", "mafilogGARCH", "feGARCH", "logGARCH"),
+#     powerTransf1 = c(1, 0, 0, 0, 1, 0, NA_real_, 0),
+#     powerTransf2 = c(1, 1, 0, 0, 1, 0, NA_real_, 0),
+#     longMemo = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE),
+#     modulus1 = c(FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, FALSE, FALSE),
+#     modulus2 = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
+#     model_type = c(2, 2, 2, 1, 2, 2, 2, 1)
+#   )
+
+# rnames <- model_defaults[, 1]
+# model_defaults <- model_defaults[, -1]
+# row.names(model_defaults) <- rnames
+
+exp_funs <- list(
+  "asy" = list(
+    list(
+      function(x, pow, shape, skew, dfun) {sign(x) * log(abs(x)) * dfun(x, shape = shape, skew = skew)},
+      function(x, pow, shape, skew, dfun) {sign(x) * abs(x)^pow / pow * dfun(x, shape = shape, skew = skew)}
+    ),
+    list(
+      function(x, pow, shape, skew, dfun) {sign(x) * log(abs(x) + 1) * dfun(x, shape = shape, skew = skew)},
+      function(x, pow, shape, skew, dfun) {sign(x) * (abs(x) + 1)^pow / pow * dfun(x, shape = shape, skew = skew)}
+    )
+  ),
+  "mag" = list(
+    list(
+      function(x, pow, shape, skew, dfun) {log(abs(x)) * dfun(x, shape = shape, skew = skew)},
+      function(x, pow, shape, skew, dfun) {abs(x)^pow / pow * dfun(x, shape = shape, skew = skew)}
+    ),
+    list(
+      function(x, pow, shape, skew, dfun) {log(abs(x) + 1) * dfun(x, shape = shape, skew = skew)},
+      function(x, pow, shape, skew, dfun) {(abs(x) + 1)^pow / pow * dfun(x, shape = shape, skew = skew)}
+    )
+  )
 )
 
-model_defaults <- data.frame(
-    Model = c("eGARCH", "meGARCH", "mlogGARCH", "filogGARCH",
-              "fieGARCH", "mafilogGARCH", "feGARCH", "logGARCH"),
-    powerTransf1 = c(1, 0, 0, 0, 1, 0, NA_real_, 0),
-    powerTransf2 = c(1, 1, 0, 0, 1, 0, NA_real_, 0),
-    longMemo = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE),
-    modulus1 = c(FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, FALSE, FALSE),
-    modulus2 = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
-    model_type = c(2, 2, 2, 1, 2, 2, 2, 1)
-  )
+mode_mat <- matrix(NA, nrow = 2, ncol = 2)
+mode_mat[1, 1] <- "log_log"
+mode_mat[2, 2] <- "pow_pow"
+mode_mat[1, 2] <- "log_pow"
+mode_mat[2, 1] <- "pow_log"
 
-rnames <- model_defaults[, 1]
-model_defaults <- model_defaults[, -1]
-row.names(model_defaults) <- rnames
+sigt_funs_egarch <- list(
+  fEGarch:::sigt_egarch_short_R,
+  fEGarch:::sigt_egarch_long_R
+)
 
+sigt_funs_loggarch <- list(
+  fEGarch:::sigt_loggarch_short_R,
+  fEGarch:::sigt_loggarch_long_R
+)
 
-#usethis::use_data(lookup_table, fitFUNS, model_defaults, internal = TRUE, overwrite = TRUE)
+#usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, internal = TRUE, overwrite = TRUE)

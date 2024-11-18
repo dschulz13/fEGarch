@@ -3,10 +3,13 @@
 #'Use maximum-likelihood estimation to fit a model from the
 #'broader EGARCH family to some observed time series.
 #'
+#'@param spec an S4 object of class \code{"egarch_type_spec"}
+#'or \code{"loggarch_type_spec"} as returned by the various spec
+#'functions of this package, for example \link[fEGarch]{fEGarch_spec}
+#'or its wrappers like \link[fEGarch]{megarch_spec} or
+#'\link[fEGarch]{mloggarch_spec}, among others.
 #'@param rt the input time series to fit the model to ordered from
-#'past to present.
-#'@param spec an S4 object of class \code{"egarch_spec"} that can
-#'be created via the function \code{egarch_spec()}.
+#'past to present; can also be a \code{"zoo"} class object.
 #'@param start_pars a vector with starting parameters for the
 #'optimization; must be of the same length as the output vector of
 #'parameters; the default NULL uses internally saved default sets
@@ -26,50 +29,17 @@
 #'@useDynLib fEGarch
 #'
 #'@details
-#'To be filled soon.
+#'For details on the models, see \link[fEGarch]{fEGarch_spec}. The
+#'specified models are then fitted using quasi maximum likelihood estimation,
+#'where initial values are obtained from their theoretical expectations.
 #'
 
 
-fEGarchFit <- function(rt,
-    spec = egarch_spec(),
+fEGarch <- function(spec = egarch_spec(),
+    rt,
     start_pars = NULL, LB = NULL, UB = NULL) {
 
-  model <- match.arg(model)
-  cond_dist <- match.arg(cond_dist)
-
-  fitFUN <- fitFUNS[[model]]
-
-  fitFUN(
-    rt = rt,
-    order = order,
-    include_mean = include_mean,
-    cond_dist = cond_dist,
-    start_pars = start_pars,
-    LB = LB,
-    UB = UB
-  )
+  fEGarch_fit(spec, rt, start_pars, LB, UB)
 
 }
 
-
-# fEGarchFit <- function(rt, spec) {
-#   dist <- spec@distribution
-#   orders <- spec@garch_order
-#   p <- orders[[1]]
-#   q <- orders[[2]]
-#
-#   llikhood <- llikhood
-#   stopifnot("Test" = is.function(llikhood))
-#
-#   stats::nlminb(
-#     start = c(0, 0, rep(0, p), rep(0, p), rep(0, q), 1, 1),
-#     objective = llikhood,
-#     rt = rt, p = p, q = q, dist = dist, include_mean = TRUE,
-#     lower = c(-Inf, -Inf, rep(-Inf, 2 * p + q), 0, 0),
-#     upper = c(Inf, Inf, rep(Inf, 2 * p + q), 2, 2),
-#     control = list(trace = 0)
-#
-#
-#   )
-#
-# }

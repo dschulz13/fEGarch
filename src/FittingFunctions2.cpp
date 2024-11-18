@@ -7,41 +7,14 @@ int signCpp(const double val) {
     return (0.0 < val) - (val < 0.0);
 }
 
-// // [[Rcpp::export]]
-// double powTransfAsyCpp(const double val, const double power, const double mod,
-//                          const double E) {
-//     return signCpp(val) * (std::pow(std::abs(val) + mod, power) - E) / power;
-// }
-//
-// // [[Rcpp::export]]
-// double powTransfMagCpp(const double val, const double power, const double mod,
-//                          const double E) {
-//     return (std::pow(std::abs(val) + mod, power) - E) / power;
-// }
-//
-// // [[Rcpp::export]]
-// double logTransfAsyCpp(const double val, const double mod,
-//                          const double E) {
-//     return signCpp(val) * (std::log(std::abs(val) + mod) - E);
-// }
-//
-// // [[Rcpp::export]]
-// double logTransfMagCpp(const double val, const double mod,
-//                          const double E) {
-//     return std::log(std::abs(val) + mod) - E;
-// }
-
-
-////////////////////////////////////////
-
 // [[Rcpp::export]]
-arma::vec sigt_egarch_short(const arma::vec& x, const double mu,
+arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
                                const double omega,
                                const arma::rowvec& phi,
                                const arma::rowvec& alpha,
                                const arma::rowvec& beta,
-                               const double E1,
-                               const double E2,
+                               const double E_asy,
+                               const double E_mag,
                                const double Elnsig2,
                                const arma::vec& powers,
                                const arma::vec& modulus,
@@ -75,32 +48,32 @@ arma::vec sigt_egarch_short(const arma::vec& x, const double mu,
   std::function<double(double)> compute_abs_eta_pow2;
 
   if (mode == "pow_pow") {
-    compute_abs_eta_pow1 = [pow1, mod1, E1](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E1) / pow1;
+    compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
+      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
     };
-    compute_abs_eta_pow2 = [pow2, mod2, E2](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E2) / pow2;
+    compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
     };
   } else if (mode == "log_log") {
-    compute_abs_eta_pow1 = [mod1, E1](double eta_i) {
-      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E1;
+    compute_abs_eta_pow1 = [mod1, E_asy](double eta_i) {
+      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E_asy;
     };
-    compute_abs_eta_pow2 = [mod2, E2](double eta_i) {
-      return std::log(std::abs(eta_i) + mod2) - E2;
+    compute_abs_eta_pow2 = [mod2, E_mag](double eta_i) {
+      return std::log(std::abs(eta_i) + mod2) - E_mag;
     };
   } else if (mode == "pow_log") {
-    compute_abs_eta_pow1 = [pow1, mod1, E1](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E1) / pow1;
+    compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
+      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
     };
-    compute_abs_eta_pow2 = [mod2, E2](double eta_i) {
-      return std::log(std::abs(eta_i) + mod2) - E2;
+    compute_abs_eta_pow2 = [mod2, E_mag](double eta_i) {
+      return std::log(std::abs(eta_i) + mod2) - E_mag;
     };
   } else if (mode == "log_pow") {
-    compute_abs_eta_pow1 = [mod1, E1](double eta_i) {
-      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E1;
+    compute_abs_eta_pow1 = [mod1, E_asy](double eta_i) {
+      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E_asy;
     };
-    compute_abs_eta_pow2 = [pow2, mod2, E2](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E2) / pow2;
+    compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
     };
   } else {
     Rcpp::stop("Invalid mode specified");
@@ -128,15 +101,12 @@ arma::vec sigt_egarch_short(const arma::vec& x, const double mu,
 }
 
 
-
-////////////////////////////////////////
-
 // [[Rcpp::export]]
-arma::vec sigt_egarch_long(const arma::vec& x, const double mu,
+arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
                        const arma::rowvec& alpha,
                        const arma::rowvec& beta,
-                       const double E1,
-                       const double E2,
+                       const double E_asy,
+                       const double E_mag,
                        const double Elnsig2,
                        const arma::vec& powers,
                        const arma::vec& modulus,
@@ -166,32 +136,32 @@ arma::vec sigt_egarch_long(const arma::vec& x, const double mu,
   std::function<double(double)> compute_abs_eta_pow2;
 
   if (mode == "pow_pow") {
-    compute_abs_eta_pow1 = [pow1, mod1, E1](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E1) / pow1;
+    compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
+      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
     };
-    compute_abs_eta_pow2 = [pow2, mod2, E2](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E2) / pow2;
+    compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
     };
   } else if (mode == "log_log") {
-    compute_abs_eta_pow1 = [mod1, E1](double eta_i) {
-      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E1;
+    compute_abs_eta_pow1 = [mod1, E_asy](double eta_i) {
+      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E_asy;
     };
-    compute_abs_eta_pow2 = [mod2, E2](double eta_i) {
-      return std::log(std::abs(eta_i) + mod2) - E2;
+    compute_abs_eta_pow2 = [mod2, E_mag](double eta_i) {
+      return std::log(std::abs(eta_i) + mod2) - E_mag;
     };
   } else if (mode == "pow_log") {
-    compute_abs_eta_pow1 = [pow1, mod1, E1](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E1) / pow1;
+    compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
+      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
     };
-    compute_abs_eta_pow2 = [mod2, E2](double eta_i) {
-      return std::log(std::abs(eta_i) + mod2) - E2;
+    compute_abs_eta_pow2 = [mod2, E_mag](double eta_i) {
+      return std::log(std::abs(eta_i) + mod2) - E_mag;
     };
   } else if (mode == "log_pow") {
-    compute_abs_eta_pow1 = [mod1, E1](double eta_i) {
-      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E1;
+    compute_abs_eta_pow1 = [mod1, E_asy](double eta_i) {
+      return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E_asy;
     };
-    compute_abs_eta_pow2 = [pow2, mod2, E2](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E2) / pow2;
+    compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
     };
   } else {
     Rcpp::stop("Invalid mode specified");
@@ -217,12 +187,10 @@ arma::vec sigt_egarch_long(const arma::vec& x, const double mu,
 
 }
 
-////////////////////////////////////////
-
 // [[Rcpp::export]]
 arma::vec sigt_loggarch_long(const arma::vec& x, const double mu,
                        const arma::rowvec& coef_inf,
-                       const double E1,
+                       const double Elneta2,
                        const double Elnsig2) {
 
   const int n = x.size();
@@ -248,7 +216,7 @@ arma::vec sigt_loggarch_long(const arma::vec& x, const double mu,
 
     sigt(i) = std::exp(lnsig2(il) / 2.0);
     eta_i = x_cent(i) / sigt(i);
-    epst(il) = std::log(std::pow(eta_i, 2.0)) - E1;
+    epst(il) = std::log(std::pow(eta_i, 2.0)) - Elneta2;
 
   }
 
@@ -261,7 +229,7 @@ arma::vec sigt_loggarch_short(const arma::vec& x, const double mu,
                        const double omega,
                        const arma::rowvec& phi,
                        const arma::rowvec& psi,
-                       const double E1,
+                       const double Elneta2,
                        const double Elnsig2) {
 
   const int n = x.size();
@@ -296,7 +264,7 @@ arma::vec sigt_loggarch_short(const arma::vec& x, const double mu,
 
     sigt(i) = std::exp(lnsig2(il) / 2.0);
     eta_i = x_cent(i) / sigt(i);
-    series_innov(il) = std::log(std::pow(eta_i, 2.0)) - E1;
+    series_innov(il) = std::log(std::pow(eta_i, 2.0)) - Elneta2;
 
   }
 
