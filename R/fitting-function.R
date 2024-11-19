@@ -28,6 +28,25 @@
 #'@importFrom Rcpp evalCpp
 #'@useDynLib fEGarch
 #'
+#'@return
+#'An object of S4-class \code{"fEGarch_fit_egarch"} \code{"fEGarch_fit_loggarch"}
+#'is returned depending on the selected model type in the model
+#'specification. It contains the following elements.
+#'\describe{
+#'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
+#'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
+#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
+#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
+#'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
+#'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
+#'\item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
+#'\item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
+#'\item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
+#'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
+#'\item{\code{powers}:}{a two-element numeric vector stating the powers considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
+#'\item{\code{modulus}:}{a two-element logical vector stating the modulus transformations (\code{TRUE}, otherwise \code{FALSE}) considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
+#'}
+#'
 #'@details
 #'For details on the models, see \link[fEGarch]{fEGarch_spec}. The
 #'specified models are then fitted using quasi maximum likelihood estimation,

@@ -40,7 +40,6 @@ Collate:
   'fEGarch_fit.R'
   'class-egarch-spec.R'
   'goal-function-creator.R'
-  'FittingHelpers.R'
   'fitting-function.R'
   'sim-functions.R'
 Depends: 

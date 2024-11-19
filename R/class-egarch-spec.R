@@ -623,10 +623,10 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
 
   E_asy <- integrate(int_fun_asy, -Inf, Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
-                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
   E_mag <- integrate(int_fun_mag, -Inf, Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[2]],
-                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
 
   Elnsig2 <- omega_sig
   omega <- Elnsig2 * (1- sum(phi))
@@ -694,10 +694,10 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
 
   E_asy <- integrate(int_fun_asy, -Inf, Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
-                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
   E_mag <- integrate(int_fun_mag, -Inf, Inf, shape = shape, skew = skew,
-                  dfun = dfun1, pow = pows[[1]],
-                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+                  dfun = dfun1, pow = pows[[2]],
+                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
 
   sigt <- c(sigt_egarch_longCpp(
     x = x,
@@ -828,7 +828,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     start_pars <- c(
       list(NULL, 0)[[incl_mean + 1]],
-      -11,
+      -9,
       rep(0, p),
       rep(0, q - 1),
       rep(0, 2),
@@ -843,7 +843,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     LB <- c(
       list(NULL, -2)[[incl_mean + 1]],
-      -20,
+      -15,
       rep(-2, p),
       rep(-2, q - 1),
       rep(-2, 2),
@@ -858,7 +858,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     UB <- c(
       list(NULL, 2)[[incl_mean + 1]],
-      20,
+      -3,
       rep(2, p),
       rep(2, q - 1),
       rep(2, 2),
@@ -1124,7 +1124,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     start_pars <- c(
       list(NULL, 0.0001)[[incl_mean + 1]],
-      -11,
+      -9,
       rep(0.2, p),
       rep(-0.1, q),
       d_spar,
