@@ -621,12 +621,14 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
   alpha <- psi * kappa
   beta <- psi * gamma
 
-  E_asy <- integrate(int_fun_asy, -Inf, Inf, shape = shape, skew = skew,
+  E_asy <- integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
-                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
-  E_mag <- integrate(int_fun_mag, -Inf, Inf, shape = shape, skew = skew,
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+  E_mag <- integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[2]],
-                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
 
   Elnsig2 <- omega_sig
   omega <- Elnsig2 * (1- sum(phi))
@@ -692,12 +694,14 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
   alpha <- coef_inf * kappa
   beta <- coef_inf * gamma
 
-  E_asy <- integrate(int_fun_asy, -Inf, Inf, shape = shape, skew = skew,
+  E_asy <- integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
-                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
-  E_mag <- integrate(int_fun_mag, -Inf, Inf, shape = shape, skew = skew,
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+  E_mag <- integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[2]],
-                  abs.tol = 1e-15, subdivisions = 10000L)[[1]]
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
 
   sigt <- c(sigt_egarch_longCpp(
     x = x,
@@ -831,7 +835,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       -9,
       rep(0, p),
       rep(0, q - 1),
-      rep(0, 2),
+      0, 0,
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -967,9 +971,10 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
     skew <- 0
   }
 
-  Elneta2 <- integrate(int_fun, -Inf, Inf, shape = shape, skew = skew,
+  Elneta2 <- integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
-                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
 
   Elnsig2 <- omega_sig
   omega <- omega_sig * (1 - sum(phi))
@@ -1013,9 +1018,10 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
     skew <- 0
   }
 
-  Elneta2 <- integrate(int_fun, -Inf, Inf, shape = shape, skew = skew,
+  Elneta2 <- integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
-                  abs.tol = 1e-15, subdivisions = 1000L)[[1]]
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
 
   n <- length(x)
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,

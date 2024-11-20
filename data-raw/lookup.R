@@ -31,10 +31,10 @@ lookup_table <- list(
   vals = list(
     "norm" = list(NULL, NULL, NULL),
     "std" = list(10, 4, Inf),
-    "ged" = list(2, 1e-15, Inf),
+    "ged" = list(2, 1, Inf),
     "snorm" = list(NULL, NULL, NULL),
     "sstd" = list(10, 4, Inf),
-    "sged" = list(2, 1e-15, Inf)
+    "sged" = list(2, 1, Inf)
   ),
   extra_par = list(
     "norm" = FALSE,
@@ -81,21 +81,21 @@ exp_funs <- list(
   "asy" = list(
     list(
       function(x, pow, shape, skew, dfun) {sign(x) * log(abs(x)) * dfun(x, shape = shape, skew = skew)},
-      function(x, pow, shape, skew, dfun) {sign(x) * abs(x)^pow / pow * dfun(x, shape = shape, skew = skew)}
+      function(x, pow, shape, skew, dfun) {sign(x) * abs(x)^pow * dfun(x, shape = shape, skew = skew)}
     ),
     list(
       function(x, pow, shape, skew, dfun) {sign(x) * log(abs(x) + 1) * dfun(x, shape = shape, skew = skew)},
-      function(x, pow, shape, skew, dfun) {sign(x) * (abs(x) + 1)^pow / pow * dfun(x, shape = shape, skew = skew)}
+      function(x, pow, shape, skew, dfun) {sign(x) * (abs(x) + 1)^pow * dfun(x, shape = shape, skew = skew)}
     )
   ),
   "mag" = list(
     list(
       function(x, pow, shape, skew, dfun) {log(abs(x)) * dfun(x, shape = shape, skew = skew)},
-      function(x, pow, shape, skew, dfun) {abs(x)^pow / pow * dfun(x, shape = shape, skew = skew)}
+      function(x, pow, shape, skew, dfun) {abs(x)^pow * dfun(x, shape = shape, skew = skew)}
     ),
     list(
       function(x, pow, shape, skew, dfun) {log(abs(x) + 1) * dfun(x, shape = shape, skew = skew)},
-      function(x, pow, shape, skew, dfun) {(abs(x) + 1)^pow / pow * dfun(x, shape = shape, skew = skew)}
+      function(x, pow, shape, skew, dfun) {(abs(x) + 1)^pow * dfun(x, shape = shape, skew = skew)}
     )
   )
 )

@@ -8,7 +8,8 @@ absMomentNorm <- function(order) {
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf,
-                subdivisions = 1000L, abs.tol = 1e-15)[[1]]
+                subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                stop.on.error = FALSE)[[1]]
 }
 
 ## Absolute moments t-distr.
@@ -21,7 +22,8 @@ absMomentStd <- function(order, df) {
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf, df = df,
-                subdivisions = 1000L, abs.tol = 1e-15)[[1]]
+                subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                stop.on.error = FALSE)[[1]]
 
 }
 
@@ -36,7 +38,8 @@ absMomentGED <- function(order, shape) {
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf, shape = shape,
-                subdivisions = 1000L, abs.tol = 1e-15)[[1]]
+                subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                stop.on.error = FALSE)[[1]]
 
 }
 
