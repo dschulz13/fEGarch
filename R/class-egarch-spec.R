@@ -978,13 +978,18 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
 
   Elnsig2 <- omega_sig
   omega <- omega_sig * (1 - sum(phi))
+  l <- max(p, q)
+  phi_s <- psi_s <- rep(0, l)
+  phi_s[1:p] <- phi
+  psi_s[1:q] <- psi
+  alpha <- phi_s + psi_s
 
   sigt <- c(sigt_loggarch_short(
     x = x,
     mu = mu,
     omega = omega,
     phi = phi,
-    psi = psi,
+    psi = alpha,
     Elneta2 = Elneta2,
     Elnsig2 = Elnsig2
   ))
