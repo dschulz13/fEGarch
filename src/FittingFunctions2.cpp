@@ -271,3 +271,32 @@ arma::vec sigt_loggarch_short(const arma::vec& x, const double mu,
   return sigt;
 
 }
+
+// [[Rcpp::export]]
+arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
+                       const arma::rowvec& coef_inf,
+                       const double gamma,
+                       const double delta,
+                       const double E_g_delta,
+                       const double omega_sig) {
+
+  const int n = x.size();
+  const int l = n + 1000;
+  arma::vec sig_delta = arma::vec(n).fill(0);
+
+  const arma::vec x_cent = x - mu;
+  arma::vec g_fun = arma::vec(l).fill(E_g_delta);
+  g_fun.subvec(1000, l - 1) = arma::pow(arma::abs(x_cent) - gamma * x_cent, delta);
+
+  const arma::rowvec coef_r = arma::reverse(coef_inf);
+
+  for (int i = 0; i < n; ++i) {
+
+    sig_delta(i) = omega_sig +
+      arma::as_scalar(coef_r.subvec(l - 1000 - i, l - 1) * g_fun.subvec(0, 999 + i));
+
+  }
+
+  return arma::pow(sig_delta, 1.0 / delta);
+
+}
