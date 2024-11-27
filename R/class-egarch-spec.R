@@ -631,7 +631,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
                   stop.on.error = FALSE)[[1]]
 
   Elnsig2 <- omega_sig
-  omega <- Elnsig2 * (1- sum(phi))
+  omega <- Elnsig2 * (1 - sum(phi))
 
   sigt <- c(sigt_egarch_shortCpp(
     x = x,
@@ -691,9 +691,6 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
                                      max_i = n - 1)
 
-  alpha <- coef_inf * kappa
-  beta <- coef_inf * gamma
-
   E_asy <- integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
@@ -706,8 +703,9 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
   sigt <- c(sigt_egarch_longCpp(
     x = x,
     mu = mu,
-    alpha = alpha,
-    beta = beta,
+    coef_inf = coef_inf,
+    kappa = kappa,
+    gamma = gamma,
     E_asy = E_asy,
     E_mag = E_mag,
     Elnsig2 = Elnsig2,

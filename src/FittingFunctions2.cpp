@@ -103,8 +103,9 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
-                       const arma::rowvec& alpha,
-                       const arma::rowvec& beta,
+                       const arma::rowvec& coef_inf,
+                       const double kappa,
+                       const double gamma,
                        const double E_asy,
                        const double E_mag,
                        const double Elnsig2,
@@ -115,14 +116,12 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
   const int n = x.size();
   const int n1 = n + 1;
   arma::vec lnsig2 = arma::vec(n1).fill(0);
-  arma::vec series_alpha = arma::vec(n1).fill(0);
-  arma::vec series_beta = arma::vec(n1).fill(0);
+  arma::vec series_g = arma::vec(n1).fill(0);
 
   const arma::vec x_cent = x - mu;
   arma::vec sigt = arma::zeros<arma::vec>(n);
 
-  const arma::rowvec alpha_r = arma::reverse(alpha);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::rowvec coef_r = arma::reverse(coef_inf);
   double eta_i;
 
   int il;
@@ -172,14 +171,12 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
     il = i + 1;
 
     lnsig2(il) = Elnsig2 +
-      arma::as_scalar(alpha_r.subvec(nm1 - i, nm1) * series_alpha.subvec(0, i)) +
-      arma::as_scalar(beta_r.subvec(nm1 - i, nm1) * series_beta.subvec(0, i));
+      arma::as_scalar(coef_r.subvec(nm1 - i, nm1) * series_g.subvec(0, i));
 
     sigt(i) = std::exp(lnsig2(il) / 2.0);
     eta_i = x_cent(i) / sigt(i);
 
-    series_alpha(il) = compute_abs_eta_pow1(eta_i);
-    series_beta(il) = compute_abs_eta_pow2(eta_i);
+    series_g(il) = kappa * compute_abs_eta_pow1(eta_i) + gamma * compute_abs_eta_pow2(eta_i);
 
   }
 
@@ -277,7 +274,6 @@ arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
                        const arma::rowvec& coef_inf,
                        const double gamma,
                        const double delta,
-                       const double E_g_delta,
                        const double omega_sig) {
 
   const int n = x.size();
@@ -285,8 +281,11 @@ arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
   arma::vec sig_delta = arma::vec(n).fill(0);
 
   const arma::vec x_cent = x - mu;
+  const arma::vec transf = arma::pow(arma::abs(x_cent) - gamma * x_cent, delta);
+  //Initialization based on sample
+  const double E_g_delta = arma::mean(transf);
   arma::vec g_fun = arma::vec(l).fill(E_g_delta);
-  g_fun.subvec(1000, l - 1) = arma::pow(arma::abs(x_cent) - gamma * x_cent, delta);
+  g_fun.subvec(1000, l - 1) = transf;
 
   const arma::rowvec coef_r = arma::reverse(coef_inf);
 

@@ -159,22 +159,23 @@ BEGIN_RCPP
 END_RCPP
 }
 // sigt_egarch_longCpp
-arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu, const arma::rowvec& alpha, const arma::rowvec& beta, const double E_asy, const double E_mag, const double Elnsig2, const arma::vec& powers, const arma::vec& modulus, const std::string& mode);
-RcppExport SEXP _fEGarch_sigt_egarch_longCpp(SEXP xSEXP, SEXP muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E_asySEXP, SEXP E_magSEXP, SEXP Elnsig2SEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP) {
+arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf, const double kappa, const double gamma, const double E_asy, const double E_mag, const double Elnsig2, const arma::vec& powers, const arma::vec& modulus, const std::string& mode);
+RcppExport SEXP _fEGarch_sigt_egarch_longCpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP kappaSEXP, SEXP gammaSEXP, SEXP E_asySEXP, SEXP E_magSEXP, SEXP Elnsig2SEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type kappa(kappaSEXP);
+    Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const double >::type E_asy(E_asySEXP);
     Rcpp::traits::input_parameter< const double >::type E_mag(E_magSEXP);
     Rcpp::traits::input_parameter< const double >::type Elnsig2(Elnsig2SEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type powers(powersSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type mode(modeSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_egarch_longCpp(x, mu, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode));
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_longCpp(x, mu, coef_inf, kappa, gamma, E_asy, E_mag, Elnsig2, powers, modulus, mode));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -210,6 +211,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigt_fiaparch_Cpp
+arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf, const double gamma, const double delta, const double omega_sig);
+RcppExport SEXP _fEGarch_sigt_fiaparch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP omega_sigSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega_sig(omega_sigSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_fiaparch_Cpp(x, mu, coef_inf, gamma, delta, omega_sig));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_norm", (DL_FUNC) &_fEGarch_pdf_norm, 3},
@@ -223,9 +240,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},
     {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
     {"_fEGarch_sigt_egarch_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_shortCpp, 12},
-    {"_fEGarch_sigt_egarch_longCpp", (DL_FUNC) &_fEGarch_sigt_egarch_longCpp, 10},
+    {"_fEGarch_sigt_egarch_longCpp", (DL_FUNC) &_fEGarch_sigt_egarch_longCpp, 11},
     {"_fEGarch_sigt_loggarch_long", (DL_FUNC) &_fEGarch_sigt_loggarch_long, 5},
     {"_fEGarch_sigt_loggarch_short", (DL_FUNC) &_fEGarch_sigt_loggarch_short, 7},
+    {"_fEGarch_sigt_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_fiaparch_Cpp, 6},
     {NULL, NULL, 0}
 };
 
