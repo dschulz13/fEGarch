@@ -9,7 +9,7 @@ sigt_fiaparch_R <- function(theta, x, p, q,
   step1 <- step0 + p
   step2 <- step1 + q
   phi <- theta[(step0 + 1):step1]
-  beta <- theta[(step1 + 1):step2]
+  beta <- -theta[(step1 + 1):step2]
   gamma <- theta[[step2 + 1]]
   delta <- theta[[step2 + 2]]
   d <- theta[[step2 + 3]]
@@ -56,6 +56,11 @@ goal_fun_creator_fiaparch <- function(
               incl_mean, extra_par, skew_par)
 
   sigt <- res_list$sigt
+
+  if (any(is.nan(sigt)) || any(sigt <= 0)) {
+    return(1e10)
+  }
+
   mu <- res_list$mu
   skew <- res_list$skew
   shape <- res_list$shape
@@ -116,10 +121,10 @@ fiaparchFit <- function(rt, orders = c(1, 1),
 
     start_pars <- c(
       list(NULL, 0)[[incl_mean + 1]],
-      0.0001,
-      rep(0.2, p),
-      rep(0.1, q),
-      0, 2,
+      0.15,
+      rep(0.2 / p, p),
+      rep(0.4 / q, q),
+      0.2, 2,
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -132,9 +137,9 @@ fiaparchFit <- function(rt, orders = c(1, 1),
     LB <- c(
       list(NULL, -2)[[incl_mean + 1]],
       1e-10,
-      rep(0, p),
-      rep(0, q),
-      -0.9999, 1e-10,
+      rep(1e-6, p),
+      rep(1e-6, q),
+      -0.9999, 1,
       d_low,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
@@ -147,9 +152,9 @@ fiaparchFit <- function(rt, orders = c(1, 1),
     UB <- c(
       list(NULL, 2)[[incl_mean + 1]],
       2,
-      rep(2, p),
-      rep(2, q),
-      0.9999, 4,
+      rep(1 - 1e-6, p),
+      rep(1 - 1e-6, q),
+      0.9999, 5,
       d_up,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
@@ -162,7 +167,7 @@ fiaparchFit <- function(rt, orders = c(1, 1),
     fun = goal_fun,
     LB = LB,
     UB = UB,
-    control = list(trace = TRUE),
+    control = list(trace = FALSE),
     rt = rt_core
   )
 
@@ -179,7 +184,7 @@ fiaparchFit <- function(rt, orders = c(1, 1),
 
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
-    "omega_sig",
+    "omega",
     paste0("phi", 1:p),
     beta_names,
     "gamma",
@@ -189,7 +194,13 @@ fiaparchFit <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  serrors <- sqrt(diag(solve(result$hessian)))
+  serrors <- tryCatch(
+    expr = {sqrt(diag(solve(result$hessian)))},
+    error = function(e1) {
+      warning("Unable to obtain standard errors.")
+      rep(NA, length(pars))
+    }
+  )
   names(pars) <- par_names
   names(serrors) <- par_names
 
@@ -202,8 +213,8 @@ fiaparchFit <- function(rt, orders = c(1, 1),
 
   if (inherits(rt, what = "zoo")) {
     tp <- as.Date(time(rt))
-    sigt <- zoo::zoo(sigt, order.by = tp)
-    etat <- zoo::zoo(etat, order.by = tp)
+    sigt <- zoo::zoo(zoo::coredata(sigt), order.by = tp)
+    etat <- zoo::zoo(zoo::coredata(etat), order.by = tp)
   }
 
   list_out <- list(

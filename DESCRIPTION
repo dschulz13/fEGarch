@@ -42,6 +42,7 @@ Collate:
   'fitting-function.R'
   'sim-functions.R'
   'fiaparchfit.R'
+  'lmgarchfit.R'
 Depends: 
     R (>= 2.10),
     Rcpp,

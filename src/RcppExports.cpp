@@ -227,6 +227,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigt_lmgarch_Cpp
+arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf, const double E_e2);
+RcppExport SEXP _fEGarch_sigt_lmgarch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP E_e2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type E_e2(E_e2SEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_lmgarch_Cpp(x, mu, coef_inf, E_e2));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_norm", (DL_FUNC) &_fEGarch_pdf_norm, 3},
@@ -244,6 +258,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_loggarch_long", (DL_FUNC) &_fEGarch_sigt_loggarch_long, 5},
     {"_fEGarch_sigt_loggarch_short", (DL_FUNC) &_fEGarch_sigt_loggarch_short, 7},
     {"_fEGarch_sigt_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_fiaparch_Cpp, 6},
+    {"_fEGarch_sigt_lmgarch_Cpp", (DL_FUNC) &_fEGarch_sigt_lmgarch_Cpp, 4},
     {NULL, NULL, 0}
 };
 

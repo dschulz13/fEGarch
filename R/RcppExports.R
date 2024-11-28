@@ -61,3 +61,7 @@ sigt_fiaparch_Cpp <- function(x, mu, coef_inf, gamma, delta, omega_sig) {
     .Call('_fEGarch_sigt_fiaparch_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf, gamma, delta, omega_sig)
 }
 
+sigt_lmgarch_Cpp <- function(x, mu, coef_inf, E_e2) {
+    .Call('_fEGarch_sigt_lmgarch_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf, E_e2)
+}
+
