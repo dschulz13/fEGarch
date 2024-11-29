@@ -283,7 +283,8 @@ arma::vec sigt_delta_fiaparch_Cpp(const arma::vec& x, const double mu,
   const arma::vec x_cent = x - mu;
   const arma::vec transf = arma::pow(arma::abs(x_cent) - gamma * x_cent, delta);
   //Initialization based on sample
-  const double E_g_delta = arma::mean(transf);
+  //const double E_g_delta = arma::mean(transf);
+  const double E_g_delta = 0.02;
   arma::vec g_fun = arma::vec(l).fill(E_g_delta);
   g_fun.subvec(1000, l - 1) = transf;
 
