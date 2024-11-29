@@ -270,7 +270,7 @@ arma::vec sigt_loggarch_short(const arma::vec& x, const double mu,
 }
 
 // [[Rcpp::export]]
-arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
+arma::vec sigt_delta_fiaparch_Cpp(const arma::vec& x, const double mu,
                        const arma::rowvec& coef_inf,
                        const double gamma,
                        const double delta,
@@ -296,7 +296,7 @@ arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
 
   }
 
-  return arma::pow(sig_delta, 1.0 / delta);
+  return sig_delta;
 
 }
 

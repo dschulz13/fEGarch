@@ -58,4 +58,32 @@ broader EGARCH family to some observed time series.
 For details on the models, see \link[fEGarch]{fEGarch_spec}. The
 specified models are then fitted using quasi maximum likelihood estimation,
 where initial values are obtained from their theoretical expectations.
+
+The initialization of pre-sample values is always done according to the
+theoretical expectations of the corresponding quantities; in the pre-sample
+values of \eqn{g(\cdot)} are set to its expectation zero. All other possibly
+required pre-sample values are set to their expectation using their formal
+definition including unknown model parameters. These definitions are included
+in the log-likelihood functions and are thus optimized over simultaneously.
+
+See the references section for sources on the EGARCH (Nelson, 1991),
+FIEGARCH (Bollerslev and Mikkelsen, 1996),
+Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
+and FILog-GARCH (Feng et al., 2020) models.
+}
+\references{
+\itemize{
+\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
+73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
+\item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
+Working Papers CIE No. 137, Paderborn University, Center for International Economics.
+URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
+\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
+57-61. DOI: 10.1080/07474938608800088.}
+\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
+\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
+59(2), 347–370. DOI: 10.2307/2938260.}
+\item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
+71-74. DOI: 10.1080/07474938608800089.}
+}
 }

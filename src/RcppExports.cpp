@@ -211,9 +211,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigt_fiaparch_Cpp
-arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf, const double gamma, const double delta, const double omega_sig);
-RcppExport SEXP _fEGarch_sigt_fiaparch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP omega_sigSEXP) {
+// sigt_delta_fiaparch_Cpp
+arma::vec sigt_delta_fiaparch_Cpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf, const double gamma, const double delta, const double omega_sig);
+RcppExport SEXP _fEGarch_sigt_delta_fiaparch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP omega_sigSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -223,7 +223,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const double >::type omega_sig(omega_sigSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_fiaparch_Cpp(x, mu, coef_inf, gamma, delta, omega_sig));
+    rcpp_result_gen = Rcpp::wrap(sigt_delta_fiaparch_Cpp(x, mu, coef_inf, gamma, delta, omega_sig));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -257,7 +257,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_egarch_longCpp", (DL_FUNC) &_fEGarch_sigt_egarch_longCpp, 11},
     {"_fEGarch_sigt_loggarch_long", (DL_FUNC) &_fEGarch_sigt_loggarch_long, 5},
     {"_fEGarch_sigt_loggarch_short", (DL_FUNC) &_fEGarch_sigt_loggarch_short, 7},
-    {"_fEGarch_sigt_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_fiaparch_Cpp, 6},
+    {"_fEGarch_sigt_delta_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_delta_fiaparch_Cpp, 6},
     {"_fEGarch_sigt_lmgarch_Cpp", (DL_FUNC) &_fEGarch_sigt_lmgarch_Cpp, 4},
     {NULL, NULL, 0}
 };
