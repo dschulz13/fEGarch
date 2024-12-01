@@ -1,4 +1,4 @@
-sigt_delta_fiaparch_R <- function(theta, x, p, q,
+sigt_fiaparch_R <- function(theta, x, p, q,
               incl_mean, extra_par, skew_par) {
 
 
@@ -25,10 +25,10 @@ sigt_delta_fiaparch_R <- function(theta, x, p, q,
   }
 
   n <- length(x)
-  coef_inf <- -esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
                                      max_i = n + 1000)[-1]
 
-  sigt_delta <- c(sigt_delta_fiaparch_Cpp(
+  sigt <- c(sigt_fiaparch_Cpp(
     x = x,
     mu = mu,
     coef_inf = coef_inf,
@@ -37,7 +37,7 @@ sigt_delta_fiaparch_R <- function(theta, x, p, q,
     omega_sig = omega_sig
   ))
 
-  list(sigt_d = sigt_delta, mu = mu, skew = skew, shape = shape, d = d)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
 
 }
 
@@ -53,17 +53,10 @@ goal_fun_creator_fiaparch <- function(
     penalty
 ) {
 
-  res_list <- sigt_delta_fiaparch_R(theta, x, p, q,
+  res_list <- sigt_fiaparch_R(theta, x, p, q,
               incl_mean, extra_par, skew_par)
 
-  sigt_d <- res_list$sigt_d
-
-  if (penalty && any(sigt_d <= 0)) {
-    return(1e10)
-  }
-
-  d <- res_list$d
-  sigt <- sigt_d^(1 / d)
+  sigt <- res_list$sigt
 
   mu <- res_list$mu
   skew <- res_list$skew
@@ -85,7 +78,10 @@ goal_fun_creator_fiaparch <- function(
 #'@param rt the observed series ordered from past to present; can be
 #'a numeric vector or a \code{"zoo"} class time series object.
 #'@param orders a two-element numeric vector containing the two model
-#'orders \eqn{p} and \eqn{q} (see Details for more information).
+#'orders \eqn{p} and \eqn{q} (see Details for more information); currently,
+#'only the default \code{orders = c(1, 1)} is supported; other specifications
+#'of a two-element numeric vector will lead to \code{orders = c(1, 1)} being
+#'run and a warning message being returned.
 #'@param cond_dist the conditional distribution to consider as a
 #'character object; the default is a conditional normal distribution
 #'\code{"norm"}; available are also, however, a \eqn{t}-distribution
@@ -140,6 +136,13 @@ goal_fun_creator_fiaparch <- function(
 #'as far back as to the first pre-sample value. Therefore, at observation time point
 #'\eqn{t=1,\dots,n}, a truncation of 1000 + t - 1 coefficients is considered.
 #'
+#'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
+#'to ensure the non-negativity of all of the infinite-order coefficient series
+#'\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
+#'with \eqn{\omega>0} ensures that all the conditional volatilities
+#'are greater than zero, we employ the sufficient conditions mentioned
+#'in Footnote 6 in Tse (1998) in the optimization problem.
+#'
 #'See also the reference section for sources on the APARCH (Ding et al., 1993)
 #'and the FIAPARCH (Tse, 1998) models.
 #'
@@ -177,6 +180,12 @@ fiaparch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL) {
 
   rt_core <- zoo::coredata(rt)
+
+  if (!all(orders == c(1, 1))) {
+    orders <- c(1, 1)
+    message("Only orders p=1 with q=1 are currently supported for FIAPARCH models.")
+  }
+
   p <- orders[[1]]
   q <- orders[[2]]
 
@@ -200,26 +209,10 @@ fiaparch <- function(rt, orders = c(1, 1),
      incl_mean = incl_mean,
      extra_par = extra_par,
      skew_par = skew_par,
-     penalty = TRUE
+     penalty = FALSE
     )
 
   }
-
-  # goal_fun2 <- function(theta, rt) {
-  #
-  #   goal_fun_creator_fiaparch(
-  #    theta = theta,
-  #    x = rt,
-  #    pdf_fun2 = pdf_fun2,
-  #    p = p,
-  #    q = q,
-  #    incl_mean = incl_mean,
-  #    extra_par = extra_par,
-  #    skew_par = skew_par,
-  #    penalty = FALSE
-  #   )
-  #
-  # }
 
   vals <- lookup_table[["vals"]][[cond_d]]
 
@@ -239,7 +232,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       0.01,
       rep(0.2 / p, p),
       rep(0.4 / q, q),
-      0.2, 2,
+      0.1, 2,
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -251,10 +244,10 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     LB <- c(
       list(NULL, -2)[[incl_mean + 1]],
-      1e-10,
+      1e-6,
       rep(1e-6, p),
       rep(1e-6, q),
-      -0.9999, 1,
+      -1 + 1e-6, 1,
       d_low,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
@@ -269,7 +262,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       2,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      0.9999, 5,
+      1 - 1e-6, 5,
       d_up,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
@@ -277,58 +270,50 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   }
 
+  ineq_fun <- function(theta, rt) {
+    imean <- !incl_mean
+    step0 <- 2 - imean
+    step1 <- step0 + p
+    step2 <- step1 + q
+    phi <- theta[(step0 + 1):step1]
+    beta <- theta[(step1 + 1):step2]
+    d <- theta[[step2 + 3]]
+
+    r1 <- phi - beta + d
+    r2 <- (2 - d) / 3 - phi
+    r3 <- beta * r1 - d * (phi - (1 - d) / 2)
+
+    c(r1, r2, r3)
+
+  }
 
   result <- tryCatch(
-    expr = {suppressWarnings(Rsolnp::solnp(
-    pars = start_pars,
-    fun = goal_fun,
-    LB = LB,
-    UB = UB,
-    control = list(trace = TRUE, tol = 1e-6),
-    rt = rt_core
-  ))
-  }, error = function(e1) {stop("Convergence failed.")})
+    expr = {
+      suppressWarnings(Rsolnp::solnp(
+        pars = start_pars,
+        fun = goal_fun,
+        LB = LB,
+        UB = UB,
+        control = list(trace = FALSE),
+        ineqfun = ineq_fun,
+        ineqLB = c(0, 0, 0),
+        ineqUB = c(Inf, Inf, Inf),
+        rt = rt_core
+      ))
+    },
+    error = function(e1) {
+      stop("Convergence failed.", call. = FALSE)
+    }
+  )
+
 
   pars <- result$pars
 
-  # ineq_fun <- function(theta, rt) {
-  #   imean <- !incl_mean
-  #   step0 <- 2 - imean
-  #   step1 <- step0 + p
-  #   step2 <- step1 + q
-  #   phi <- theta[(step0 + 1):step1]
-  #   beta <- -theta[(step1 + 1):step2]
-  #
-  #   if (p > q) {
-  #     beta <- c(beta, rep(0, p - q))
-  #   } else if (q > p) {
-  #     phi <- c(phi, rep(0, q - p))
-  #   }
-  #
-  #   beta - phi
-  # }
-  #
-  # result <- suppressWarnings(Rsolnp::solnp(
-  #   pars = pars,
-  #   fun = goal_fun2,
-  #   LB = LB,
-  #   UB = UB,
-  #   control = list(trace = FALSE, tol = 1e-6),
-  #   ineqfun = ineq_fun,
-  #   ineqLB = rep(0, max(p, q)),
-  #   ineqUB = rep(0.9999, max(p, q)),
-  #   rt = rt_core
-  # ))
-  #
-  # pars <- result$pars
-
   llhood <- -tail(result$values, 1)
 
-  res_f <- sigt_delta_fiaparch_R(unname(pars), rt_core, p, q,
+  res_f <- sigt_fiaparch_R(unname(pars), rt_core, p, q,
               incl_mean, extra_par, skew_par)
-  sigt_d <- res_f$sigt_d
-  d_opt <- res_f$d
-  sigt <- sigt_d^(1 / d_opt)
+  sigt <- res_f$sigt
 
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
   etat <- (rt - mu) / sigt
@@ -347,13 +332,17 @@ fiaparch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
+  len_pars <- length(pars)
+  hessian <- result$hessian[1:len_pars, 1:len_pars]
+
   serrors <- tryCatch(
-    expr = {sqrt(diag(solve(result$hessian)))},
+    expr = {sqrt(diag(solve(hessian)))},
     error = function(e1) {
-      warning("Unable to obtain standard errors.")
-      rep(NA, length(pars))
+      warning("Unable to obtain standard errors.", call. = FALSE)
+      rep(NA_real_, length(pars))
     }
   )
+
   names(pars) <- par_names
   names(serrors) <- par_names
 

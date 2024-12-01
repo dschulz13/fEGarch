@@ -19,7 +19,10 @@ fiaparch(
 a numeric vector or a \code{"zoo"} class time series object.}
 
 \item{orders}{a two-element numeric vector containing the two model
-orders \eqn{p} and \eqn{q} (see Details for more information).}
+orders \eqn{p} and \eqn{q} (see Details for more information); currently,
+only the default \code{orders = c(1, 1)} is supported; other specifications
+of a two-element numeric vector will lead to \code{orders = c(1, 1)} being
+run and a warning message being returned.}
 
 \item{cond_dist}{the conditional distribution to consider as a
 character object; the default is a conditional normal distribution
@@ -99,6 +102,13 @@ problem. The pre-sample is set to length 1000, and the infinite coefficient seri
 \eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]} is, at each time point, always considered
 as far back as to the first pre-sample value. Therefore, at observation time point
 \eqn{t=1,\dots,n}, a truncation of 1000 + t - 1 coefficients is considered.
+
+Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
+to ensure the non-negativity of all of the infinite-order coefficient series
+\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
+with \eqn{\omega>0} ensures that all the conditional volatilities
+are greater than zero, we employ the sufficient conditions mentioned
+in Footnote 6 in Tse (1998) in the optimization problem.
 
 See also the reference section for sources on the APARCH (Ding et al., 1993)
 and the FIAPARCH (Tse, 1998) models.
