@@ -1,0 +1,102 @@
+#'Implementation of a Broad Family of EGARCH Models
+#'
+#'A library of quasi maximum-likelihood estimation (QMLE) methods for
+#'fitting various short- and long-memory models from a broad family of
+#'exponential generalized conditional heteroskedasticity (EGARCH) models.
+#'For the purpose of comparison, a FIAPARCH (fractionally integrated
+#'asymmetric power ARCH) can be implemented as well.
+#'
+#'@details
+#'\code{fEGarch} is an R package for estimating a broad family of
+#'EGARCH models including both short- and long-memory as well as a
+#'selection of varying transformations for the asymmetry and the
+#'magnitude term in such a model. Log-GARCH specifications can be
+#'implemented as well as a special case of the broad EGARCH family.
+#'The six most common conditional distributions are supported, namely
+#'a normal distribution, a \eqn{t}- distribution, a generalized error
+#'distribution, as well as the skewed variants of these three
+#'distributions. The main functions to implement these models are
+#'\code{\link{fEGarch_spec}} in combination with
+#'\code{\link{fEGarch}}. Further details on these models can also
+#'be found in the documentation of these two functions. For
+#'convenience, further specification functions for particular
+#'submodels are available as well: \code{\link{egarch_spec}},
+#'\code{\link{loggarch_spec}}, \code{\link{megarch_spec}},
+#'\code{\link{mloggarch_spec}}, \code{\link{fiegarch_spec}},
+#'\code{\link{filoggarch_spec}} and \code{\link{mafiloggarch_spec}}.
+#'
+#'As a popular alternative for the sake of comparison, a FIAPARCH
+#'model can be fitted as well using \code{\link{fiaparch}}. The
+#'corresponding documentation page also includes further information
+#'on the model.
+#'
+#'@section Main Functions:
+#'The main functions of the package are:
+#'\describe{
+#'\item{\code{\link{fEGarch_spec}}:}{setting the model specifications for
+#'a model from the broader EGARCH family,}
+#'\item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
+#'models given a model specification and an observation series,}
+#'\item{\code{\link{fiaparch}}:}{fitting a FIAPARCH model,}
+#'}
+#'
+#'@section Datasets:
+#'The package includes a few datasets. Follow the corresponding links to the
+#'documentation of the datasets to find additional information including the
+#'sources.
+#'\describe{
+#'\item{\code{\link{SP500}}:}{daily log-returns of the S&P 500 index.}
+#'}
+#'
+#'@section License:
+#'The package is distributed under the General Public License v3
+#'([GPL-3](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))).
+#'
+#'@references
+#'\itemize{
+#'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
+#'73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
+#'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
+#'and a new model. Journal of Empirical Finance, 1(1):
+#'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
+#'\item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
+#'Working Papers CIE No. 137, Paderborn University, Center for International Economics.
+#'URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
+#'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
+#'57-61. DOI: 10.1080/07474938608800088.}
+#'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
+#'\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
+#'59(2), 347–370. DOI: 10.2307/2938260.}
+#'\item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
+#'71-74. DOI: 10.1080/07474938608800089.}
+#'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
+#'}
+#'
+#'@author
+#'\itemize{
+#'\item Dominik Schulz (Research Assistant) (Department of Economics, Paderborn
+#'University), \cr
+#'Author and Package Creator
+#'\item Yuanhua Feng (Department of Economics, Paderborn
+#'University), \cr
+#'Author
+#'\item Oliver Kojo Ayensu (Department of Economics, Paderborn
+#'University), \cr
+#'Author
+#'\item Christian Peitz (Department of Economics, Paderborn
+#'University), \cr
+#'Author
+#'}
+#'
+#'@useDynLib fEGarch
+#'@docType package
+#'@name fEGarch-package
+#'@aliases fEGarch-package
+#'@importFrom Rcpp sourceCpp
+#'@importFrom methods new validObject
+#'@importFrom stats integrate pnorm rnorm rt runif time uniroot
+#'@importFrom utils tail
+#'
+NULL

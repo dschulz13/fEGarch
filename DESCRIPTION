@@ -24,9 +24,10 @@ Authors@R:
              comment = "Paderborn University, Germany"))             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
-  such as a PEGARCH (double-power EGARCH), FIEGARCH (fractionally integrated EGARCH), PFIEGARCH (double-power FIEGARCH), and more.
+  such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), MAFILog-GARCH (modulus asymmetric fractionally
+  integrated Log-GARCH), and more. For convenience and the purpose of comparison, also a fractionally integrated asymmetric
+  power ARCH (FIAPARCH) can be implemented.
 License: GPL-3
-Imports: Rcpp (>= 1.0.9)
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
 LazyData: true
@@ -43,9 +44,15 @@ Collate:
   'sim-functions.R'
   'fiaparchfit.R'
   'varescalc.R'
+  'datasets.R'
+  'fEGarch-package.R'
 Depends: 
     R (>= 2.10),
-    Rcpp,
+    methods
+Imports:
+    Rcpp (>= 1.0.9),
     Rsolnp,
     esemifar,
-    zoo
+    zoo,
+    stats,
+    utils
