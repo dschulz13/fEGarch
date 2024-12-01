@@ -12,7 +12,7 @@ diff()
 #test <- lmgarchFit(rt)
 
 
-test <- fiaparch(rt, cond_dist = "norm")
+test <- fiaparch(rt, cond_dist = "sstd")
 library(rugarch)
 spec <- ugarchspec(
   variance.model = list(
