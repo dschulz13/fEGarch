@@ -108,13 +108,21 @@ to ensure the non-negativity of all of the infinite-order coefficient series
 \eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
 with \eqn{\omega>0} ensures that all the conditional volatilities
 are greater than zero, we employ the sufficient conditions mentioned
-in Footnote 6 in Tse (1998) in the optimization problem.
+in Footnote 6 in Tse (1998) in the optimization problem, which are
+taken from Bollerslev and Mikkelsen (1996). Conrad and Haag (2006) provide
+necessary and sufficient conditions for cases with simple model orders and
+sufficient conditions for general model orders, however, due to
+time efficiency, this function uses the set of sufficient conditions
+by Bollerslev and Mikkelsen (1996) only.
 
 See also the reference section for sources on the APARCH (Ding et al., 1993)
 and the FIAPARCH (Tse, 1998) models.
 }
 \references{
 \itemize{
+\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
+memory in stock market volatility. Journal of Econometrics, 73(1):
+151-184. DOI: 10.1016/0304-4076(95)01736-4.}
 \item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
 and a new model. Journal of Empirical Finance, 1(1):
 83-106. DOI: 10.1016/0927-5398(93)90006-D.}

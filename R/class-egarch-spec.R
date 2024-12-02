@@ -1353,3 +1353,16 @@ setMethod(
   cat(part2, fill = TRUE)
   }
 )
+
+#'@export
+setMethod("sigt", "fEGarch_fit", function(x) {x@sigt})
+#'@export
+setMethod("etat", "fEGarch_fit", function(x) {x@etat})
+#'@export
+setMethod("inf_criteria", "fEGarch_fit", function(x) {x@inf_criteria})
+#'@export
+setMethod("llhood", "fEGarch_fit", function(x) {x@llhood})
+#'@export
+setMethod("pars", "fEGarch_fit", function(x) {x@pars})
+#'@export
+setMethod("se", "fEGarch_fit", function(x) {x@se})

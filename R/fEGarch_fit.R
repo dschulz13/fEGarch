@@ -46,6 +46,10 @@ setClass("fEGarch_fit_fiaparch",
   contains = "fEGarch_fit"
 )
 
+setClass("fEGarch_fit_lmgarch",
+  contains = "fEGarch_fit"
+)
+
 fEGarch_fit_egarch <- function(
     pars,
     se,
@@ -134,3 +138,34 @@ fEGarch_fit_fiaparch <- function(
   )
 
 }
+
+fEGarch_fit_lmgarch <- function(
+    pars,
+    se,
+    rt,
+    sigt,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo
+) {
+
+  new("fEGarch_fit_lmgarch",
+    pars = pars,
+    se = se,
+    rt = rt,
+    sigt = sigt,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo
+  )
+
+}
+
+
+

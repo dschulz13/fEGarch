@@ -9,18 +9,18 @@ zoo(order.by = as.Date(data0$ref_date)) %>%
 log() %>%
 diff()
 
-#test <- lmgarchFit(rt)
+test <- lmgarch(rt)
 
 
-test <- fiaparch(rt, cond_dist = "sstd")
+test2 <- fiaparch(rt, cond_dist = "std")
 library(rugarch)
 spec <- ugarchspec(
   variance.model = list(
-    model = "apARCH", garchOrder = c(1, 1)
+    model = "fiGARCH", garchOrder = c(1, 1)
   ),
   mean.model = list(
     armaOrder = c(0, 0)
   ),
-  distribution.model = "sged"
+  distribution.model = "std"
 )
 fit <- ugarchfit(spec, coredata(rt))

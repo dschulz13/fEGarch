@@ -59,3 +59,18 @@ setGeneric("include_mean<-", function(x, value) {standardGeneric("include_mean<-
 #====================================================#
 
 setGeneric("fEGarch_fit", function(spec, rt, start_pars = NULL, LB = NULL, UB = NULL) {standardGeneric("fEGarch_fit")})
+
+#====================================================#
+
+#'@export
+setGeneric("sigt", function(x) {standardGeneric("sigt")})
+#'@export
+setGeneric("etat", function(x) {standardGeneric("etat")})
+#'@export
+setGeneric("llhood", function(x) {standardGeneric("llhood")})
+#'@export
+setGeneric("inf_criteria", function(x) {standardGeneric("inf_criteria")})
+#'@export
+setGeneric("pars", function(x) {standardGeneric("pars")})
+#'@export
+setGeneric("se", function(x) {standardGeneric("se")})

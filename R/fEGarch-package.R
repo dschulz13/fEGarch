@@ -4,7 +4,8 @@
 #'fitting various short- and long-memory models from a broad family of
 #'exponential generalized conditional heteroskedasticity (EGARCH) models.
 #'For the purpose of comparison, a FIAPARCH (fractionally integrated
-#'asymmetric power ARCH) can be implemented as well.
+#'asymmetric power ARCH) and a long-memory GARCH (LMGARCH)
+#'can be implemented as well.
 #'
 #'@details
 #'\code{fEGarch} is an R package for estimating a broad family of
@@ -56,6 +57,12 @@
 #'\itemize{
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
 #'73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
+#'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
+#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
+#'413-449. DOI: 10.1093/jjfinec/nbj015.}
+#'\item{Conrad, C., & Karanasos, M. (2006). The impulse response function
+#'of the long memory GARCH process. Economics Letters, 90(1):
+#'34-41. DOI: 10.1016/j.econlet.2005.07.001.}
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
 #'and a new model. Journal of Empirical Finance, 1(1):
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
@@ -64,6 +71,9 @@
 #'URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
+#'\item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of
+#'long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
+#'265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
 #'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
 #'\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
 #'59(2), 347–370. DOI: 10.2307/2938260.}

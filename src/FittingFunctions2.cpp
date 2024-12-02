@@ -303,12 +303,13 @@ arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
+                       const double omega,
                        const arma::rowvec& coef_inf,
                        const double E_e2) {
 
   const int n = x.size();
   const int l = n + 1000;
-  arma::vec sig = arma::vec(n).fill(0);
+  arma::vec sig2 = arma::vec(n).fill(0);
 
   const arma::vec x_cent = x - mu;
 
@@ -320,11 +321,12 @@ arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
 
   for (int i = 0; i < n; ++i) {
 
-    sig(i) = std::sqrt(arma::as_scalar(coef_r.subvec(l - 1000 - i, l - 1) * e2.subvec(0, 999 + i)));
+    sig2(i) = omega +
+      arma::as_scalar(coef_r.subvec(l - 1000 - i, l - 1) * e2.subvec(0, 999 + i));
 
   }
 
-  return sig;
+  return arma::sqrt(sig2);
 
 }
 
