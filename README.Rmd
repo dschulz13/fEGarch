@@ -1,0 +1,183 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+```
+
+# fEGarch <img src="man/figures/logo.png" align="right" height="139" alt="" />
+
+<!-- badges: start -->
+`r badger::badge_cran_release("fEGarch", color = "green")`
+`r badger::badge_cran_download("fEGarch", "grand-total", "blue")`
+`r badger::badge_cran_download("fEGarch", "last-month", "green")`
+`r badger::badge_license(color = "yellow")`
+<!-- badges: end -->
+
+The goal of `fEGarch` is to provide easy access to a broad family of exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models both with either short or long memory. The six most common conditional distributions, i.e. a normal distribution, a $t$-distribution, a generalized error distribution, and the skewed variants of those three, are available. These EGARCH family models are a strong competition to well-established GARCH-type models and provide new ways to estimate conditional volatilities, while making the prominent EGARCH and fractionally integrated EGARCH (FIEGARCH) available as special cases. For convenience and the prupose of comparison, fractionally integrated asymmetric power ARCH (FIAPARCH) and long-memory GARCH (LMGARCH) models are available as well for estimation.
+
+## Installation
+
+You can install the current version of the package from CRAN with:
+
+``` {r, message = FALSE, eval = FALSE, echo = TRUE}
+install.packages("fEGarch")
+```
+
+## Examples
+
+### Basic applications
+
+This is a basic example which shows you how to fit a model of the EGARCH family to the Standard and Poor's 500 daily log-returns.
+
+At first, specify a model from the EGARCH family using `fEGarch_spec()`.
+
+```{r example, message = FALSE, fig.height = 8}
+library(fEGarch)
+
+### 1. Set model specification via "fEGarch_spec()"
+spec1 <- fEGarch_spec(
+  model_type = "eGARCH",       # the basic model type among EGARCH and
+                               # Log-GARCH as subclasses of the EGARCH family;
+  orders = c(1, 1),            # the model orders;
+  long_memo = TRUE,            # include long memory?;
+  cond_dist = "norm",          # the conditional distribution;
+  include_mean = TRUE,         # estimate the mean?;
+  powers = c(0, 0),            # powers of the asymmetry and magnitude terms, respectively;
+  modulus = c(TRUE, TRUE)      # whether or not to apply a modulus transformation
+                               # to the asymmetry and magnitude terms, respectively
+)
+
+# -> Specification now aligns with that of MAFILog-GARCH(1, 1) with
+#    conditional normal distribution
+
+```
+
+Afterwards, use the model specification returned by `fEGarch_spec()` together with your data object and apply the estimation function `fEGarch()` to them.
+
+```{r}
+### 2. Use specification to fit model to data
+rt <- SP500
+model1 <- fEGarch(spec1, rt)
+model1
+```
+
+Using the model description in the documentation of `fEGarch_spec()`, the fitted model following the previous estimation results is
+$$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
+$$\ln\left(\sigma_t^2\right)=-8.6602 + (1-0.8681 B)^{-1}(1-B)^{-0.2753}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$g\left(\eta_{t-1}\right)=-0.2363\left\{g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right\} + 0.3194\left\{g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right\}, \hspace{3mm}\text{where}$$
+$$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
+$$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
+
+A convenient way to implement various specific model specifications is available via a selection of wrappers for `fEGarch_spec()`. They all only have the function arguments `orders`, `include_mean` and `cond_dist` from `fEGarch_spec()`.
+
+```{r}
+### 3. Use shortcuts for submodel specifications
+spec2 <- megarch_spec()         # Specification of MEGARCH
+spec3 <- mloggarch_spec()       # Specification for MLog-GARCH
+spec4 <- egarch_spec()          # Specification for EGARCH
+spec5 <- loggarch_spec()        # Specification for Log-GARCH
+spec6 <- fiegarch_spec()        # Specification for FIEGARCH
+spec7 <- filoggarch_spec()      # Specification for FILog-GARCH
+spec8 <- mafiloggarch_spec()    # Specification for MAFILog-GARCH
+
+# -> All with adjustable arguments "orders", "cond_dist" and "include_mean".
+
+spec9 <- megarch_spec(orders = c(2, 1), cond_dist = "std",
+                           include_mean = FALSE)
+```
+
+They can all be used in `fEGarch()`. In the following, the previously created model specification `spec9` is considered for the log-returns. The other specifications can be applied analogously.
+
+```{r}
+model9 <- fEGarch(spec9, rt)   # ... and so on for other specifications
+model9
+```
+
+### Illustrations
+
+Estimation objects returned by `fEGarch()` contain several elements. They can be either accessed through the operator `@` or via specific accessor functions named after the corresponding elements in the output object.
+
+```{r}
+sigt1 <- sigt(model1)
+sigt9 <- model9@sigt
+TS <- cbind(
+  "Log-returns" = rt,
+  "Model 1" = sigt1,
+  "Model 9" = sigt9
+)
+```
+
+If the input data is formatted as a time series object of class `"zoo"`, `fEGarch()` applies the same formatting to all output series in its returned object, also to the estimated conditional standard deviations.
+
+```{r}
+plot(TS, xlab = "Year", main = "Example application")
+```
+
+### Alternatives
+
+The `fEGarch` package also allows for the estimation of FIAPARCH and LMGARCH models, however, currently only with fixed model orders $p=q=1$. For these two models, there are two fitting functions `lmgarch()` and `fiaparch()` available without any preceding model specification steps. Model specifications can be made via arguments within these functions directly.
+
+```{r}
+model_fiaparch <- fiaparch(rt, orders = c(1, 1), cond_dist = "std")
+model_lmgarch <- lmgarch(rt, orders = c(1, 1), cond_dist = "std")
+
+model_fiaparch
+```
+
+```{r, fig.height = 8}
+sigt_fiaparch <- sigt(model_fiaparch)
+sigt_lmgarch <- sigt(model_lmgarch)
+TS2 <- cbind(
+  "Log-returns" = rt,
+  "MAFILog-GARCH" = sigt1,
+  "MEGARCH" = sigt9,
+  "FIAPARCH" = sigt_fiaparch,
+  "LMGARCH" = sigt_lmgarch
+)
+
+plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
+```
+
+
+## Main functions
+
+The main functions of the package are:
+
+- `fEGarch_spec()`: general EGARCH family model specification,
+
+- `fEGarch()`: fitting function for models of the broader EGARCH family,
+
+- `fiaparch()`: FIAPARCH model fitting,
+
+- `lmgarch()`: LMGARCH model fitting.
+
+The package, however, provides many other useful functions for you to discover.
+
+## Datasets
+
+The package contains an example time series, namely the Standard and Poor's 500 daily log-return series from January 04, 2000, until November 30, 2024, obtained from Yahoo Finance. The series is formatted as a time series object of class `"zoo"`.
+
+## Authors
+
+- Yuanhua Feng (Department Economics, Paderborn University, Germany) (Author)
+
+- Dominik Schulz (Department Economics, Paderborn University, Germany) (Author, Maintainer)
+
+- Oliver Kojo Ayensu (Department Economics, Paderborn University, Germany) (Author)
+
+- Christian Peitz (Affiliation to be added!!!)
+
+## Contact
+
+For questions, bug reports, etc., please contact the maintainer Mr. Dominik 
+Schulz via [dominik.schulz@uni-paderborn.de](mailto:dominik.schulz@uni-paderborn.de).

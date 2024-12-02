@@ -64,6 +64,11 @@
 #'Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
 #'and FILog-GARCH (Feng et al., 2020) models.
 #'
+#'@examples
+#'rt <- window(SP500, end = "2002-12-31")
+#'spec <- fEGarch_spec()
+#'model <- fEGarch(spec, rt)
+#'
 #'@references
 #'\itemize{
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,

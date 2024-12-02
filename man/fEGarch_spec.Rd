@@ -178,8 +178,24 @@ Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
 and FILog-GARCH (Feng et al., 2020) models.
 }
 \examples{
-spec <- fEGarch_spec()
-
+# EGARCH(1, 1) with cond. normal distribution
+spec1 <- fEGarch_spec()
+# EGARCH(2, 1) with cond. t-distribution
+spec2 <- fEGarch_spec(orders = c(2, 1), cond_dist = "std")
+# FIEGARCH(1, 1) with cond. normal distribution
+spec3 <- fEGarch_spec(long_memo = TRUE)
+# MEGARCH(1, 1) with cond. generalized error distribution
+spec4 <- fEGarch_spec(modulus = c(TRUE, FALSE), powers = c(0, 1))
+# Some unnamed specification
+spec5 <- fEGarch_spec(
+ model_type = "eGARCH",
+ orders = c(1, 1),
+ long_memo = TRUE,
+ cond_dist = "std",
+ include_mean = TRUE,
+ powers = c(0.25, 0.75),
+ modulus = c(TRUE, FALSE)
+)
 
 }
 \references{
