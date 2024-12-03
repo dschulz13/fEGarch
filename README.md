@@ -111,7 +111,7 @@ only have the function arguments `orders`, `include_mean` and
 
 ``` r
 ### 3. Use shortcuts for submodel specifications
-spec2 <- megarch_spec()         # Specification of MEGARCH
+spec2 <- megarch_spec()         # Specification for MEGARCH
 spec3 <- mloggarch_spec()       # Specification for MLog-GARCH
 spec4 <- egarch_spec()          # Specification for EGARCH
 spec5 <- loggarch_spec()        # Specification for Log-GARCH
