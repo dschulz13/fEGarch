@@ -38,6 +38,7 @@ specification. It contains the following elements.
 \describe{
 \item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 \item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
+\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 \item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
 \item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
 \item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
@@ -72,9 +73,12 @@ Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
 and FILog-GARCH (Feng et al., 2020) models.
 }
 \examples{
+library(zoo)
 rt <- window(SP500, end = "2002-12-31")
 spec <- fEGarch_spec()
 model <- fEGarch(spec, rt)
+model
+detach(name = "package:zoo", unload = TRUE, character.only = TRUE)
 
 }
 \references{

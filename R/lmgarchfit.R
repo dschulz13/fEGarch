@@ -154,6 +154,7 @@ goal_fun_creator_lmgarch <- function(
 #'\describe{
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
+#'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 #'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
 #'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
@@ -323,10 +324,14 @@ lmgarch <- function(rt, orders = c(1, 1),
 
   len_par <- length(pars)
   hessian <- result$hessian[1:len_par, 1:len_par]
+  vcov_mat <- solve(hessian)
 
-  serrors <- sqrt(diag(solve(hessian)))
+  serrors <- sqrt(diag(vcov_mat))
   names(pars) <- par_names
   names(serrors) <- par_names
+
+  colnames(vcov_mat) <- par_names
+  rownames(vcov_mat) <- par_names
 
   k <- length(pars)
   n <- length(rt)
@@ -344,6 +349,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   list_out <- fEGarch_fit_lmgarch(
     pars = pars,
     se = serrors,
+    vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
     etat = etat,

@@ -946,9 +946,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  serrors <- sqrt(diag(solve(result$hessian)))
+  vcov_mat <- solve(result$hessian)
+  serrors <- sqrt(diag(vcov_mat))
   names(pars) <- par_names
   names(serrors) <- par_names
+  rownames(vcov_mat) <- par_names
+  colnames(vcov_mat) <- par_names
 
   k <- length(pars)
   n <- length(rt)
@@ -966,6 +969,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   list_out <- fEGarch_fit_egarch(
     pars = pars,
     se = serrors,
+    vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
     etat = etat,
@@ -1237,9 +1241,12 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  serrors <- sqrt(diag(solve(result$hessian)))
+  vcov_mat <- solve(result$hessian)
+  serrors <- sqrt(diag(vcov_mat))
   names(pars) <- par_names
   names(serrors) <- par_names
+  rownames(vcov_mat) <- par_names
+  colnames(vcov_mat) <- par_names
 
   k <- length(pars)
   n <- length(rt)
@@ -1257,6 +1264,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   list_out <- fEGarch_fit_loggarch(
     pars = pars,
     se = serrors,
+    vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
     etat = etat,
@@ -1382,3 +1390,5 @@ setMethod("llhood", "fEGarch_fit", function(x) {x@llhood})
 setMethod("pars", "fEGarch_fit", function(x) {x@pars})
 #'@export
 setMethod("se", "fEGarch_fit", function(x) {x@se})
+#'@export
+setMethod("vcov_mat", "fEGarch_fit", function(x) {x@vcov_mat})

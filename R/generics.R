@@ -74,3 +74,5 @@ setGeneric("inf_criteria", function(x) {standardGeneric("inf_criteria")})
 setGeneric("pars", function(x) {standardGeneric("pars")})
 #'@export
 setGeneric("se", function(x) {standardGeneric("se")})
+#'@export
+setGeneric("vcov_mat", function(x) {standardGeneric("vcov_mat")})
