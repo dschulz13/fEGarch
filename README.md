@@ -100,7 +100,7 @@ Using the model description in the documentation of `fEGarch_spec()`,
 the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
 $$\ln\left(\sigma_t^2\right)=-8.6602 + (1-0.8681 B)^{-1}(1-B)^{-0.2753}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2363\left\{g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right\} + 0.3194\left\{g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right\}, \hspace{3mm}\text{where}$$
+$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
 
