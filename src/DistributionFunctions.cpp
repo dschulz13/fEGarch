@@ -7,9 +7,9 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 arma::vec pdf_norm(const arma::vec& rt, const double mu, const arma::vec& sigt) {
-  const arma::vec eta_t2 = arma::pow((rt - mu) % (1.0 / sigt), 2.0);
-  const arma::vec sigt2 = arma::pow(sigt, 2.0);
-  const arma::vec f1 = 1.0 / arma::sqrt(2 * M_PI * sigt2);
+  const arma::vec one_div_sigt = 1.0 / sigt;
+  const arma::vec eta_t2 = arma::pow((rt - mu) % one_div_sigt, 2.0);
+  const arma::vec f1 = one_div_sigt / std::sqrt(2.0 * M_PI);
   const arma::vec f2 = -0.5 * eta_t2;
   return f1 % arma::exp(f2);
 }
@@ -25,12 +25,12 @@ arma::vec pdf_norm_v1(const arma::vec& rt) {
 // [[Rcpp::export]]
 arma::vec pdf_std(const arma::vec& rt, const double mu, const arma::vec& sigt,
                   const double df) {
-  const arma::vec eta_t2 = arma::pow((rt - mu) % (1.0 / sigt), 2.0);
-  const arma::vec sigt2 = arma::pow(sigt, 2.0);
+  const arma::vec one_div_sigt = 1.0 / sigt;
+  const arma::vec eta_t2 = arma::pow((rt - mu) % one_div_sigt, 2.0);
   const double dfp1div2 = (df + 1.0) / 2.0;
   const double dfm2 = df - 2.0;
   const double f1 = std::tgamma(dfp1div2);
-  const arma::vec f2 = 1.0 / (std::tgamma(df / 2.0) * arma::sqrt(M_PI * dfm2 * sigt2));
+  const arma::vec f2 = one_div_sigt / (std::tgamma(df / 2.0) * std::sqrt(M_PI * dfm2));
   const arma::vec f3 = arma::pow(1.0 + eta_t2 / (dfm2), -dfp1div2);
   return f1 * (f2 % f3);
 }
@@ -50,11 +50,11 @@ arma::vec pdf_std_v1(const arma::vec& rt, const double df) {
 // [[Rcpp::export]]
 arma::vec pdf_ged(const arma::vec& rt, const double mu, const arma::vec& sigt,
                   const double shape) {
-  const arma::vec abs_eta_t = arma::abs((rt - mu) % (1.0 / sigt));
-  const arma::vec sigt2 = arma::pow(sigt, 2.0);
+  const arma::vec one_div_sigt = 1.0 / sigt;
+  const arma::vec abs_eta_t = arma::abs((rt - mu) % one_div_sigt);
   const double g3b = std::tgamma(3.0 / shape);
   const double g1b = std::tgamma(1.0 / shape);
-  const arma::vec f1 = arma::sqrt(g3b / (sigt2 * std::pow(g1b, 3.0)));
+  const arma::vec f1 = one_div_sigt * std::sqrt(g3b / std::pow(g1b, 3.0));
   const double f2 = shape / 2.0;
   const double f3s = std::pow(g3b / g1b, f2);
   const arma::vec f3 = -arma::pow(abs_eta_t, shape) * f3s;

@@ -115,7 +115,7 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
 
   const int n = x.size();
   const int n1 = n + 1;
-  arma::vec lnsig2 = arma::vec(n1).fill(0);
+  double lnsig2 = 0;
   arma::vec series_g = arma::vec(n1).fill(0);
 
   const arma::vec x_cent = x - mu;
@@ -170,10 +170,10 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
 
     il = i + 1;
 
-    lnsig2(il) = Elnsig2 +
+    lnsig2 = Elnsig2 +
       arma::as_scalar(coef_r.subvec(nm1 - i, nm1) * series_g.subvec(0, i));
 
-    sigt(i) = std::exp(lnsig2(il) / 2.0);
+    sigt(i) = std::exp(lnsig2 / 2.0);
     eta_i = x_cent(i) / sigt(i);
 
     series_g(il) = kappa * compute_abs_eta_pow1(eta_i) + gamma * compute_abs_eta_pow2(eta_i);
