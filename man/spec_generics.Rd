@@ -2,11 +2,18 @@
 % Please edit documentation in R/generics.R
 \name{spec_generics}
 \alias{spec_generics}
+\alias{orders}
+\alias{orders,ANY-method}
 \alias{powers}
+\alias{powers,ANY-method}
 \alias{long_memo}
+\alias{long_memo,ANY-method}
 \alias{modulus}
+\alias{modulus,ANY-method}
 \alias{cond_dist}
+\alias{cond_dist,ANY-method}
 \alias{include_mean}
+\alias{include_mean,ANY-method}
 \alias{orders<-}
 \alias{powers<-}
 \alias{long_memo<-}

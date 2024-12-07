@@ -170,6 +170,12 @@ goal_fun_creator_fiaparch <- function(
 #'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 #'}
 #'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
+#'model <- fiaparch(rt)
+#'model
+#'
 #'@references
 #'\itemize{
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
@@ -391,6 +397,8 @@ fiaparch <- function(rt, orders = c(1, 1),
 }
 
 #'@export
+#'@rdname show-methods
+#'@aliases show,fEgarch_fit_fiaparch-method
 setMethod(
   "show",
   "fEGarch_fit_fiaparch",

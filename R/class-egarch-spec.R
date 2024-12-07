@@ -70,7 +70,50 @@ setValidity("egarch_type_spec", function(object){
   }
 })
 
+#'Subspecification of EGARCH Family Models
+#'
+#'Two common subspecifications of the broad EGARCH family,
+#'namely for a EGARCH-type and a Log-GARCH-type model.
+#'
+#'@param orders a two-element numeric vector with the model
+#'orders; the first element is the order \eqn{p} for the term based on
+#'\eqn{\ln\left(\sigma_t^2\right)}, i.e. the log-transformed
+#'conditional variance, while the second element is the order \eqn{q} for
+#'the innovation-based term (see Details below for more information).
+#'@param long_memo a logical value that indicates whether the
+#'long-memory version of the model should be considered or not.
+#'@param cond_dist a character value stating the underlying
+#'conditional distribution to consider; available are a normal
+#'distribution (\code{"norm"}), a \eqn{t}-distribution
+#'(\code{"std"}), a generalized error distribution
+#'(\code{"ged"}) and the skewed versions of them
+#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}).
+#'@param include_mean a logical value indicating whether or
+#'not to include the mean in the estimation procedure; for
+#'\code{include_mean = FALSE}, the mean of the series
+#'\code{rt} is fixed to zero and not being estimated.
+#'@param powers a two-element numeric vector that states the
+#'exponents in the power-transformations of the asymmetry and the
+#'magnitude terms in that order (see Details for more information).
+#'@param modulus a two-element logical vector indicating if the
+#'innovations in the asymmetry and the magnitude terms (in that
+#'order) should use a modulus transformation (see Details for
+#'more information).
+#'
+#'@details
+#'These are wrappers for \code{\link{fEGarch_spec}}.
+#'\code{egarch_type_spec()} is when setting \code{model_type} in
+#'\code{\link{fEGarch_spec}} to \code{eGARCH}.
+#'\code{loggarch_type_spec()} is a shortcut when setting
+#'\code{model_type = "logGARCH"}. See \code{\link{fEGarch_spec}}
+#'for further details.
+#'
+#'@return
+#'An object of class \code{"egarch_type_spec"} or
+#'\code{"loggarch_type_spec"} is returned.
+#'
 #'@export
+#'@rdname fEGarch-subspecs
 egarch_type_spec <- function(
   orders = c(1, 1),
   long_memo = TRUE,
@@ -94,6 +137,7 @@ egarch_type_spec <- function(
 }
 
 #'@export
+#'@rdname fEGarch-subspecs
 loggarch_type_spec <- function(
   orders = c(1, 1),
   long_memo = TRUE,
@@ -376,6 +420,7 @@ fEGarch_spec <- function(
 #'individual elements of objects of class \code{"egarch_spec"}.
 #'
 #'@name spec_methods
+#'@aliases orders,base_garch_spec-method
 #'
 #'@return
 #'These methods either return an object of class \code{"egarch_type_spec"}
@@ -393,18 +438,23 @@ fEGarch_spec <- function(
 setMethod("orders", "base_garch_spec", function(x) {x@orders})
 #'@export
 #'@rdname spec_methods
+#'@aliases powers,egarch_type_spec-method
 setMethod("powers", "egarch_type_spec", function(x) {x@powers})
 #'@export
 #'@rdname spec_methods
+#'@aliases long_memo,base_garch_spec-method
 setMethod("long_memo", "base_garch_spec", function(x) {x@long_memo})
 #'@export
 #'@rdname spec_methods
+#'@aliases modulus,egarch_type_spec-method
 setMethod("modulus", "egarch_type_spec", function(x) {x@modulus})
 #'@export
 #'@rdname spec_methods
+#'@aliases cond_dist,base_garch_spec-method
 setMethod("cond_dist", "base_garch_spec", function(x) {x@cond_dist})
 #'@export
 #'@rdname spec_methods
+#'@aliases include_mean,base_garch_spec-method
 setMethod("include_mean", "base_garch_spec", function(x) {x@include_mean})
 
 #'@export
@@ -1278,7 +1328,22 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   list_out
   })
 
+#'Show Method for Estimation Ouput
+#'
+#'Display estimation results from the EGARCH family in
+#'a convenient way in the console.
+#'
+#'@param object an object returned by either \code{\link{fEGarch}},
+#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'
+#'@aliases show,fEGarch_fit_egarch-method
 #'@export
+#'
+#'@rdname show-methods
+#'
+#'@return
+#'Nothing is returned. Results are printed in the R-console.
+#'
 setMethod(
   "show",
   "fEGarch_fit_egarch",
@@ -1330,6 +1395,8 @@ setMethod(
 )
 
 #'@export
+#'@rdname show-methods
+#'@aliases show,fEgarch_fit_loggarch-method
 setMethod(
   "show",
   "fEGarch_fit_loggarch",
@@ -1378,17 +1445,70 @@ setMethod(
   }
 )
 
+#'Methods for Accessing Model Estimation Output Elements
+#'
+#'Accessors to access the elements of the same name in
+#'output objects returned by either \code{\link{fEGarch}},
+#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'
+#'@param x an object returned by either \code{\link{fEGarch}},
+#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'
+#'@details
+#'Convenience methods to access the elements of the same name
+#'that can otherwise be accessed via the operator \code{@} within
+#'objects that inherit from class \code{"fEGarch_fit"}, which covers
+#'objects returned by \code{\link{fEGarch}},
+#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'
+#'@return
+#'The element within the input object of the same name as the method
+#'is returned. Depending on the element that can be a numeric vector,
+#'an object of class \code{"zoo"} or a numeric matrix.
+#'
 #'@export
+#'
+#'@name accessor_methods
+#'@aliases sigt,fEGarch_fit-method
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, start = "2010-01-01", end = "2012-12-31")
+#'est <- fEGarch(egarch_spec(), rt)
+#'
+#'# Access estimated conditional standard deviations using
+#'# the common operator "@" ...
+#'sigt1 <- est@sigt
+#'
+#'# ... or use the accessor method "sigt()"
+#'sigt2 <- sigt(est)
+#'
+#'zoo::plot.zoo(
+#'  cbind("Approach 1" = sigt1, "Approach 2" = sigt2)
+#')
+#'
 setMethod("sigt", "fEGarch_fit", function(x) {x@sigt})
 #'@export
+#'@rdname accessor_methods
+#'@aliases etat,fEGarch_fit-method
 setMethod("etat", "fEGarch_fit", function(x) {x@etat})
 #'@export
+#'@rdname accessor_methods
+#'@aliases inf_criteria,fEGarch_fit-method
 setMethod("inf_criteria", "fEGarch_fit", function(x) {x@inf_criteria})
 #'@export
+#'@rdname accessor_methods
+#'@aliases llhood,fEGarch_fit-method
 setMethod("llhood", "fEGarch_fit", function(x) {x@llhood})
 #'@export
+#'@rdname accessor_methods
+#'@aliases pars,fEGarch_fit-method
 setMethod("pars", "fEGarch_fit", function(x) {x@pars})
 #'@export
+#'@rdname accessor_methods
+#'@aliases se,fEGarch_fit-method
 setMethod("se", "fEGarch_fit", function(x) {x@se})
 #'@export
+#'@rdname accessor_methods
+#'@aliases vcov_mat,fEGarch_fit-method
 setMethod("vcov_mat", "fEGarch_fit", function(x) {x@vcov_mat})

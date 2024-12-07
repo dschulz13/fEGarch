@@ -116,6 +116,13 @@ See also the reference section for sources on the LMGARCH model
 (Karanasos et al., 2004; Conrad and Karanasos, 2006; Conrad and
 Haag, 2006).
 }
+\examples{
+window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+rt <- window.zoo(SP500, end = "2002-12-31")
+model <- lmgarch(rt)
+model
+
+}
 \references{
 \itemize{
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long

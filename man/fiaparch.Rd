@@ -119,6 +119,13 @@ by Bollerslev and Mikkelsen (1996) only.
 See also the reference section for sources on the APARCH (Ding et al., 1993)
 and the FIAPARCH (Tse, 1998) models.
 }
+\examples{
+window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+rt <- window.zoo(SP500, end = "2002-12-31")
+model <- fiaparch(rt)
+model
+
+}
 \references{
 \itemize{
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long

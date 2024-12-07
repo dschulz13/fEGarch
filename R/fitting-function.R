@@ -66,12 +66,11 @@
 #'and FILog-GARCH (Feng et al., 2020) models.
 #'
 #'@examples
-#'library(zoo)
-#'rt <- window(SP500, end = "2002-12-31")
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
 #'spec <- fEGarch_spec()
 #'model <- fEGarch(spec, rt)
 #'model
-#'detach(name = "package:zoo", unload = TRUE, character.only = TRUE)
 #'
 #'@references
 #'\itemize{

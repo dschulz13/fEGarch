@@ -2,6 +2,7 @@
 % Please edit documentation in R/class-egarch-spec.R
 \name{spec_methods}
 \alias{spec_methods}
+\alias{orders,base_garch_spec-method}
 \alias{powers,egarch_type_spec-method}
 \alias{long_memo,base_garch_spec-method}
 \alias{modulus,egarch_type_spec-method}
