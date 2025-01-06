@@ -243,8 +243,8 @@ fiaparch <- function(rt, orders = c(1, 1),
   if (is.null(start_pars)) {
 
     start_pars <- c(
-      list(NULL, 0)[[incl_mean + 1]],
-      0.01,
+      list(NULL, mean(rt))[[incl_mean + 1]],
+      var(rt),
       rep(0.2 / p, p),
       rep(0.4 / q, q),
       0.1, 2,
@@ -259,7 +259,7 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     LB <- c(
       list(NULL, -2)[[incl_mean + 1]],
-      1e-6,
+      1e-8,
       rep(1e-6, p),
       rep(1e-6, q),
       -1 + 1e-6, 1,
@@ -274,7 +274,7 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     UB <- c(
       list(NULL, 2)[[incl_mean + 1]],
-      2,
+      var(rt) * 1000,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
       1 - 1e-6, 5,
