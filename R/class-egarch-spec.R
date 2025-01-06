@@ -913,49 +913,65 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     d_name <- character(0)
   }
 
-  if (is.null(start_pars)) {
+  if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
+    mean_rt <- mean(rt)
+    lrt2_shift <- log((rt - mean_rt)^2) + 1.27
 
-    start_pars <- c(
-      list(NULL, 0)[[incl_mean + 1]],
-      -9,
-      rep(0, p),
-      rep(0, q - 1),
-      0, 0,
-      d_spar,
-      sval,
-      list(NULL, 1)[[skew_par + 1]]
-    )
+    if (is.null(start_pars)) {
+
+      start_pars <- c(
+        list(NULL, mean_rt)[[incl_mean + 1]],
+        mean(lrt2_shift),
+        rep(0.2 / p, p),
+        rep(0, q - 1),
+        0, 0,
+        d_spar,
+        sval,
+        list(NULL, 1)[[skew_par + 1]]
+      )
+
+    }
+
+    if (is.null(LB)) {
+
+      mean_lrt2_s <- mean(lrt2_shift)
+
+      LB <- c(
+        list(NULL, min(rt))[[incl_mean + 1]],
+        mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
+        rep(-2, p),
+        rep(-2, q - 1),
+        rep(-2, 2),
+        d_low,
+        lval,
+        list(NULL, 1e-15)[[skew_par + 1]]
+      )
+
+    }
+
+    if (is.null(UB)) {
+
+      mean_lrt2_s <- mean(lrt2_shift)
+
+      UB <- c(
+        list(NULL, max(rt))[[incl_mean + 1]],
+        mean_lrt2_s + 0.6 * abs(mean_lrt2_s - max(lrt2_shift)),
+        rep(2, p),
+        rep(2, q - 1),
+        rep(2, 2),
+        d_up,
+        uval,
+        list(NULL, Inf)[[skew_par + 1]]
+      )
+
+    }
 
   }
 
-  if (is.null(LB)) {
-
-    LB <- c(
-      list(NULL, -2)[[incl_mean + 1]],
-      -15,
-      rep(-2, p),
-      rep(-2, q - 1),
-      rep(-2, 2),
-      d_low,
-      lval,
-      list(NULL, 1e-15)[[skew_par + 1]]
-    )
-
-  }
-
-  if (is.null(UB)) {
-
-    UB <- c(
-      list(NULL, 2)[[incl_mean + 1]],
-      -3,
-      rep(2, p),
-      rep(2, q - 1),
-      rep(2, 2),
-      d_up,
-      uval,
-      list(NULL, Inf)[[skew_par + 1]]
-    )
-
+  # For stationarity, restrict phi values
+  constr_fun <- function(theta, rt) {
+    phi <- c(1, -theta[(2 + incl_mean):(1 + incl_mean + p)])
+    abs(polyroot(phi)) - 1
   }
 
   result <- suppressWarnings(Rsolnp::solnp(
@@ -963,6 +979,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     fun = goal_fun,
     LB = LB,
     UB = UB,
+    ineqfun = constr_fun,
+    ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
+    ineqUB = rep(Inf, p),
     control = list(trace = FALSE),
     rt = rt_core
   ))
@@ -979,7 +998,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   etat <- (rt - mu) / sigt
 
   if (q > 1) {
-    psi_names <- paste0("psi", 2:q)
+    psi_names <- paste0("psi", 1:(q - 1))
   } else {
     psi_names <- NULL
   }
@@ -996,7 +1015,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  vcov_mat <- solve(result$hessian)
+  nhess <- result$hessian[-(1:p), -(1:p)]
+  vcov_mat <- solve(nhess)
   serrors <- sqrt(diag(vcov_mat))
   names(pars) <- par_names
   names(serrors) <- par_names

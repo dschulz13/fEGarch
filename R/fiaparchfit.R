@@ -347,11 +347,10 @@ fiaparch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  len_pars <- length(pars)
-  hessian <- result$hessian[1:len_pars, 1:len_pars]
+  nhessian <- result$hessian[-(1:3), -(1:3)]
 
   vcov_mat <- tryCatch(
-    expr = {solve(hessian)},
+    expr = {solve(nhessian)},
     error = function(e1) {
       warning("Unable to obtain standard errors.", call. = FALSE)
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
