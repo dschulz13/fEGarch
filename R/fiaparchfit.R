@@ -95,6 +95,9 @@ goal_fun_creator_fiaparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used.
+#'@param drange a two-element numeric vector that gives the boundaries of the
+#'search interval for the fractional differencing parameter \eqn{d}; is
+#'overwritten by the settings of the arguments \code{LB} and \code{UB}.
 #'@param LB the lower boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
@@ -191,7 +194,7 @@ goal_fun_creator_fiaparch <- function(
 #'
 fiaparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-                        include_mean = TRUE,
+                        include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
                         start_pars = NULL, LB = NULL, UB = NULL) {
 
   rt_core <- zoo::coredata(rt)
@@ -235,9 +238,9 @@ fiaparch <- function(rt, orders = c(1, 1),
   lval <- vals[[2]]
   uval <- vals[[3]]
 
-  d_spar <- 0.25
-  d_low <- 0
-  d_up <- 0.4999
+  d_low <- drange[[1]]
+  d_up <- drange[[2]]
+  d_spar <- d_low + abs(d_up - d_low) / 2
   d_name <- "d"
 
   if (is.null(start_pars)) {
@@ -258,7 +261,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   if (is.null(LB)) {
 
     LB <- c(
-      list(NULL, -2)[[incl_mean + 1]],
+      list(NULL, min(rt))[[incl_mean + 1]],
       1e-8,
       rep(1e-6, p),
       rep(1e-6, q),
@@ -273,7 +276,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   if (is.null(UB)) {
 
     UB <- c(
-      list(NULL, 2)[[incl_mean + 1]],
+      list(NULL, max(rt))[[incl_mean + 1]],
       var(rt) * 1000,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),

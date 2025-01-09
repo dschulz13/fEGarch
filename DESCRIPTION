@@ -3,29 +3,34 @@ Type: Package
 Title: Application of a Broad Family of EGARCH Models
 Version: 1.0.0
 Authors@R:
-    c(person(given = "Yuanhua",
-             family = "Feng",
-             role = "aut",
-             comment = "Paderborn University, Germany"),
-      person(given = "Dominik",
-             family = "Schulz",
-             role = c("aut", "cre"),
-             email = "dominik.schulz@uni-paderborn.de",
-             comment = "Paderborn University, Germany"),
-      person(given = "Oliver Kojo",
-             family = "Ayensu",
-             role = c("aut"),
-             email = "oliver.kojo.ayensu@uni-paderborn.de",
-             comment = "Paderborn University, Germany"),
+    c(person(given = "Dominik",
+        family = "Schulz",
+        role = c("aut", "cre"),
+        email = "dominik.schulz@uni-paderborn.de",
+        comment = "Paderborn University, Germany"),
+      person(given = "Yuanhua",
+        family = "Feng",
+        role = "aut",
+        comment = "Paderborn University, Germany"),
       person(given = "Christian",
-             family = "Peitz",
-             role = c("aut"),
-             email = "christian.peitz@uni-paderborn.de",
-             comment = "Paderborn University, Germany"))             
+        family = "Peitz",
+        role = c("aut"),
+        email = "christian.peitz@uni-paderborn.de",
+        comment = "Paderborn University, Germany"),
+      person(given = "Oliver Kojo",
+        family = "Ayensu",
+        role = c("aut"),
+        email = "oliver.kojo.ayensu@uni-paderborn.de",
+        comment = "Paderborn University, Germany"),
+      person(given = "Sebastian",
+        family = "Letmathe",
+        role = "ctb"),
+      person(given = "Thomas", family = "Gries",
+        comment = "Paderborn University, Germany"))             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
-  such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), MAFILog-GARCH (modulus asymmetric fractionally
-  integrated Log-GARCH), and more. For convenience and the purpose of comparison, also a fractionally integrated asymmetric
+  such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), FIMLog-GARCH (fractionally integrated
+  modulus Log-GARCH), and more. For convenience and the purpose of comparison, also a fractionally integrated asymmetric
   power ARCH (FIAPARCH) and a long-memory GARCH (LMGARCH) can be implemented.
 License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo

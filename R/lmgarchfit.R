@@ -89,6 +89,9 @@ goal_fun_creator_lmgarch <- function(
 #'@param include_mean a logical value indicating whether or not to include
 #'the series' mean in the maximum-likelihood estimation process; for
 #'\code{include_mean = FALSE}, the mean is fixed to zero.
+#'@param drange a two-element numeric vector that gives the boundaries of the
+#'search interval for the fractional differencing parameter \eqn{d}; is
+#'overwritten by the settings of the arguments \code{LB} and \code{UB}.
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
@@ -191,7 +194,7 @@ goal_fun_creator_lmgarch <- function(
 #'
 lmgarch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-                        include_mean = TRUE,
+                        include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
                         start_pars = NULL, LB = NULL, UB = NULL) {
 
   if (!all(orders == c(1, 1))) {
@@ -233,9 +236,9 @@ lmgarch <- function(rt, orders = c(1, 1),
   lval <- vals[[2]]
   uval <- vals[[3]]
 
-  d_spar <- 0.25
-  d_low <- 0
-  d_up <- 0.4999
+  d_low <- drange[[1]]
+  d_up <- drange[[2]]
+  d_spar <- d_low + abs(d_up - d_low) / 2
   d_name <- "d"
 
   if (is.null(start_pars)) {

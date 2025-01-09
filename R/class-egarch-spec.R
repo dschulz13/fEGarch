@@ -928,9 +928,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   uval <- vals[[3]]
 
   if (lm) {
-    d_spar <- 0.1
     d_low <- drange[[1]]
     d_up <- drange[[2]]
+    d_spar <- d_low + abs(d_up - d_low) / 2
     d_name <- "d"
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
@@ -1255,9 +1255,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   uval <- vals[[3]]
 
   if (lm) {
-    d_spar <- 0.1
     d_low <- drange[[1]]
     d_up <- drange[[2]]
+    d_spar <- d_low + abs(d_up - d_low) / 2
     d_name <- "d"
   } else {
     d_spar <- d_low <- d_up <- numeric(0)

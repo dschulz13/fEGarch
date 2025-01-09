@@ -58,7 +58,7 @@ spec1 <- fEGarch_spec(
                                # to the asymmetry and magnitude terms, respectively
 )
 
-# -> Specification now aligns with that of MAFILog-GARCH(1, 1) with
+# -> Specification now aligns with that of FIMLog-GARCH(1, 1) with
 #    conditional normal distribution
 ```
 
@@ -85,12 +85,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0001   4.2764 0.0000
-#> omega_sig -8.6602 0.1279 -67.7269 0.0000
-#> phi1       0.8681 0.0254  34.1951 0.0000
-#> kappa     -0.2363 0.0148 -15.9960 0.0000
-#> gamma      0.3194 0.0210  15.1889 0.0000
-#> d          0.2753 0.0460   5.9857 0.0000
+#> mu         0.0003 0.0001   6.1010 0.0000
+#> omega_sig -8.6600 0.1501 -57.6803 0.0000
+#> phi1       0.8680 0.0248  35.0699 0.0000
+#> kappa     -0.2363 0.0151 -15.6795 0.0000
+#> gamma      0.3194 0.0226  14.1115 0.0000
+#> d          0.2754 0.0424   6.5012 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.4945, BIC: -6.4880
@@ -117,11 +117,12 @@ spec4 <- egarch_spec()          # Specification for EGARCH
 spec5 <- loggarch_spec()        # Specification for Log-GARCH
 spec6 <- fiegarch_spec()        # Specification for FIEGARCH
 spec7 <- filoggarch_spec()      # Specification for FILog-GARCH
-spec8 <- mafiloggarch_spec()    # Specification for MAFILog-GARCH
+spec8 <- fimloggarch_spec()     # Specification for FIMLog-GARCH
+spec9 <- fimegarch_spec()       # Specification for FIMEGARCH
 
 # -> All with adjustable arguments "orders", "cond_dist" and "include_mean".
 
-spec9 <- megarch_spec(orders = c(2, 1), cond_dist = "std",
+spec10 <- megarch_spec(orders = c(2, 1), cond_dist = "std",
                            include_mean = FALSE)
 ```
 
@@ -130,8 +131,8 @@ created model specification `spec9` is considered for the log-returns.
 The other specifications can be applied analogously.
 
 ``` r
-model9 <- fEGarch(spec9, rt)   # ... and so on for other specifications
-model9
+model10 <- fEGarch(spec10, rt)   # ... and so on for other specifications
+model10
 #> *************************************
 #> *     Fitted EGARCH Family Model    *
 #> *************************************
@@ -146,12 +147,12 @@ model9
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> omega_sig -9.0486 0.0725 -124.7449 0.0000
-#> phi1       0.9775 0.0726   13.4625 0.0000
-#> phi2      -0.0061 0.0711   -0.0861 0.9314
-#> kappa     -0.3038 0.0269  -11.3056 0.0000
-#> gamma      0.1640 0.0159   10.3485 0.0000
-#> df         7.4395 0.6878   10.8167 0.0000
+#> omega_sig -9.0481 0.0721 -125.5459 0.0000
+#> phi1       0.9685 0.0149   65.0348 0.0000
+#> phi2       0.0028 0.0144    0.1934 0.8466
+#> kappa     -0.3062 0.0178  -17.2352 0.0000
+#> gamma      0.1650 0.0121   13.5942 0.0000
+#> df         7.4369 0.6520   11.4070 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.5358, BIC: -6.5294
@@ -166,11 +167,11 @@ object.
 
 ``` r
 sigt1 <- sigt(model1)
-sigt9 <- model9@sigt
+sigt10 <- model10@sigt
 TS <- cbind(
   "Log-returns" = rt,
   "Model 1" = sigt1,
-  "Model 9" = sigt9
+  "Model 10" = sigt10
 )
 ```
 
@@ -209,15 +210,15 @@ model_fiaparch
 #>  
 #> Fitted parameters:
 #> 
-#>          par     se       tval   pval
-#> mu    0.0004 1.9832     0.0002 0.9998
-#> omega 0.0002 1.4486     0.0001 0.9999
-#> phi1  0.1796 1.1596     0.1549 0.8769
-#> beta1 0.4952 0.0001  5279.1704 0.0000
-#> gamma 1.0000 0.0001 14971.7832 0.0000
-#> delta 1.2438 0.0269    46.1587 0.0000
-#> d     0.3959 0.0242    16.3380 0.0000
-#> df    7.8297 0.0253   309.8675 0.0000
+#>          par     se   tval   pval
+#> mu    0.0004 0.0002 1.8601 0.0629
+#> omega 0.0002 0.0084 0.0259 0.9794
+#> phi1  0.1796 0.8386 0.2141 0.8304
+#> beta1 0.4952 2.1943 0.2257 0.8215
+#> gamma 1.0000 1.3625 0.7339 0.4630
+#> delta 1.2438 1.7212 0.7227 0.4699
+#> d     0.3959 1.4116 0.2805 0.7791
+#> df    7.8297 5.8985 1.3274 0.1844
 #>  
 #> Information criteria:
 #> AIC: -6.5484, BIC: -6.5398
@@ -229,7 +230,7 @@ sigt_lmgarch <- sigt(model_lmgarch)
 TS2 <- cbind(
   "Log-returns" = rt,
   "MAFILog-GARCH" = sigt1,
-  "MEGARCH" = sigt9,
+  "MEGARCH" = sigt10,
   "FIAPARCH" = sigt_fiaparch,
   "LMGARCH" = sigt_lmgarch
 )

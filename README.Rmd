@@ -142,7 +142,7 @@ sigt_lmgarch <- sigt(model_lmgarch)
 TS2 <- cbind(
   "Log-returns" = rt,
   "MAFILog-GARCH" = sigt1,
-  "MEGARCH" = sigt9,
+  "MEGARCH" = sigt10,
   "FIAPARCH" = sigt_fiaparch,
   "LMGARCH" = sigt_lmgarch
 )
