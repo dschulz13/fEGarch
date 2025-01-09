@@ -62,4 +62,5 @@ Imports:
     esemifar,
     zoo,
     stats,
-    utils
+    utils,
+    rugarch
