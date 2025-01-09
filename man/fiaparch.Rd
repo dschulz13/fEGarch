@@ -9,6 +9,7 @@ fiaparch(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   include_mean = TRUE,
+  drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
   UB = NULL
@@ -34,6 +35,10 @@ and their three skewed variants (\code{"snorm"}, \code{"sstd"},
 \item{include_mean}{a logical value indicating whether or not to include
 the series' mean in the maximum-likelihood estimation process; for
 \code{include_mean = FALSE}, the mean is fixed to zero.}
+
+\item{drange}{a two-element numeric vector that gives the boundaries of the
+search interval for the fractional differencing parameter \eqn{d}; is
+overwritten by the settings of the arguments \code{LB} and \code{UB}.}
 
 \item{start_pars}{the starting parameters for the numerical optimization
 routine; should be of the same length as the parameter output vector
