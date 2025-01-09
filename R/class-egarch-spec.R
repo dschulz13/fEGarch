@@ -501,8 +501,9 @@ setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mea
 #'Available are shortcut specification functions for
 #'EGARCH \code{egarch_spec()}, FIEGARCH \code{fiegarch_spec()},
 #'MEGARCH \code{megarch_spec()}, Log-GARCH \code{loggarch_spec()},
-#'FILog-GARCH \code{filoggarch_spec()}, MLog-GARCH \code{mloggarch_spec()} and
-#'MAFILog-GARCH \code{mafiloggarch_spec()}.
+#'FILog-GARCH \code{filoggarch_spec()}, MLog-GARCH \code{mloggarch_spec()},
+#'FIMEGARCH \code{fimegarch_spec()} and
+#'FIMLog-GARCH \code{fimloggarch_spec()}.
 #'
 #'The following descriptions are following the descriptions in the
 #'documentation of the more general \code{fEGarch_spec()}. Please go there
@@ -537,10 +538,15 @@ setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mea
 #'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
 #'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 #'
-#'\eqn{\textbf{MAFILog-GARCH:}}
+#'\eqn{\textbf{FIMLog-GARCH:}}
 #'
 #'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
 #'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
+#'
+#'\eqn{\textbf{FIMEGARCH:}}
+#'
+#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 #'
 #'@name submodel-specs
 #'
@@ -561,6 +567,24 @@ megarch_spec <- function(
     model_type = "eGARCH",
     orders = orders,
     long_memo = FALSE,
+    cond_dist = cond_dist,
+    include_mean = include_mean,
+    powers = c(0, 1),
+    modulus = c(TRUE, FALSE)
+  )
+}
+
+#'@export
+#'@rdname submodel-specs
+fimegarch_spec <- function(
+    orders = c(1, 1),
+    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    include_mean = TRUE
+) {
+  fEGarch_spec(
+    model_type = "eGARCH",
+    orders = orders,
+    long_memo = TRUE,
     cond_dist = cond_dist,
     include_mean = include_mean,
     powers = c(0, 1),
@@ -624,7 +648,7 @@ mloggarch_spec <- function(
 
 #'@export
 #'@rdname submodel-specs
-mafiloggarch_spec <- function(
+fimloggarch_spec <- function(
     orders = c(1, 1),
     cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
     include_mean = TRUE
@@ -841,7 +865,7 @@ goal_fun_creator_egarch <- function(
 
 
 setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, start_pars = NULL, LB = NULL,
+  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL,
     UB = NULL) {
 
   rt_core <- zoo::coredata(rt)
@@ -905,8 +929,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (lm) {
     d_spar <- 0.1
-    d_low <- 0
-    d_up <- 0.4999
+    d_low <- drange[[1]]
+    d_up <- drange[[2]]
     d_name <- "d"
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
@@ -1185,7 +1209,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, start_pars = NULL, LB = NULL, UB = NULL) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL, UB = NULL) {
   rt_core <- zoo::coredata(rt)
 
   order <- orders(spec)
@@ -1232,8 +1256,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   if (lm) {
     d_spar <- 0.1
-    d_low <- 0
-    d_up <- 0.4999
+    d_low <- drange[[1]]
+    d_up <- drange[[2]]
     d_name <- "d"
   } else {
     d_spar <- d_low <- d_up <- numeric(0)

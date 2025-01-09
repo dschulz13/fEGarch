@@ -58,7 +58,7 @@ spec1 <- fEGarch_spec(
                                # to the asymmetry and magnitude terms, respectively
 )
 
-# -> Specification now aligns with that of MAFILog-GARCH(1, 1) with
+# -> Specification now aligns with that of FIMLog-GARCH(1, 1) with
 #    conditional normal distribution
 
 ```
@@ -89,19 +89,20 @@ spec4 <- egarch_spec()          # Specification for EGARCH
 spec5 <- loggarch_spec()        # Specification for Log-GARCH
 spec6 <- fiegarch_spec()        # Specification for FIEGARCH
 spec7 <- filoggarch_spec()      # Specification for FILog-GARCH
-spec8 <- mafiloggarch_spec()    # Specification for MAFILog-GARCH
+spec8 <- fimloggarch_spec()     # Specification for FIMLog-GARCH
+spec9 <- fimegarch_spec()       # Specification for FIMEGARCH
 
 # -> All with adjustable arguments "orders", "cond_dist" and "include_mean".
 
-spec9 <- megarch_spec(orders = c(2, 1), cond_dist = "std",
+spec10 <- megarch_spec(orders = c(2, 1), cond_dist = "std",
                            include_mean = FALSE)
 ```
 
 They can all be used in `fEGarch()`. In the following, the previously created model specification `spec9` is considered for the log-returns. The other specifications can be applied analogously.
 
 ```{r}
-model9 <- fEGarch(spec9, rt)   # ... and so on for other specifications
-model9
+model10 <- fEGarch(spec10, rt)   # ... and so on for other specifications
+model10
 ```
 
 ### Illustrations
@@ -110,11 +111,11 @@ Estimation objects returned by `fEGarch()` contain several elements. They can be
 
 ```{r}
 sigt1 <- sigt(model1)
-sigt9 <- model9@sigt
+sigt10 <- model10@sigt
 TS <- cbind(
   "Log-returns" = rt,
   "Model 1" = sigt1,
-  "Model 9" = sigt9
+  "Model 10" = sigt10
 )
 ```
 

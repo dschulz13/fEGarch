@@ -3,15 +3,22 @@
 \name{submodel-specs}
 \alias{submodel-specs}
 \alias{megarch_spec}
+\alias{fimegarch_spec}
 \alias{egarch_spec}
 \alias{fiegarch_spec}
 \alias{mloggarch_spec}
-\alias{mafiloggarch_spec}
+\alias{fimloggarch_spec}
 \alias{loggarch_spec}
 \alias{filoggarch_spec}
 \title{EGARCH Family Submodel Specification}
 \usage{
 megarch_spec(
+  orders = c(1, 1),
+  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  include_mean = TRUE
+)
+
+fimegarch_spec(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   include_mean = TRUE
@@ -35,7 +42,7 @@ mloggarch_spec(
   include_mean = TRUE
 )
 
-mafiloggarch_spec(
+fimloggarch_spec(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   include_mean = TRUE
@@ -82,8 +89,9 @@ EGARCH family.
 Available are shortcut specification functions for
 EGARCH \code{egarch_spec()}, FIEGARCH \code{fiegarch_spec()},
 MEGARCH \code{megarch_spec()}, Log-GARCH \code{loggarch_spec()},
-FILog-GARCH \code{filoggarch_spec()}, MLog-GARCH \code{mloggarch_spec()} and
-MAFILog-GARCH \code{mafiloggarch_spec()}.
+FILog-GARCH \code{filoggarch_spec()}, MLog-GARCH \code{mloggarch_spec()},
+FIMEGARCH \code{fimegarch_spec()} and
+FIMLog-GARCH \code{fimloggarch_spec()}.
 
 The following descriptions are following the descriptions in the
 documentation of the more general \code{fEGarch_spec()}. Please go there
@@ -118,10 +126,15 @@ first to understand the following descriptions on the arguments of
 \code{model_type = "eGARCH"}, \code{long_memo = FALSE},
 \code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 
-\eqn{\textbf{MAFILog-GARCH:}}
+\eqn{\textbf{FIMLog-GARCH:}}
 
 \code{model_type = "eGARCH"}, \code{long_memo = TRUE},
 \code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
+
+\eqn{\textbf{FIMEGARCH:}}
+
+\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 }
 \examples{
 spec <- megarch_spec(cond_dist = "std")

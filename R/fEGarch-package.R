@@ -24,7 +24,8 @@
 #'submodels are available as well: \code{\link{egarch_spec}},
 #'\code{\link{loggarch_spec}}, \code{\link{megarch_spec}},
 #'\code{\link{mloggarch_spec}}, \code{\link{fiegarch_spec}},
-#'\code{\link{filoggarch_spec}} and \code{\link{mafiloggarch_spec}}.
+#'\code{\link{filoggarch_spec}},
+#'\code{\link{fimegarch_spec}} and \code{\link{fimloggarch_spec}}.
 #'
 #'As a popular alternative for the sake of comparison, a FIAPARCH
 #'model can be fitted as well using \code{\link{fiaparch}}. The

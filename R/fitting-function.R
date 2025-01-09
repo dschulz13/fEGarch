@@ -10,6 +10,12 @@
 #'\link[fEGarch]{mloggarch_spec}, among others.
 #'@param rt the input time series to fit the model to ordered from
 #'past to present; can also be a \code{"zoo"} class object.
+#'@param drange a two-element numeric vector that indicates the boundaries
+#'of the interval over which to search for the fractional differencing
+#'parameter \eqn{d}; by default, \eqn{d} being searched for on the
+#'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+#'settings in the arguments
+#'\code{LB} and \code{UB} overwrite this argument.
 #'@param start_pars a vector with starting parameters for the
 #'optimization; must be of the same length as the output vector of
 #'parameters; the default NULL uses internally saved default sets
@@ -89,10 +95,10 @@
 #'}
 
 fEGarch <- function(spec = egarch_spec(),
-    rt,
+    rt, drange = c(0, 0.5 - 1e6),
     start_pars = NULL, LB = NULL, UB = NULL) {
 
-  fEGarch_fit(spec, rt, start_pars, LB, UB)
+  fEGarch_fit(spec, rt, drange, start_pars, LB, UB)
 
 }
 
