@@ -96,36 +96,67 @@ rsged_s <- function(n, shape = 2, skew = 1) {
 
 #'@export
 fiegarch_sim <- function(n = 750, nstart = 1000,
-                         mu = 0, omega_sig = -8.66, phi = 0.8, psi = NULL,
+                         mu = 0, omega_sig = -9, phi = 0.8, psi = numeric(0),
                          kappa = -0.2, gamma = 0.3, d = 0.25, shape = 2,
                          df = 10,
                          skew = 1,
                          cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged")) {
 
   cond_dist <- match.arg(cond_dist)
-  innov <- rnorm(n + nstart)
-
-  PDFunc <- lookup_table[["fun1"]][[cond_dist]]
-  if (cond_dist %in% c("std", "sstd")) {
-    shape <- df
+  nn <- n + nstart          # pre-sample plus sample number of observations
+  if ( cond_dist == "norm") {
+    innov <- rnorm(nn + 1)    # we need innovations for our pre-sample and sample time points plus for one time point before the pre-sample
+  } else if (cond_dist == "std") {
+    innov <- rt(nn + 1, df = df) / sqrt(df / (df + 2))
   }
 
+
+  # Obtain the probability density function for the innov. distribution
+  # from the internal lookup table
+  PDFunc <- lookup_table[["fun1"]][[cond_dist]]
+  if (cond_dist %in% c("std", "sstd")) {
+    shape <- df    # all pdfs are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+  }
+
+  # Define a function that follows the most basic definition of the expectation of
+  # a continuous random variable (here: for the absolute innovations) but just for
+  # the part behind the integration symbol
   Efun <- function(x, PDFunc, shape, skew) {
     abs(x) * PDFunc(x, shape = shape, skew = skew)
   }
 
+  # Then we can integrate numerically over that function and thus
+  # follow the definition of an expectation
   Econst <- stats::integrate(
     f = Efun, lower = -Inf, upper = Inf,
     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
-    stop.on.error = FALSE
+    stop.on.error = FALSE, PDFunc = PDFunc, shape = shape,
+    skew = skew
   )[[1]]
 
-  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = psi, d = d, max_i = )
+  # we need coefficients for the 1000 pre-pre-sample time points, for the pre-sample,
+  # and for the sample with the exception of the very last sample time point
+  m <- M <- nn + 1000 - 1
+  if (m < 5000) {
+    M <- 5000
+  }
+  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = psi, d = d,
+                                     max_i = M)[-1]
 
-  c(fiegarch_sim_ar(
-    innov = innov, omega_sig = omega_sig, coef_inf = coef_inf,
+  C_omega <- 1 - sum(coef_inf)
+
+  # problem: uncond. variance seems to be continuously (but slowly) decreasing over time
+
+  sim <- fiegarch_sim_ar(
+    innov = innov, omega_sig = omega_sig, coef_inf = head(coef_inf, m),
     kappa = kappa, gamma = gamma, n_out = n, mu = mu,
-    Econst = Econst
-  ))
+    Econst = Econst, C_omega = C_omega
+  )
+
+  out <- list(
+    "rt" = ts(c(sim[["rt"]])),
+    "sigt" = ts(c(sim[["sigt"]])),
+    "etat" = ts(c(sim[["etat"]]))
+  )
 
 }

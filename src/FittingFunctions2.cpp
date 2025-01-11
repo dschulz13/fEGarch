@@ -331,13 +331,14 @@ arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
 }
 
 // [[Rcpp::export]]
-arma::vec fiegarch_sim_ar(const arma::vec& innov, const double omega_sig,
+Rcpp::List fiegarch_sim_ar(const arma::vec& innov, const double omega_sig,
                           const arma::rowvec& coef_inf,
                           const double kappa,
                           const double gamma, const int n_out,
-                          const double mu, const double Econst) {
+                          const double mu, const double Econst,
+                          const double C_omega) {
 
-  const int n = innov.size();
+  const int n = innov.size() - 1;
   const int n_pre = 1000;
   const int n_start = n - n_out;
   const int n_all = n + n_pre;
@@ -347,18 +348,20 @@ arma::vec fiegarch_sim_ar(const arma::vec& innov, const double omega_sig,
   lnsig2.fill(omega_sig);
 
   const arma::rowvec coef_rev = arma::reverse(coef_inf);
-  const double omega = omega_sig / (1.0 - arma::accu(coef_inf));
+  const double omega = omega_sig * C_omega;
 
   arma::vec gfun = kappa * innov + gamma * (arma::abs(innov) - Econst);
 
   for (int i = n_pre; i < n_all; ++i) {
 
-    lnsig2(i) = omega + arma::as_scalar(coef_inf.subvec(n_coef - i, n_coef_m1) * lnsig2.subvec(0, i - 1)) + gfun(i - n_pre);
+    lnsig2(i) = omega + arma::as_scalar(coef_rev.subvec(n_coef - i, n_coef_m1) * lnsig2.subvec(0, i - 1)) + gfun(i - n_pre);
 
   }
 
-  const arma::vec rt = mu + arma::exp(lnsig2.subvec(n_all - n_out, n_all - 1) / 2.0) % innov.subvec(n - n_out, n - 1);
+  const arma::vec sigt = arma::exp(lnsig2.subvec(n_all - n_out, n_all - 1) / 2.0);
+  const arma::vec innov_out = innov.subvec(n + 1 - n_out, n);
 
-  return rt;
+  const arma::vec rt = mu + sigt % innov_out;
 
+  return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
 }
