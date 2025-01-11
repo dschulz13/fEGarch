@@ -96,7 +96,7 @@ rsged_s <- function(n, shape = 2, skew = 1) {
 
 #'@export
 fiegarch_sim <- function(n = 750, nstart = 1000,
-                         mu = 0, omega_sig = -9, phi = 0.8, psi = numeric(0),
+                         mu = 0, omega_sig = -9, phi = 0.6, psi = numeric(0),
                          kappa = -0.2, gamma = 0.3, d = 0.25, shape = 2,
                          df = 10,
                          skew = 1,

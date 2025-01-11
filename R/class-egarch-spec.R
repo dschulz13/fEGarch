@@ -979,7 +979,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
       UB <- c(
         list(NULL, max(rt))[[incl_mean + 1]],
-        mean_lrt2_s + 0.6 * abs(mean_lrt2_s - max(lrt2_shift)),
+        mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
         rep(2, p),
         rep(2, q - 1),
         rep(2, 2),
