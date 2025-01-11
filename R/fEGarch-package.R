@@ -93,10 +93,10 @@
 #'\item Yuanhua Feng (Department of Economics, Paderborn
 #'University), \cr
 #'Author
-#'\item Oliver Kojo Ayensu (Department of Economics, Paderborn
+#'\item Christian Peitz (Department of Economics, Paderborn
 #'University), \cr
 #'Author
-#'\item Christian Peitz (Department of Economics, Paderborn
+#'\item Oliver Kojo Ayensu (Department of Economics, Paderborn
 #'University), \cr
 #'Author
 #'}

@@ -732,11 +732,11 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
   alpha <- psi * kappa
   beta <- psi * gamma
 
-  E_asy <- integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  E_asy <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
-  E_mag <- integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  E_mag <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[2]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
@@ -802,11 +802,11 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
                                      max_i = n - 1)
 
-  E_asy <- integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  E_asy <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[1]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
-  E_mag <- integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  E_mag <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1, pow = pows[[2]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
@@ -1104,7 +1104,7 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
     skew <- 0
   }
 
-  Elneta2 <- integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
@@ -1156,7 +1156,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
     skew <- 0
   }
 
-  Elneta2 <- integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]

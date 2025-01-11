@@ -242,6 +242,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fiegarch_sim_ar
+arma::vec fiegarch_sim_ar(const arma::vec& innov, const double omega_sig, const arma::rowvec& coef_inf, const double kappa, const double gamma, const int n_out, const double mu, const double Econst);
+RcppExport SEXP _fEGarch_fiegarch_sim_ar(SEXP innovSEXP, SEXP omega_sigSEXP, SEXP coef_infSEXP, SEXP kappaSEXP, SEXP gammaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP EconstSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type innov(innovSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega_sig(omega_sigSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type kappa(kappaSEXP);
+    Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const int >::type n_out(n_outSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type Econst(EconstSEXP);
+    rcpp_result_gen = Rcpp::wrap(fiegarch_sim_ar(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, Econst));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_norm", (DL_FUNC) &_fEGarch_pdf_norm, 3},
@@ -260,6 +278,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_loggarch_short", (DL_FUNC) &_fEGarch_sigt_loggarch_short, 7},
     {"_fEGarch_sigt_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_fiaparch_Cpp, 6},
     {"_fEGarch_sigt_lmgarch_Cpp", (DL_FUNC) &_fEGarch_sigt_lmgarch_Cpp, 5},
+    {"_fEGarch_fiegarch_sim_ar", (DL_FUNC) &_fEGarch_fiegarch_sim_ar, 8},
     {NULL, NULL, 0}
 };
 

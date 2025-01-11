@@ -93,3 +93,39 @@ rsged_s <- function(n, shape = 2, skew = 1) {
   p <- runif(n)
   inv_cdf_fun(p = p, dfun = pdf_skew_sged_s, shape = shape, skew = skew)
 }
+
+#'@export
+fiegarch_sim <- function(n = 750, nstart = 1000,
+                         mu = 0, omega_sig = -8.66, phi = 0.8, psi = NULL,
+                         kappa = -0.2, gamma = 0.3, d = 0.25, shape = 2,
+                         df = 10,
+                         skew = 1,
+                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged")) {
+
+  cond_dist <- match.arg(cond_dist)
+  innov <- rnorm(n + nstart)
+
+  PDFunc <- lookup_table[["fun1"]][[cond_dist]]
+  if (cond_dist %in% c("std", "sstd")) {
+    shape <- df
+  }
+
+  Efun <- function(x, PDFunc, shape, skew) {
+    abs(x) * PDFunc(x, shape = shape, skew = skew)
+  }
+
+  Econst <- stats::integrate(
+    f = Efun, lower = -Inf, upper = Inf,
+    subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+    stop.on.error = FALSE
+  )[[1]]
+
+  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = psi, d = d, max_i = )
+
+  c(fiegarch_sim_ar(
+    innov = innov, omega_sig = omega_sig, coef_inf = coef_inf,
+    kappa = kappa, gamma = gamma, n_out = n, mu = mu,
+    Econst = Econst
+  ))
+
+}

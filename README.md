@@ -99,7 +99,7 @@ model1
 Using the model description in the documentation of `fEGarch_spec()`,
 the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6602 + (1-0.8681 B)^{-1}(1-B)^{-0.2753}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
 $$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
@@ -210,15 +210,15 @@ model_fiaparch
 #>  
 #> Fitted parameters:
 #> 
-#>          par     se   tval   pval
-#> mu    0.0004 0.0002 1.8601 0.0629
-#> omega 0.0002 0.0084 0.0259 0.9794
-#> phi1  0.1796 0.8386 0.2141 0.8304
-#> beta1 0.4952 2.1943 0.2257 0.8215
-#> gamma 1.0000 1.3625 0.7339 0.4630
-#> delta 1.2438 1.7212 0.7227 0.4699
-#> d     0.3959 1.4116 0.2805 0.7791
-#> df    7.8297 5.8985 1.3274 0.1844
+#>          par     se    tval   pval
+#> mu    0.0004 0.0013  0.3392 0.7345
+#> omega 0.0002 0.0006  0.3723 0.7097
+#> phi1  0.1796 0.1249  1.4372 0.1507
+#> beta1 0.4952 0.2493  1.9864 0.0470
+#> gamma 1.0000 0.3048  3.2809 0.0010
+#> delta 1.2438 0.0503 24.7130 0.0000
+#> d     0.3959 0.1825  2.1692 0.0301
+#> df    7.8297 2.7589  2.8380 0.0045
 #>  
 #> Information criteria:
 #> AIC: -6.5484, BIC: -6.5398
@@ -229,7 +229,7 @@ sigt_fiaparch <- sigt(model_fiaparch)
 sigt_lmgarch <- sigt(model_lmgarch)
 TS2 <- cbind(
   "Log-returns" = rt,
-  "MAFILog-GARCH" = sigt1,
+  "FIMLog-GARCH" = sigt1,
   "MEGARCH" = sigt10,
   "FIAPARCH" = sigt_fiaparch,
   "LMGARCH" = sigt_lmgarch
@@ -257,23 +257,23 @@ discover.
 
 ## Datasets
 
-The package contains an example time series, namely the Standard and
-Poor’s 500 daily log-return series from January 04, 2000, until November
-30, 2024, obtained from Yahoo Finance. The series is formatted as a time
-series object of class `"zoo"`.
+The package contains an example time series `SP500`, namely the Standard
+and Poor’s 500 daily log-return series from January 04, 2000, until
+November 30, 2024, obtained from Yahoo Finance. The series is formatted
+as a time series object of class `"zoo"`.
 
 ## Authors
-
-- Yuanhua Feng (Department Economics, Paderborn University, Germany)
-  (Author)
 
 - Dominik Schulz (Department Economics, Paderborn University, Germany)
   (Author, Maintainer)
 
-- Oliver Kojo Ayensu (Department Economics, Paderborn University,
-  Germany) (Author)
+- Yuanhua Feng (Department Economics, Paderborn University, Germany)
+  (Author)
 
 - Christian Peitz (Affiliation to be added!!!)
+
+- Oliver Kojo Ayensu (Department Economics, Paderborn University,
+  Germany) (Author)
 
 ## Contact
 
