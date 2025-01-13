@@ -94,64 +94,261 @@ rsged_s <- function(n, shape = 2, skew = 1) {
   inv_cdf_fun(p = p, dfun = pdf_skew_sged_s, shape = shape, skew = skew)
 }
 
+#
+# fiegarch_sim <- function(n = 750, nstart = 1000,
+#                          mu = 0, omega_sig = -9, phi = 0.6, psi = numeric(0),
+#                          kappa = -0.2, gamma = 0.3, d = 0.25, shape = 2,
+#                          df = 10,
+#                          skew = 1,
+#                          cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged")) {
+#
+#   cond_dist <- match.arg(cond_dist)
+#   nn <- n + nstart          # pre-sample plus sample number of observations
+#   if ( cond_dist == "norm") {
+#     innov <- rnorm(nn + 1)    # we need innovations for our pre-sample and sample time points plus for one time point before the pre-sample
+#   } else if (cond_dist == "std") {
+#     innov <- rt(nn + 1, df = df) / sqrt(df / (df + 2))
+#   }
+#
+#
+#   # Obtain the probability density function for the innov. distribution
+#   # from the internal lookup table
+#   PDFunc <- lookup_table[["fun1"]][[cond_dist]]
+#   if (cond_dist %in% c("std", "sstd")) {
+#     shape <- df    # all pdfs are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+#   }
+#
+#   # Define a function that follows the most basic definition of the expectation of
+#   # a continuous random variable (here: for the absolute innovations) but just for
+#   # the part behind the integration symbol
+#   Efun <- function(x, PDFunc, shape, skew) {
+#     abs(x) * PDFunc(x, shape = shape, skew = skew)
+#   }
+#
+#   # Then we can integrate numerically over that function and thus
+#   # follow the definition of an expectation
+#   Econst <- stats::integrate(
+#     f = Efun, lower = -Inf, upper = Inf,
+#     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+#     stop.on.error = FALSE, PDFunc = PDFunc, shape = shape,
+#     skew = skew
+#   )[[1]]
+#
+#   # we need coefficients for the 1000 pre-pre-sample time points, for the pre-sample,
+#   # and for the sample with the exception of the very last sample time point
+#   m <- M <- nn + 1000 - 1
+#   if (m < 5000) {
+#     M <- 5000
+#   }
+#   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = psi, d = d,
+#                                      max_i = M)[-1]
+#
+#   C_omega <- 1 - sum(coef_inf)
+#
+#   # problem: uncond. variance seems to be continuously (but slowly) decreasing over time
+#
+#   sim <- fiegarch_sim_ar(
+#     innov = innov, omega_sig = omega_sig, coef_inf = head(coef_inf, m),
+#     kappa = kappa, gamma = gamma, n_out = n, mu = mu,
+#     Econst = Econst, C_omega = C_omega
+#   )
+#
+#   out <- list(
+#     "rt" = ts(c(sim[["rt"]])),
+#     "sigt" = ts(c(sim[["sigt"]])),
+#     "etat" = ts(c(sim[["etat"]]))
+#   )
+#
+# }
+
+#'Simulate From Models of the Broader EGARCH Family
+#'
+#'A streamlined simulation function to simulate from models
+#'that are part of the broader EGARCH family specifiable
+#'through \code{\link{fEGarch_spec}}.
+#'
+#'@param spec an object of class \code{"egarch_type_spec"} or
+#'\code{"loggarch_type_spec"} returned by \code{\link{fEGarch_spec}}
+#'or related wrapper functions.
+#'@param pars a named list with the parameter specifications; the user
+#'can provide a named list with only the settings they would like to adjust
+#'relative to the default settings.
+#'@param n the number of observations to return.
+#'@param nstart the number of burn-in observations to simulate before
+#'the final \code{n} values to keep; the first \code{nstart} values
+#'are not returned.
+#'
+#'@details
+#'See the documentation on \code{\link{fEGarch_spec}} for information
+#'on the models of the broader EGARCH family. This function provides
+#'an easy way to simulate from these models.
+#'
+#'@return
+#'A list with three elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations, and
+#'\code{sigt} are the correspondingly simulated conditional
+#'standard deviations.
+#'
 #'@export
-fiegarch_sim <- function(n = 750, nstart = 1000,
-                         mu = 0, omega_sig = -9, phi = 0.6, psi = numeric(0),
-                         kappa = -0.2, gamma = 0.3, d = 0.25, shape = 2,
-                         df = 10,
-                         skew = 1,
-                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged")) {
+#'
+#'@examples
+#'spec <- megarch_spec()
+#'sim <- fEGarch_sim(spec = spec)
+#'mat <- do.call(cbind, sim)
+#'plot(mat, main = "")
+#'
+fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
+                           mu = 0,
+                           omega_sig = -9,
+                           phi = 0.8,
+                           psi = numeric(0),
+                           kappa = -0.2,
+                           gamma = 0.3,
+                           d = 0.25,
+                           df = 10,
+                           shape = 2,
+                           skew = 1
+                         ), n = 1000, nstart = 5e3) {
 
-  cond_dist <- match.arg(cond_dist)
   nn <- n + nstart          # pre-sample plus sample number of observations
-  if ( cond_dist == "norm") {
-    innov <- rnorm(nn + 1)    # we need innovations for our pre-sample and sample time points plus for one time point before the pre-sample
-  } else if (cond_dist == "std") {
-    innov <- rt(nn + 1, df = df) / sqrt(df / (df + 2))
+
+  # Parameter defaults (relevant if a truncated parameter list is provided)
+  pars_default <- lookup_table$sim_pars_default
+  names_pars <- names(pars)
+  for (nam in names_pars) {
+    pars_default[[nam]] <- pars[[nam]]
   }
 
+  # Extract parameter settings
+  mu <- pars_default$mu
+  omega_sig <- pars_default$omega_sig
+  phi <- pars_default$phi
+  psi <- pars_default$psi
+  kappa <- pars_default$kappa
+  gamma <- pars_default$gamma
+  d <- pars_default$d
+  df <- pars_default$df
+  shape <- pars_default$shape
+  skew <- pars_default$skew
+  cond_dist <- spec@cond_dist
+  lm <- spec@long_memo
 
-  # Obtain the probability density function for the innov. distribution
-  # from the internal lookup table
-  PDFunc <- lookup_table[["fun1"]][[cond_dist]]
   if (cond_dist %in% c("std", "sstd")) {
-    shape <- df    # all pdfs are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+    shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
   }
 
-  # Define a function that follows the most basic definition of the expectation of
-  # a continuous random variable (here: for the absolute innovations) but just for
-  # the part behind the integration symbol
-  Efun <- function(x, PDFunc, shape, skew) {
-    abs(x) * PDFunc(x, shape = shape, skew = skew)
-  }
+  # Simulate innovations following selected distribution
+  sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
+  innov <- sim_fun(nn, shape = shape, skew = skew)
 
-  # Then we can integrate numerically over that function and thus
+  PDF <- lookup_table$fun1[[cond_dist]]
+  model_type <- c("logGARCH", "eGARCH")[[inherits(spec, "egarch_type_spec") + 1]]
+
+  if (model_type == "eGARCH") {
+
+  modulus <- spec@modulus
+  powers <- spec@powers
+
+  mod_a <- modulus[[1]]
+  mod_m <- modulus[[2]]
+  pow_a <- powers[[1]]
+  pow_m <- powers[[2]]
+  log_a <- (pow_a > 0) + 1
+  log_m <- (pow_m > 0) + 1
+
+  # Obtain the various functions to integrate over for the expectations
+  # in the magnitude and asymmetry terms
+  Func_a <- exp_funs[["asy"]][[mod_a + 1]][[log_a]]
+  Func_m <- exp_funs[["mag"]][[mod_m + 1]][[log_m]]
+
+  # Then we can integrate numerically over those function and thus
   # follow the definition of an expectation
-  Econst <- stats::integrate(
-    f = Efun, lower = -Inf, upper = Inf,
+  E_asy <- stats::integrate(
+    f = Func_a, lower = -Inf, upper = Inf,
     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
-    stop.on.error = FALSE, PDFunc = PDFunc, shape = shape,
+    stop.on.error = FALSE, pow = pow_a, dfun = PDF, shape = shape,
     skew = skew
   )[[1]]
 
-  # we need coefficients for the 1000 pre-pre-sample time points, for the pre-sample,
+  E_mag <- stats::integrate(
+    f = Func_m, lower = -Inf, upper = Inf,
+    subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+    stop.on.error = FALSE, pow = pow_m, dfun = PDF, shape = shape,
+    skew = skew
+  )[[1]]
+
+  mode <- mode_mat[log_a, log_m]
+  if (lm) {
+
+  # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
   # and for the sample with the exception of the very last sample time point
-  m <- M <- nn + 1000 - 1
-  if (m < 5000) {
-    M <- 5000
-  }
-  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = psi, d = d,
-                                     max_i = M)[-1]
 
-  C_omega <- 1 - sum(coef_inf)
+  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
+                                     max_i = nn)
 
-  # problem: uncond. variance seems to be continuously (but slowly) decreasing over time
-
-  sim <- fiegarch_sim_ar(
-    innov = innov, omega_sig = omega_sig, coef_inf = head(coef_inf, m),
+  sim <- egarch_longmemo_type_sim(
+    innov = innov, omega_sig = omega_sig, coef_inf = coef_inf,
     kappa = kappa, gamma = gamma, n_out = n, mu = mu,
-    Econst = Econst, C_omega = C_omega
-  )
+    E_mag = E_mag, E_asy = E_asy, powers = powers,
+    modulus = modulus, mode = mode)
+
+  } else {
+
+  sim <- egarch_shortmemo_type_sim(
+    innov = innov, omega_sig = omega_sig, ar_coef = phi,
+    ma_coef = c(1, psi),
+    kappa = kappa, gamma = gamma, n_out = n, mu = mu,
+    E_mag = E_mag, E_asy = E_asy, powers = powers,
+    modulus = modulus, mode = mode)
+
+  }
+
+  } else if (model_type == "logGARCH") {
+
+    Func <- function(x, shape, skew, dfun) {
+      log(x^2) * dfun(x, shape = shape, skew = skew)
+    }
+
+    E_const <- stats::integrate(
+      f = Func, lower = -Inf, upper = Inf,
+      subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+      stop.on.error = FALSE, dfun = PDF, shape = shape,
+      skew = skew
+    )[[1]]
+
+    if (lm) {
+
+      coef_inf <- esemifar::farima_to_ma(
+        ar = phi, ma = psi, d = d, max_i = nn
+      )[-1]
+
+      sim <- loggarch_longmemo_type_sim(
+        innov, omega_sig,
+        coef_inf = coef_inf,
+        n_out = n,
+        mu = mu,
+        Econst = E_const)
+
+    } else {
+
+      n_ar <- length(phi)
+      n_ma <- length(psi)
+      if (n_ma > n_ar) {
+        phi <- c(phi, rep(0, n_ma - n_ar))
+      } else if (n_ar > n_ma) {
+        psi <- c(psi, rep(0, n_ar - n_ma))
+      }
+
+      sim <- loggarch_shortmemo_type_sim(
+        innov, omega_sig,
+        ar_coef = phi, ma_coef = psi + phi,
+        n_out = n,
+        mu = mu,
+        Econst = E_const)
+
+    }
+
+  }
 
   out <- list(
     "rt" = ts(c(sim[["rt"]])),

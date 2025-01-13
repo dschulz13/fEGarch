@@ -29,6 +29,8 @@
 #'of the same length as the output vector of
 #'parameters; the default NULL uses internally saved default sets
 #'of upper boundary values.
+#'@param control a list that is passed to \code{control} of the
+#'function \code{solnp} of the package \code{Rsolnp}.
 #'
 #'@export
 #'
@@ -97,9 +99,9 @@
 
 fEGarch <- function(spec = egarch_spec(),
     rt, drange = c(0, 0.5 - 1e-6),
-    start_pars = NULL, LB = NULL, UB = NULL) {
+    start_pars = NULL, LB = NULL, UB = NULL, control = list()) {
 
-  fEGarch_fit(spec, rt, drange, start_pars, LB, UB)
+  fEGarch_fit(spec, rt, drange, start_pars, LB, UB, control)
 
 }
 

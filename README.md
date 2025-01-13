@@ -85,12 +85,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0001   6.1010 0.0000
-#> omega_sig -8.6600 0.1501 -57.6803 0.0000
-#> phi1       0.8680 0.0248  35.0699 0.0000
-#> kappa     -0.2363 0.0151 -15.6795 0.0000
-#> gamma      0.3194 0.0226  14.1115 0.0000
-#> d          0.2754 0.0424   6.5012 0.0000
+#> mu         0.0003 0.0001   4.2862 0.0000
+#> omega_sig -8.6596 0.1659 -52.2046 0.0000
+#> phi1       0.8680 0.0244  35.5788 0.0000
+#> kappa     -0.2363 0.0160 -14.7275 0.0000
+#> gamma      0.3194 0.0213  14.9766 0.0000
+#> d          0.2755 0.0419   6.5704 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.4945, BIC: -6.4880
@@ -147,12 +147,12 @@ model10
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> omega_sig -9.0481 0.0721 -125.5459 0.0000
-#> phi1       0.9685 0.0149   65.0348 0.0000
-#> phi2       0.0028 0.0144    0.1934 0.8466
-#> kappa     -0.3062 0.0178  -17.2352 0.0000
-#> gamma      0.1650 0.0121   13.5942 0.0000
-#> df         7.4369 0.6520   11.4070 0.0000
+#> omega_sig -9.0464 0.0743 -121.7429 0.0000
+#> phi1       0.9715 0.0374   25.9890 0.0000
+#> phi2      -0.0000 0.0364   -0.0000 1.0000
+#> kappa     -0.3046 0.0202  -15.0765 0.0000
+#> gamma      0.1644 0.0129   12.7266 0.0000
+#> df         7.4339 0.6847   10.8578 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.5358, BIC: -6.5294
@@ -250,7 +250,9 @@ The main functions of the package are:
 
 - `fiaparch()`: FIAPARCH model fitting,
 
-- `lmgarch()`: LMGARCH model fitting.
+- `lmgarch()`: LMGARCH model fitting,
+
+- `fEGarch_sim()`: EGARCH family simulation.
 
 The package, however, provides many other useful functions for you to
 discover.

@@ -8,6 +8,11 @@ int signCpp(const double val) {
 }
 
 // [[Rcpp::export]]
+arma::vec signVecCpp(const arma::vec& vals) {
+    return arma::conv_to<arma::vec>::from(0.0 < vals) - arma::conv_to<arma::vec>::from(vals < 0.0);
+}
+
+// [[Rcpp::export]]
 arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
                                const double omega,
                                const arma::rowvec& phi,
@@ -330,38 +335,261 @@ arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
 
 }
 
+
+// Rcpp::List fiegarch_sim_ar(const arma::vec& innov, const double omega_sig,
+//                           const arma::rowvec& coef_inf,
+//                           const double kappa,
+//                           const double gamma, const int n_out,
+//                           const double mu, const double Econst,
+//                           const double C_omega) {
+//
+//   const int n = innov.size() - 1;
+//   const int n_pre = 1000;
+//   const int n_start = n - n_out;
+//   const int n_all = n + n_pre;
+//   const int n_coef = coef_inf.size();
+//   const int n_coef_m1 = n_coef - 1;
+//   arma::vec lnsig2(n_all);
+//   lnsig2.fill(omega_sig);
+//
+//   const arma::rowvec coef_rev = arma::reverse(coef_inf);
+//   const double omega = omega_sig * C_omega;
+//
+//   arma::vec gfun = kappa * innov + gamma * (arma::abs(innov) - Econst);
+//
+//   for (int i = n_pre; i < n_all; ++i) {
+//
+//     lnsig2(i) = omega + arma::as_scalar(coef_rev.subvec(n_coef - i, n_coef_m1) * lnsig2.subvec(0, i - 1)) + gfun(i - n_pre);
+//
+//   }
+//
+//   const arma::vec sigt = arma::exp(lnsig2.subvec(n_all - n_out, n_all - 1) / 2.0);
+//   const arma::vec innov_out = innov.subvec(n + 1 - n_out, n);
+//
+//   const arma::vec rt = mu + sigt % innov_out;
+//
+//   return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
+// }
+
 // [[Rcpp::export]]
-Rcpp::List fiegarch_sim_ar(const arma::vec& innov, const double omega_sig,
+Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig,
                           const arma::rowvec& coef_inf,
                           const double kappa,
                           const double gamma, const int n_out,
-                          const double mu, const double Econst,
-                          const double C_omega) {
+                          const double mu, const double E_mag,
+                          const double E_asy,
+                          const arma::vec& powers,
+                          const arma::vec& modulus,
+                          const std::string& mode) {
 
-  const int n = innov.size() - 1;
-  const int n_pre = 1000;
-  const int n_start = n - n_out;
+  const int n = innov.size();
+  const int n_pre = 1;
   const int n_all = n + n_pre;
   const int n_coef = coef_inf.size();
   const int n_coef_m1 = n_coef - 1;
-  arma::vec lnsig2(n_all);
-  lnsig2.fill(omega_sig);
+  arma::vec lnsig2(n);
 
   const arma::rowvec coef_rev = arma::reverse(coef_inf);
-  const double omega = omega_sig * C_omega;
 
-  arma::vec gfun = kappa * innov + gamma * (arma::abs(innov) - Econst);
+  const double mod1 = modulus(0);
+  const double mod2 = modulus(1);
+  const double pow1 = powers.size() > 0 ? powers(0) : 1.0; // Default to 1.0 for safety
+  const double pow2 = powers.size() > 1 ? powers(1) : 1.0;
 
-  for (int i = n_pre; i < n_all; ++i) {
+  arma::vec gfun = arma::zeros<arma::vec>(n_all);
+  arma::vec asy_term = arma::vec(n);
+  arma::vec mag_term = arma::vec(n);
 
-    lnsig2(i) = omega + arma::as_scalar(coef_rev.subvec(n_coef - i, n_coef_m1) * lnsig2.subvec(0, i - 1)) + gfun(i - n_pre);
+  if (mode == "pow_pow") {
+    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+  } else if (mode == "log_log") {
+    asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
+    mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
+  } else if (mode == "pow_log") {
+    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
+    mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
+  } else if (mode == "log_pow") {
+    asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+  } else {
+    Rcpp::stop("Invalid mode specified");
+  }
+
+  gfun.subvec(1, n_all - 1) = kappa * asy_term + gamma * mag_term;
+
+  for (int i = 0; i < n; ++i) {
+
+    lnsig2(i) = omega_sig + arma::as_scalar(coef_rev.subvec(n_coef_m1 - i, n_coef_m1) * gfun.subvec(0, i));
 
   }
 
-  const arma::vec sigt = arma::exp(lnsig2.subvec(n_all - n_out, n_all - 1) / 2.0);
-  const arma::vec innov_out = innov.subvec(n + 1 - n_out, n);
+  const arma::vec sigt = arma::exp(lnsig2.subvec(n - n_out, n - 1) / 2.0);
+  const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
   const arma::vec rt = mu + sigt % innov_out;
 
   return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
 }
+
+// [[Rcpp::export]]
+Rcpp::List egarch_shortmemo_type_sim(const arma::vec& innov, const double omega_sig,
+                          const arma::rowvec& ar_coef, const arma::rowvec& ma_coef,
+                          const double kappa,
+                          const double gamma, const int n_out,
+                          const double mu, const double E_mag,
+                          const double E_asy,
+                          const arma::vec& powers,
+                          const arma::vec& modulus,
+                          const std::string& mode) {
+
+  const int n = innov.size();
+
+  const int n_ar = ar_coef.size();
+  const int n_ma = ma_coef.size();
+  const int l = std::max(n_ar, n_ma);
+
+  const int n_pre = l;
+  const int n_all = n + n_pre;
+
+  arma::vec lnsig2(n_all);
+  lnsig2.fill(omega_sig);
+
+  const arma::rowvec ar_rev = arma::reverse(ar_coef);
+  const arma::rowvec ma_rev = arma::reverse(ma_coef);
+
+  const double mod1 = modulus(0);
+  const double mod2 = modulus(1);
+  const double pow1 = powers.size() > 0 ? powers(0) : 1.0; // Default to 1.0 for safety
+  const double pow2 = powers.size() > 1 ? powers(1) : 1.0;
+
+  arma::vec gfun = arma::zeros<arma::vec>(n_all);
+  arma::vec asy_term = arma::vec(n);
+  arma::vec mag_term = arma::vec(n);
+
+  if (mode == "pow_pow") {
+    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+  } else if (mode == "log_log") {
+    asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
+    mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
+  } else if (mode == "pow_log") {
+    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
+    mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
+  } else if (mode == "log_pow") {
+    asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+  } else {
+    Rcpp::stop("Invalid mode specified");
+  }
+
+  gfun.subvec(l, n_all - 1) = kappa * asy_term + gamma * mag_term;
+  const double omega = omega_sig * (1 - arma::accu(ar_coef));
+  const int lar = l - n_ar;
+  const int lma = l - n_ma;
+  const int lm1 = l - 1;
+  int li;
+
+  for (int i = 0; i < n; ++i) {
+
+    li = lm1 + i;
+
+    lnsig2(l + i) = omega +
+      arma::as_scalar(ar_rev * lnsig2.subvec(lar + i, li)) +
+      arma::as_scalar(ma_rev * gfun.subvec(lma + i, li));
+
+  }
+
+  const arma::vec sigt = arma::exp(lnsig2.subvec(n_all - n_out, n_all - 1) / 2.0);
+  const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
+
+  const arma::vec rt = mu + sigt % innov_out;
+
+  return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
+}
+
+// [[Rcpp::export]]
+Rcpp::List loggarch_shortmemo_type_sim(const arma::vec& innov, const double omega_sig,
+                          const arma::rowvec& ar_coef, const arma::rowvec& ma_coef,
+                          const int n_out,
+                          const double mu,
+                          const double Econst) {
+
+  const int n = innov.size();
+
+  const int n_ar = ar_coef.size();
+  const int n_ma = ma_coef.size();
+  const int l = std::max(n_ar, n_ma);
+
+  const int n_pre = l;
+  const int n_all = n + n_pre;
+
+  arma::vec lnsig2(n_all);
+  lnsig2.fill(omega_sig);
+
+  const arma::rowvec ar_rev = arma::reverse(ar_coef);
+  const arma::rowvec ma_rev = arma::reverse(ma_coef);
+
+  arma::vec xi = arma::zeros<arma::vec>(n_all);
+  xi.subvec(l, n_all - 1) = arma::log(arma::pow(innov, 2.0)) - Econst;
+
+  const double omega = omega_sig * (1 - arma::accu(ar_coef));
+  const int lar = l - n_ar;
+  const int lma = l - n_ma;
+  const int lm1 = l - 1;
+  int li;
+
+  for (int i = 0; i < n; ++i) {
+
+    li = lm1 + i;
+
+    lnsig2(l + i) = omega +
+      arma::as_scalar(ar_rev * lnsig2.subvec(lar + i, li)) +
+      arma::as_scalar(ma_rev * xi.subvec(lma + i, li));
+
+  }
+
+  const arma::vec sigt = arma::exp(lnsig2.subvec(n_all - n_out, n_all - 1) / 2.0);
+  const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
+
+  const arma::vec rt = mu + sigt % innov_out;
+
+  return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
+}
+
+// [[Rcpp::export]]
+Rcpp::List loggarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig,
+                          const arma::rowvec& coef_inf,
+                          const int n_out,
+                          const double mu,
+                          const double Econst) {
+
+  const int n = innov.size();
+
+  const int n_pre = 1;
+  const int n_all = n + n_pre;
+
+  arma::vec lnsig2(n);
+
+  const arma::rowvec coef_rev = arma::reverse(coef_inf);
+
+  arma::vec xi = arma::zeros<arma::vec>(n_all);
+  xi.subvec(1, n_all - 1) = arma::log(arma::pow(innov, 2.0)) - Econst;
+
+  const int n_coef_m1 = coef_inf.size() - 1;
+
+  for (int i = 0; i < n; ++i) {
+
+    lnsig2(i) = omega_sig +
+      arma::as_scalar(coef_rev.subvec(n_coef_m1 - i, n_coef_m1) * xi.subvec(0, 0 + i));
+
+  }
+
+  const arma::vec sigt = arma::exp(lnsig2.subvec(n - n_out, n - 1) / 2.0);
+  const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
+
+  const arma::vec rt = mu + sigt % innov_out;
+
+  return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
+}
+

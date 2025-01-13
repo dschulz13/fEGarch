@@ -40,6 +40,7 @@
 #'\item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 #'models given a model specification and an observation series,}
 #'\item{\code{\link{fiaparch}}:}{fitting a FIAPARCH model,}
+#'\item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model.}
 #'}
 #'
 #'@section Datasets:

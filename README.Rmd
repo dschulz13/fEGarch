@@ -161,7 +161,9 @@ The main functions of the package are:
 
 - `fiaparch()`: FIAPARCH model fitting,
 
-- `lmgarch()`: LMGARCH model fitting.
+- `lmgarch()`: LMGARCH model fitting,
+
+- `fEGarch_sim()`: EGARCH family simulation.
 
 The package, however, provides many other useful functions for you to discover.
 

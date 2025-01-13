@@ -41,6 +41,10 @@ signCpp <- function(val) {
     .Call('_fEGarch_signCpp', PACKAGE = 'fEGarch', val)
 }
 
+signVecCpp <- function(vals) {
+    .Call('_fEGarch_signVecCpp', PACKAGE = 'fEGarch', vals)
+}
+
 sigt_egarch_shortCpp <- function(x, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode) {
     .Call('_fEGarch_sigt_egarch_shortCpp', PACKAGE = 'fEGarch', x, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode)
 }
@@ -65,7 +69,19 @@ sigt_lmgarch_Cpp <- function(x, mu, omega, coef_inf, E_e2) {
     .Call('_fEGarch_sigt_lmgarch_Cpp', PACKAGE = 'fEGarch', x, mu, omega, coef_inf, E_e2)
 }
 
-fiegarch_sim_ar <- function(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, Econst, C_omega) {
-    .Call('_fEGarch_fiegarch_sim_ar', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, Econst, C_omega)
+egarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode) {
+    .Call('_fEGarch_egarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode)
+}
+
+egarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode) {
+    .Call('_fEGarch_egarch_shortmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, ar_coef, ma_coef, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode)
+}
+
+loggarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, n_out, mu, Econst) {
+    .Call('_fEGarch_loggarch_shortmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, ar_coef, ma_coef, n_out, mu, Econst)
+}
+
+loggarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, n_out, mu, Econst) {
+    .Call('_fEGarch_loggarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, n_out, mu, Econst)
 }
 

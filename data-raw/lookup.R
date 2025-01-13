@@ -51,7 +51,27 @@ lookup_table <- list(
     "snorm" = TRUE,
     "sstd" = TRUE,
     "sged" = TRUE
-  )
+  ),
+  sim_funs = list(
+    "norm" = function(x, shape, skew) {get("rnorm_s", envir = asNamespace("fEGarch"))(x)},
+    "std" = function(x, shape, skew) {get("rstd_s", envir = asNamespace("fEGarch"))(x, df = shape)},
+    "ged" = function(x, shape, skew) {get("rged_s", envir = asNamespace("fEGarch"))(x, shape = shape)},
+    "snorm" = function(x, shape, skew) {get("rsnorm_s", envir = asNamespace("fEGarch"))(x, skew = skew)},
+    "sstd" = function(x, shape, skew) {get("rsstd_s", envir = asNamespace("fEGarch"))(x, df = shape, skew = skew)},
+    "sged" = function(x, shape, skew) {get("rsged_s", envir = asNamespace("fEGarch"))(x, shape = shape, skew = skew)}
+  ),
+  sim_pars_default = list(
+     mu = 0,
+     omega_sig = -9,
+     phi = 0.8,
+     psi = numeric(0),
+     kappa = -0.2,
+     gamma = 0.3,
+     d = 0.25,
+     df = 10,
+     shape = 2,
+     skew = 1
+   )
 )
 
 # fitFUNS <- list(

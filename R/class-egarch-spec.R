@@ -866,7 +866,7 @@ goal_fun_creator_egarch <- function(
 
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL,
-    UB = NULL) {
+    UB = NULL, control = list()) {
 
   rt_core <- zoo::coredata(rt)
 
@@ -998,6 +998,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     abs(polyroot(phi)) - 1
   }
 
+  if (is.null(control$trace)) {control$trace <- FALSE}
+
   result <- suppressWarnings(Rsolnp::solnp(
     pars = start_pars,
     fun = goal_fun,
@@ -1006,7 +1008,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     ineqfun = constr_fun,
     ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
     ineqUB = rep(Inf, p),
-    control = list(trace = FALSE),
+    control = control,
     rt = rt_core
   ))
 
@@ -1209,7 +1211,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL, UB = NULL) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL, UB = NULL, control = list()) {
   rt_core <- zoo::coredata(rt)
 
   order <- orders(spec)
@@ -1264,13 +1266,17 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     d_name <- character(0)
   }
 
+  mean_rt <- mean(rt)
+  lrt2_shift <- log((rt - mean_rt)^2) + 1.27
+  mean_lrt2_s <- mean(lrt2_shift)
+
   if (is.null(start_pars)) {
 
     start_pars <- c(
-      list(NULL, 0.0001)[[incl_mean + 1]],
-      -9,
-      rep(0.2, p),
-      rep(-0.1, q),
+      list(NULL, mean(rt))[[incl_mean + 1]],
+      mean_lrt2_s,
+      rep(0.85, p),
+      rep(-0.8, q),
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -1281,8 +1287,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (is.null(LB)) {
 
     LB <- c(
-      list(NULL, -0.1)[[incl_mean + 1]],
-      -15,
+      list(NULL, min(rt))[[incl_mean + 1]],
+      mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
       rep(-2, p),
       rep(-2, q),
       d_low,
@@ -1295,8 +1301,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (is.null(UB)) {
 
     UB <- c(
-      list(NULL, 0.1)[[incl_mean + 1]],
-      -3,
+      list(NULL, max(rt))[[incl_mean + 1]],
+      mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
       rep(2, p),
       rep(2, q),
       d_up,
@@ -1306,12 +1312,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   }
 
+  if (is.null(control$trace)) {control$trace <- FALSE}
+
   result <- suppressWarnings(Rsolnp::solnp(
     pars = start_pars,
     fun = goal_fun,
     LB = LB,
     UB = UB,
-    control = list(trace = FALSE),
+    control = control,
     rt = rt_core
   ))
 
