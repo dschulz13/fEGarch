@@ -71,6 +71,18 @@ lookup_table <- list(
      df = 10,
      shape = 2,
      skew = 1
+   ),
+   sim_pars_default_fiaparch = list(
+     mu = 0,
+     omega = 0.0004,
+     phi = 0.2,
+     beta = 0.5,
+     gamma = 0.1,
+     delta = 2,
+     d = 0.25,
+     df = 10,
+     shape = 2,
+     skew = 1
    )
 )
 

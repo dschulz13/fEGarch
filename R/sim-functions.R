@@ -357,3 +357,67 @@ fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
   )
 
 }
+
+fiaparch_sim <- function(pars = list(
+                           mu = 0,
+                           omega_sig = 0.0004,
+                           phi = 0.2,
+                           beta = 0.5,
+                           gamma = 0.1,
+                           delta = 2,
+                           d = 0.25,
+                           df = 10,
+                           shape = 2,
+                           skew = 1
+                         ), cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+                         n = 1000, nstart = 5e3) {
+
+  cond_dist <- match.arg(cond_dist)
+
+  nn <- n + nstart          # pre-sample plus sample number of observations
+
+  # Parameter defaults (relevant if a truncated parameter list is provided)
+  pars_default <- lookup_table$sim_pars_default_fiaparch
+  names_pars <- names(pars)
+  for (nam in names_pars) {
+    pars_default[[nam]] <- pars[[nam]]
+  }
+
+  # Extract parameter settings
+  mu <- pars_default$mu
+  omega <- pars_default$omega
+  phi <- pars_default$phi
+  beta <- -pars_default$beta      # "-" required to create a polynomial with positive signs
+  gamma <- pars_default$gamma
+  delta <- pars_default$delta
+  d <- pars_default$d
+  df <- pars_default$df
+  shape <- pars_default$shape
+  skew <- pars_default$skew
+
+  if (cond_dist %in% c("std", "sstd")) {
+    shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+  }
+
+  # Simulate innovations following selected distribution
+  sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
+  innov <- sim_fun(nn, shape = shape, skew = skew)
+
+  # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
+  # and for the sample with the exception of the very last sample time point
+
+  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+                                     max_i = nn + 1000)[-1]
+
+  sim <- fiaparch_sim_Cpp(
+    innov = innov, omega = omega, coef_inf = coef_inf,
+    gamma = gamma, delta = delta, n_out = n, mu = mu)
+
+  out <- list(
+    "rt" = ts(c(sim[["rt"]])),
+    "sigt" = ts(c(sim[["sigt"]])),
+    "etat" = ts(c(sim[["etat"]]))
+  )
+
+}
+
