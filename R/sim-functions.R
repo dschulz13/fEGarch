@@ -13,14 +13,28 @@ inv_cdf_fun_helper <- function(x, p, dfun, ...) {
   cdf_fun(x, dfun = dfun, ...) - p
 }
 
-inv_cdf_fun <- function(p, dfun, ...) {
-  vapply(
+inv_cdf_fun <- function(p, dfun, parallel = TRUE, ncores = max(future::availableCores() - 1, 1), ...) {
+
+  if (parallel) {
+    oldplan <- future::plan()
+    future::plan(future::multisession, workers = ncores)
+    on.exit(future::plan(oldplan), add = TRUE, after = TRUE)
+  }
+
+  arg_list <- list(...)
+  arg_list[["f"]] <- inv_cdf_fun_helper
+  arg_list[["interval"]] <- c(-5, 5)
+  arg_list[["dfun"]] <- dfun
+  arg_list[["extendInt"]] <- "yes"
+
+  furrr::future_map_dbl(
     p,
-    FUN = function(p, dfun, ...) {
-       uniroot(inv_cdf_fun_helper, interval = c(-5, 5), dfun = dfun, p = p,
-               ..., extendInt = "yes")[[1]]
+    .f = function(.x, arg_list) {
+      arg_list[["p"]] <- .x
+      do.call(what = stats::uniroot, args = arg_list)
     },
-    FUN.VALUE = numeric(1), dfun = dfun, ...
+    arg_list = arg_list,
+    .options = furrr::furrr_options(seed = TRUE)
   )
 
 }
@@ -35,12 +49,20 @@ inv_cdf_fun <- function(p, dfun, ...) {
 #'@param df the degrees of freedom for a (skewed) \eqn{t}-distribution.
 #'@param shape the shape parameter for a (skewed) generalized error
 #'distribution.
+#'@param P the number of Laplace distributions (minus 1) to derive the arithmetic
+#'mean from as the basis for a (skewed) Sargan-Missiakoulis (SM)
+#'distribution.
 #'@param skew the skewness parameter in the skewed distributions.
+#'@param parallel a logical that indicates whether or not to use a parallel
+#'programming to draw the innovations.
+#'@param ncores a numeric value indicating how many cores to use for parallel
+#'programming.
 #'
 #'@details
 #'Draw random samples from a normal distribution, \eqn{t}-distribution,
-#'generalized error distribution, or their skewed variants (all standardized
-#'to have mean zero and variance one).
+#'generalized error distribution, a Sargan-Missiakoulis distribution,
+#'or their skewed variants (all standardized to have mean zero and
+#'variance one).
 #'
 #'@return
 #'These functions return a numeric vector of length \code{n}.
@@ -68,30 +90,42 @@ rstd_s <- function(n, df = 10000) {
 #'@export
 #'@rdname sim_functions
 
-rged_s <- function(n, shape = 2) {
+rged_s <- function(n, shape = 2, parallel = TRUE, ncores = max(future::availableCores() - 1, 1)) {
   p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_ged_v1, shape = shape)
+  inv_cdf_fun(p = p, dfun = pdf_ged_v1, parallel = parallel, ncores = ncores, shape = shape)
+}
+
+rsm_s <- function(n, P = 8, parallel = TRUE, ncores = max(future::availableCores() - 1, 1)) {
+  p <- runif(n)
+  inv_cdf_fun(p = p, dfun = pdf_sm_v1, parallel = parallel, ncores = ncores, P = P)
 }
 
 #'@export
 #'@rdname sim_functions
-rsnorm_s <- function(n, skew = 1) {
+rsnorm_s <- function(n, skew = 1, parallel = TRUE, ncores = max(future::availableCores() - 1, 1)) {
   p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_norm_s, skew = skew)
+  inv_cdf_fun(p = p, dfun = pdf_skew_norm_s, parallel = parallel, ncores = ncores, skew = skew)
 }
 
 #'@export
 #'@rdname sim_functions
-rsstd_s <- function(n, df = 10000, skew = 1) {
+rsstd_s <- function(n, df = 10000, skew = 1, parallel = TRUE, ncores = max(future::availableCores() - 1, 1)) {
   p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_sstd_s, df = df, skew = skew)
+  inv_cdf_fun(p = p, dfun = pdf_skew_sstd_s, parallel = parallel, ncores = ncores, df = df, skew = skew)
 }
 
 #'@export
 #'@rdname sim_functions
-rsged_s <- function(n, shape = 2, skew = 1) {
+rsged_s <- function(n, shape = 2, skew = 1, parallel = TRUE, ncores = max(future::availableCores() - 1, 1)) {
   p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_sged_s, shape = shape, skew = skew)
+  inv_cdf_fun(p = p, dfun = pdf_skew_sged_s, parallel = parallel, ncores = ncores, shape = shape, skew = skew)
+}
+
+#'@export
+#'@rdname sim_functions
+rssm_s <- function(n, P = 8, skew = 1, parallel = TRUE, ncores = max(future::availableCores() - 1, 1)) {
+  p <- runif(n)
+  inv_cdf_fun(p = p, dfun = pdf_skew_ssm_s, parallel = parallel, ncores = ncores, P = P, skew = skew)
 }
 
 #

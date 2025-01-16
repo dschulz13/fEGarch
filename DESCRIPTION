@@ -63,4 +63,6 @@ Imports:
     zoo,
     stats,
     utils,
-    rugarch
+    rugarch,
+    future,
+    furrr
