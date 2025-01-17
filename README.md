@@ -21,7 +21,7 @@ variants of those three, are available. These EGARCH family models are a
 strong competition to well-established GARCH-type models and provide new
 ways to estimate conditional volatilities, while making the prominent
 EGARCH and fractionally integrated EGARCH (FIEGARCH) available as
-special cases. For convenience and the prupose of comparison,
+special cases. For convenience and the purpose of comparison,
 fractionally integrated asymmetric power ARCH (FIAPARCH) and long-memory
 GARCH (LMGARCH) models are available as well for estimation.
 
@@ -99,7 +99,7 @@ model1
 Using the model description in the documentation of `fEGarch_spec()`,
 the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$\ln\left(\sigma_t^2\right)=-8.6596 + (1-0.8680 B)^{-1}(1-B)^{-0.2755}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
 $$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
@@ -252,7 +252,9 @@ The main functions of the package are:
 
 - `lmgarch()`: LMGARCH model fitting,
 
-- `fEGarch_sim()`: EGARCH family simulation.
+- `fEGarch_sim()`: EGARCH family simulation,
+
+- `fiaparch_sim()`: FIAPARCH simulation.
 
 The package, however, provides many other useful functions for you to
 discover.
