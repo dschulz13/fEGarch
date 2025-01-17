@@ -76,7 +76,8 @@ goal_fun_creator_fiaparch <- function(
 #'using quasi maximum-likelihood estimation.
 #'
 #'@param rt the observed series ordered from past to present; can be
-#'a numeric vector or a \code{"zoo"} class time series object.
+#'a numeric vector, a \code{"zoo"} class time series object, or a
+#'\code{"ts"} class time series object.
 #'@param orders a two-element numeric vector containing the two model
 #'orders \eqn{p} and \eqn{q} (see Details for more information); currently,
 #'only the default \code{orders = c(1, 1)} is supported; other specifications
@@ -106,6 +107,8 @@ goal_fun_creator_fiaparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used.
+#'@param control a list that is passed to \code{control} of the
+#'function \code{solnp} of the package \code{Rsolnp}.
 #'
 #'@details
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
@@ -163,9 +166,9 @@ goal_fun_creator_fiaparch <- function(
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
-#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
-#'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
+#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
+#'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 #'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
 #'\item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
 #'\item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
@@ -195,7 +198,7 @@ goal_fun_creator_fiaparch <- function(
 fiaparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
                         include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
-                        start_pars = NULL, LB = NULL, UB = NULL) {
+                        start_pars = NULL, LB = NULL, UB = NULL, control = list()) {
 
   rt_core <- zoo::coredata(rt)
 
@@ -305,6 +308,8 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   }
 
+  if (is.null(control$trace)) {control$trace <- FALSE}
+
   result <- tryCatch(
     expr = {
       suppressWarnings(Rsolnp::solnp(
@@ -312,7 +317,7 @@ fiaparch <- function(rt, orders = c(1, 1),
         fun = goal_fun,
         LB = LB,
         UB = UB,
-        control = list(trace = FALSE),
+        control = control,
         ineqfun = ineq_fun,
         ineqLB = c(0, 0, 0),
         ineqUB = c(Inf, Inf, Inf),
@@ -378,6 +383,11 @@ fiaparch <- function(rt, orders = c(1, 1),
     tp <- as.Date(time(rt))
     sigt <- zoo::zoo(zoo::coredata(sigt), order.by = tp)
     etat <- zoo::zoo(zoo::coredata(etat), order.by = tp)
+  } else if (inherits(rt, what = "ts")) {
+    start_rt <- stats::start(rt)
+    frequ_rt <- stats::frequency(rt)
+    sigt <- stats::ts(zoo::coredata(sigt), start = start_rt, frequency = frequ_rt)
+    etat <- stats::ts(zoo::coredata(etat), start = start_rt, frequency = frequ_rt)
   }
 
   list_out <- fEGarch_fit_fiaparch(

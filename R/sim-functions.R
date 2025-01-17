@@ -207,7 +207,8 @@ rssm_s <- function(n, P = 8, skew = 1) {
 #'A list with three elements is returned: \code{rt} are the simulated
 #'observations, \code{etat} are the underlying innovations, and
 #'\code{sigt} are the correspondingly simulated conditional
-#'standard deviations.
+#'standard deviations. These three elements are formatted as
+#'\code{"ts"} class time series objects.
 #'
 #'@export
 #'
@@ -378,11 +379,47 @@ fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
 
 }
 
+#'Simulate From FIAPARCH Models
+#'
+#'A streamlined simulation function to simulate from
+#'fractionally integrated asymmetric power autoregressive
+#'conditional heteroskedasticity (FIAPARCH) models.
+#'
+#'@param pars a named list with the parameter specifications; the user
+#'can provide a named list with only the settings they would like to adjust
+#'relative to the default settings.
+#'@param cond_dist a one-element character vector specifying
+#'the conditional distribution to consider.
+#'@param n the number of observations to return.
+#'@param nstart the number of burn-in observations to simulate before
+#'the final \code{n} values to keep; the first \code{nstart} values
+#'are not returned.
+#'
+#'@details
+#'See the documentation on \code{\link{fiaparch}} for information
+#'on the FIAPARCH model. This function provides
+#'an easy way to simulate from these models.
+#'
+#'@return
+#'A list with three elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations, and
+#'\code{sigt} are the correspondingly simulated conditional
+#'standard deviations. These three elements are formatted as
+#'\code{"ts"} class time series objects.
+#'
+#'@export
+#'
+#'@examples
+#'sim <- fiaparch_sim(n = 1000)
+#'mat <- do.call(cbind, sim)
+#'plot(mat, main = "")
+#'
+
 fiaparch_sim <- function(pars = list(
                            mu = 0,
                            omega_sig = 0.0004,
                            phi = 0.2,
-                           beta = 0.5,
+                           beta = 0.4,
                            gamma = 0.1,
                            delta = 2,
                            d = 0.25,
@@ -427,7 +464,7 @@ fiaparch_sim <- function(pars = list(
   # and for the sample with the exception of the very last sample time point
 
   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-                                     max_i = nn + 1000)[-1]
+                                     max_i = nn)[-1]
 
   sim <- fiaparch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,

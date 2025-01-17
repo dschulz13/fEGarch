@@ -9,7 +9,7 @@ fEGarch_sim(
   pars = list(mu = 0, omega_sig = -9, phi = 0.8, psi = numeric(0), kappa = -0.2, gamma =
     0.3, d = 0.25, df = 10, shape = 2, skew = 1),
   n = 1000,
-  nstart = 1e+05
+  nstart = 5000
 )
 }
 \arguments{
@@ -31,7 +31,8 @@ are not returned.}
 A list with three elements is returned: \code{rt} are the simulated
 observations, \code{etat} are the underlying innovations, and
 \code{sigt} are the correspondingly simulated conditional
-standard deviations.
+standard deviations. These three elements are formatted as
+\code{"ts"} class time series objects.
 }
 \description{
 A streamlined simulation function to simulate from models

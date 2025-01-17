@@ -596,13 +596,13 @@ Rcpp::List loggarch_longmemo_type_sim(const arma::vec& innov, const double omega
 // [[Rcpp::export]]
 Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
                           const arma::rowvec& coef_inf,
-                          const int gamma, const int delta,
+                          const double gamma, const double delta,
                           const int n_out,
                           const double mu) {
 
   const int n = innov.size();
 
-  const int n_pre = 1000;
+  const int n_pre = 1;
   const int n_all = n + n_pre;
 
   double sig_d;
@@ -611,19 +611,17 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
   const arma::rowvec coef_rev = arma::reverse(coef_inf);
 
   arma::vec rt = arma::zeros<arma::vec>(n_all);
-  arma::vec g_fun = arma::vec(n_all);
-  arma::vec rt_init = arma::zeros<arma::vec>(n_pre);
-  g_fun.subvec(0, n_pre - 1) = arma::pow(arma::abs(rt_init) - gamma * rt_init, delta);
+  arma::vec g_fun = arma::zeros<arma::vec>(n_all);
 
   const int n_coef_m1 = coef_inf.size() - 1;
   int npp1;
 
   for (int i = 0; i < n; ++i) {
 
-    npp1 = n_pre + 1;
+    npp1 = 1 + i;
 
     sig_d = omega +
-      arma::as_scalar(coef_rev.subvec(n_coef_m1 - n_pre - i, n_coef_m1) * g_fun.subvec(0, n_pre - 1 - i));
+      arma::as_scalar(coef_rev.subvec(n_coef_m1 - i, n_coef_m1) * g_fun.subvec(0, i));
 
     sigt(i) = std::pow(sig_d, 1.0 / delta);
 
@@ -637,5 +635,5 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
 
   const arma::vec rt_out = rt.subvec(n_all - n_out, n_all - 1) + mu;
 
-  return Rcpp::List::create(_["rt"] = rt, _["sigt"] = sigt, _["etat"] = innov_out);
+  return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
 }

@@ -9,7 +9,8 @@
 #'or its wrappers like \link[fEGarch]{megarch_spec} or
 #'\link[fEGarch]{mloggarch_spec}, among others.
 #'@param rt the input time series to fit the model to ordered from
-#'past to present; can also be a \code{"zoo"} class object.
+#'past to present; can also be a \code{"zoo"} class object or a
+#'\code{"ts"} class object.
 #'@param drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
 #'parameter \eqn{d} in a long-memory model; by default,
@@ -31,6 +32,18 @@
 #'of upper boundary values.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
+#'@param parallel only relevant for a (skewed) Sargan-Missiakoulis (SM)
+#'distribution, i.e.
+#'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "sm"} or
+#'\code{cond_dist = "ssm"}; \code{parallel} is a logical value indicating whether
+#'or not the slices for the positive integer-valued parameter of the SM
+#'distribution should be fitted in parallel for a speed boost.
+#'@param ncores only relevant for a (skewed) Sargan-Missiakoulis (SM)
+#'distribution, i.e.
+#'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "sm"} or
+#'\code{cond_dist = "ssm"}, and if simultaneously \code{parallel = TRUE};
+#'\code{ncores} is a single numeric value indicating the number of cores to
+#'use for parallel computations.
 #'
 #'@export
 #'
@@ -45,9 +58,9 @@
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
-#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
-#'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
+#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
+#'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 #'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
 #'\item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
 #'\item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
@@ -99,9 +112,11 @@
 
 fEGarch <- function(spec = egarch_spec(),
     rt, drange = c(0, 0.5 - 1e-6),
-    start_pars = NULL, LB = NULL, UB = NULL, control = list()) {
+    start_pars = NULL, LB = NULL, UB = NULL, control = list(),
+    parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
-  fEGarch_fit(spec, rt, drange, start_pars, LB, UB, control)
+  fEGarch_fit(spec, rt, drange, start_pars, LB, UB, control,
+              parallel, ncores)
 
 }
 

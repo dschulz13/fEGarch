@@ -37,6 +37,26 @@ pdf_skew_sged <- function(x, shape, skew) {
     .Call('_fEGarch_pdf_skew_sged', PACKAGE = 'fEGarch', x, shape, skew)
 }
 
+factorial <- function(k) {
+    .Call('_fEGarch_factorial', PACKAGE = 'fEGarch', k)
+}
+
+binomial_coef <- function(n, k) {
+    .Call('_fEGarch_binomial_coef', PACKAGE = 'fEGarch', n, k)
+}
+
+pdf_sm <- function(x, mu, sigt, P) {
+    .Call('_fEGarch_pdf_sm', PACKAGE = 'fEGarch', x, mu, sigt, P)
+}
+
+pdf_sm_v1 <- function(x, P) {
+    .Call('_fEGarch_pdf_sm_v1', PACKAGE = 'fEGarch', x, P)
+}
+
+pdf_skew_ssm <- function(x, P, skew) {
+    .Call('_fEGarch_pdf_skew_ssm', PACKAGE = 'fEGarch', x, P, skew)
+}
+
 signCpp <- function(val) {
     .Call('_fEGarch_signCpp', PACKAGE = 'fEGarch', val)
 }
@@ -83,5 +103,9 @@ loggarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, n_ou
 
 loggarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, n_out, mu, Econst) {
     .Call('_fEGarch_loggarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, n_out, mu, Econst)
+}
+
+fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu) {
+    .Call('_fEGarch_fiaparch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, gamma, delta, n_out, mu)
 }
 

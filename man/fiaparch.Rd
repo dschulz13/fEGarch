@@ -12,12 +12,14 @@ fiaparch(
   drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
-  UB = NULL
+  UB = NULL,
+  control = list()
 )
 }
 \arguments{
 \item{rt}{the observed series ordered from past to present; can be
-a numeric vector or a \code{"zoo"} class time series object.}
+a numeric vector, a \code{"zoo"} class time series object, or a
+\code{"ts"} class time series object.}
 
 \item{orders}{a two-element numeric vector containing the two model
 orders \eqn{p} and \eqn{q} (see Details for more information); currently,
@@ -54,6 +56,9 @@ an internally saved default set of values is used.}
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used.}
+
+\item{control}{a list that is passed to \code{control} of the
+function \code{solnp} of the package \code{Rsolnp}.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_fiaparch"}
@@ -62,9 +67,9 @@ is returned. It contains the following elements.
 \item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 \item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 \item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
-\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
-\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
+\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
+\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 \item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
 \item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
 \item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}

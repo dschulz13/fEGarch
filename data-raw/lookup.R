@@ -76,7 +76,7 @@ lookup_table <- list(
      mu = 0,
      omega = 0.0004,
      phi = 0.2,
-     beta = 0.5,
+     beta = 0.4,
      gamma = 0.1,
      delta = 2,
      d = 0.25,

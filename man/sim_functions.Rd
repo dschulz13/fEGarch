@@ -8,6 +8,7 @@
 \alias{rsnorm_s}
 \alias{rsstd_s}
 \alias{rsged_s}
+\alias{rssm_s}
 \title{Sampling Functions for Innovations}
 \usage{
 rnorm_s(n)
@@ -21,6 +22,8 @@ rsnorm_s(n, skew = 1)
 rsstd_s(n, df = 10000, skew = 1)
 
 rsged_s(n, shape = 2, skew = 1)
+
+rssm_s(n, P = 8, skew = 1)
 }
 \arguments{
 \item{n}{the number of observations to draw.}
@@ -31,6 +34,16 @@ rsged_s(n, shape = 2, skew = 1)
 distribution.}
 
 \item{skew}{the skewness parameter in the skewed distributions.}
+
+\item{P}{the number of Laplace distributions (minus 1) to derive the arithmetic
+mean from as the basis for a (skewed) Sargan-Missiakoulis (SM)
+distribution.}
+
+\item{parallel}{a logical that indicates whether or not to use a parallel
+programming to draw the innovations.}
+
+\item{ncores}{a numeric value indicating how many cores to use for parallel
+programming.}
 }
 \value{
 These functions return a numeric vector of length \code{n}.
@@ -42,8 +55,9 @@ to have mean zero and variance one).
 }
 \details{
 Draw random samples from a normal distribution, \eqn{t}-distribution,
-generalized error distribution, or their skewed variants (all standardized
-to have mean zero and variance one).
+generalized error distribution, a Sargan-Missiakoulis distribution,
+or their skewed variants (all standardized to have mean zero and
+variance one).
 }
 \examples{
 rnorm_s(10)

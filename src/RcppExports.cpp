@@ -125,6 +125,68 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// factorial
+long long factorial(const int k);
+RcppExport SEXP _fEGarch_factorial(SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(factorial(k));
+    return rcpp_result_gen;
+END_RCPP
+}
+// binomial_coef
+long long binomial_coef(const int n, const int k);
+RcppExport SEXP _fEGarch_binomial_coef(SEXP nSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(binomial_coef(n, k));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_sm
+arma::vec pdf_sm(const arma::vec& x, const double mu, const arma::vec& sigt, const int P);
+RcppExport SEXP _fEGarch_pdf_sm(SEXP xSEXP, SEXP muSEXP, SEXP sigtSEXP, SEXP PSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sigt(sigtSEXP);
+    Rcpp::traits::input_parameter< const int >::type P(PSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_sm(x, mu, sigt, P));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_sm_v1
+arma::vec pdf_sm_v1(const arma::vec& x, const int P);
+RcppExport SEXP _fEGarch_pdf_sm_v1(SEXP xSEXP, SEXP PSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const int >::type P(PSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_sm_v1(x, P));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdf_skew_ssm
+arma::vec pdf_skew_ssm(const arma::vec& x, const int P, const double skew);
+RcppExport SEXP _fEGarch_pdf_skew_ssm(SEXP xSEXP, SEXP PSEXP, SEXP skewSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const int >::type P(PSEXP);
+    Rcpp::traits::input_parameter< const double >::type skew(skewSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdf_skew_ssm(x, P, skew));
+    return rcpp_result_gen;
+END_RCPP
+}
 // signCpp
 int signCpp(const double val);
 RcppExport SEXP _fEGarch_signCpp(SEXP valSEXP) {
@@ -331,6 +393,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fiaparch_sim_Cpp
+Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega, const arma::rowvec& coef_inf, const double gamma, const double delta, const int n_out, const double mu);
+RcppExport SEXP _fEGarch_fiaparch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP n_outSEXP, SEXP muSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type innov(innovSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< const int >::type n_out(n_outSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    rcpp_result_gen = Rcpp::wrap(fiaparch_sim_Cpp(innov, omega, coef_inf, gamma, delta, n_out, mu));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_norm", (DL_FUNC) &_fEGarch_pdf_norm, 3},
@@ -342,6 +421,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_skew_snorm", (DL_FUNC) &_fEGarch_pdf_skew_snorm, 2},
     {"_fEGarch_pdf_skew_sstd", (DL_FUNC) &_fEGarch_pdf_skew_sstd, 3},
     {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},
+    {"_fEGarch_factorial", (DL_FUNC) &_fEGarch_factorial, 1},
+    {"_fEGarch_binomial_coef", (DL_FUNC) &_fEGarch_binomial_coef, 2},
+    {"_fEGarch_pdf_sm", (DL_FUNC) &_fEGarch_pdf_sm, 4},
+    {"_fEGarch_pdf_sm_v1", (DL_FUNC) &_fEGarch_pdf_sm_v1, 2},
+    {"_fEGarch_pdf_skew_ssm", (DL_FUNC) &_fEGarch_pdf_skew_ssm, 3},
     {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
     {"_fEGarch_signVecCpp", (DL_FUNC) &_fEGarch_signVecCpp, 1},
     {"_fEGarch_sigt_egarch_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_shortCpp, 12},
@@ -354,6 +438,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_egarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_shortmemo_type_sim, 13},
     {"_fEGarch_loggarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_loggarch_shortmemo_type_sim, 7},
     {"_fEGarch_loggarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_loggarch_longmemo_type_sim, 6},
+    {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 7},
     {NULL, NULL, 0}
 };
 
