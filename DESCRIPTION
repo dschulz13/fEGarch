@@ -16,7 +16,7 @@ Authors@R:
         family = "Peitz",
         role = c("aut"),
         email = "christian.peitz@uni-paderborn.de",
-        comment = "Paderborn University, Germany"),
+        comment = "formerly: Paderborn University, Germany"),
       person(given = "Oliver Kojo",
         family = "Ayensu",
         role = c("aut"),
@@ -24,8 +24,10 @@ Authors@R:
         comment = "Paderborn University, Germany"),
       person(given = "Sebastian",
         family = "Letmathe",
-        role = "ctb"),
+        role = "ctb",
+        comment = "formerly: Paderborn University, Germany"),
       person(given = "Thomas", family = "Gries",
+        role = "ctb",
         comment = "Paderborn University, Germany"))             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
