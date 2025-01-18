@@ -6,8 +6,8 @@
 \usage{
 fiaparch_sim(
   pars = list(mu = 0, omega_sig = 4e-04, phi = 0.2, beta = 0.4, gamma = 0.1, delta = 2, d
-    = 0.25, df = 10, shape = 2, skew = 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    = 0.25, df = 10, shape = 2, P = 8, skew = 1),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   n = 1000,
   nstart = 5000
 )

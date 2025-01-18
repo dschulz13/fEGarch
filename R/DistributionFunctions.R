@@ -155,6 +155,6 @@ pdf_skew_ssm_s <- function(x, P, skew) {
 }
 
 # pdf of standardized skewed Sargan distr. with adj. for mean and cond. SD
-pdf_skew_sged_final <- function(rt, mu, sigt, shape, skew) {
+pdf_skew_ssm_final <- function(rt, mu, sigt, shape, skew) {
   pdf_skew_ssm_s((rt - mu) / sigt, P = P, skew = skew) / sigt
 }

@@ -125,19 +125,8 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// factorial
-long long factorial(const int k);
-RcppExport SEXP _fEGarch_factorial(SEXP kSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const int >::type k(kSEXP);
-    rcpp_result_gen = Rcpp::wrap(factorial(k));
-    return rcpp_result_gen;
-END_RCPP
-}
 // binomial_coef
-long long binomial_coef(const int n, const int k);
+double binomial_coef(const int n, const int k);
 RcppExport SEXP _fEGarch_binomial_coef(SEXP nSEXP, SEXP kSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -421,7 +410,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_skew_snorm", (DL_FUNC) &_fEGarch_pdf_skew_snorm, 2},
     {"_fEGarch_pdf_skew_sstd", (DL_FUNC) &_fEGarch_pdf_skew_sstd, 3},
     {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},
-    {"_fEGarch_factorial", (DL_FUNC) &_fEGarch_factorial, 1},
     {"_fEGarch_binomial_coef", (DL_FUNC) &_fEGarch_binomial_coef, 2},
     {"_fEGarch_pdf_sm", (DL_FUNC) &_fEGarch_pdf_sm, 4},
     {"_fEGarch_pdf_sm_v1", (DL_FUNC) &_fEGarch_pdf_sm_v1, 2},

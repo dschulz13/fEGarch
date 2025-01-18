@@ -228,6 +228,7 @@ fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
                            d = 0.25,
                            df = 10,
                            shape = 2,
+                           P = 8,
                            skew = 1
                          ), n = 1000, nstart = 5e3) {
 
@@ -250,12 +251,15 @@ fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
   d <- pars_default$d
   df <- pars_default$df
   shape <- pars_default$shape
+  P <- pars_default$P
   skew <- pars_default$skew
   cond_dist <- spec@cond_dist
   lm <- spec@long_memo
 
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+  } else if (cond_dist %in% c("sm", "ssm")) {
+    shape <- P
   }
 
   # Simulate innovations following selected distribution
@@ -425,8 +429,9 @@ fiaparch_sim <- function(pars = list(
                            d = 0.25,
                            df = 10,
                            shape = 2,
+                           P = 8,
                            skew = 1
-                         ), cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+                         ), cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
                          n = 1000, nstart = 5e3) {
 
   cond_dist <- match.arg(cond_dist)
@@ -449,11 +454,14 @@ fiaparch_sim <- function(pars = list(
   delta <- pars_default$delta
   d <- pars_default$d
   df <- pars_default$df
+  P <- pars_default$P
   shape <- pars_default$shape
   skew <- pars_default$skew
 
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+  } else if (cond_dist %in% c("sm", "ssm")) {
+    shape <- P
   }
 
   # Simulate innovations following selected distribution

@@ -68,8 +68,9 @@ orders.}
 conditional distribution to consider; available are a normal
 distribution (\code{"norm"}), a \eqn{t}-distribution
 (\code{"std"}), a generalized error distribution
-(\code{"ged"}) and the skewed versions of them
-(\code{"snorm"}, \code{"sstd"}, \code{"sged"}).}
+(\code{"ged"}), a Sargan-Missiakoulis distribution (\code{"sm"})
+and the skewed versions of them
+(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"ssm"}).}
 
 \item{include_mean}{a logical value indicating whether or
 not to include the mean in the estimation procedure; for

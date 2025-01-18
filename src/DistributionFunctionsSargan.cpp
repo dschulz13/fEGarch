@@ -6,20 +6,14 @@ using namespace Rcpp;
 // Version: January 16, 2025
 
 // [[Rcpp::export]]
-long long factorial(const int k) {
-  if (k == 0 || k == 1) {
+double binomial_coef(const int n, const int k) {
+  if (k == 0 || k == n) {
     return 1;
   }
-  long long out = 1;
-  for (int i = 2; i <= k; ++i) {
-    out *= i;
+  double out = double(n) / k;
+  for (int K = 1; K <= (k - 1); ++K) {
+    out *= double(n - K) / (k - K);
   }
-  return out;
-}
-
-// [[Rcpp::export]]
-long long binomial_coef(const int n, const int k) {
-  long long out = factorial(n) / (factorial(k) * factorial(n - k));
   return out;
 }
 
@@ -95,37 +89,3 @@ arma::vec pdf_skew_ssm(const arma::vec& x, const int P, const double skew) {
   const arma::vec f3 = Hz % pdf_sm_v1(inv_skew * x, P);
   return f1 * (f2 + f3);
 }
-
-//
-// // [[Rcpp::export]]
-// arma::vec pdf_skew_snorm(const arma::vec& x, const double skew) {
-//   const double inv_skew = 1.0 / skew;
-//   const arma::uvec Hnz = (-x >= 0);
-//   const arma::uvec Hz = 1 - Hnz;
-//   const double f1 = 2.0 / (skew + inv_skew);
-//   const arma::vec f2 = Hnz % pdf_norm_v1(skew * x);
-//   const arma::vec f3 = Hz % pdf_norm_v1(inv_skew * x);
-//   return f1 * (f2 + f3);
-// }
-//
-// // [[Rcpp::export]]
-// arma::vec pdf_skew_sstd(const arma::vec& x, const double df, const double skew) {
-//   const double inv_skew = 1.0 / skew;
-//   const arma::uvec Hnz = (-x >= 0);
-//   const arma::uvec Hz = 1 - Hnz;
-//   const double f1 = 2.0 / (skew + inv_skew);
-//   const arma::vec f2 = Hnz % pdf_std_v1(skew * x, df);
-//   const arma::vec f3 = Hz % pdf_std_v1(inv_skew * x, df);
-//   return f1 * (f2 + f3);
-// }
-//
-// // [[Rcpp::export]]
-// arma::vec pdf_skew_sged(const arma::vec& x, const double shape, const double skew) {
-//   const double inv_skew = 1.0 / skew;
-//   const arma::uvec Hnz = (-x >= 0);
-//   const arma::uvec Hz = 1 - Hnz;
-//   const double f1 = 2.0 / (skew + inv_skew);
-//   const arma::vec f2 = Hnz % pdf_ged_v1(skew * x, shape);
-//   const arma::vec f3 = Hz % pdf_ged_v1(inv_skew * x, shape);
-//   return f1 * (f2 + f3);
-// }

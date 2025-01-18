@@ -37,10 +37,6 @@ pdf_skew_sged <- function(x, shape, skew) {
     .Call('_fEGarch_pdf_skew_sged', PACKAGE = 'fEGarch', x, shape, skew)
 }
 
-factorial <- function(k) {
-    .Call('_fEGarch_factorial', PACKAGE = 'fEGarch', k)
-}
-
 binomial_coef <- function(n, k) {
     .Call('_fEGarch_binomial_coef', PACKAGE = 'fEGarch', n, k)
 }

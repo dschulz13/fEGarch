@@ -30,7 +30,7 @@ setValidity("base_garch_spec", function(object){
 base_garch_spec <- function(
     orders = c(1, 1),
     long_memo = TRUE,
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   cond_dist <- match.arg(cond_dist)
@@ -86,8 +86,9 @@ setValidity("egarch_type_spec", function(object){
 #'conditional distribution to consider; available are a normal
 #'distribution (\code{"norm"}), a \eqn{t}-distribution
 #'(\code{"std"}), a generalized error distribution
-#'(\code{"ged"}) and the skewed versions of them
-#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}).
+#'(\code{"ged"}), a Sargan-Missiakoulis distribution (\code{"sm"})
+#'and the skewed versions of them
+#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"ssm"}).
 #'@param include_mean a logical value indicating whether or
 #'not to include the mean in the estimation procedure; for
 #'\code{include_mean = FALSE}, the mean of the series
@@ -117,7 +118,7 @@ setValidity("egarch_type_spec", function(object){
 egarch_type_spec <- function(
   orders = c(1, 1),
   long_memo = TRUE,
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
@@ -141,7 +142,7 @@ egarch_type_spec <- function(
 loggarch_type_spec <- function(
   orders = c(1, 1),
   long_memo = TRUE,
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 ) {
 
@@ -175,8 +176,9 @@ loggarch_type_spec <- function(
 #'conditional distribution to consider; available are a normal
 #'distribution (\code{"norm"}), a \eqn{t}-distribution
 #'(\code{"std"}), a generalized error distribution
-#'(\code{"ged"}) and the skewed versions of them
-#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}).
+#'(\code{"ged"}), a Sargan-Missiakoulis distribution (\code{"sm"})
+#'and the skewed versions of them
+#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"ssm"}).
 #'@param include_mean a logical value indicating whether or
 #'not to include the mean in the estimation procedure; for
 #'\code{include_mean = FALSE}, the mean of the series
@@ -356,7 +358,7 @@ fEGarch_spec <- function(
   model_type = c("eGARCH", "logGARCH"),
   orders = c(1, 1),
   long_memo = FALSE,
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
@@ -488,8 +490,9 @@ setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mea
 #'conditional distribution to consider; available are a normal
 #'distribution (\code{"norm"}), a \eqn{t}-distribution
 #'(\code{"std"}), a generalized error distribution
-#'(\code{"ged"}) and the skewed versions of them
-#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}).
+#'(\code{"ged"}), a Sargan-Missiakoulis distribution (\code{"sm"})
+#'and the skewed versions of them
+#'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"ssm"}).
 #'@param include_mean a logical value indicating whether or
 #'not to include the mean in the estimation procedure; for
 #'\code{include_mean = FALSE}, the mean of the series
@@ -560,7 +563,7 @@ setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mea
 
 megarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -578,7 +581,7 @@ megarch_spec <- function(
 #'@rdname submodel-specs
 fimegarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -596,7 +599,7 @@ fimegarch_spec <- function(
 #'@rdname submodel-specs
 egarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -614,7 +617,7 @@ egarch_spec <- function(
 #'@rdname submodel-specs
 fiegarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -632,7 +635,7 @@ fiegarch_spec <- function(
 #'@rdname submodel-specs
 mloggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -650,7 +653,7 @@ mloggarch_spec <- function(
 #'@rdname submodel-specs
 fimloggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -668,7 +671,7 @@ fimloggarch_spec <- function(
 #'@rdname submodel-specs
 loggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -684,7 +687,7 @@ loggarch_spec <- function(
 #'@rdname submodel-specs
 filoggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+    cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
     include_mean = TRUE
 ) {
   fEGarch_spec(
@@ -901,7 +904,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   incl_mean <- include_mean(spec)
 
-  goal_fun <- function(theta, rt) {
+  goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_egarch(
       theta = theta,
       x = rt,
@@ -965,7 +968,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
         rep(-2, p),
         rep(-2, q - 1),
-        rep(-2, 2),
+        rep(-1, 2),
         d_low,
         lval,
         list(NULL, 1e-15)[[skew_par + 1]]
@@ -982,7 +985,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
         rep(2, p),
         rep(2, q - 1),
-        rep(2, 2),
+        rep(1, 2),
         d_up,
         uval,
         list(NULL, Inf)[[skew_par + 1]]
@@ -1000,17 +1003,87 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (is.null(control$trace)) {control$trace <- FALSE}
 
-  result <- suppressWarnings(Rsolnp::solnp(
-    pars = start_pars,
-    fun = goal_fun,
-    LB = LB,
-    UB = UB,
-    ineqfun = constr_fun,
-    ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
-    ineqUB = rep(Inf, p),
-    control = control,
-    rt = rt_core
-  ))
+  if (cond_d %in% c("sm", "ssm")) {
+
+    P_range <- c(1, 20)
+
+    if (parallel) {
+      oldplan <- future::plan()
+      future::plan(future::multisession, workers = ncores)
+      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
+    }
+
+    P_seq <- P_range[[1]]:P_range[[2]]
+
+    fitted_models <- furrr::future_map(
+      .x = P_seq,
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2) {
+
+        dfun1_P <- function(x, shape, skew) {
+          dfun1(x = x, shape = .x, skew = skew)
+        }
+
+        dfun2_P <- function(x, mu, sigt, shape, skew) {
+          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
+        }
+
+        goal_fun <- function(theta, rt) {
+          goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
+        }
+
+        est <- suppressWarnings(Rsolnp::solnp(
+          pars = start_pars,
+          fun = goal_fun,
+          LB = LB,
+          UB = UB,
+          ineqfun = ineq_fun,
+          ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
+          ineqUB = rep(Inf, p),
+          control = control,
+          rt = rt_core
+        ))
+        est
+      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
+      ineq_fun = constr_fun, control = control, rt_core = rt_core,
+      dfun1 = dfun1, dfun2 = dfun2,
+      .progress = TRUE, .options = furrr::furrr_options(seed = NULL)
+    )
+
+    future::plan(oldplan)
+
+    # coll_nllh <- vapply(
+    #   X = fitted_models,
+    #   FUN = function(.x) {
+    #     tail(.x$values, 1)
+    #   },
+    #   FUN.VALUE = numeric(1)
+    # )
+    #
+    # cat(P_seq[[which.min(coll_nllh)]], fill = TRUE)
+    #
+    # result <- fitted_models[[which.min(coll_nllh)]]
+
+    return(fitted_models)
+
+  } else {
+
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
+    }
+
+    result <- suppressWarnings(Rsolnp::solnp(
+      pars = start_pars,
+      fun = goal_fun,
+      LB = LB,
+      UB = UB,
+      ineqfun = constr_fun,
+      ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
+      ineqUB = rep(Inf, p),
+      control = control,
+      rt = rt_core
+    ))
+
+  }
 
   pars <- result$pars
   llhood <- -tail(result$values, 1)
