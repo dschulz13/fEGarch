@@ -81,6 +81,8 @@ rged_s <- function(n, shape = 2) {
   inv_cdf_fun(p = p, dfun = pdf_ged_v1, shape = shape)
 }
 
+#'@export
+#'@rdname sim_functions
 rsm_s <- function(n, P = 8) {
   p <- runif(n)
   inv_cdf_fun(p = p, dfun = pdf_sm_v1, P = P)

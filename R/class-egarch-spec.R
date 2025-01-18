@@ -1006,9 +1006,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   if (cond_d %in% c("sm", "ssm")) {
 
     P_range <- c(1, 20)
-
+    oldplan <- future::plan()
     if (parallel) {
-      oldplan <- future::plan()
       future::plan(future::multisession, workers = ncores)
       on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
     }
