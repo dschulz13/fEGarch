@@ -14,49 +14,49 @@
 \usage{
 megarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 fimegarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 egarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 fiegarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 mloggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 fimloggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 loggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 
 filoggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
   include_mean = TRUE
 )
 }

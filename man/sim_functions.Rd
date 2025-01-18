@@ -5,6 +5,7 @@
 \alias{rnorm_s}
 \alias{rstd_s}
 \alias{rged_s}
+\alias{rsm_s}
 \alias{rsnorm_s}
 \alias{rsstd_s}
 \alias{rsged_s}
@@ -16,6 +17,8 @@ rnorm_s(n)
 rstd_s(n, df = 10000)
 
 rged_s(n, shape = 2)
+
+rsm_s(n, P = 8)
 
 rsnorm_s(n, skew = 1)
 
@@ -33,11 +36,11 @@ rssm_s(n, P = 8, skew = 1)
 \item{shape}{the shape parameter for a (skewed) generalized error
 distribution.}
 
-\item{skew}{the skewness parameter in the skewed distributions.}
-
 \item{P}{the number of Laplace distributions (minus 1) to derive the arithmetic
 mean from as the basis for a (skewed) Sargan-Missiakoulis (SM)
 distribution.}
+
+\item{skew}{the skewness parameter in the skewed distributions.}
 
 \item{parallel}{a logical that indicates whether or not to use a parallel
 programming to draw the innovations.}
