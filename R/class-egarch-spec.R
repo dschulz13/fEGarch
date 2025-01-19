@@ -945,7 +945,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   incl_mean <- include_mean(spec)
 
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
-    goal_fun_creator_egarch_sm(
+    goal_fun_creator_egarch(
       theta = theta,
       x = rt,
       dfun1 = dfun1,
@@ -991,7 +991,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         mean(lrt2_shift),
         rep(0.2 / p, p),
         rep(0, q - 1),
-        0.3, -0.2,
+        -0.2, 0.3,
         #0, 0,
         d_spar,
         sval,
@@ -1057,8 +1057,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     fitted_models <- furrr::future_map(
       .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, rt_core, dfun1, dfun2) {
-     # .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2) {
+     #.f = function(.x, start_pars, goal_fun_s, rt_core, dfun1, dfun2) {
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2) {
 
         dfun1_P <- function(x, shape, skew) {
           dfun1(x = x, shape = .x, skew = skew)
@@ -1072,29 +1072,29 @@ setMethod("fEGarch_fit", "egarch_type_spec",
           goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
         }
 
-        # est <- suppressWarnings(Rsolnp::solnp(
-        #   pars = start_pars,
-        #   fun = goal_fun,
-        #   LB = LB,
-        #   UB = UB,
-        #   ineqfun = ineq_fun,
-        #   ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
-        #   ineqUB = rep(Inf, p),
-        #   control = control,
-        #   rt = rt_core
-        # ))
-        est <- optim(
-          par = start_pars,
-          fn = goal_fun,
-          method = "Nelder-Mead",
-          rt = rt_core,control = list(trace = 1L)
-        )
+        est <- suppressWarnings(Rsolnp::solnp(
+          pars = start_pars,
+          fun = goal_fun,
+          LB = LB,
+          UB = UB,
+          ineqfun = ineq_fun,
+          ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
+          ineqUB = rep(Inf, p),
+          control = control,
+          rt = rt_core
+        ))
+        # est <- optim(
+        #   par = start_pars,
+        #   fn = goal_fun,
+        #   method = "Nelder-Mead",
+        #   rt = rt_core,control = list(trace = 1L)
+        # )
         est
-      # }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      # ineq_fun = constr_fun, control = control, rt_core = rt_core,
-      # dfun1 = dfun1, dfun2 = dfun2,
-      }, start_pars = start_pars, goal_fun_s = goal_fun_s,
-      rt_core = rt_core, dfun1 = dfun1, dfun2 = dfun2,
+      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
+      ineq_fun = constr_fun, control = control, rt_core = rt_core,
+      dfun1 = dfun1, dfun2 = dfun2,
+      # }, start_pars = start_pars, goal_fun_s = goal_fun_s,
+      # rt_core = rt_core, dfun1 = dfun1, dfun2 = dfun2,
       .progress = TRUE, .options = furrr::furrr_options(seed = NULL)
     )
 
