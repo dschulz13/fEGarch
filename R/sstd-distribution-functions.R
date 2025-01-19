@@ -4,7 +4,7 @@ absMomentStd <- function(order, df) {
   force(order)
 
   FUN <- function(x, df) {
-    x^order * pdf_std_v1(x, df)
+    x^order * c(pdf_std_v1(x, df))
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf, df = df,
@@ -30,7 +30,7 @@ pdf_skew_sstd_s <- function(x, df, skew) {
   mom1 <- moms[[1]]
   mom2 <- sqrt(moms[[2]])
   fac <- mom2
-  fac * pdf_skew_sstd(x * fac + mom1, df = df, skew = skew)
+  fac * c(pdf_skew_sstd(x * fac + mom1, df = df, skew = skew))
 }
 
 # pdf of standardized skewed t-distr. with adj. for mean and cond. SD

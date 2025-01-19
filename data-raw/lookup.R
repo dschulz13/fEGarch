@@ -1,9 +1,9 @@
 lookup_table <- list(
   fun1 = list(
-    "norm" = function(x, shape, skew) {get("pdf_norm_v1", envir = asNamespace("fEGarch"))(x)},
-    "std" = function(x, shape, skew) {get("pdf_std_v1", envir = asNamespace("fEGarch"))(x, df = shape)},
-    "ged" = function(x, shape, skew) {get("pdf_ged_v1", envir = asNamespace("fEGarch"))(x, shape = shape)},
-    "sm" = function(x, shape, skew) {get("pdf_sm_v1", envir = asNamespace("fEGarch"))(x, P = shape)},
+    "norm" = function(x, shape, skew) {c(get("pdf_norm_v1", envir = asNamespace("fEGarch"))(x))},
+    "std" = function(x, shape, skew) {c(get("pdf_std_v1", envir = asNamespace("fEGarch"))(x, df = shape))},
+    "ged" = function(x, shape, skew) {c(get("pdf_ged_v1", envir = asNamespace("fEGarch"))(x, shape = shape))},
+    "sm" = function(x, shape, skew) {c(get("pdf_sm_v1", envir = asNamespace("fEGarch"))(x, P = shape))},
     "snorm" = function(x, shape, skew) {get("pdf_skew_norm_s", envir = asNamespace("fEGarch"))(x, skew = skew)},
     "sstd" = function(x, shape, skew) {get("pdf_skew_sstd_s", envir = asNamespace("fEGarch"))(x, df = shape, skew = skew)},
     "sged" = function(x, shape, skew) {get("pdf_skew_sged_s", envir = asNamespace("fEGarch"))(x, shape = shape, skew = skew)},
@@ -11,16 +11,16 @@ lookup_table <- list(
   ),
   fun2 = list(
     "norm" = function(x, mu, sigt, shape, skew) {
-      get("pdf_norm", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt)
+      c(get("pdf_norm", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt))
     },
     "std" = function(x, mu, sigt, shape, skew) {
-      get("pdf_std", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, df = shape)
+      c(get("pdf_std", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, df = shape))
     },
     "ged" = function(x, mu, sigt, shape, skew) {
-      get("pdf_ged", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, shape = shape)
+      c(get("pdf_ged", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, shape = shape))
     },
     "sm" = function(x, mu, sigt, shape, skew) {
-      get("pdf_sm", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, P = shape)
+      c(get("pdf_sm", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, P = shape))
     },
     "snorm" = function(x, mu, sigt, shape, skew) {
       get("pdf_skew_norm_final", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, skew = skew)

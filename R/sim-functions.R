@@ -3,7 +3,7 @@ cdf_fun <- function(x, dfun, ...) {
     x,
     FUN = function(x, dfun, ...) {
       integrate(f = dfun, lower = -Inf, upper = x,
-                ..., subdivisions = 1000L, abs.tol = 1e-15)[[1]]
+                ..., subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6)[[1]]
     },
     FUN.VALUE = numeric(1), dfun = dfun, ...
   )

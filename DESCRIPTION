@@ -48,7 +48,7 @@ Collate:
   'ssm-distribution-functions.R'  
   'generics.R'
   'input_checkers_egarch_spec.R' 
-  'fEGarch_fit.R'
+  'class-fEGarch_fit.R'
   'class-egarch-spec.R'
   'fitting-function.R'
   'sim-functions.R'

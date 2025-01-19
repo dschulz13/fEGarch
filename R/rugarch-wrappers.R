@@ -15,12 +15,14 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 
   if (model == "gjrGARCH") {
     fixed.pars <- list(delta = 2)
+    model_s <- "apARCH"
   } else {
     fixed.pars <- list()
+    model_s <- model
   }
 
   spec <- rugarch::ugarchspec(
-    variance.model = list(model = "apARCH", garchOrder = orders),
+    variance.model = list(model = model_s, garchOrder = orders),
     mean.model = list(armaOrder = c(0, 0), include.mean = include_mean),
     distribution.model = cond_dist, start.pars = start.pars,
     fixed.pars = fixed.pars
@@ -31,7 +33,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
   etat <- est@fit$residuals
   coef <- est@fit$coef
   if (model == "gjrGARCH") {
-    coef <- head(coef, -1)
+    coef <- coef[names(coef) != "delta"]
   }
   serrors <- est@fit$se.coef
   names(serrors) <- names(coef)

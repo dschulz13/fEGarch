@@ -5,7 +5,7 @@ absMomentSM <- function(order, P) {
   force(order)
 
   FUN <- function(x, P) {
-    x^order * pdf_sm_v1(x, P)
+    x^order * c(pdf_sm_v1(x, P))
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf, P = P,
@@ -31,7 +31,7 @@ pdf_skew_ssm_s <- function(x, P, skew) {
   mom1 <- moms[[1]]
   mom2 <- sqrt(moms[[2]])
   fac <- mom2
-  fac * pdf_skew_ssm(x * fac + mom1, P = P, skew = skew)
+  fac * c(pdf_skew_ssm(x * fac + mom1, P = P, skew = skew))
 }
 
 # pdf of standardized skewed Sargan distr. with adj. for mean and cond. SD

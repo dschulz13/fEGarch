@@ -5,7 +5,7 @@ absMomentGED <- function(order, shape) {
   force(order)
 
   FUN <- function(x, shape) {
-    x^order * pdf_ged_v1(x, shape)
+    x^order * c(pdf_ged_v1(x, shape))
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf, shape = shape,
@@ -31,7 +31,7 @@ pdf_skew_sged_s <- function(x, shape, skew) {
   mom1 <- moms[[1]]
   mom2 <- sqrt(moms[[2]])
   fac <- mom2
-  fac * pdf_skew_sged(x * fac + mom1, shape = shape, skew = skew)
+  fac * c(pdf_skew_sged(x * fac + mom1, shape = shape, skew = skew))
 }
 
 # pdf of standardized skewed GED with adj. for mean and cond. SD

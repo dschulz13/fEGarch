@@ -4,7 +4,7 @@ absMomentNorm <- function(order) {
   force(order)
 
   FUN <- function(x) {
-    x^order * pdf_norm_v1(x)
+    x^order * c(pdf_norm_v1(x))
   }
 
   2 * integrate(FUN, lower = 0, upper = Inf,
@@ -29,7 +29,7 @@ pdf_skew_norm_s <- function(x, skew) {
   mom1 <- moms[[1]]
   mom2 <- sqrt(moms[[2]])
   fac <- mom2
-  fac * pdf_skew_snorm(x * fac + mom1, skew = skew)
+  fac * c(pdf_skew_snorm(x * fac + mom1, skew = skew))
 }
 
 # pdf of standardized skewed normal with adjustments for mean and cond. SD
