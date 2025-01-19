@@ -42,7 +42,10 @@ RoxygenNote: 7.2.3
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
-  'DistributionFunctions.R'
+  'snorm-distribution-functions.R'
+  'sstd-distribution-functions.R'
+  'sged-distribution-functions.R'
+  'ssm-distribution-functions.R'  
   'generics.R'
   'input_checkers_egarch_spec.R' 
   'fEGarch_fit.R'
