@@ -7,7 +7,7 @@
 fEGarch_sim(
   spec = fiegarch_spec(),
   pars = list(mu = 0, omega_sig = -9, phi = 0.8, psi = numeric(0), kappa = -0.2, gamma =
-    0.3, d = 0.25, df = 10, shape = 2, P = 8, skew = 1),
+    0.3, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
   n = 1000,
   nstart = 5000
 )

@@ -18,7 +18,7 @@ double binomial_coef(const int n, const int k) {
 }
 
 // [[Rcpp::export]]
-arma::vec pdf_sm(const arma::vec& x, const double mu, const arma::vec& sigt, const int P) {
+arma::vec pdf_ald(const arma::vec& x, const double mu, const arma::vec& sigt, const int P) {
   const double a = std::sqrt(2.0 * (P + 1.0));
   const double K = std::pow(2.0, -2.0 * P) * binomial_coef(2 * P, P);
 
@@ -45,12 +45,12 @@ arma::vec pdf_sm(const arma::vec& x, const double mu, const arma::vec& sigt, con
 
   const arma::vec c3_vec = arma::sum(x_mat, 1); // sum of each row;
 
-  return c1 * (c2_vec % c3_vec);
+  return one_div_sigt % (c1 * (c2_vec % c3_vec));
 
 }
 
 // [[Rcpp::export]]
-arma::vec pdf_sm_v1(const arma::vec& x, const int P) {
+arma::vec pdf_ald_v1(const arma::vec& x, const int P) {
   const double a = std::sqrt(2.0 * (P + 1.0));
   const double K = std::pow(2.0, -2.0 * P) * binomial_coef(2 * P, P);
 
@@ -80,12 +80,12 @@ arma::vec pdf_sm_v1(const arma::vec& x, const int P) {
 }
 
 // [[Rcpp::export]]
-arma::vec pdf_skew_ssm(const arma::vec& x, const int P, const double skew) {
+arma::vec pdf_skew_sald(const arma::vec& x, const int P, const double skew) {
   const double inv_skew = 1.0 / skew;
   const arma::uvec Hnz = (-x >= 0);
   const arma::uvec Hz = 1 - Hnz;
   const double f1 = 2.0 / (skew + inv_skew);
-  const arma::vec f2 = Hnz % pdf_sm_v1(skew * x, P);
-  const arma::vec f3 = Hz % pdf_sm_v1(inv_skew * x, P);
+  const arma::vec f2 = Hnz % pdf_ald_v1(skew * x, P);
+  const arma::vec f3 = Hz % pdf_ald_v1(inv_skew * x, P);
   return f1 * (f2 + f3);
 }

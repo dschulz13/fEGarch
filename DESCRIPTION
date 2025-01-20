@@ -45,7 +45,7 @@ Collate:
   'snorm-distribution-functions.R'
   'sstd-distribution-functions.R'
   'sged-distribution-functions.R'
-  'ssm-distribution-functions.R'  
+  'sald-distribution-functions.R'  
   'generics.R'
   'input_checkers_egarch_spec.R' 
   'class-fEGarch_fit.R'

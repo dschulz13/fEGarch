@@ -86,9 +86,10 @@ goal_fun_creator_fiaparch <- function(
 #'@param cond_dist the conditional distribution to consider as a
 #'character object; the default is a conditional normal distribution
 #'\code{"norm"}; available are also, however, a \eqn{t}-distribution
-#'(\code{"std"}), a generalized error distribution (\code{"ged"}),
+#'(\code{"std"}), a generalized error distribution (\code{"ged"}), an
+#'average Laplace distribution (\code{"ald"}),
 #'and their three skewed variants (\code{"snorm"}, \code{"sstd"},
-#'\code{"sged"}).
+#'\code{"sged"}, \code{"sald"}).
 #'@param include_mean a logical value indicating whether or not to include
 #'the series' mean in the maximum-likelihood estimation process; for
 #'\code{include_mean = FALSE}, the mean is fixed to zero.
@@ -109,6 +110,18 @@ goal_fun_creator_fiaparch <- function(
 #'an internally saved default set of values is used.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
+#'@param parallel only relevant for a (skewed) average Laplace (AL)
+#'distribution, i.e.
+#'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
+#'\code{cond_dist = "sald"}; \code{parallel} is a logical value indicating whether
+#'or not the slices for the positive integer-valued parameter of the SM
+#'distribution should be fitted in parallel for a speed boost.
+#'@param ncores only relevant for a (skewed) average Laplace (AL)
+#'distribution, i.e.
+#'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
+#'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
+#'\code{ncores} is a single numeric value indicating the number of cores to
+#'use for parallel computations.
 #'
 #'@details
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
@@ -157,6 +170,20 @@ goal_fun_creator_fiaparch <- function(
 #'See also the reference section for sources on the APARCH (Ding et al., 1993)
 #'and the FIAPARCH (Tse, 1998) models.
 #'
+#'For a conditional average Laplace distribution, an optimal model for each
+#'distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+#'\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
+#'estimated by selecting the estimated model among the eight fitted models that
+#'has the largest log-likelihood. The eight models are, by default, fitted
+#'simultaneously using parallel programming techniques (see also the arguments
+#'\code{parallel} and \code{ncores}, which are only relevant for a conditional
+#'average Laplace distribution). After the optimal model (including
+#'the estimate of \eqn{P} called \eqn{\hat{P}}) has been determined, \eqn{P=\hat{P}}
+#'is seen as fixed to obtain the standard errors via the Hessian matrix for the
+#'estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is therefore
+#'not obtained and the ones obtained for the remaining estimates do not account
+#'for \eqn{\hat{P}}.
+#'
 #'@export
 #'
 #'@return
@@ -196,9 +223,10 @@ goal_fun_creator_fiaparch <- function(
 #'}
 #'
 fiaparch <- function(rt, orders = c(1, 1),
-                        cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+                        cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                         include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
-                        start_pars = NULL, LB = NULL, UB = NULL, control = list()) {
+                        start_pars = NULL, LB = NULL, UB = NULL, control = list(),
+                        parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
   rt_core <- zoo::coredata(rt)
 
@@ -214,12 +242,12 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   pdf_fun2 <- lookup_table$fun2[[cond_d]]
 
-  incl_mean = include_mean
+  incl_mean <- include_mean
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  goal_fun <- function(theta, rt) {
+  goal_fun_s <- function(theta, rt, pdf_fun2) {
 
     goal_fun_creator_fiaparch(
      theta = theta,
@@ -310,24 +338,87 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   if (is.null(control$trace)) {control$trace <- FALSE}
 
-  result <- tryCatch(
-    expr = {
-      suppressWarnings(Rsolnp::solnp(
-        pars = start_pars,
-        fun = goal_fun,
-        LB = LB,
-        UB = UB,
-        control = control,
-        ineqfun = ineq_fun,
-        ineqLB = c(0, 0, 0),
-        ineqUB = c(Inf, Inf, Inf),
-        rt = rt_core
-      ))
-    },
-    error = function(e1) {
-      stop("Convergence failed.", call. = FALSE)
+  if (cond_d %in% c("ald", "sald")) {
+
+    P_range <- c(1, 8)
+    oldplan <- future::plan()
+    if (parallel) {
+      future::plan(future::multisession, workers = ncores)
+      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
     }
-  )
+
+    P_seq <- P_range[[1]]:P_range[[2]]
+
+    fitted_models <- furrr::future_map(
+      .x = P_seq,
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun2) {
+
+        dfun2_P <- function(x, mu, sigt, shape, skew) {
+          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
+        }
+
+        goal_fun <- function(theta, rt) {
+          goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
+        }
+
+        est <- suppressWarnings(Rsolnp::solnp(
+          pars = start_pars,
+          fun = goal_fun,
+          LB = LB,
+          UB = UB,
+          ineqfun = ineq_fun,
+          ineqLB = c(0, 0, 0),
+          ineqUB = c(Inf, Inf, Inf),
+          control = control,
+          rt = rt_core
+        ))
+        est
+      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
+      ineq_fun = ineq_fun, control = control, rt_core = rt_core,
+      dfun2 = pdf_fun2,
+      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
+    )
+
+    future::plan(oldplan)
+
+    coll_nllh <- vapply(
+      X = fitted_models,
+      FUN = function(.x) {
+        tail(.x$values, 1)
+      },
+      FUN.VALUE = numeric(1)
+    )
+
+    P_sel <- P_seq[[which.min(coll_nllh)]]
+
+    result <- fitted_models[[which.min(coll_nllh)]]
+
+  } else {
+
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
+    }
+
+    result <- tryCatch(
+      expr = {
+        suppressWarnings(Rsolnp::solnp(
+          pars = start_pars,
+          fun = goal_fun,
+          LB = LB,
+          UB = UB,
+          control = control,
+          ineqfun = ineq_fun,
+          ineqLB = c(0, 0, 0),
+          ineqUB = c(Inf, Inf, Inf),
+          rt = rt_core
+        ))
+      },
+      error = function(e1) {
+        stop("Convergence failed.", call. = FALSE)
+      }
+    )
+
+  }
 
 
   pars <- result$pars
@@ -343,6 +434,17 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   beta_names <- paste0("beta", 1:q)
 
+  extra_par_name <- switch(
+    cond_d,
+    "std" = "df",
+    "sstd" = "df",
+    "ged" = "shape",
+    "sged" = "shape",
+    "ald" = "P",
+    "sald" = "P",
+    character(0)
+  )
+
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
     "omega",
@@ -351,7 +453,7 @@ fiaparch <- function(rt, orders = c(1, 1),
     "gamma",
     "delta",
     d_name,
-    list(NULL, c("shape", "df")[[(cond_d %in% c("std", "sstd")) + 1]])[[extra_par + 1]],
+    extra_par_name,
     list(NULL, "skew")[[skew_par + 1]]
   )
 
@@ -364,6 +466,18 @@ fiaparch <- function(rt, orders = c(1, 1),
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
     }
   )
+
+  if (cond_d %in% c("ald", "sald")) {
+    if (cond_d == "ald") {
+      pars <- c(pars, P_sel)
+      vcov_mat <- rbind(cbind(vcov_mat, NA), NA)
+    } else {
+      l_p <- length(pars)
+      pars <- c(pars[1:(l_p - 1)], P_sel, pars[[l_p]])
+      vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
+      vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
+    }
+  }
 
   serrors <- sqrt(diag(vcov_mat))
 
@@ -420,17 +534,9 @@ setMethod(
   se <- unname(x@se)
   pars <- unname(x@pars)
 
-  if (all(!is.na(se))) {
-    tvals <- pars / se
-    atvals <- abs(tvals)
-
-    pvals <- 2 * (1 - pnorm(atvals))
-  } else {
-
-    tvals <- pvals <- rep(NA, length(se))
-
-  }
-
+  tvals <- pars / se
+  atvals <- abs(tvals)
+  pvals <- 2 * (1 - pnorm(atvals))
 
   df <- data.frame(
     par = sprintf("%.4f", pars),

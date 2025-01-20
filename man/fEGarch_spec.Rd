@@ -8,7 +8,7 @@ fEGarch_spec(
   model_type = c("eGARCH", "logGARCH"),
   orders = c(1, 1),
   long_memo = FALSE,
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
@@ -32,9 +32,9 @@ long-memory version of the model should be considered or not.}
 conditional distribution to consider; available are a normal
 distribution (\code{"norm"}), a \eqn{t}-distribution
 (\code{"std"}), a generalized error distribution
-(\code{"ged"}), a Sargan-Missiakoulis distribution (\code{"sm"})
+(\code{"ged"}), an average Laplace distribution (\code{"ald"})
 and the skewed versions of them
-(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"ssm"}).}
+(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).}
 
 \item{include_mean}{a logical value indicating whether or
 not to include the mean in the estimation procedure; for

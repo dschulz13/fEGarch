@@ -14,49 +14,49 @@
 \usage{
 megarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 fimegarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 egarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 fiegarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 mloggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 fimloggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 loggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 
 filoggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE
 )
 }
@@ -68,9 +68,9 @@ orders.}
 conditional distribution to consider; available are a normal
 distribution (\code{"norm"}), a \eqn{t}-distribution
 (\code{"std"}), a generalized error distribution
-(\code{"ged"}), a Sargan-Missiakoulis distribution (\code{"sm"})
+(\code{"ged"}), an average Laplace distribution (\code{"ald"})
 and the skewed versions of them
-(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"ssm"}).}
+(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).}
 
 \item{include_mean}{a logical value indicating whether or
 not to include the mean in the estimation procedure; for

@@ -7,13 +7,15 @@
 fiaparch(
   rt,
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE,
   drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
   UB = NULL,
-  control = list()
+  control = list(),
+  parallel = TRUE,
+  ncores = max(1, future::availableCores() - 1)
 )
 }
 \arguments{
@@ -30,9 +32,10 @@ run and a warning message being returned.}
 \item{cond_dist}{the conditional distribution to consider as a
 character object; the default is a conditional normal distribution
 \code{"norm"}; available are also, however, a \eqn{t}-distribution
-(\code{"std"}), a generalized error distribution (\code{"ged"}),
+(\code{"std"}), a generalized error distribution (\code{"ged"}), an
+average Laplace distribution (\code{"ald"}),
 and their three skewed variants (\code{"snorm"}, \code{"sstd"},
-\code{"sged"}).}
+\code{"sged"}, \code{"sald"}).}
 
 \item{include_mean}{a logical value indicating whether or not to include
 the series' mean in the maximum-likelihood estimation process; for
@@ -59,6 +62,20 @@ an internally saved default set of values is used.}
 
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}
+
+\item{parallel}{only relevant for a (skewed) average Laplace (AL)
+distribution, i.e.
+if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
+\code{cond_dist = "sald"}; \code{parallel} is a logical value indicating whether
+or not the slices for the positive integer-valued parameter of the SM
+distribution should be fitted in parallel for a speed boost.}
+
+\item{ncores}{only relevant for a (skewed) average Laplace (AL)
+distribution, i.e.
+if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
+\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
+\code{ncores} is a single numeric value indicating the number of cores to
+use for parallel computations.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_fiaparch"}
@@ -128,6 +145,20 @@ by Bollerslev and Mikkelsen (1996) only.
 
 See also the reference section for sources on the APARCH (Ding et al., 1993)
 and the FIAPARCH (Tse, 1998) models.
+
+For a conditional average Laplace distribution, an optimal model for each
+distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
+estimated by selecting the estimated model among the eight fitted models that
+has the largest log-likelihood. The eight models are, by default, fitted
+simultaneously using parallel programming techniques (see also the arguments
+\code{parallel} and \code{ncores}, which are only relevant for a conditional
+average Laplace distribution). After the optimal model (including
+the estimate of \eqn{P} called \eqn{\hat{P}}) has been determined, \eqn{P=\hat{P}}
+is seen as fixed to obtain the standard errors via the Hessian matrix for the
+estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is therefore
+not obtained and the ones obtained for the remaining estimates do not account
+for \eqn{\hat{P}}.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

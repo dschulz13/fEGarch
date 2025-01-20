@@ -23,7 +23,7 @@ model_type_checker <- function(model_type) {
 }
 
 distr_checker <- function(distribution) {
-  !((distribution %in% c("norm", "snorm", "ged", "sm", "sged", "std", "sstd", "ssm")) & (length(distribution) == 1))
+  !((distribution %in% c("norm", "snorm", "ged", "ald", "sged", "std", "sstd", "sald")) & (length(distribution) == 1))
 }
 
 mean_checker <- function(include_mean) {

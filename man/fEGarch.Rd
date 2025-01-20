@@ -53,17 +53,17 @@ of upper boundary values.}
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}
 
-\item{parallel}{only relevant for a (skewed) Sargan-Missiakoulis (SM)
+\item{parallel}{only relevant for a (skewed) average Laplace (AL)
 distribution, i.e.
-if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "sm"} or
-\code{cond_dist = "ssm"}; \code{parallel} is a logical value indicating whether
+if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
+\code{cond_dist = "sald"}; \code{parallel} is a logical value indicating whether
 or not the slices for the positive integer-valued parameter of the SM
 distribution should be fitted in parallel for a speed boost.}
 
-\item{ncores}{only relevant for a (skewed) Sargan-Missiakoulis (SM)
+\item{ncores}{only relevant for a (skewed) average Laplace (AL)
 distribution, i.e.
-if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "sm"} or
-\code{cond_dist = "ssm"}, and if simultaneously \code{parallel = TRUE};
+if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
+\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 \code{ncores} is a single numeric value indicating the number of cores to
 use for parallel computations.}
 }
@@ -107,6 +107,23 @@ See the references section for sources on the EGARCH (Nelson, 1991),
 FIEGARCH (Bollerslev and Mikkelsen, 1996),
 Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
 and FILog-GARCH (Feng et al., 2020) models.
+
+In the current package version, standard errors of parameter estimates are
+computed from the Hessian at the optimum of the log-likelihood.
+
+For a conditional average Laplace distribution, an optimal model for each
+distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
+estimated by selecting the estimated model among the eight fitted models that
+has the largest log-likelihood. The eight models are, by default, fitted
+simultaneously using parallel programming techniques (see also the arguments
+\code{parallel} and \code{ncores}, which are only relevant for a conditional
+average Laplace distribution). After the optimal model (including
+the estimate of \eqn{P} called \eqn{\hat{P}}) has been determined, \eqn{P=\hat{P}}
+is seen as fixed to obtain the standard errors via the Hessian matrix for the
+estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is therefore
+not obtained and the ones obtained for the remaining estimates do not account
+for \eqn{\hat{P}}.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

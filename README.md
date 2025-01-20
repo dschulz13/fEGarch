@@ -17,13 +17,16 @@ exponential generalized autoregressive conditional heteroskedasticity
 (EGARCH) models both with either short or long memory. The six most
 common conditional distributions, i.e. a normal distribution, a
 $t$-distribution, a generalized error distribution, and the skewed
-variants of those three, are available. These EGARCH family models are a
-strong competition to well-established GARCH-type models and provide new
-ways to estimate conditional volatilities, while making the prominent
-EGARCH and fractionally integrated EGARCH (FIEGARCH) available as
-special cases. For convenience and the purpose of comparison,
-fractionally integrated asymmetric power ARCH (FIAPARCH) and long-memory
-GARCH (LMGARCH) models are available as well for estimation.
+variants of those three, are available. Furthermore, we introduce the
+average Laplace distribution and its skewed variant as newly selectable
+conditional distributions for the EGARCH family models. Overall, the
+EGARCH family models are a strong competition to well-established
+GARCH-type models and provide new ways to estimate conditional
+volatilities, while making the prominent EGARCH and fractionally
+integrated EGARCH (FIEGARCH) available as special cases. For convenience
+and the purpose of comparison, fractionally integrated asymmetric power
+ARCH (FIAPARCH) and long-memory GARCH (LMGARCH) models are available as
+well for estimation.
 
 ## Installation
 
@@ -85,12 +88,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0001   4.2862 0.0000
-#> omega_sig -8.6596 0.1659 -52.2046 0.0000
-#> phi1       0.8680 0.0244  35.5788 0.0000
-#> kappa     -0.2363 0.0160 -14.7275 0.0000
-#> gamma      0.3194 0.0213  14.9766 0.0000
-#> d          0.2755 0.0419   6.5704 0.0000
+#> mu         0.0003 0.0001   4.2392 0.0000
+#> omega_sig -8.6599 0.1394 -62.1382 0.0000
+#> phi1       0.8680 0.0241  36.0575 0.0000
+#> kappa     -0.2362 0.0155 -15.2780 0.0000
+#> gamma      0.3194 0.0208  15.3494 0.0000
+#> d          0.2754 0.0415   6.6391 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.4945, BIC: -6.4880
@@ -99,8 +102,8 @@ model1
 Using the model description in the documentation of `fEGarch_spec()`,
 the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6596 + (1-0.8680 B)^{-1}(1-B)^{-0.2755}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
+$$\ln\left(\sigma_t^2\right)=-8.6599 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$g\left(\eta_{t-1}\right)=-0.2362\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
 
@@ -147,12 +150,12 @@ model10
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> omega_sig -9.0464 0.0743 -121.7429 0.0000
-#> phi1       0.9715 0.0374   25.9890 0.0000
-#> phi2      -0.0000 0.0364   -0.0000 1.0000
-#> kappa     -0.3046 0.0202  -15.0765 0.0000
-#> gamma      0.1644 0.0129   12.7266 0.0000
-#> df         7.4339 0.6847   10.8578 0.0000
+#> omega_sig -9.0482 0.0693 -130.6438 0.0000
+#> phi1       0.9705 0.1193    8.1347 0.0000
+#> phi2       0.0008 0.1163    0.0069 0.9945
+#> kappa     -0.3057 0.0351   -8.7180 0.0000
+#> gamma      0.1648 0.0191    8.6312 0.0000
+#> df         7.4375 0.6277   11.8484 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.5358, BIC: -6.5294

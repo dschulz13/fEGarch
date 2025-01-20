@@ -36,17 +36,13 @@ inv_cdf_fun <- function(p, dfun, ...) {
 #'@param shape the shape parameter for a (skewed) generalized error
 #'distribution.
 #'@param P the number of Laplace distributions (minus 1) to derive the arithmetic
-#'mean from as the basis for a (skewed) Sargan-Missiakoulis (SM)
+#'mean from as the basis for a (skewed) average Laplace (AL) distribution
 #'distribution.
 #'@param skew the skewness parameter in the skewed distributions.
-#'@param parallel a logical that indicates whether or not to use a parallel
-#'programming to draw the innovations.
-#'@param ncores a numeric value indicating how many cores to use for parallel
-#'programming.
 #'
 #'@details
 #'Draw random samples from a normal distribution, \eqn{t}-distribution,
-#'generalized error distribution, a Sargan-Missiakoulis distribution,
+#'generalized error distribution, an average Laplace distribution,
 #'or their skewed variants (all standardized to have mean zero and
 #'variance one).
 #'
@@ -83,9 +79,9 @@ rged_s <- function(n, shape = 2) {
 
 #'@export
 #'@rdname sim_functions
-rsm_s <- function(n, P = 8) {
+rald_s <- function(n, P = 8) {
   p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_sm_v1, P = P)
+  inv_cdf_fun(p = p, dfun = pdf_ald_v1, P = P)
 }
 
 #'@export
@@ -111,9 +107,9 @@ rsged_s <- function(n, shape = 2, skew = 1) {
 
 #'@export
 #'@rdname sim_functions
-rssm_s <- function(n, P = 8, skew = 1) {
+rsald_s <- function(n, P = 8, skew = 1) {
   p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_ssm_s, P = P, skew = skew)
+  inv_cdf_fun(p = p, dfun = pdf_skew_sald_s, P = P, skew = skew)
 }
 
 #
@@ -230,7 +226,7 @@ fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
                            d = 0.25,
                            df = 10,
                            shape = 2,
-                           P = 8,
+                           P = 3,
                            skew = 1
                          ), n = 1000, nstart = 5e3) {
 
@@ -260,7 +256,7 @@ fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
 
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
-  } else if (cond_dist %in% c("sm", "ssm")) {
+  } else if (cond_dist %in% c("ald", "sald")) {
     shape <- P
   }
 
@@ -431,9 +427,9 @@ fiaparch_sim <- function(pars = list(
                            d = 0.25,
                            df = 10,
                            shape = 2,
-                           P = 8,
+                           P = 3,
                            skew = 1
-                         ), cond_dist = c("norm", "std", "ged", "sm", "snorm", "sstd", "sged", "ssm"),
+                         ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                          n = 1000, nstart = 5e3) {
 
   cond_dist <- match.arg(cond_dist)
@@ -462,7 +458,7 @@ fiaparch_sim <- function(pars = list(
 
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
-  } else if (cond_dist %in% c("sm", "ssm")) {
+  } else if (cond_dist %in% c("ald", "sald")) {
     shape <- P
   }
 
