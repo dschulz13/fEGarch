@@ -1061,6 +1061,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     result <- fitted_models[[which.min(coll_nllh)]]
 
+    return(coll_nllh)
+
   } else {
 
     goal_fun <- function(theta, rt) {
