@@ -88,7 +88,7 @@ goal_fun_creator_fiaparch <- function(
 #'\code{"norm"}; available are also, however, a \eqn{t}-distribution
 #'(\code{"std"}), a generalized error distribution (\code{"ged"}), an
 #'average Laplace distribution (\code{"ald"}),
-#'and their three skewed variants (\code{"snorm"}, \code{"sstd"},
+#'and their four skewed variants (\code{"snorm"}, \code{"sstd"},
 #'\code{"sged"}, \code{"sald"}).
 #'@param include_mean a logical value indicating whether or not to include
 #'the series' mean in the maximum-likelihood estimation process; for

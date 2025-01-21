@@ -34,7 +34,7 @@ character object; the default is a conditional normal distribution
 \code{"norm"}; available are also, however, a \eqn{t}-distribution
 (\code{"std"}), a generalized error distribution (\code{"ged"}), an
 average Laplace distribution (\code{"ald"}),
-and their three skewed variants (\code{"snorm"}, \code{"sstd"},
+and their four skewed variants (\code{"snorm"}, \code{"sstd"},
 \code{"sged"}, \code{"sald"}).}
 
 \item{include_mean}{a logical value indicating whether or not to include
