@@ -53,7 +53,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     etat <- stats::ts(etat, start = start_rt, frequency = frequ_rt)
   }
 
-  out <- list(
+  out <- fEGarch_fit_rugarch_wrapper(
     rt = rt,
     sigt = sig,
     etat = etat,
@@ -64,7 +64,9 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     orders = orders,
     cond_dist = cond_dist,
     inf_criteria = inf_crit,
-    rugarch_model = est
+    rugarch_model = est,
+    long_memo = FALSE,
+    model = model
   )
   out
 }
@@ -175,3 +177,54 @@ egarch_ru <- function(rt, orders = c(1, 1),
   )
 
 }
+
+#'@export
+#'@rdname show-methods
+#'@aliases show,fEgarch_fit_rugarch_wrapper-method
+setMethod(
+  "show",
+  "fEGarch_fit_rugarch_wrapper",
+  function(object) {
+  x <- object
+  par_names <- names(x@pars)
+  se <- unname(x@se)
+  pars <- unname(x@pars)
+
+  tvals <- pars / se
+  atvals <- abs(tvals)
+  pvals <- 2 * (1 - pnorm(atvals))
+
+  df <- data.frame(
+    par = sprintf("%.4f", pars),
+    se = sprintf("%.4f", se),
+    tval = sprintf("%.4f", tvals),
+    pval = sprintf("%.4f", pvals)
+  )
+  row.names(df) <- par_names
+
+  part1 <- paste0(
+    "*************************************\n",
+    "* Fitted GARCH-Type Model (rugarch) *\n",
+    "*************************************\n",
+    " \n",
+    paste0("GARCH-type model (rugarch): ", x@model,"\n"),
+    "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
+    "Long memory: ", x@long_memo, "\n",
+    "Cond. distribution: ", x@cond_dist, "\n",
+    " \n",
+    "Fitted parameters:\n"
+  )
+
+  part2 <- paste0(
+    " \n",
+    "Information criteria:\n",
+    "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
+    ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
+  )
+
+  cat(part1, fill = TRUE)
+  print(df)
+  cat(part2, fill = TRUE)
+  }
+)
+

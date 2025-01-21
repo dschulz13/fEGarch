@@ -277,7 +277,8 @@ as a time series object of class `"zoo"`.
 - Yuanhua Feng (Department Economics, Paderborn University, Germany)
   (Author)
 
-- Christian Peitz (Affiliation to be added!!!)
+- Christian Peitz (formerly: Department Economics, Paderborn University,
+  Germany) (Author)
 
 - Oliver Kojo Ayensu (Department Economics, Paderborn University,
   Germany) (Author)

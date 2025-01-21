@@ -179,7 +179,7 @@ The package contains an example time series `SP500`, namely the Standard and Poo
 
 - Yuanhua Feng (Department Economics, Paderborn University, Germany) (Author)
 
-- Christian Peitz (Affiliation to be added!!!)
+- Christian Peitz (formerly: Department Economics, Paderborn University, Germany) (Author)
 
 - Oliver Kojo Ayensu (Department Economics, Paderborn University, Germany) (Author)
 

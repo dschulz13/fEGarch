@@ -52,6 +52,18 @@ setClass("fEGarch_fit_lmgarch",
   contains = "fEGarch_fit"
 )
 
+setClass("fEGarch_fit_rugarch_wrapper",
+  contains = "fEGarch_fit",
+  slots = c(
+    rugarch_model = "ANY",
+    model = "character"
+  ),
+  prototype = list(
+    rugarch_model = numeric(1),
+    model = character(1)
+  )
+)
+
 fEGarch_fit_egarch <- function(
     pars,
     se,
@@ -176,6 +188,42 @@ fEGarch_fit_lmgarch <- function(
   )
 
 }
+
+fEGarch_fit_rugarch_wrapper <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    rugarch_model,
+    model
+) {
+
+  new("fEGarch_fit_rugarch_wrapper",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    rugarch_model = rugarch_model,
+    model = model
+  )
+
+}
+
+
 
 
 
