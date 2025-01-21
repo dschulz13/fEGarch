@@ -16,7 +16,9 @@
 #'The six most common conditional distributions are supported, namely
 #'a normal distribution, a \eqn{t}- distribution, a generalized error
 #'distribution, as well as the skewed variants of these three
-#'distributions. The main functions to implement these models are
+#'distributions. Furthermore, as a novelty, an average Laplace (AL)
+#'distribution and its skewed version are provided as well.
+#'The main functions to implement these models are
 #'\code{\link{fEGarch_spec}} in combination with
 #'\code{\link{fEGarch}}. Further details on these models can also
 #'be found in the documentation of these two functions. For
@@ -78,10 +80,14 @@
 #'long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 #'265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
 #'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
+#'\item{Missiakoulis, S. (1983). Sargan Densities: Which One?. Journal of Econometrics, 23(2): 223-233.
+#'DOI: 10.1016/0304-4076(93)90078-J}
 #'\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
 #'59(2), 347–370. DOI: 10.2307/2938260.}
 #'\item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'71-74. DOI: 10.1080/07474938608800089.}
+#'\item{Tse, Y. K. (1987). A Note On Sargan Densities. Journal of Econometrics, 34(3): 349-354.
+#'DOI: 10.1016/0304-4076(87)90017-0}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 #'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
