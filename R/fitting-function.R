@@ -13,11 +13,13 @@
 #'\code{"ts"} class object.
 #'@param drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
-#'parameter \eqn{d} in a long-memory model; by default,
+#'parameter \eqn{d} in a long-memory GARCH-type model; by default,
 #'\eqn{d} being searched for on the
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
+#'@param armaspec an object of class "arma_spec"; indicates the
+#'specifications for the model in the conditional mean.
 #'@param start_pars a vector with starting parameters for the
 #'optimization; must be of the same length as the output vector of
 #'parameters; the default NULL uses internally saved default sets
@@ -129,10 +131,11 @@
 
 fEGarch <- function(spec = egarch_spec(),
     rt, drange = c(0, 0.5 - 1e-6),
+    armaspec = arma_spec(),
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
-  fEGarch_fit(spec, rt, drange, start_pars, LB, UB, control,
+  fEGarch_fit(spec, rt, drange, armaspec, start_pars, LB, UB, control,
               parallel, ncores)
 
 }

@@ -17,6 +17,10 @@ pdf_skew_sald <- function(x, P, skew) {
     .Call('_fEGarch_pdf_skew_sald', PACKAGE = 'fEGarch', x, P, skew)
 }
 
+fitted_arma_Cpp <- function(x, mu, ma, ar) {
+    .Call('_fEGarch_fitted_arma_Cpp', PACKAGE = 'fEGarch', x, mu, ma, ar)
+}
+
 signCpp <- function(val) {
     .Call('_fEGarch_signCpp', PACKAGE = 'fEGarch', val)
 }

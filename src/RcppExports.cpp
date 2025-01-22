@@ -62,6 +62,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fitted_arma_Cpp
+arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu, const arma::rowvec& ma, const arma::rowvec& ar);
+RcppExport SEXP _fEGarch_fitted_arma_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP maSEXP, SEXP arSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type ma(maSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type ar(arSEXP);
+    rcpp_result_gen = Rcpp::wrap(fitted_arma_Cpp(x, mu, ma, ar));
+    return rcpp_result_gen;
+END_RCPP
+}
 // signCpp
 int signCpp(const double val);
 RcppExport SEXP _fEGarch_signCpp(SEXP valSEXP) {
@@ -405,6 +419,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_ald", (DL_FUNC) &_fEGarch_pdf_ald, 4},
     {"_fEGarch_pdf_ald_v1", (DL_FUNC) &_fEGarch_pdf_ald_v1, 2},
     {"_fEGarch_pdf_skew_sald", (DL_FUNC) &_fEGarch_pdf_skew_sald, 3},
+    {"_fEGarch_fitted_arma_Cpp", (DL_FUNC) &_fEGarch_fitted_arma_Cpp, 4},
     {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
     {"_fEGarch_signVecCpp", (DL_FUNC) &_fEGarch_signVecCpp, 1},
     {"_fEGarch_sigt_egarch_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_shortCpp, 12},

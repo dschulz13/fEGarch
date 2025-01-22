@@ -699,7 +699,7 @@ filoggarch_spec <- function(
   )
 }
 
-sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
+sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
               mode) {
@@ -760,11 +760,11 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q,
     pows, mods, mode
   ))
 
-  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
-sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
+sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
               mode) {
@@ -828,7 +828,7 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q,
     mode = mode
   ))
 
-  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
@@ -839,6 +839,8 @@ goal_fun_creator_egarch <- function(
     dfun2,
     p,
     q,
+    p_ar,
+    q_ma,
     incl_mean,
     extra_par,
     skew_par,
@@ -849,7 +851,7 @@ goal_fun_creator_egarch <- function(
     mode
 ) {
 
-  res_list <- sigt_fun(theta, x, dfun1, p, q,
+  res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
               mode)
@@ -866,42 +868,114 @@ goal_fun_creator_egarch <- function(
 }
 
 setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL,
-    UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), armaspec = arma_spec(),
+    start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
+    ncores = max(1, future::availableCores() - 1)) {
 
+  # Coredata of rt with possible time series formatting
   rt_core <- zoo::coredata(rt)
 
+  # Obtain model orders
   order <- orders(spec)
   p <- order[[1]]
   q <- order[[2]]
+  # Conditional distribution
   cond_d <- cond_dist(spec)
 
+  # ARMA orders
+  order_arma <- orders(armaspec)
+  p_ar <- order_arma[[1]]
+  q_ma <- order_arma[[2]]
+
+  # Look up internally saved density functions
+  # from "data-raw/lookup.R"
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
+  # Look up internally saved settings for additional parameters
+  # from "data-raw/lookup.R"
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
+  # Long-memory setting (for GARCH-part)
   lm <- long_memo(spec)
+  # Look up internally saved calculation function for conditional
+  # standard deviations from "data-raw/lookup.R"
   sigt_fun <- sigt_funs_egarch[[lm + 1]]
+  # Adjust (if ARMA relevant)
+  pg0 <- p_ar > 0
+  qg0 <- q_ma > 0
+  if (pg0 || qg0) {
+    sigt_fun_adj <- function(theta, x, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pows, mods,
+              mode) {
 
+      imean <- !incl_mean
+      pg0 <- p > 0
+      qg0 <- q > 0
+      mu <- c(0, theta[[1]])[[incl_mean + 1]]
+      step0 <- 2 - imean
+      if (pg0) {
+        step1 <- step0 + p - 1
+        step2 <- step1 + 1
+        ar <- theta[step0:step1]
+      } else {
+        step2 <- step0
+        ar <- 0
+      }
+      if (qg0) {
+        step3 <- step2 + q - 1
+        ma <- theta[step2:step3]
+      } else {
+        ma <- 0
+      }
+
+      fitted_vs <- c(fitted_arma_Cpp(x = x, mu = mu, ma = ma, ar = ar))
+      res <- x - fitted_vs
+
+      theta2 <- theta[-(1:(incl_mean + p_ar + q_ma))]
+      out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
+              FALSE, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pows, mods,
+              mode)
+      out$cmeans <- fitted_vs
+      out
+
+    }
+  } else { # ...else keep function for EGARCH-type
+    sigt_fun_adj <- sigt_fun
+  }
+
+  # Modulus settings
   mod <- modulus(spec)
   mod_asy <- mod[[1]]
   mod_mag <- mod[[2]]
 
+  # Power parameter settings
   pow <- powers(spec)
   pow_asy <- pow[[1]]
   pow_mag <- pow[[2]]
   pow_asy_check <- (pow_asy != 0) + 1
   pow_mag_check <- (pow_mag != 0) + 1
 
+  # Look up internally saved functions to integrate over to numerically
+  # in order to obtain relevant expectation values for the volatility
+  # function (from "data-raw/lookup.R")
   int_fun_asy <- exp_funs[["asy"]][[mod_asy + 1]][[pow_asy_check]]
   int_fun_mag <- exp_funs[["mag"]][[mod_mag + 1]][[pow_mag_check]]
 
+  # Look up the mode for the volatility calculation functions based
+  # on power and modulus settings from "data-raw/lookup.R"
   mode <- mode_mat[pow_asy_check, pow_mag_check]
 
+  # Setting for mean
   incl_mean <- include_mean(spec)
 
+  # Create the goal function to optimize over
+  # (this is intermediate goal function, as dfun1 and dfun2
+  # must be kept flexible for (skewed) average Laplace distribution
+  # in order to be able to fix its parameter at different integer values)
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_egarch(
       theta = theta,
@@ -910,12 +984,14 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       dfun2 = dfun2,
       p = p,
       q = q,
+      p_ar = p_ar,
+      q_ma = q_ma,
       incl_mean = incl_mean,
       extra_par = extra_par,
       skew_par = skew_par,
       int_fun_asy = int_fun_asy,
       int_fun_mag = int_fun_mag,
-      sigt_fun = sigt_fun,
+      sigt_fun = sigt_fun_adj,
       pows = pow,
       mods = mod,
       mode = mode
@@ -946,6 +1022,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
       start_pars <- c(
         list(NULL, mean_rt)[[incl_mean + 1]],
+        rep(0.05 / p_ar, p_ar),
+        rep(0.05 / q_ma, q_ma),
         mean(lrt2_shift),
         rep(0.2 / p, p),
         rep(0, q - 1),
@@ -964,6 +1042,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
       LB <- c(
         list(NULL, min(rt))[[incl_mean + 1]],
+        rep(-2, p_ar),
+        rep(-2, q_ma),
         mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
         rep(-2, p),
         rep(-2, q - 1),
@@ -981,6 +1061,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
       UB <- c(
         list(NULL, max(rt))[[incl_mean + 1]],
+        rep(2, p_ar),
+        rep(2, q_ma),
         mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
         rep(2, p),
         rep(2, q - 1),
@@ -994,10 +1076,24 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   }
 
-  # For stationarity, restrict phi values
+  n_arma <- p_ar + q_ma
+  n_arma_im <- n_arma + incl_mean
+  low_phi <- 2 + n_arma_im
+  up_phi <- 1 + n_arma_im + p
+  low_ar <- 1 + incl_mean
+  up_ar <- incl_mean + p_ar
+
+  # For stationarity, restrict phi / AR values
   constr_fun <- function(theta, rt) {
-    phi <- c(1, -theta[(2 + incl_mean):(1 + incl_mean + p)])
-    abs(polyroot(phi)) - 1
+    phi <- c(1, -theta[low_phi:up_phi])
+    c1 <- abs(polyroot(phi)) - 1
+    if (pg0) {
+      ar <- c(1, -theta[low_ar:up_ar])
+      c2 <- abs(polyroot(ar)) - 1
+    } else {
+      c2 <- numeric(0)
+    }
+    c(c1, c2)
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
@@ -1015,7 +1111,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     fitted_models <- furrr::future_map(
       .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2) {
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2, p_all) {
 
         dfun1_P <- function(x, shape, skew) {
           dfun1(x = x, shape = .x, skew = skew)
@@ -1035,15 +1131,15 @@ setMethod("fEGarch_fit", "egarch_type_spec",
           LB = LB,
           UB = UB,
           ineqfun = ineq_fun,
-          ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
-          ineqUB = rep(Inf, p),
+          ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
+          ineqUB = rep(Inf, p_all),
           control = control,
           rt = rt_core
         ))
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       ineq_fun = constr_fun, control = control, rt_core = rt_core,
-      dfun1 = dfun1, dfun2 = dfun2,
+      dfun1 = dfun1, dfun2 = dfun2, p_all = p + p_ar,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
 
@@ -1069,14 +1165,17 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
+
+    p_all <- p + p_ar
+
     result <- suppressWarnings(Rsolnp::solnp(
       pars = start_pars,
       fun = goal_fun,
       LB = LB,
       UB = UB,
       ineqfun = constr_fun,
-      ineqLB = rep(1e-6, p),    # abs. values of roots must be outside of unit circle
-      ineqUB = rep(Inf, p),
+      ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
+      ineqUB = rep(Inf, p_all),
       control = control,
       rt = rt_core
     ))
@@ -1086,13 +1185,15 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   pars <- result$pars
   llhood <- -tail(result$values, 1)
 
-  sigt <- sigt_fun(unname(pars), rt_core, dfun1, p, q,
+  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pow, mod,
-              mode)$sigt
+              mode)
+  sigt <- final_series$sigt
+  cmeans <- final_series$cmeans
 
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
-  etat <- (rt - mu) / sigt
+  etat <- (rt - cmeans) / sigt
 
   if (q > 1) {
     psi_names <- paste0("psi", 1:(q - 1))
@@ -1111,8 +1212,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     character(0)
   )
 
+  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
+  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
+
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
+    names_ar,
+    names_ma,
     "omega_sig",
     paste0("phi", 1:p),
     psi_names,
@@ -1123,7 +1229,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- result$hessian[-(1:p), -(1:p)]
+  nhess <- result$hessian[-(1:p_all), -(1:p_all)]
   vcov_mat <- solve(nhess)
 
   if (cond_d %in% c("ald", "sald")) {
@@ -1154,11 +1260,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (inherits(rt, what = "zoo")) {
     tp <- as.Date(time(rt))
+    cmeans <- zoo::zoo(cmeans, order.by = tp)
     sigt <- zoo::zoo(sigt, order.by = tp)
     etat <- zoo::zoo(etat, order.by = tp)
   } else if (inherits(rt, what = "ts")) {
     start_rt <- stats::start(rt)
     frequ_rt <- stats::frequency(rt)
+    cmeans <- stats::ts(zoo::coredata(cmeans), start = start_rt, frequency = frequ_rt)
     sigt <- stats::ts(zoo::coredata(sigt), start = start_rt, frequency = frequ_rt)
     etat <- stats::ts(zoo::coredata(etat), start = start_rt, frequency = frequ_rt)
   }
@@ -1168,6 +1276,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     se = serrors,
     vcov_mat = vcov_mat,
     rt = rt,
+    cmeans = cmeans,
     sigt = sigt,
     etat = etat,
     llhood = llhood,

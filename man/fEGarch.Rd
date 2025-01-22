@@ -8,6 +8,7 @@ fEGarch(
   spec = egarch_spec(),
   rt,
   drange = c(0, 0.5 - 1e-06),
+  armaspec = arma_spec(),
   start_pars = NULL,
   LB = NULL,
   UB = NULL,
@@ -29,11 +30,14 @@ past to present; can also be a \code{"zoo"} class object or a
 
 \item{drange}{a two-element numeric vector that indicates the boundaries
 of the interval over which to search for the fractional differencing
-parameter \eqn{d} in a long-memory model; by default,
+parameter \eqn{d} in a long-memory GARCH-type model; by default,
 \eqn{d} being searched for on the
 interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
+
+\item{armaspec}{an object of class "arma_spec"; indicates the
+specifications for the model in the conditional mean.}
 
 \item{start_pars}{a vector with starting parameters for the
 optimization; must be of the same length as the output vector of
