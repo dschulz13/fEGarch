@@ -73,8 +73,16 @@
 #'}
 #'
 #'@details
-#'For details on the models, see \link[fEGarch]{fEGarch_spec}. The
-#'specified models are then fitted using quasi maximum likelihood estimation,
+#'For details on the models in the conditional variance, see \link[fEGarch]{fEGarch_spec}.
+#'For details on the models in the conditional mean, see \link[fEGarch]{armaspec}.
+#'The combined model defined through \link[fEGarch]{armaspec} and
+#'\link[fEGarch]{fEGarch_spec} is the specified model. It can be thought of
+#'as the model described in \link[fEGarch]{armaspec} with \eqn{\left\{r_t\right\}}
+#'therein being governed by a model from the EGARCH family as described in
+#'\link[fEGarch]{fEGarch_spec}, however with mean of \eqn{\left\{r_t\right\}} fixed
+#'to zero.
+#'
+#'The specified model is then fitted using quasi maximum likelihood estimation,
 #'where initial values are obtained from their theoretical expectations.
 #'
 #'The initialization of pre-sample values is always done according to the

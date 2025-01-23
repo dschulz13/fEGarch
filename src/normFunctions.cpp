@@ -6,7 +6,7 @@ using namespace Rcpp;
 // Version: November 08, 2024
 
 // [[Rcpp::export]]
-arma::vec pdf_norm(const arma::vec& rt, const double mu, const arma::vec& sigt) {
+arma::vec pdf_norm(const arma::vec& rt, const arma::vec& mu, const arma::vec& sigt) {
   const arma::vec one_div_sigt = 1.0 / sigt;
   const arma::vec eta_t2 = arma::pow((rt - mu) % one_div_sigt, 2.0);
   const arma::vec f1 = one_div_sigt / std::sqrt(2.0 * M_PI);

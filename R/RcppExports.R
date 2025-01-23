@@ -21,6 +21,10 @@ fitted_arma_Cpp <- function(x, mu, ma, ar) {
     .Call('_fEGarch_fitted_arma_Cpp', PACKAGE = 'fEGarch', x, mu, ma, ar)
 }
 
+fitted_farima_Cpp <- function(x, mu, coef_inf) {
+    .Call('_fEGarch_fitted_farima_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf)
+}
+
 signCpp <- function(val) {
     .Call('_fEGarch_signCpp', PACKAGE = 'fEGarch', val)
 }

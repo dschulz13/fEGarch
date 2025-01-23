@@ -6,7 +6,7 @@ using namespace Rcpp;
 // Version: November 08, 2024
 
 // [[Rcpp::export]]
-arma::vec pdf_ged(const arma::vec& rt, const double mu, const arma::vec& sigt,
+arma::vec pdf_ged(const arma::vec& rt, const arma::vec& mu, const arma::vec& sigt,
                   const double shape) {
   const arma::vec one_div_sigt = 1.0 / sigt;
   const arma::vec abs_eta_t = arma::abs((rt - mu) % one_div_sigt);

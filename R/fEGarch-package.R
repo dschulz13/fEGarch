@@ -95,7 +95,7 @@
 #'
 #'@author
 #'\itemize{
-#'\item Dominik Schulz (Research Assistant) (Department of Economics, Paderborn
+#'\item Dominik Schulz (Department of Economics, Paderborn
 #'University), \cr
 #'Author and Package Creator
 #'\item Yuanhua Feng (Department of Economics, Paderborn

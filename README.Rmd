@@ -105,6 +105,23 @@ model10 <- fEGarch(spec10, rt)   # ... and so on for other specifications
 model10
 ```
 
+As a further extension, dual-models with autoregressive moving-average (ARMA) model or fractionally integrated ARMA (FARIMA / ARFIMA) model in the conditional mean simultaneously with error process from the EGARCH family can be defined and estimated. For this purpose, the `arma_spec()` function must be utilized in addition to the previous steps.
+
+```{r}
+spec_egarch <- egarch_spec()
+spec_arma <- arma_spec(
+  orders = c(1, 1),
+  long_memo = FALSE
+)
+model11 <- fEGarch(
+  spec = spec_egarch,
+  rt = rt,
+  armaspec = spec_arma
+)
+model11
+```
+
+
 ### Illustrations
 
 Estimation objects returned by `fEGarch()` contain several elements. They can be either accessed through the operator `@` or via specific accessor functions named after the corresponding elements in the output object.
@@ -124,6 +141,29 @@ If the input data is formatted as a time series object of class `"zoo"`, `fEGarc
 ```{r}
 plot(TS, xlab = "Year", main = "Example application")
 ```
+
+Furthermore, also the conditional means of the previously estimated `model11` object can be obtained.
+
+```{r, fig.height = 6}
+cond11 <- cmeans(model11)
+sig11 <- sigt(model11)
+
+plot.zoo <- get("plot.zoo", envir = asNamespace("zoo"))
+
+obj <- cbind(
+  "Log-returns" = rt,
+  "Conditional means" = cond11,
+  "Conditional SDs" = sig11
+)
+plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
+  main = paste0(
+    "Log-returns with estimated conditional means\n",
+    "and estimated conditional standard deviations"
+  ),
+  xlab = "Year"
+)
+```
+
 
 ### Alternatives
 
@@ -149,7 +189,6 @@ TS2 <- cbind(
 
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 ```
-
 
 ## Main functions
 

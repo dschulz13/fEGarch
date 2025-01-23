@@ -3,6 +3,7 @@
 \name{accessor_methods}
 \alias{accessor_methods}
 \alias{sigt,fEGarch_fit-method}
+\alias{cmeans,fEGarch_fit-method}
 \alias{etat,fEGarch_fit-method}
 \alias{inf_criteria,fEGarch_fit-method}
 \alias{llhood,fEGarch_fit-method}
@@ -12,6 +13,8 @@
 \title{Methods for Accessing Model Estimation Output Elements}
 \usage{
 \S4method{sigt}{fEGarch_fit}(x)
+
+\S4method{cmeans}{fEGarch_fit}(x)
 
 \S4method{etat}{fEGarch_fit}(x)
 

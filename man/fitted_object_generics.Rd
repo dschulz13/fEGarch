@@ -4,6 +4,8 @@
 \alias{fitted_object_generics}
 \alias{sigt}
 \alias{sigt,ANY-method}
+\alias{cmeans}
+\alias{cmeans,ANY-method}
 \alias{etat}
 \alias{etat,ANY-method}
 \alias{llhood}
@@ -19,6 +21,8 @@
 \title{Generics for Accessing Model Estimation Output Elements}
 \usage{
 sigt(x)
+
+cmeans(x)
 
 etat(x)
 

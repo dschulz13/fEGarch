@@ -857,11 +857,11 @@ goal_fun_creator_egarch <- function(
               mode)
 
   sigt <- res_list$sigt
-  mu <- res_list$mu
   skew <- res_list$skew
   shape <- res_list$shape
+  cmeans <- res_list$cmeans
 
-  out <- -sum(log(dfun2(x, mu, sigt, shape, skew)))
+  out <- -sum(log(dfun2(x, cmeans, sigt, shape, skew)))
 
   out
 
@@ -1845,6 +1845,10 @@ setMethod(
 #')
 #'
 setMethod("sigt", "fEGarch_fit", function(x) {x@sigt})
+#'@export
+#'@rdname accessor_methods
+#'@aliases cmeans,fEGarch_fit-method
+setMethod("cmeans", "fEGarch_fit", function(x) {x@cmeans})
 #'@export
 #'@rdname accessor_methods
 #'@aliases etat,fEGarch_fit-method

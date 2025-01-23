@@ -62,7 +62,7 @@ goal_fun_creator_fiaparch <- function(
   skew <- res_list$skew
   shape <- res_list$shape
 
-  out <- -sum(log(pdf_fun2(x, mu, sigt, shape, skew)))
+  out <- -sum(log(pdf_fun2(x, rep(mu, length(sigt)), sigt, shape, skew)))
 
   out
 

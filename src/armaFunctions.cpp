@@ -11,18 +11,19 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
   const int q = ma.size();
   const int l = std::max(p, q);
   const int n = x.size();
+  const int nl = n + l;
 
-  arma::vec x_dm = arma::zeros<arma::vec>(n + l);
-  arma::vec fitted = arma::zeros<arma::vec>(n + l);
-  x_dm.subvec(l, n + l - 1) = x - mu;
+  arma::vec x_dm = arma::zeros<arma::vec>(nl);
+  arma::vec fitted = arma::zeros<arma::vec>(nl);
+  x_dm.subvec(l, nl - 1) = x - mu;
   const arma::rowvec ar_rev = arma::reverse(ar);
   const arma::rowvec ma_rev = arma::reverse(ma);
 
-  arma::vec et = arma::zeros<arma::vec>(n + l);
+  arma::vec et = arma::zeros<arma::vec>(nl);
 
   int im1;
 
-  for (int i = l; i < n + l; ++i) {
+  for (int i = l; i < nl; ++i) {
 
     im1 = i - 1;
 
@@ -33,9 +34,35 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
 
   }
 
-  return fitted.subvec(l, n + l - 1) + mu;
+  return fitted.subvec(l, nl - 1) + mu;
 
 }
+
+// [[Rcpp::export]]
+arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu,
+                            const arma::vec& coef_inf) {
+
+  const int pre = 1;
+  const int n = x.size();
+  const int n_pre = n + pre;
+
+  arma::vec x_dm = arma::zeros<arma::vec>(n_pre);
+  arma::vec fitted = arma::zeros<arma::vec>(n_pre);
+  x_dm.subvec(pre, n_pre - 1) = x - mu;
+  const arma::rowvec coef_rev = arma::reverse(coef_inf);
+
+  const int nm1 = n - 1;
+
+  for (int i = pre; i < n_pre; ++i) {
+
+    fitted(i) = arma::as_scalar(coef_rev.subvec(n - i, nm1) * x_dm.subvec(0, i - 1));
+
+  }
+
+  return fitted.subvec(pre, n_pre - 1) + mu;
+
+}
+
 //
 // // [[Rcpp::export]]
 // arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,

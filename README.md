@@ -1,8 +1,3 @@
----
-output:
-  html_document: default
-  pdf_document: default
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -166,6 +161,50 @@ model10
 #> AIC: -6.5358, BIC: -6.5294
 ```
 
+As a further extension, dual-models with autoregressive moving-average
+(ARMA) model or fractionally integrated ARMA (FARIMA / ARFIMA) model in
+the conditional mean simultaneously with error process from the EGARCH
+family can be defined and estimated. For this purpose, the `arma_spec()`
+function must be utilized in addition to the previous steps.
+
+``` r
+spec_egarch <- egarch_spec()
+spec_arma <- arma_spec(
+  orders = c(1, 1),
+  long_memo = FALSE
+)
+model11 <- fEGarch(
+  spec = spec_egarch,
+  rt = rt,
+  armaspec = spec_arma
+)
+model11
+#> *************************************
+#> *     Fitted EGARCH Family Model    *
+#> *************************************
+#>  
+#> Type: eGARCH
+#> Orders: (1, 1)
+#> Modulus: (FALSE, FALSE)
+#> Powers: (1, 1)
+#> Long memory: FALSE
+#> Cond. distribution: norm
+#>  
+#> Fitted parameters:
+#> 
+#>               par     se      tval   pval
+#> mu         0.0003 0.0001    2.8757 0.0040
+#> ar1        0.2296 0.2798    0.8206 0.4119
+#> ma1       -0.2801 0.2731   -1.0256 0.3051
+#> omega_sig -9.1303 0.0772 -118.2882 0.0000
+#> phi1       0.9719 0.0028  349.1268 0.0000
+#> kappa     -0.1339 0.0081  -16.5671 0.0000
+#> gamma      0.1617 0.0123   13.1245 0.0000
+#>  
+#> Information criteria:
+#> AIC: -6.4969, BIC: -6.4894
+```
+
 ### Illustrations
 
 Estimation objects returned by `fEGarch()` contain several elements.
@@ -191,7 +230,32 @@ returned object, also to the estimated conditional standard deviations.
 plot(TS, xlab = "Year", main = "Example application")
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+
+Furthermore, also the conditional means of the previously estimated
+`model11` object can be obtained.
+
+``` r
+cond11 <- cmeans(model11)
+sig11 <- sigt(model11)
+
+plot.zoo <- get("plot.zoo", envir = asNamespace("zoo"))
+
+obj <- cbind(
+  "Log-returns" = rt,
+  "Conditional means" = cond11,
+  "Conditional SDs" = sig11
+)
+plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
+  main = paste0(
+    "Log-returns with estimated conditional means\n",
+    "and estimated conditional standard deviations"
+  ),
+  xlab = "Year"
+)
+```
+
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ### Alternatives
 
@@ -246,7 +310,7 @@ TS2 <- cbind(
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 ## Main functions
 

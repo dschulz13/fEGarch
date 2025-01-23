@@ -18,7 +18,7 @@ double binomial_coef(const int n, const int k) {
 }
 
 // [[Rcpp::export]]
-arma::vec pdf_ald(const arma::vec& x, const double mu, const arma::vec& sigt, const int P) {
+arma::vec pdf_ald(const arma::vec& x, const arma::vec& mu, const arma::vec& sigt, const int P) {
   const double a = std::sqrt(2.0 * (P + 1.0));
   const double K = std::pow(2.0, -2.0 * P) * binomial_coef(2 * P, P);
 

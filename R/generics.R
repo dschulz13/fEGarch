@@ -89,6 +89,10 @@ setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 0.5 - 1e-6), armaspec
 #'
 #'@export
 setGeneric("sigt", function(x) {standardGeneric("sigt")})
+#'@export
+#'@rdname fitted_object_generics
+#'@aliases cmeans cmeans,ANY-method
+setGeneric("cmeans", function(x) {standardGeneric("cmeans")})
 #'@rdname fitted_object_generics
 #'@export
 #'@aliases etat etat,ANY-method
