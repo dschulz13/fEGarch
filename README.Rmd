@@ -144,7 +144,7 @@ plot(TS, xlab = "Year", main = "Example application")
 
 Furthermore, also the conditional means of the previously estimated `model11` object can be obtained.
 
-```{r, fig.height = 6}
+```{r, fig.height = 5}
 cond11 <- cmeans(model11)
 sig11 <- sigt(model11)
 
