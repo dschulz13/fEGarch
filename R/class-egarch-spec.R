@@ -33,7 +33,13 @@ base_garch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
     include_mean = TRUE
 ) {
-  cond_dist <- match.arg(cond_dist)
+
+  cond_dist <- tryCatch(
+    expr = {match.arg(cond_dist)},
+    error = function(e1) {
+      stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
+    }
+  )
 
   new("base_garch_spec",
     orders = orders,
@@ -124,7 +130,12 @@ egarch_type_spec <- function(
   modulus = c(FALSE, FALSE)
 ) {
 
-  cond_dist <- match.arg(cond_dist)
+  cond_dist <- tryCatch(
+    expr = {match.arg(cond_dist)},
+    error = function(e1) {
+      stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
+    }
+  )
 
   new("egarch_type_spec",
     orders = orders,
@@ -146,7 +157,12 @@ loggarch_type_spec <- function(
   include_mean = TRUE
 ) {
 
-  cond_dist <- match.arg(cond_dist)
+  cond_dist <- tryCatch(
+    expr = {match.arg(cond_dist)},
+    error = function(e1) {
+      stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
+    }
+  )
 
   new("loggarch_type_spec",
     orders = orders,
@@ -363,7 +379,12 @@ fEGarch_spec <- function(
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
 ) {
-  model_type <- match.arg(model_type)
+  model_type <- tryCatch(
+    expr = {match.arg(model_type)},
+    error = function(e1) {
+      stop('"model_type" must be kept at default or must be of length 1 and one of the defaults')
+    }
+  )
   if (is.null(model_type) || is.na(model_type)) {
     model_type <- "eGARCH"
   }
@@ -376,7 +397,12 @@ fEGarch_spec <- function(
   if ((is.null(modulus) || all(is.na(modulus))) && (model_type == "eGARCH")) {
     modulus <- c(FALSE, FALSE)
   }
-  cond_dist <- match.arg(cond_dist)
+  cond_dist <- tryCatch(
+    expr = {match.arg(cond_dist)},
+    error = function(e1) {
+      stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
+    }
+  )
   if (is.null(include_mean) || is.na(include_mean)) {
     include_mean <- TRUE
   }

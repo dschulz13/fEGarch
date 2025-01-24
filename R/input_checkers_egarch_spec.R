@@ -19,11 +19,11 @@ modulus_checker <- function(modulus) {
 }
 
 model_type_checker <- function(model_type) {
-  !(length(model_type) == 1) | !(model_type %in% c(1, 2))
+  !((length(model_type) == 1) && (model_type %in% c(1, 2)))
 }
 
 distr_checker <- function(distribution) {
-  !((distribution %in% c("norm", "snorm", "ged", "ald", "sged", "std", "sstd", "sald")) & (length(distribution) == 1))
+  !((length(distribution) == 1) && (distribution %in% c("norm", "snorm", "ged", "ald", "sged", "std", "sstd", "sald")))
 }
 
 mean_checker <- function(include_mean) {
