@@ -16,10 +16,17 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
   arma::vec x_dm = arma::zeros<arma::vec>(nl);
   arma::vec fitted = arma::zeros<arma::vec>(nl);
   x_dm.subvec(l, nl - 1) = x - mu;
-  const arma::rowvec ar_rev = arma::reverse(ar);
-  const arma::rowvec ma_rev = arma::reverse(ma);
+
+  const arma::rowvec ar_rev = (p > 0) ? arma::reverse(ar) : arma::rowvec();
+  const arma::rowvec ma_rev = (q > 0) ? arma::reverse(ma) : arma::rowvec();
+
+  const bool use_ar = (p > 0);
+  const bool use_ma = (q > 0);
 
   arma::vec et = arma::zeros<arma::vec>(nl);
+
+  double ar_term = 0.0;
+  double ma_term = 0.0;
 
   int im1;
 
@@ -27,8 +34,14 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
 
     im1 = i - 1;
 
-    fitted(i) = arma::as_scalar(ar_rev * x_dm.subvec(i - p, im1)) +
-              arma::as_scalar(ma_rev * et.subvec(i - q, im1));
+    if (use_ar) {
+      ar_term = arma::as_scalar(ar_rev * x_dm.subvec(i - p, im1));
+    }
+    if (use_ma) {
+      ma_term = arma::as_scalar(ma_rev * et.subvec(i - q, im1));
+    }
+
+    fitted(i) = ar_term + ma_term;
 
     et(i) = x_dm(i) - fitted(i);
 

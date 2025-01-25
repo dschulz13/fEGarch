@@ -3,7 +3,7 @@ sigt_fiaparch_R <- function(theta, x, p, q,
 
 
   imean <- !incl_mean
-  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) theta[[1]] else 0
   step0 <- 2 - imean
   omega_sig <- theta[[step0]]
   step1 <- step0 + p
@@ -13,16 +13,8 @@ sigt_fiaparch_R <- function(theta, x, p, q,
   gamma <- theta[[step2 + 1]]
   delta <- theta[[step2 + 2]]
   d <- theta[[step2 + 3]]
-  if (extra_par) {
-    shape <- theta[[step2 + 4]]
-  } else {
-    shape <- 0
-  }
-  if (skew_par) {
-    skew <- theta[[step2 + 4 + extra_par]]
-  } else {
-    skew <- 0
-  }
+  shape <- if (extra_par) theta[[step2 + 4]] else 0
+  skew <- if (skew_par) theta[[step2 + 4 + extra_par]] else 0
 
   n <- length(x)
   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,

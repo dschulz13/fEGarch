@@ -725,14 +725,14 @@ filoggarch_spec <- function(
   )
 }
 
-sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode) {
+
+# Given a parameter vector "theta" and settings on what parameters are included,
+# grab the parameters from the vector (following an EGARCH-specification)
+egarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_par) {
 
   imean <- !incl_mean
 
-  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) theta[[1]] else 0
   step0 <- 2 - imean
   omega_sig <- theta[[step0]]
   step1 <- step0 + p
@@ -740,35 +740,108 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
   phi <- theta[(step0 + 1):step1]
 
-  if (q > 1) {
-    psi <- c(1, theta[(step1 + 1):step2])
-  } else {
-    psi <- 1
-  }
+  psi <- if (q > 1) c(1, theta[(step1 + 1):step2]) else 1
+
   kappa <- theta[[(step2 + 1)]]
   gamma <- theta[[step2 + 2]]
-  if (extra_par) {
-    shape <- theta[[step2 + 3]]
+  step2p3 <- step2 + 3
+  d <- if (d_par) theta[[step2p3]] else 0
+  shape <- if (extra_par) theta[[step2p3 + d_par]] else 0
+  skew <- if (skew_par) theta[[step2p3 + d_par + extra_par]] else 0
+
+  list(
+    mu = mu,
+    omega_sig = omega_sig,
+    phi = phi,
+    psi = psi,
+    kappa = kappa,
+    gamma = gamma,
+    d = d,
+    shape = shape,
+    skew = skew
+  )
+
+}
+
+arma_grab_pars <- function(theta, incl_mean, pg0, qg0, p, q) {
+
+  imean <- !incl_mean
+  mu <- if (incl_mean) theta[[1]] else 0
+  step0 <- 2 - imean
+  ar <- if (pg0) {
+    step1 <- step0 + p - 1
+    step2 <- step1 + 1
+    theta[step0:step1]
   } else {
-    shape <- 0
+    step2 <- step0
+    numeric(0)
   }
-  if (skew_par) {
-    skew <- theta[[step2 + 3 + extra_par]]
+  ma <- if (qg0) {
+    step3 <- step2 + q - 1
+    theta[step2:step3]
   } else {
-    skew <- 0
+    ma <- numeric(0)
   }
+
+  list(
+    mu = mu,
+    ar = ar,
+    ma = ma
+  )
+
+}
+
+# Calculate the two constants (i.e. the expectations) in the EGARCH formula
+expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows) {
+  E_asy <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+                  dfun = dfun, pow = pows[[1]],
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+  E_mag <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+                  dfun = dfun, pow = pows[[2]],
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+  c("E_asy" = E_asy, "E_mag" = E_mag)
+}
+
+# Given parameters, observations, etc., calculate conditional standard
+# deviations following a short-memory EGARCH specification
+sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pows, mods,
+              mode) {
+
+  all_pars <- egarch_grab_pars(
+    theta = theta,
+    p = p,
+    q = q,
+    incl_mean = incl_mean,
+    d_par = FALSE,
+    extra_par = extra_par,
+    skew_par = skew_par
+  )
+  mu <- all_par$mu
+  omega_sig <- all_pars$omega_sig
+  phi <- all_pars$phi
+  psi <- all_pars$psi
+  kappa <- all_pars$kappa
+  gamma <- all_pars$gamma
+  shape <- all_pars$shape
+  skew <- all_pars$skew
 
   alpha <- psi * kappa
   beta <- psi * gamma
 
-  E_asy <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1, pow = pows[[1]],
-                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
-                  stop.on.error = FALSE)[[1]]
-  E_mag <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1, pow = pows[[2]],
-                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
-                  stop.on.error = FALSE)[[1]]
+  E_vals <- expect_calc_egarch(
+    int_fun_asy = int_fun_asy,
+    int_fun_mag = int_fun_mag,
+    dfun = dfun1,
+    shape = shape,
+    skew = skew,
+    pows = pows)
+
+  E_asy <- E_vals$E_asy
+  E_mag <- E_vals$E_mag
 
   Elnsig2 <- omega_sig
   omega <- Elnsig2 * (1 - sum(phi))
@@ -790,55 +863,47 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
 }
 
+# Given parameters, observations, etc., calculate conditional standard
+# deviations following a long-memory EGARCH specification
 sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
               mode) {
 
+  all_pars <- egarch_grab_pars(
+    theta = theta,
+    p = p,
+    q = q,
+    incl_mean = incl_mean,
+    d_par = TRUE,
+    extra_par = extra_par,
+    skew_par = skew_par
+  )
+  mu <- all_par$mu
+  omega_sig <- all_pars$omega_sig
+  phi <- all_pars$phi
+  psi <- all_pars$psi
+  kappa <- all_pars$kappa
+  gamma <- all_pars$gamma
+  d <- all_pars$d
+  shape <- all_pars$shape
+  skew <- all_pars$skew
 
-  imean <- !incl_mean
-
-  mu <- c(0, theta[[1]])[[incl_mean + 1]]
-  step0 <- 2 - imean
-  Elnsig2 <- theta[[step0]]   # The expectation of ln(sig_t^2)
-  step1 <- step0 + p
-  step2 <- step1 + q - 1
-
-  phi <- theta[(step0 + 1):step1]
-
-  if (q > 1) {
-    psi <- c(1, theta[(step1 + 1):step2])
-    psi_2 <- psi[-1]
-  } else {
-    psi <- 1
-    psi_2 <- numeric(0)
-  }
-  kappa <- theta[[(step2 + 1)]]
-  gamma <- theta[[step2 + 2]]
-  d <- theta[[step2 + 3]]
-  if (extra_par) {
-    shape <- theta[[step2 + 4]]
-  } else {
-    shape <- 0
-  }
-  if (skew_par) {
-    skew <- theta[[step2 + 4 + extra_par]]
-  } else {
-    skew <- 0
-  }
-
+  psi_2 <- if (q > 1) psi[-1] else numeric(0)
   n <- length(x)
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
                                      max_i = n - 1)
 
-  E_asy <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1, pow = pows[[1]],
-                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
-                  stop.on.error = FALSE)[[1]]
-  E_mag <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1, pow = pows[[2]],
-                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
-                  stop.on.error = FALSE)[[1]]
+  E_vals <- expect_calc_egarch(
+    int_fun_asy = int_fun_asy,
+    int_fun_mag = int_fun_mag,
+    dfun = dfun1,
+    shape = shape,
+    skew = skew,
+    pows = pows)
+
+  E_asy <- E_vals$E_asy
+  E_mag <- E_vals$E_mag
 
   sigt <- c(sigt_egarch_longCpp(
     x = x,
@@ -931,47 +996,48 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
-  if (pg0 || qg0) {
-    sigt_fun_adj <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode) {
+  check <- pg0 || qg0
+  sigt_fun_adj <- if (check) {
+    function(theta, x, dfun1, p, q, p_ar, q_ma,
+         incl_mean, extra_par, skew_par,
+         int_fun_asy, int_fun_mag, pows, mods,
+         mode) {
 
-      imean <- !incl_mean
-      pg0 <- p > 0
-      qg0 <- q > 0
-      mu <- c(0, theta[[1]])[[incl_mean + 1]]
-      step0 <- 2 - imean
-      if (pg0) {
-        step1 <- step0 + p - 1
-        step2 <- step1 + 1
-        ar <- theta[step0:step1]
-      } else {
-        step2 <- step0
-        ar <- 0
-      }
-      if (qg0) {
-        step3 <- step2 + q - 1
-        ma <- theta[step2:step3]
-      } else {
-        ma <- 0
-      }
+      # Obtain ARMA / FARIMA parameters from theta
+      arma_pars <- arma_grab_pars(
+        theta = theta,
+        incl_mean = incl_mean,
+        pg0 = pg0,
+        qg0 = qg0,
+        p = p_ar,
+        q = q_ma
+      )
+      mu <- arma_pars$mu
+      ar <- arma_pars$ar
+      ma <- arma_pars$ma
 
+      # Calculate fitted values following these parameters...
       fitted_vs <- c(fitted_arma_Cpp(x = x, mu = mu, ma = ma, ar = ar))
+      # ... and calculate the residuals
       res <- x - fitted_vs
 
+      # Remove the first few elements from theta (those for the parameters
+      # relevant for ARMA / FARIMA) ...
       theta2 <- theta[-(1:(incl_mean + p_ar + q_ma))]
+      #... and calculate conditional standard deviations from the residuals
+      # following the specified GARCH-type
       out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
               FALSE, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
               mode)
       out$cmeans <- fitted_vs
       out
-
     }
-  } else { # ...else keep function for EGARCH-type
-    sigt_fun_adj <- sigt_fun
+
+  } else {
+    sigt_fun             # ...else keep function for EGARCH-type
   }
+
 
   # Modulus settings
   mod <- modulus(spec)
@@ -1126,27 +1192,32 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)
-    oldplan <- future::plan()
+    P_range <- c(1, 8)   # P-values to consider
+    oldplan <- future::plan()    # Save old plan settings
     if (parallel) {
-      future::plan(future::multisession, workers = ncores)
-      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
+      future::plan(future::multisession, workers = ncores)   # Plan multisession, i.e. parallel, programming
+      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)  # Fail-safe: in case of errors, old plan settings are reinstated
     }
 
     P_seq <- P_range[[1]]:P_range[[2]]
 
+    # Run a loop for each P to check and optimize over the remaining parameters
     fitted_models <- furrr::future_map(
       .x = P_seq,
       .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2, p_all) {
 
+        # For each P, fix dfun1
         dfun1_P <- function(x, shape, skew) {
           dfun1(x = x, shape = .x, skew = skew)
         }
 
+        # For each P, fix dfun2
         dfun2_P <- function(x, mu, sigt, shape, skew) {
           dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
         }
 
+        # Now fix the final goal function to optimize over
+        # using dfun1_P and dfun2_P
         goal_fun <- function(theta, rt) {
           goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
         }
@@ -1169,24 +1240,25 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
 
-    future::plan(oldplan)
+    future::plan(oldplan)   # Reinstate old plan settings
 
-    coll_nllh <- vapply(
-      X = fitted_models,
+    coll_nllh <- vapply(    # From each fitted model, obtain the negative
+      X = fitted_models,    # log-likelihood at the corresponding optimum
       FUN = function(.x) {
         tail(.x$values, 1)
       },
       FUN.VALUE = numeric(1)
     )
 
-    P_sel <- P_seq[[which.min(coll_nllh)]]
+    P_sel <- P_seq[[which.min(coll_nllh)]]    # Select the optimal P
 
-    result <- fitted_models[[which.min(coll_nllh)]]
+    result <- fitted_models[[which.min(coll_nllh)]] # Save the model with the optimal P
 
-    return(coll_nllh)
+    return(coll_nllh)    # Return the model
 
   } else {
 
+    # Use dfun1 and dfun2 directly without further adjustments
     goal_fun <- function(theta, rt) {
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
@@ -1218,14 +1290,10 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   sigt <- final_series$sigt
   cmeans <- final_series$cmeans
 
-  mu <- c(0, pars[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) pars[[1]] else 0
   etat <- (rt - cmeans) / sigt
 
-  if (q > 1) {
-    psi_names <- paste0("psi", 1:(q - 1))
-  } else {
-    psi_names <- NULL
-  }
+  psi_names <- if (q > 1) {paste0("psi", 1:(q - 1))} else {NULL}
 
   extra_par_name <- switch(
     cond_d,
@@ -1284,18 +1352,19 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   bic <- (m2llhood + k * log(n)) / n
   aic <- (m2llhood + 2 * k) / n
 
-  if (inherits(rt, what = "zoo")) {
-    tp <- as.Date(time(rt))
-    cmeans <- zoo::zoo(cmeans, order.by = tp)
-    sigt <- zoo::zoo(sigt, order.by = tp)
-    etat <- zoo::zoo(etat, order.by = tp)
-  } else if (inherits(rt, what = "ts")) {
-    start_rt <- stats::start(rt)
-    frequ_rt <- stats::frequency(rt)
-    cmeans <- stats::ts(zoo::coredata(cmeans), start = start_rt, frequency = frequ_rt)
-    sigt <- stats::ts(zoo::coredata(sigt), start = start_rt, frequency = frequ_rt)
-    etat <- stats::ts(zoo::coredata(etat), start = start_rt, frequency = frequ_rt)
-  }
+  # Apply time series formatting (if relevant) to all
+  # estimated series
+  series_out <- format_applier_ts(
+    rt = rt,
+    list_of_ts = list(
+      "cmeans" = cmeans,
+      "sigt" = sigt,
+      "etat" = etat
+    )
+  )
+  cmeans <- series_out$cmeans
+  sigt <- series_out$sigt
+  etat <- series_out$etat
 
   list_out <- fEGarch_fit_egarch(
     pars = pars,
@@ -1323,7 +1392,7 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
               int_fun) {
 
   imean <- !incl_mean
-  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) theta[[1]] else 0
   step0 <- 2 - imean
   omega_sig <- theta[[step0]]
   step1 <- step0 + p
@@ -1331,16 +1400,8 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
   phi <- theta[(step0 + 1):step1]
   psi <- theta[(step1 + 1):step2]
 
-  if (extra_par) {
-    shape <- theta[[step2 + 1]]
-  } else {
-    shape <- 0
-  }
-  if (skew_par) {
-    skew <- theta[[step2 + 1 + extra_par]]
-  } else {
-    skew <- 0
-  }
+  shape <- if (extra_par) theta[[step2 + 1]] else 0
+  skew <- if (skew_par) theta[[step2 + 1 + extra_par]] else 0
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
@@ -1375,7 +1436,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
 
 
   imean <- !incl_mean
-  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) theta[[1]] else 0
   step0 <- 2 - imean
   omega_sig <- theta[[step0]]
   step1 <- step0 + p
@@ -1383,16 +1444,9 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
   phi <- theta[(step0 + 1):step1]
   psi <- theta[(step1 + 1):step2]
   d <- theta[[step2 + 1]]
-  if (extra_par) {
-    shape <- theta[[step2 + 2]]
-  } else {
-    shape <- 0
-  }
-  if (skew_par) {
-    skew <- theta[[step2 + 2 + extra_par]]
-  } else {
-    skew <- 0
-  }
+
+  shape <- if (extra_par) theta[[step2 + 2]] else 0
+  skew <- if (skew_par) theta[[step2 + 2 + extra_par]] else 0
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
@@ -1631,7 +1685,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
               incl_mean, extra_par, skew_par,
               int_fun)$sigt
 
-  mu <- c(0, pars[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) pars[[1]] else 0
   etat <- (rt - mu) / sigt
 
   extra_par_name <- switch(

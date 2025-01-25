@@ -42,6 +42,7 @@ RoxygenNote: 7.2.3
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
+  'format_applier_ts.R'
   'snorm-distribution-functions.R'
   'sstd-distribution-functions.R'
   'sged-distribution-functions.R'
