@@ -38,6 +38,15 @@ As a popular alternative for the sake of comparison, a FIAPARCH
 model can be fitted as well using \code{\link{fiaparch}}. The
 corresponding documentation page also includes further information
 on the model.
+
+In addition, the package provides functionalities in order to
+simultaneously model the conditional mean (using either autoregressive
+moving-average (ARMA) models or fractionally integrated ARMA (FARIMA)
+models) alongside the
+conditional variance. For this purpose, the function
+\code{\link{arma_spec}} can be utilized and its result needs to be
+passed to \code{\link{fEGarch}} alongside the result of either
+\code{\link{fEGarch_spec}} or one of its wrappers.
 }
 \section{Main Functions}{
 
@@ -45,6 +54,8 @@ The main functions of the package are:
 \describe{
 \item{\code{\link{fEGarch_spec}}:}{setting the model specifications for
 a model from the broader EGARCH family,}
+\item{\code{\link{arma_spec}}:}{setting the model specifications for
+the conditional mean,}
 \item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 models given a model specification and an observation series,}
 \item{\code{\link{fiaparch}}:}{fitting a FIAPARCH model,}
