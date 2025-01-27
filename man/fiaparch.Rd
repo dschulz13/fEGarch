@@ -10,6 +10,8 @@ fiaparch(
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE,
   drange = c(0, 0.5 - 1e-06),
+  armaspec = arma_spec(),
+  Drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
   UB = NULL,
@@ -44,6 +46,17 @@ the series' mean in the maximum-likelihood estimation process; for
 \item{drange}{a two-element numeric vector that gives the boundaries of the
 search interval for the fractional differencing parameter \eqn{d}; is
 overwritten by the settings of the arguments \code{LB} and \code{UB}.}
+
+\item{armaspec}{an object of class "arma_spec"; indicates the
+specifications for the model in the conditional mean.}
+
+\item{Drange}{a two-element numeric vector that indicates the boundaries
+of the interval over which to search for the fractional differencing
+parameter \eqn{d} in a long-memory ARMA-type model; by default,
+\eqn{D} being searched for on the
+interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+settings in the arguments
+\code{LB} and \code{UB} overwrite this argument.}
 
 \item{start_pars}{the starting parameters for the numerical optimization
 routine; should be of the same length as the parameter output vector

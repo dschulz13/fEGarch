@@ -1,6 +1,4 @@
-sigt_fiaparch_R <- function(theta, x, p, q,
-              incl_mean, extra_par, skew_par) {
-
+fiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
   imean <- !incl_mean
   mu <- if (incl_mean) theta[[1]] else 0
@@ -16,6 +14,41 @@ sigt_fiaparch_R <- function(theta, x, p, q,
   shape <- if (extra_par) theta[[step2 + 4]] else 0
   skew <- if (skew_par) theta[[step2 + 4 + extra_par]] else 0
 
+  list(
+    mu = mu,
+    omega_sig = omega_sig,
+    phi = phi,
+    beta = beta,
+    gamma = gamma,
+    delta = delta,
+    d = d,
+    shape = shape,
+    skew = skew
+  )
+
+}
+
+sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par) {
+
+  all_pars <- fiaparch_grab_pars(
+    theta = theta,
+    p = p,
+    q = q,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par
+  )
+  mu <- all_pars$mu
+  omega_sig <- all_pars$omega_sig
+  phi <- all_pars$phi
+  beta <- all_pars$beta
+  gamma <- all_pars$gamma
+  delta <- all_pars$delta
+  d <- all_pars$d
+  shape <- all_pars$shape
+  skew <- all_pars$skew
+
   n <- length(x)
   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
                                      max_i = n + 1000)[-1]
@@ -29,7 +62,7 @@ sigt_fiaparch_R <- function(theta, x, p, q,
     omega_sig = omega_sig
   ))
 
-  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
@@ -39,22 +72,25 @@ goal_fun_creator_fiaparch <- function(
     pdf_fun2,
     p,
     q,
+    p_ar,
+    q_ma,
     incl_mean,
     extra_par,
     skew_par,
-    penalty
+    penalty,
+    sig_fun
 ) {
 
-  res_list <- sigt_fiaparch_R(theta, x, p, q,
+  res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par)
 
   sigt <- res_list$sigt
 
-  mu <- res_list$mu
+  cmeans <- res_list$cmeans
   skew <- res_list$skew
   shape <- res_list$shape
 
-  out <- -sum(log(pdf_fun2(x, rep(mu, length(sigt)), sigt, shape, skew)))
+  out <- -sum(log(pdf_fun2(x, cmeans, sigt, shape, skew)))
 
   out
 
@@ -92,6 +128,15 @@ goal_fun_creator_fiaparch <- function(
 #'@param drange a two-element numeric vector that gives the boundaries of the
 #'search interval for the fractional differencing parameter \eqn{d}; is
 #'overwritten by the settings of the arguments \code{LB} and \code{UB}.
+#'@param armaspec an object of class "arma_spec"; indicates the
+#'specifications for the model in the conditional mean.
+#'@param Drange a two-element numeric vector that indicates the boundaries
+#'of the interval over which to search for the fractional differencing
+#'parameter \eqn{d} in a long-memory ARMA-type model; by default,
+#'\eqn{D} being searched for on the
+#'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+#'settings in the arguments
+#'\code{LB} and \code{UB} overwrite this argument.
 #'@param LB the lower boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
@@ -217,6 +262,7 @@ goal_fun_creator_fiaparch <- function(
 fiaparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                         include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
+                        armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
@@ -232,12 +278,84 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   cond_d <- match.arg(cond_dist)
 
+  # ARMA orders
+  order_arma <- orders(armaspec)
+  p_ar <- order_arma[[1]]
+  q_ma <- order_arma[[2]]
+
   pdf_fun2 <- lookup_table$fun2[[cond_d]]
 
   incl_mean <- include_mean
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
+
+  # Long-memory setting (for ARMA-part)
+  lm_arma <- long_memo(armaspec)
+  # Assign ARMA / FARIMA function
+  arma_fun <- if (lm_arma) {
+    grab_fun <- farima_grab_pars
+    D_par_name <- "D"
+    D_start <- mean(Drange)
+    D_low <- Drange[[1]]
+    D_up <- Drange[[2]]
+    farima_fit
+  } else {
+    grab_fun <- arma_grab_pars
+    D_par_name <- character(0)
+    D_start <- D_low <- D_up <- numeric(0)
+    arma_fit
+  }
+
+
+  n <- length(rt)
+  sigt_fun <- sigt_fiaparch_R
+  # Adjust (if ARMA relevant)
+  pg0 <- p_ar > 0
+  qg0 <- q_ma > 0
+  check <- pg0 || qg0
+  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
+  sigt_fun_adj <- if (check) {
+    function(theta, x, p, q, p_ar, q_ma,
+         incl_mean, extra_par, skew_par) {
+
+      # Obtain ARMA / FARIMA parameters from theta
+      arma_pars <- grab_fun(
+        theta = theta,
+        incl_mean = incl_mean,
+        pg0 = pg0,
+        qg0 = qg0,
+        p = p_ar,
+        q = q_ma
+      )
+      mu <- arma_pars$mu
+      ar <- arma_pars$ar
+      ma <- arma_pars$ma
+
+      coef_inf <- if (lm_arma) {
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+      } else {
+        0
+      }
+
+      # Calculate fitted values following these parameters...
+      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
+      # ... and calculate the residuals
+      res <- x - fitted_vs
+
+      # Remove the first few elements from theta (those for the parameters
+      # relevant for ARMA / FARIMA) ...
+      theta2 <- theta[-(1:n_arma_pars)]
+      #... and calculate conditional standard deviations from the residuals
+      # following the specified GARCH-type
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par)
+      out$cmeans <- fitted_vs
+      out
+    }
+
+  } else {
+    sigt_fun             # ...else keep function for EGARCH-type
+  }
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -247,10 +365,13 @@ fiaparch <- function(rt, orders = c(1, 1),
      pdf_fun2 = pdf_fun2,
      p = p,
      q = q,
+     p_ar = p_ar,
+     q_ma = q_ma,
      incl_mean = incl_mean,
      extra_par = extra_par,
      skew_par = skew_par,
-     penalty = FALSE
+     penalty = FALSE,
+     sig_fun = sigt_fun_adj
     )
 
   }
@@ -270,6 +391,9 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     start_pars <- c(
       list(NULL, mean(rt))[[incl_mean + 1]],
+      rep(0.05 / p_ar, p_ar),
+      rep(0.05 / q_ma, q_ma),
+      D_start,
       var(rt),
       rep(0.2 / p, p),
       rep(0.4 / q, q),
@@ -285,7 +409,10 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     LB <- c(
       list(NULL, min(rt))[[incl_mean + 1]],
-      1e-8,
+      rep(-2, p_ar),
+      rep(-2, q_ma),
+      D_low,
+      1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
       -1 + 1e-6, 1,
@@ -300,6 +427,9 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     UB <- c(
       list(NULL, max(rt))[[incl_mean + 1]],
+      rep(2, p_ar),
+      rep(2, q_ma),
+      D_up,
       var(rt) * 1000,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
@@ -311,20 +441,34 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   }
 
+  n_arma <- p_ar + q_ma
+  n_arma_im <- n_arma + incl_mean + lm_arma
+  low_ar <- 1 + incl_mean
+  up_ar <- low_ar + p_ar - 1
+  low_phi <- 2 + n_arma_im
+  up_phi <- low_phi
+  low_beta <- low_phi + 1
+  up_beta <- low_beta
+  d_idx <- low_beta + 3
+
   ineq_fun <- function(theta, rt) {
-    imean <- !incl_mean
-    step0 <- 2 - imean
-    step1 <- step0 + p
-    step2 <- step1 + q
-    phi <- theta[(step0 + 1):step1]
-    beta <- theta[(step1 + 1):step2]
-    d <- theta[[step2 + 3]]
+
+    phi <- theta[low_phi:up_phi]
+    beta <- theta[low_beta:up_beta]
+    d <- theta[[d_idx]]
 
     r1 <- phi - beta + d
     r2 <- (2 - d) / 3 - phi
     r3 <- beta * r1 - d * (phi - (1 - d) / 2)
 
-    c(r1, r2, r3)
+    if (pg0) {
+      ar <- c(1, -theta[low_ar:up_ar])
+      c2 <- abs(polyroot(ar)) - 1
+    } else {
+      c2 <- numeric(0)
+    }
+
+    c(r1, r2, r3, c2)
 
   }
 
@@ -343,7 +487,7 @@ fiaparch <- function(rt, orders = c(1, 1),
 
     fitted_models <- furrr::future_map(
       .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun2) {
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun2, p_ar) {
 
         dfun2_P <- function(x, mu, sigt, shape, skew) {
           dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
@@ -359,15 +503,15 @@ fiaparch <- function(rt, orders = c(1, 1),
           LB = LB,
           UB = UB,
           ineqfun = ineq_fun,
-          ineqLB = c(0, 0, 0),
-          ineqUB = c(Inf, Inf, Inf),
+          ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
+          ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           control = control,
           rt = rt_core
         ))
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       ineq_fun = ineq_fun, control = control, rt_core = rt_core,
-      dfun2 = pdf_fun2,
+      dfun2 = pdf_fun2, p_ar = p_ar,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
 
@@ -400,8 +544,8 @@ fiaparch <- function(rt, orders = c(1, 1),
           UB = UB,
           control = control,
           ineqfun = ineq_fun,
-          ineqLB = c(0, 0, 0),
-          ineqUB = c(Inf, Inf, Inf),
+          ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
+          ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           rt = rt_core
         ))
       },
@@ -417,12 +561,13 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   llhood <- -tail(result$values, 1)
 
-  res_f <- sigt_fiaparch_R(unname(pars), rt_core, p, q,
+  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par)
   sigt <- res_f$sigt
+  cmeans <- res_f$cmeans
 
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
-  etat <- (rt - mu) / sigt
+  etat <- (rt - cmeans) / sigt
 
   beta_names <- paste0("beta", 1:q)
 
@@ -437,8 +582,14 @@ fiaparch <- function(rt, orders = c(1, 1),
     character(0)
   )
 
+  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
+  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
+
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
+    names_ar,
+    names_ma,
+    D_par_name,
     "omega",
     paste0("phi", 1:p),
     beta_names,
@@ -449,7 +600,7 @@ fiaparch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- result$hessian[-(1:3), -(1:3)]
+  nhessian <- result$hessian[-(1:(3 + p_ar)), -(1:(3 + p_ar))]
 
   vcov_mat <- tryCatch(
     expr = {solve(nhessian)},
@@ -485,16 +636,19 @@ fiaparch <- function(rt, orders = c(1, 1),
   bic <- (m2llhood + k * log(n)) / n
   aic <- (m2llhood + 2 * k) / n
 
-  if (inherits(rt, what = "zoo")) {
-    tp <- as.Date(time(rt))
-    sigt <- zoo::zoo(zoo::coredata(sigt), order.by = tp)
-    etat <- zoo::zoo(zoo::coredata(etat), order.by = tp)
-  } else if (inherits(rt, what = "ts")) {
-    start_rt <- stats::start(rt)
-    frequ_rt <- stats::frequency(rt)
-    sigt <- stats::ts(zoo::coredata(sigt), start = start_rt, frequency = frequ_rt)
-    etat <- stats::ts(zoo::coredata(etat), start = start_rt, frequency = frequ_rt)
-  }
+  # Apply time series formatting (if relevant) to all
+  # estimated series
+  series_out <- format_applier_ts(
+    rt = rt,
+    list_of_ts = list(
+      "cmeans" = cmeans,
+      "sigt" = sigt,
+      "etat" = etat
+    )
+  )
+  cmeans <- series_out$cmeans
+  sigt <- series_out$sigt
+  etat <- series_out$etat
 
   list_out <- fEGarch_fit_fiaparch(
     pars = pars,
@@ -502,12 +656,14 @@ fiaparch <- function(rt, orders = c(1, 1),
     vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
+    cmeans = cmeans,
     etat = etat,
     llhood = llhood,
     inf_criteria = c("aic" = aic, "bic" = bic),
     cond_dist = cond_d,
     orders = orders,
-    long_memo = TRUE
+    long_memo = TRUE,
+    armaspec = armaspec
   )
 
   list_out
@@ -547,6 +703,9 @@ setMethod(
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
+    " \n",
+    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
     " \n",
     "Fitted parameters:\n"
   )

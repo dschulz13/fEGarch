@@ -1,6 +1,7 @@
 rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
                         include_mean = TRUE,
+                        armaspec = arma_spec(),
                         start_pars = NULL) {
 
   rt_core <- zoo::coredata(rt)
@@ -23,13 +24,15 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 
   spec <- rugarch::ugarchspec(
     variance.model = list(model = model_s, garchOrder = orders),
-    mean.model = list(armaOrder = c(0, 0), include.mean = include_mean),
+    mean.model = list(armaOrder = armaspec@orders, include.mean = include_mean,
+                      arfima = armaspec@long_memo),
     distribution.model = cond_dist, start.pars = start.pars,
     fixed.pars = fixed.pars
   )
 
   est <- rugarch::ugarchfit(spec = spec, data = rt_core)
   sig <- est@fit$sigma
+  cmeans <- est@fit$fitted.values
   etat <- est@fit$residuals
   coef <- est@fit$coef
   if (model == "gjrGARCH") {
@@ -42,20 +45,22 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
   inf_crit <- rugarch::infocriteria(est)[c(1, 2)]
   names(inf_crit) <- c("aic", "bic")
 
-  if (inherits(rt, "zoo")) {
-    tp <- as.Date(time(rt))
-    sig <- zoo::zoo(sig, order.by = tp)
-    etat <- zoo::zoo(etat, order.by = tp)
-  } else if (inherits(rt, "ts")) {
-    start_rt <- stats::start(rt)
-    frequ_rt <- stats::frequency(rt)
-    sig <- stats::ts(sig, start = start_rt, frequency = frequ_rt)
-    etat <- stats::ts(etat, start = start_rt, frequency = frequ_rt)
-  }
+  series_out <- format_applier_ts(
+    rt = rt,
+    list_of_ts = list(
+      "cmeans" = cmeans,
+      "sigt" = sig,
+      "etat" = etat
+    )
+  )
+  cmeans <- series_out$cmeans
+  sigt <- series_out$sigt
+  etat <- series_out$etat
 
   out <- fEGarch_fit_rugarch_wrapper(
     rt = rt,
     sigt = sig,
+    cmeans = cmeans,
     etat = etat,
     pars = coef,
     se = serrors,
@@ -66,7 +71,8 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     inf_criteria = inf_crit,
     rugarch_model = est,
     long_memo = FALSE,
-    model = model
+    model = model,
+    armaspec = armaspec
   )
   out
 }
@@ -89,6 +95,8 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 #'@param include_mean a logical that indicates whether or not to include
 #'the mean in the maximum-likelihood estimation. If \code{FALSE}, the mean
 #'is fixed to zero.
+#'@param armaspec an object of class "arma_spec"; indicates the
+#'specifications for the model in the conditional mean.
 #'@param start_pars a named list with starting parameters.
 #'
 #'@details
@@ -104,6 +112,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 #'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+#'\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 #'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 #'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
@@ -111,6 +120,9 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 #'\item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 #'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 #'\item{\code{rugarch_model}:}{the estimation object returned by \code{ugarchfit()} of the \code{rugarch} package (Ghalanos, 2024).}
+#'\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
+#'of class \code{"arma_spec"} that is identical to the object passed to the input argument
+#'\code{armaspec}.}
 #'}
 #'
 #'@references
@@ -130,6 +142,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 aparch_ru <- function(rt, orders = c(1, 1),
             cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
             include_mean = TRUE,
+            armaspec = arma_spec(),
             start_pars = NULL) {
 
   rugarch_modelfit(
@@ -137,7 +150,8 @@ aparch_ru <- function(rt, orders = c(1, 1),
     orders = orders,
     cond_dist = cond_dist,
     model = "apARCH",
-    include_mean = include_mean, start_pars = start_pars
+    include_mean = include_mean, start_pars = start_pars,
+    armaspec = armaspec
   )
 
 }
@@ -148,6 +162,7 @@ aparch_ru <- function(rt, orders = c(1, 1),
 gjrgarch_ru <- function(rt, orders = c(1, 1),
             cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
             include_mean = TRUE,
+            armaspec = arma_spec(),
             start_pars = NULL) {
 
   rugarch_modelfit(
@@ -155,7 +170,8 @@ gjrgarch_ru <- function(rt, orders = c(1, 1),
     orders = orders,
     cond_dist = cond_dist,
     model = "gjrGARCH",
-    include_mean = include_mean, start_pars = start_pars
+    include_mean = include_mean, start_pars = start_pars,
+    armaspec = armaspec
   )
 
 }
@@ -166,6 +182,7 @@ gjrgarch_ru <- function(rt, orders = c(1, 1),
 egarch_ru <- function(rt, orders = c(1, 1),
             cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
             include_mean = TRUE,
+            armaspec = arma_spec(),
             start_pars = NULL) {
 
   rugarch_modelfit(
@@ -173,7 +190,8 @@ egarch_ru <- function(rt, orders = c(1, 1),
     orders = orders,
     cond_dist = cond_dist,
     model = "eGARCH",
-    include_mean = include_mean, start_pars = start_pars
+    include_mean = include_mean, start_pars = start_pars,
+    armaspec = armaspec
   )
 
 }
@@ -211,6 +229,9 @@ setMethod(
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
+    " \n",
+    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
     " \n",
     "Fitted parameters:\n"
   )

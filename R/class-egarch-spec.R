@@ -1818,7 +1818,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     fitted_models <- furrr::future_map(
       .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2) {
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2, p_all) {
 
         dfun1_P <- function(x, shape, skew) {
           dfun1(x = x, shape = .x, skew = skew)
@@ -1846,7 +1846,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       control = control, rt_core = rt_core, ineq_fun = constr_fun,
-      dfun1 = dfun1, dfun2 = dfun2,
+      dfun1 = dfun1, dfun2 = dfun2, p_all = p + p_ar,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
 

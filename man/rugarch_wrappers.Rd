@@ -12,6 +12,7 @@ aparch_ru(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   include_mean = TRUE,
+  armaspec = arma_spec(),
   start_pars = NULL
 )
 
@@ -20,6 +21,7 @@ gjrgarch_ru(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   include_mean = TRUE,
+  armaspec = arma_spec(),
   start_pars = NULL
 )
 
@@ -28,6 +30,7 @@ egarch_ru(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   include_mean = TRUE,
+  armaspec = arma_spec(),
   start_pars = NULL
 )
 }
@@ -46,6 +49,9 @@ distribution to consider.}
 the mean in the maximum-likelihood estimation. If \code{FALSE}, the mean
 is fixed to zero.}
 
+\item{armaspec}{an object of class "arma_spec"; indicates the
+specifications for the model in the conditional mean.}
+
 \item{start_pars}{a named list with starting parameters.}
 }
 \value{
@@ -55,6 +61,7 @@ A list with the following named elements is returned.
 \item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 \item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 \item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 \item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
 \item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 \item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
@@ -62,6 +69,9 @@ A list with the following named elements is returned.
 \item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 \item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 \item{\code{rugarch_model}:}{the estimation object returned by \code{ugarchfit()} of the \code{rugarch} package (Ghalanos, 2024).}
+\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
+of class \code{"arma_spec"} that is identical to the object passed to the input argument
+\code{armaspec}.}
 }
 }
 \description{
