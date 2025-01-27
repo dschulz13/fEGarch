@@ -33,7 +33,7 @@ of orders \eqn{p^{*}} and \eqn{q^{*}}, respectively, with real coefficients
 \eqn{B} is the backshift operator. \eqn{\beta(B)} and \eqn{\alpha(B)} are
 commonly assumed to be without common roots and to have roots outside of
 the unit circle.
-Furthermore, \mu is a real-valued coefficient representing the unconditional
+Furthermore, \eqn{\mu} is a real-valued coefficient representing the unconditional
 mean in \eqn{\left\{y_t\right\}}. \eqn{D \in [0, 0.5)} is the fractional
 differencing parameter. \eqn{\left\{r_t\right\}} is a zero-mean (weak) white
 noise process, for example a member of the GARCH-models (with mean set to zero)

@@ -9,6 +9,7 @@ fEGarch(
   rt,
   drange = c(0, 0.5 - 1e-06),
   armaspec = arma_spec(),
+  Drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
   UB = NULL,
@@ -38,6 +39,14 @@ settings in the arguments
 
 \item{armaspec}{an object of class "arma_spec"; indicates the
 specifications for the model in the conditional mean.}
+
+\item{Drange}{a two-element numeric vector that indicates the boundaries
+of the interval over which to search for the fractional differencing
+parameter \eqn{d} in a long-memory ARMA-type model; by default,
+\eqn{D} being searched for on the
+interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+settings in the arguments
+\code{LB} and \code{UB} overwrite this argument.}
 
 \item{start_pars}{a vector with starting parameters for the
 optimization; must be of the same length as the output vector of
@@ -81,6 +90,7 @@ specification. It contains the following elements.
 \item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 \item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
 \item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
+\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 \item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 \item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
 \item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
@@ -89,6 +99,9 @@ specification. It contains the following elements.
 \item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 \item{\code{powers}:}{a two-element numeric vector stating the powers considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
 \item{\code{modulus}:}{a two-element logical vector stating the modulus transformations (\code{TRUE}, otherwise \code{FALSE}) considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
+\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
+of class \code{"arma_spec"} that is identical to the object passed to the input argument
+\code{armaspec}.}
 }
 }
 \description{

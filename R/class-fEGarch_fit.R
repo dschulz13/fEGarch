@@ -12,7 +12,8 @@ setClass("fEGarch_fit",
     inf_criteria = "numeric",
     cond_dist = "character",
     orders = "numeric",
-    long_memo = "logical"
+    long_memo = "logical",
+    armaspec = "arma_spec"
   ),
   prototype = list(
     pars = numeric(1),
@@ -26,7 +27,8 @@ setClass("fEGarch_fit",
     inf_criteria = numeric(1),
     cond_dist = character(1),
     orders = numeric(1),
-    long_memo = logical(1)
+    long_memo = logical(1),
+    armaspec = arma_spec()
   )
 )
 
@@ -80,7 +82,8 @@ fEGarch_fit_egarch <- function(
     orders,
     powers,
     modulus,
-    long_memo
+    long_memo,
+    armaspec
 ) {
 
   new("fEGarch_fit_egarch",
@@ -97,7 +100,8 @@ fEGarch_fit_egarch <- function(
     orders = orders,
     powers = powers,
     modulus = modulus,
-    long_memo = long_memo
+    long_memo = long_memo,
+    armaspec = armaspec
   )
 
 }
@@ -108,12 +112,14 @@ fEGarch_fit_loggarch <- function(
     vcov_mat,
     rt,
     sigt,
+    cmeans,
     etat,
     llhood,
     inf_criteria,
     cond_dist,
     orders,
-    long_memo
+    long_memo,
+    armaspec
 ) {
 
   new("fEGarch_fit_loggarch",
@@ -122,12 +128,14 @@ fEGarch_fit_loggarch <- function(
     vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
+    cmeans = cmeans,
     etat = etat,
     llhood = llhood,
     inf_criteria = inf_criteria,
     cond_dist = cond_dist,
     orders = orders,
-    long_memo = long_memo
+    long_memo = long_memo,
+    armaspec = armaspec
   )
 
 }
@@ -139,12 +147,14 @@ fEGarch_fit_fiaparch <- function(
     vcov_mat,
     rt,
     sigt,
+    cmeans,
     etat,
     llhood,
     inf_criteria,
     cond_dist,
     orders,
-    long_memo
+    long_memo,
+    armaspec
 ) {
 
   new("fEGarch_fit_fiaparch",
@@ -153,12 +163,14 @@ fEGarch_fit_fiaparch <- function(
     vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
+    cmeans = cmeans,
     etat = etat,
     llhood = llhood,
     inf_criteria = inf_criteria,
     cond_dist = cond_dist,
     orders = orders,
-    long_memo = long_memo
+    long_memo = long_memo,
+    armaspec = armaspec
   )
 
 }
@@ -169,12 +181,14 @@ fEGarch_fit_lmgarch <- function(
     vcov_mat,
     rt,
     sigt,
+    cmeans,
     etat,
     llhood,
     inf_criteria,
     cond_dist,
     orders,
-    long_memo
+    long_memo,
+    armaspec
 ) {
 
   new("fEGarch_fit_lmgarch",
@@ -183,12 +197,14 @@ fEGarch_fit_lmgarch <- function(
     vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
+    cmeans = cmeans,
     etat = etat,
     llhood = llhood,
     inf_criteria = inf_criteria,
     cond_dist = cond_dist,
     orders = orders,
-    long_memo = long_memo
+    long_memo = long_memo,
+    armaspec = armaspec
   )
 
 }
@@ -199,6 +215,7 @@ fEGarch_fit_rugarch_wrapper <- function(
     vcov_mat,
     rt,
     sigt,
+    cmeans,
     etat,
     llhood,
     inf_criteria,
@@ -206,7 +223,8 @@ fEGarch_fit_rugarch_wrapper <- function(
     orders,
     long_memo,
     rugarch_model,
-    model
+    model,
+    armaspec
 ) {
 
   new("fEGarch_fit_rugarch_wrapper",
@@ -215,6 +233,7 @@ fEGarch_fit_rugarch_wrapper <- function(
     vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
+    cmeans = cmeans,
     etat = etat,
     llhood = llhood,
     inf_criteria = inf_criteria,
@@ -222,7 +241,8 @@ fEGarch_fit_rugarch_wrapper <- function(
     orders = orders,
     long_memo = long_memo,
     rugarch_model = rugarch_model,
-    model = model
+    model = model,
+    armaspec = armaspec
   )
 
 }

@@ -780,13 +780,44 @@ arma_grab_pars <- function(theta, incl_mean, pg0, qg0, p, q) {
     step3 <- step2 + q - 1
     theta[step2:step3]
   } else {
-    ma <- numeric(0)
+    numeric(0)
   }
 
   list(
     mu = mu,
     ar = ar,
     ma = ma
+  )
+
+}
+
+farima_grab_pars <- function(theta, incl_mean, pg0, qg0, p, q) {
+
+  imean <- !incl_mean
+  mu <- if (incl_mean) theta[[1]] else 0
+  step0 <- 2 - imean
+  ar <- if (pg0) {
+    step1 <- step0 + p - 1
+    step2 <- step1 + 1
+    theta[step0:step1]
+  } else {
+    step2 <- step0
+    numeric(0)
+  }
+  ma <- if (qg0) {
+    step3 <- step2 + q - 1
+    D <- theta[[step3 + 1]]
+    theta[step2:step3]
+  } else {
+    D <- theta[[step2]]
+    numeric(0)
+  }
+
+  list(
+    mu = mu,
+    ar = ar,
+    ma = ma,
+    D = D
   )
 
 }
@@ -801,7 +832,7 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
                   dfun = dfun, pow = pows[[2]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
-  c("E_asy" = E_asy, "E_mag" = E_mag)
+  list("E_asy" = E_asy, "E_mag" = E_mag)
 }
 
 # Given parameters, observations, etc., calculate conditional standard
@@ -820,7 +851,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     extra_par = extra_par,
     skew_par = skew_par
   )
-  mu <- all_par$mu
+  mu <- all_pars$mu
   omega_sig <- all_pars$omega_sig
   phi <- all_pars$phi
   psi <- all_pars$psi
@@ -879,7 +910,7 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     extra_par = extra_par,
     skew_par = skew_par
   )
-  mu <- all_par$mu
+  mu <- all_pars$mu
   omega_sig <- all_pars$omega_sig
   phi <- all_pars$phi
   psi <- all_pars$psi
@@ -959,12 +990,14 @@ goal_fun_creator_egarch <- function(
 }
 
 setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), armaspec = arma_spec(),
+  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6),
     start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1)) {
 
   # Coredata of rt with possible time series formatting
   rt_core <- zoo::coredata(rt)
+
+  n <- length(rt)
 
   # Obtain model orders
   order <- orders(spec)
@@ -983,6 +1016,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
+  incl_mean <- include_mean(spec)
+
   # Look up internally saved settings for additional parameters
   # from "data-raw/lookup.R"
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
@@ -990,6 +1025,22 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Long-memory setting (for GARCH-part)
   lm <- long_memo(spec)
+  # Long-memory setting (for ARMA-part)
+  lm_arma <- long_memo(armaspec)
+  # Assign ARMA / FARIMA function
+  arma_fun <- if (lm_arma) {
+    grab_fun <- farima_grab_pars
+    D_par_name <- "D"
+    D_start <- mean(Drange)
+    D_low <- Drange[[1]]
+    D_up <- Drange[[2]]
+    farima_fit
+  } else {
+    grab_fun <- arma_grab_pars
+    D_par_name <- character(0)
+    D_start <- D_low <- D_up <- numeric(0)
+    arma_fit
+  }
   # Look up internally saved calculation function for conditional
   # standard deviations from "data-raw/lookup.R"
   sigt_fun <- sigt_funs_egarch[[lm + 1]]
@@ -997,6 +1048,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
   check <- pg0 || qg0
+  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, dfun1, p, q, p_ar, q_ma,
          incl_mean, extra_par, skew_par,
@@ -1004,7 +1056,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
          mode) {
 
       # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- arma_grab_pars(
+      arma_pars <- grab_fun(
         theta = theta,
         incl_mean = incl_mean,
         pg0 = pg0,
@@ -1016,14 +1068,20 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ar <- arma_pars$ar
       ma <- arma_pars$ma
 
+      coef_inf <- if (lm_arma) {
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+      } else {
+        0
+      }
+
       # Calculate fitted values following these parameters...
-      fitted_vs <- c(fitted_arma_Cpp(x = x, mu = mu, ma = ma, ar = ar))
+      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
       # ... and calculate the residuals
       res <- x - fitted_vs
 
       # Remove the first few elements from theta (those for the parameters
       # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:(incl_mean + p_ar + q_ma))]
+      theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
       out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
@@ -1060,9 +1118,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Look up the mode for the volatility calculation functions based
   # on power and modulus settings from "data-raw/lookup.R"
   mode <- mode_mat[pow_asy_check, pow_mag_check]
-
-  # Setting for mean
-  incl_mean <- include_mean(spec)
 
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
@@ -1116,6 +1171,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         list(NULL, mean_rt)[[incl_mean + 1]],
         rep(0.05 / p_ar, p_ar),
         rep(0.05 / q_ma, q_ma),
+        D_start,
         mean(lrt2_shift),
         rep(0.2 / p, p),
         rep(0, q - 1),
@@ -1136,6 +1192,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         list(NULL, min(rt))[[incl_mean + 1]],
         rep(-2, p_ar),
         rep(-2, q_ma),
+        D_low,
         mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
         rep(-2, p),
         rep(-2, q - 1),
@@ -1155,6 +1212,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         list(NULL, max(rt))[[incl_mean + 1]],
         rep(2, p_ar),
         rep(2, q_ma),
+        D_up,
         mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
         rep(2, p),
         rep(2, q - 1),
@@ -1169,7 +1227,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   }
 
   n_arma <- p_ar + q_ma
-  n_arma_im <- n_arma + incl_mean
+  n_arma_im <- n_arma + incl_mean + lm_arma
   low_phi <- 2 + n_arma_im
   up_phi <- 1 + n_arma_im + p
   low_ar <- 1 + incl_mean
@@ -1313,6 +1371,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "mu")[[incl_mean + 1]],
     names_ar,
     names_ma,
+    D_par_name,
     "omega_sig",
     paste0("phi", 1:p),
     psi_names,
@@ -1380,16 +1439,15 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     orders = order,
     powers = pow,
     modulus = mod,
-    long_memo = lm
+    long_memo = lm,
+    armaspec = armaspec
   )
 
   list_out
 
 })
 
-sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
-              incl_mean, extra_par, skew_par,
-              int_fun) {
+loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_par) {
 
   imean <- !incl_mean
   mu <- if (incl_mean) theta[[1]] else 0
@@ -1400,8 +1458,42 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
   phi <- theta[(step0 + 1):step1]
   psi <- theta[(step1 + 1):step2]
 
-  shape <- if (extra_par) theta[[step2 + 1]] else 0
-  skew <- if (skew_par) theta[[step2 + 1 + extra_par]] else 0
+  d <- if (d_par) theta[[step2 + 1]] else 0
+
+  shape <- if (extra_par) theta[[step2 + d_par + 1]] else 0
+  skew <- if (skew_par) theta[[step2 + d_par + 1 + extra_par]] else 0
+
+  list(
+    mu = mu,
+    omega_sig = omega_sig,
+    phi = phi,
+    psi = psi,
+    d = d,
+    shape = shape,
+    skew = skew
+  )
+
+}
+
+sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun) {
+
+  all_pars <- loggarch_grab_pars(
+    theta = theta,
+    p = p,
+    q = q,
+    incl_mean = incl_mean,
+    d_par = FALSE,
+    extra_par = extra_par,
+    skew_par = skew_par
+  )
+  mu <- all_pars$mu
+  omega_sig <- all_pars$omega_sig
+  phi <- all_pars$phi
+  psi <- all_pars$psi
+  shape <- all_pars$shape
+  skew <- all_pars$skew
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
@@ -1426,27 +1518,31 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q,
     Elnsig2 = Elnsig2
   ))
 
-  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
-sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
+sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun) {
 
 
-  imean <- !incl_mean
-  mu <- if (incl_mean) theta[[1]] else 0
-  step0 <- 2 - imean
-  omega_sig <- theta[[step0]]
-  step1 <- step0 + p
-  step2 <- step1 + q
-  phi <- theta[(step0 + 1):step1]
-  psi <- theta[(step1 + 1):step2]
-  d <- theta[[step2 + 1]]
-
-  shape <- if (extra_par) theta[[step2 + 2]] else 0
-  skew <- if (skew_par) theta[[step2 + 2 + extra_par]] else 0
+  all_pars <- loggarch_grab_pars(
+    theta = theta,
+    p = p,
+    q = q,
+    incl_mean = incl_mean,
+    d_par = FALSE,
+    extra_par = extra_par,
+    skew_par = skew_par
+  )
+  mu <- all_pars$mu
+  omega_sig <- all_pars$omega_sig
+  phi <- all_pars$phi
+  psi <- all_pars$psi
+  d <- all_pars$d
+  shape <- all_pars$shape
+  skew <- all_pars$skew
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
                   dfun = dfun1,
@@ -1467,7 +1563,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q,
     Elnsig2 = Elnsig2
   ))
 
-  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
@@ -1478,6 +1574,8 @@ goal_fun_creator_loggarch <- function(
     dfun2,
     p,
     q,
+    p_ar,
+    q_ma,
     incl_mean,
     extra_par,
     skew_par,
@@ -1485,23 +1583,23 @@ goal_fun_creator_loggarch <- function(
     sigt_fun
 ) {
 
-  res_list <- sigt_fun(theta, x, dfun1, p, q,
+  res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun)
 
   sigt <- res_list$sigt
-  mu <- res_list$mu
+  cmeans <- res_list$cmeans
   skew <- res_list$skew
   shape <- res_list$shape
 
-  out <- -sum(log(dfun2(x, mu, sigt, shape, skew)))
+  out <- -sum(log(dfun2(x, cmeans, sigt, shape, skew)))
 
   out
 
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
   rt_core <- zoo::coredata(rt)
 
   order <- orders(spec)
@@ -1509,20 +1607,92 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   q <- order[[2]]
   cond_d <- cond_dist(spec)
 
+  incl_mean <- include_mean(spec)
+
+  # ARMA orders
+  order_arma <- orders(armaspec)
+  p_ar <- order_arma[[1]]
+  q_ma <- order_arma[[2]]
+
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  lm <- long_memo(spec)
+  lm <- long_memo(spec) # GARCH-part
+  # Long-memory setting (for ARMA-part)
+  lm_arma <- long_memo(armaspec)
+  # Assign ARMA / FARIMA function
+  arma_fun <- if (lm_arma) {
+    grab_fun <- farima_grab_pars
+    D_par_name <- "D"
+    D_start <- mean(Drange)
+    D_low <- Drange[[1]]
+    D_up <- Drange[[2]]
+    farima_fit
+  } else {
+    grab_fun <- arma_grab_pars
+    D_par_name <- character(0)
+    D_start <- D_low <- D_up <- numeric(0)
+    arma_fit
+  }
+
   sigt_fun <- sigt_funs_loggarch[[lm + 1]]
+  # Adjust (if ARMA-part relevant)
+  pg0 <- p_ar > 0
+  qg0 <- q_ma > 0
+  check <- pg0 || qg0
+  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
+  sigt_fun_adj <- if (check) {
+    function(theta, x, dfun1, p, q, p_ar, q_ma,
+         incl_mean, extra_par, skew_par,
+         int_fun) {
+
+      # Obtain ARMA / FARIMA parameters from theta
+      arma_pars <- grab_fun(
+        theta = theta,
+        incl_mean = incl_mean,
+        pg0 = pg0,
+        qg0 = qg0,
+        p = p_ar,
+        q = q_ma
+      )
+      mu <- arma_pars$mu
+      ar <- arma_pars$ar
+      ma <- arma_pars$ma
+
+      coef_inf <- if (lm_arma) {
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+      } else {
+        0
+      }
+
+      # Calculate fitted values following these parameters...
+      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
+      # ... and calculate the residuals
+      res <- x - fitted_vs
+
+      # Remove the first few elements from theta (those for the parameters
+      # relevant for ARMA / FARIMA) ...
+      theta2 <- theta[-(1:n_arma_pars)]
+      #... and calculate conditional standard deviations from the residuals
+      # following the specified GARCH-type
+      out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
+              FALSE, extra_par, skew_par,
+              int_fun)
+      out$cmeans <- fitted_vs
+      out
+    }
+
+  } else {
+    sigt_fun             # ...else keep function for EGARCH-type
+  }
+
 
   int_fun <- function(x, shape, skew, dfun) {
     log(x^2) * dfun(x, shape = shape, skew = skew)
   }
-
-  incl_mean <- include_mean(spec)
 
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_loggarch(
@@ -1532,11 +1702,13 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       dfun2 = dfun2,
       p = p,
       q = q,
+      p_ar = p_ar,
+      q_ma = q_ma,
       incl_mean = incl_mean,
       extra_par = extra_par,
       skew_par = skew_par,
       int_fun = int_fun,
-      sigt_fun = sigt_fun
+      sigt_fun = sigt_fun_adj
     )
   }
 
@@ -1564,6 +1736,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     start_pars <- c(
       list(NULL, mean(rt))[[incl_mean + 1]],
+      rep(0.05 / p_ar, p_ar),
+      rep(0.05 / q_ma, q_ma),
+      D_start,
       mean_lrt2_s,
       rep(0.85, p),
       rep(-0.8, q),
@@ -1578,6 +1753,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     LB <- c(
       list(NULL, min(rt))[[incl_mean + 1]],
+      rep(-2, p_ar),
+      rep(-2, q_ma),
+      D_low,
       mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
       rep(-2, p),
       rep(-2, q),
@@ -1592,6 +1770,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     UB <- c(
       list(NULL, max(rt))[[incl_mean + 1]],
+      rep(2, p_ar),
+      rep(2, q_ma),
+      D_up,
       mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
       rep(2, p),
       rep(2, q),
@@ -1600,6 +1781,26 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       list(NULL, Inf)[[skew_par + 1]]
     )
 
+  }
+
+  n_arma <- p_ar + q_ma
+  n_arma_im <- n_arma + incl_mean + lm_arma
+  low_phi <- 2 + n_arma_im
+  up_phi <- 1 + n_arma_im + p
+  low_ar <- 1 + incl_mean
+  up_ar <- incl_mean + p_ar
+
+  # Restrict phi / AR values
+  constr_fun <- function(theta, rt) {
+    phi <- c(1, -theta[low_phi:up_phi])
+    c1 <- abs(polyroot(phi)) - 1
+    if (pg0) {
+      ar <- c(1, -theta[low_ar:up_ar])
+      c2 <- abs(polyroot(ar)) - 1
+    } else {
+      c2 <- numeric(0)
+    }
+    c(c1, c2)
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
@@ -1617,7 +1818,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     fitted_models <- furrr::future_map(
       .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, control, rt_core, dfun1, dfun2) {
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2) {
 
         dfun1_P <- function(x, shape, skew) {
           dfun1(x = x, shape = .x, skew = skew)
@@ -1636,12 +1837,15 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
           fun = goal_fun,
           LB = LB,
           UB = UB,
+          ineqfun = ineq_fun,
+          ineqLB = rep(1e-6, p_all),
+          ineqUB = rep(Inf, p_all),
           control = control,
           rt = rt_core
         ))
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      control = control, rt_core = rt_core,
+      control = control, rt_core = rt_core, ineq_fun = constr_fun,
       dfun1 = dfun1, dfun2 = dfun2,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
@@ -1666,11 +1870,16 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
+    p_all <- p + p_ar
+
     result <- suppressWarnings(Rsolnp::solnp(
       pars = start_pars,
       fun = goal_fun,
       LB = LB,
       UB = UB,
+      ineqfun = constr_fun,
+      ineqLB = rep(1e-6, p_all),
+      ineqUB = rep(Inf, p_all),
       control = control,
       rt = rt_core
     ))
@@ -1681,12 +1890,15 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   pars <- result$pars
   llhood <- -tail(result$values, 1)
 
-  sigt <- sigt_fun(unname(pars), rt_core, dfun1, p, q,
+  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun)$sigt
+              int_fun)
+
+  sigt <- final_series$sigt
+  cmeans <- final_series$cmeans
 
   mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt - mu) / sigt
+  etat <- (rt - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -1699,8 +1911,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     character(0)
   )
 
+  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
+  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
+
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
+    names_ar,
+    names_ma,
+    D_par_name,
     "omega_sig",
     paste0("phi", 1:p),
     paste0("psi", 1:q),
@@ -1709,7 +1927,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  vcov_mat <- solve(result$hessian)
+  nhess <- result$hessian[-(1:p_all), -(1:p_all)]
+  vcov_mat <- solve(nhess)
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
@@ -1737,29 +1956,34 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   bic <- (m2llhood + k * log(n)) / n
   aic <- (m2llhood + 2 * k) / n
 
-  if (inherits(rt, what = "zoo")) {
-    tp <- as.Date(time(rt))
-    sigt <- zoo::zoo(sigt, order.by = tp)
-    etat <- zoo::zoo(etat, order.by = tp)
-  } else if (inherits(rt, what = "ts")) {
-    start_rt <- stats::start(rt)
-    frequ_rt <- stats::frequency(rt)
-    sigt <- stats::ts(zoo::coredata(sigt), start = start_rt, frequency = frequ_rt)
-    etat <- stats::ts(zoo::coredata(etat), start = start_rt, frequency = frequ_rt)
-  }
+  # Apply time series formatting (if relevant) to all
+  # estimated series
+  series_out <- format_applier_ts(
+    rt = rt,
+    list_of_ts = list(
+      "cmeans" = cmeans,
+      "sigt" = sigt,
+      "etat" = etat
+    )
+  )
+  cmeans <- series_out$cmeans
+  sigt <- series_out$sigt
+  etat <- series_out$etat
 
   list_out <- fEGarch_fit_loggarch(
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
     rt = rt,
+    cmeans = cmeans,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
     inf_criteria = c("aic" = aic, "bic" = bic),
     cond_dist = cond_d,
     orders = order,
-    long_memo = lm
+    long_memo = lm,
+    armaspec = armaspec
   )
 
   list_out
@@ -1815,6 +2039,9 @@ setMethod(
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
     " \n",
+    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
+    "\n",
     "Fitted parameters:\n"
   )
 
@@ -1866,6 +2093,9 @@ setMethod(
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
     " \n",
+    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
+    "\n",
     "Fitted parameters:\n"
   )
 

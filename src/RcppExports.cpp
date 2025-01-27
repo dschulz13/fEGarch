@@ -77,14 +77,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // fitted_farima_Cpp
-arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu, const arma::vec& coef_inf);
+arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu, const arma::rowvec& coef_inf);
 RcppExport SEXP _fEGarch_fitted_farima_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type coef_inf(coef_infSEXP);
     rcpp_result_gen = Rcpp::wrap(fitted_farima_Cpp(x, mu, coef_inf));
     return rcpp_result_gen;
 END_RCPP

@@ -53,7 +53,7 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu,
-                            const arma::vec& coef_inf) {
+                            const arma::rowvec& coef_inf) {
 
   const int pre = 1;
   const int n = x.size();
