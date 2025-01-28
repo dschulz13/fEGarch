@@ -10,6 +10,8 @@ lmgarch(
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   include_mean = TRUE,
   drange = c(0, 0.5 - 1e-06),
+  armaspec = arma_spec(),
+  Drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
   UB = NULL,
@@ -43,6 +45,17 @@ the series' mean in the maximum-likelihood estimation process; for
 \item{drange}{a two-element numeric vector that gives the boundaries of the
 search interval for the fractional differencing parameter \eqn{d}; is
 overwritten by the settings of the arguments \code{LB} and \code{UB}.}
+
+\item{armaspec}{an object of class "arma_spec"; indicates the
+specifications for the model in the conditional mean.}
+
+\item{Drange}{a two-element numeric vector that indicates the boundaries
+of the interval over which to search for the fractional differencing
+parameter \eqn{d} in a long-memory ARMA-type model; by default,
+\eqn{D} being searched for on the
+interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+settings in the arguments
+\code{LB} and \code{UB} overwrite this argument.}
 
 \item{start_pars}{the starting parameters for the numerical optimization
 routine; should be of the same length as the parameter output vector
@@ -84,6 +97,7 @@ is returned. It contains the following elements.
 \item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 \item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 \item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
+\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 \item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
 \item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
 \item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
@@ -91,6 +105,9 @@ is returned. It contains the following elements.
 \item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
 \item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 \item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
+\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
+of class \code{"arma_spec"} that is identical to the object passed to the input argument
+\code{armaspec}.}
 }
 }
 \description{
@@ -121,7 +138,7 @@ all \eqn{\beta_j} and \eqn{\phi_i} are non-negative. Furthermore, we have
 \eqn{E(\varepsilon_t^2)= \omega / \left(1-\psi(1)\right)}, where
 \deqn{\psi(B) = \left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right].}
 
-The pre-sample values of \eqn{\varepsilon_t^2} are taken as the sample
+The pre-sample values of \eqn{\varepsilon_t^2} are implemented by repeating the sample
 variance of the observed series. The pre-sample is set to length 1000, and the infinite coefficient series
 \eqn{\psi(B)} is, at each time point, always considered
 as far back as to the first pre-sample value. Therefore, at observation time point

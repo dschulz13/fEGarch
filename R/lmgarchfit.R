@@ -1,9 +1,7 @@
-sigt_lmgarch_R <- function(theta, x, p, q,
-              incl_mean, extra_par, skew_par) {
-
+lmgarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
   imean <- !incl_mean
-  mu <- c(0, theta[[1]])[[incl_mean + 1]]
+  mu <- if (incl_mean) theta[[1]] else 0
   step0 <- 2 - imean
   step1 <- step0 + p
   step2 <- step1 + q
@@ -11,16 +9,39 @@ sigt_lmgarch_R <- function(theta, x, p, q,
   phi <- theta[(step0 + 1):step1]
   beta <- -theta[(step1 + 1):step2]
   d <- theta[[step2 + 1]]
-  if (extra_par) {
-    shape <- theta[[step2 + 2]]
-  } else {
-    shape <- 0
-  }
-  if (skew_par) {
-    skew <- theta[[step2 + 2 + extra_par]]
-  } else {
-    skew <- 0
-  }
+  shape <- if (extra_par) theta[[step2 + 2]] else 0
+  skew <- if (skew_par) theta[[step2 + 2 + extra_par]] else 0
+
+  list(
+    mu = mu,
+    omega = omega,
+    phi = phi,
+    beta = beta,
+    d = d,
+    shape = shape,
+    skew = skew
+  )
+
+}
+
+sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par) {
+
+  all_pars <- lmgarch_grab_pars(
+    theta = theta,
+    p = p,
+    q = q,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par
+  )
+  mu <- all_pars$mu
+  omega <- all_pars$omega
+  phi <- all_pars$phi
+  beta <- all_pars$beta
+  d <- all_pars$d
+  shape <- all_pars$shape
+  skew <- all_pars$skew
 
   n <- length(x)
   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
@@ -37,7 +58,7 @@ sigt_lmgarch_R <- function(theta, x, p, q,
     E_e2
   ))
 
-  list(sigt = sigt, mu = mu, skew = skew, shape = shape)
+  list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
@@ -47,20 +68,23 @@ goal_fun_creator_lmgarch <- function(
     pdf_fun2,
     p,
     q,
+    p_ar,
+    q_ma,
     incl_mean,
     extra_par,
-    skew_par
+    skew_par,
+    sig_fun
 ) {
 
-  res_list <- sigt_lmgarch_R(theta, x, p, q,
+  res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par)
 
   sigt <- res_list$sigt
-  mu <- res_list$mu
+  cmeans <- res_list$cmeans
   skew <- res_list$skew
   shape <- res_list$shape
 
-  out <- -sum(log(pdf_fun2(x, rep(mu, length(sigt)), sigt, shape, skew)))
+  out <- -sum(log(pdf_fun2(x, cmeans, sigt, shape, skew)))
 
   out
 
@@ -93,6 +117,15 @@ goal_fun_creator_lmgarch <- function(
 #'@param drange a two-element numeric vector that gives the boundaries of the
 #'search interval for the fractional differencing parameter \eqn{d}; is
 #'overwritten by the settings of the arguments \code{LB} and \code{UB}.
+#'@param armaspec an object of class "arma_spec"; indicates the
+#'specifications for the model in the conditional mean.
+#'@param Drange a two-element numeric vector that indicates the boundaries
+#'of the interval over which to search for the fractional differencing
+#'parameter \eqn{d} in a long-memory ARMA-type model; by default,
+#'\eqn{D} being searched for on the
+#'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+#'settings in the arguments
+#'\code{LB} and \code{UB} overwrite this argument.
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
@@ -143,7 +176,7 @@ goal_fun_creator_lmgarch <- function(
 #'\eqn{E(\varepsilon_t^2)= \omega / \left(1-\psi(1)\right)}, where
 #'\deqn{\psi(B) = \left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right].}
 #'
-#'The pre-sample values of \eqn{\varepsilon_t^2} are taken as the sample
+#'The pre-sample values of \eqn{\varepsilon_t^2} are implemented by repeating the sample
 #'variance of the observed series. The pre-sample is set to length 1000, and the infinite coefficient series
 #'\eqn{\psi(B)} is, at each time point, always considered
 #'as far back as to the first pre-sample value. Therefore, at observation time point
@@ -188,6 +221,7 @@ goal_fun_creator_lmgarch <- function(
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 #'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
+#'\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 #'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
 #'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
@@ -195,6 +229,9 @@ goal_fun_creator_lmgarch <- function(
 #'\item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
 #'\item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 #'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
+#'\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
+#'of class \code{"arma_spec"} that is identical to the object passed to the input argument
+#'\code{armaspec}.}
 #'}
 #'
 #'@examples
@@ -224,6 +261,7 @@ goal_fun_creator_lmgarch <- function(
 lmgarch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                         include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
+                        armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
@@ -238,12 +276,83 @@ lmgarch <- function(rt, orders = c(1, 1),
 
   cond_d <- match.arg(cond_dist)
 
+  # ARMA orders
+  order_arma <- orders(armaspec)
+  p_ar <- order_arma[[1]]
+  q_ma <- order_arma[[2]]
+
   pdf_fun2 <- lookup_table$fun2[[cond_d]]
 
   incl_mean <- include_mean
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
+
+  # Long-memory setting (for ARMA-part)
+  lm_arma <- long_memo(armaspec)
+  # Assign ARMA / FARIMA function
+  arma_fun <- if (lm_arma) {
+    grab_fun <- farima_grab_pars
+    D_par_name <- "D"
+    D_start <- mean(Drange)
+    D_low <- Drange[[1]]
+    D_up <- Drange[[2]]
+    farima_fit
+  } else {
+    grab_fun <- arma_grab_pars
+    D_par_name <- character(0)
+    D_start <- D_low <- D_up <- numeric(0)
+    arma_fit
+  }
+
+  n <- length(rt)
+  sigt_fun <- sigt_lmgarch_R
+  # Adjust (if ARMA relevant)
+  pg0 <- p_ar > 0
+  qg0 <- q_ma > 0
+  check <- pg0 || qg0
+  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
+  sigt_fun_adj <- if (check) {
+    function(theta, x, p, q, p_ar, q_ma,
+         incl_mean, extra_par, skew_par) {
+
+      # Obtain ARMA / FARIMA parameters from theta
+      arma_pars <- grab_fun(
+        theta = theta,
+        incl_mean = incl_mean,
+        pg0 = pg0,
+        qg0 = qg0,
+        p = p_ar,
+        q = q_ma
+      )
+      mu <- arma_pars$mu
+      ar <- arma_pars$ar
+      ma <- arma_pars$ma
+
+      coef_inf <- if (lm_arma) {
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+      } else {
+        0
+      }
+
+      # Calculate fitted values following these parameters...
+      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
+      # ... and calculate the residuals
+      res <- x - fitted_vs
+
+      # Remove the first few elements from theta (those for the parameters
+      # relevant for ARMA / FARIMA) ...
+      theta2 <- theta[-(1:n_arma_pars)]
+      #... and calculate conditional standard deviations from the residuals
+      # following the specified GARCH-type
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par)
+      out$cmeans <- fitted_vs
+      out
+    }
+
+  } else {
+    sigt_fun             # ...else keep function for EGARCH-type
+  }
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -253,9 +362,12 @@ lmgarch <- function(rt, orders = c(1, 1),
      pdf_fun2 = pdf_fun2,
      p = p,
      q = q,
+     p_ar = p_ar,
+     q_ma = q_ma,
      incl_mean = incl_mean,
      extra_par,
-     skew_par
+     skew_par,
+     sig_fun = sigt_fun_adj
     )
 
   }
@@ -274,7 +386,10 @@ lmgarch <- function(rt, orders = c(1, 1),
   if (is.null(start_pars)) {
 
     start_pars <- c(
-      list(NULL, 0)[[incl_mean + 1]],
+      list(NULL, mean(rt))[[incl_mean + 1]],
+      rep(0.05 / p_ar, p_ar),
+      rep(0.05 / q_ma, q_ma),
+      D_start,
       0.001,
       rep(0.05 / p, p),
       rep(0.4 / q, q),
@@ -288,7 +403,10 @@ lmgarch <- function(rt, orders = c(1, 1),
   if (is.null(LB)) {
 
     LB <- c(
-      list(NULL, -2)[[incl_mean + 1]],
+      list(NULL, min(rt))[[incl_mean + 1]],
+      rep(-2, p_ar),
+      rep(-2, q_ma),
+      D_low,
       1e-10,
       rep(0, p),
       rep(0, q),
@@ -302,7 +420,10 @@ lmgarch <- function(rt, orders = c(1, 1),
   if (is.null(UB)) {
 
     UB <- c(
-      list(NULL, 2)[[incl_mean + 1]],
+      list(NULL, max(rt))[[incl_mean + 1]],
+      rep(2, p_ar),
+      rep(2, q_ma),
+      D_up,
       Inf,
       rep(2, p),
       rep(2, q),
@@ -313,22 +434,34 @@ lmgarch <- function(rt, orders = c(1, 1),
 
   }
 
+  n_arma <- p_ar + q_ma
+  n_arma_im <- n_arma + incl_mean + lm_arma
+  low_ar <- 1 + incl_mean
+  up_ar <- low_ar + p_ar - 1
+  low_phi <- 2 + n_arma_im
+  up_phi <- low_phi
+  low_beta <- low_phi + 1
+  up_beta <- low_beta
+  d_idx <- up_beta + 1
+
   ineq_fun <- function(theta, rt) {
 
-    imean <- !incl_mean
-    step0 <- 2 - imean
-    step1 <- step0 + p
-    step2 <- step1 + q
-    omega <- theta[[step0]]
-    phi <- theta[(step0 + 1):step1]
-    beta <- theta[(step1 + 1):step2]
-    d <- theta[[step2 + 1]]
+    phi <- theta[low_phi:up_phi]
+    beta <- theta[low_beta:up_beta]
+    d <- theta[[d_idx]]
 
     r1 <- phi - beta + d
     r2 <- (2 - d) / 3 - phi
     r3 <- beta * r1 - d * (phi - (1 - d) / 2)
 
-    c(r1, r2, r3)
+    if (pg0) {
+      ar <- c(1, -theta[low_ar:up_ar])
+      c2 <- abs(polyroot(ar)) - 1
+    } else {
+      c2 <- numeric(0)
+    }
+
+    c(r1, r2, r3, c2)
 
   }
 
@@ -347,7 +480,7 @@ lmgarch <- function(rt, orders = c(1, 1),
 
     fitted_models <- furrr::future_map(
       .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun2) {
+      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun2, p_ar) {
 
         dfun2_P <- function(x, mu, sigt, shape, skew) {
           dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
@@ -363,14 +496,14 @@ lmgarch <- function(rt, orders = c(1, 1),
           LB = LB,
           UB = UB,
           ineqfun = ineq_fun,
-          ineqLB = c(0, 0, 0),
-          ineqUB = c(Inf, Inf, Inf),
+          ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
+          ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           control = control,
           rt = rt_core
         ))
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      ineq_fun = ineq_fun, control = control, rt_core = rt_core,
+      ineq_fun = ineq_fun, control = control, rt_core = rt_core, p_ar = p_ar,
       dfun2 = pdf_fun2,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
@@ -404,8 +537,8 @@ lmgarch <- function(rt, orders = c(1, 1),
           UB = UB,
           control = control,
           ineqfun = ineq_fun,
-          ineqLB = c(0, 0, 0),
-          ineqUB = c(Inf, Inf, Inf),
+          ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
+          ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           rt = rt_core
         ))
       },
@@ -419,11 +552,13 @@ lmgarch <- function(rt, orders = c(1, 1),
   pars <- result$pars
   llhood <- -tail(result$values, 1)
 
-  sigt <- sigt_lmgarch_R(unname(pars), rt_core, p, q,
-              incl_mean, extra_par, skew_par)$sigt
+  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par)
 
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
-  etat <- (rt - mu) / sigt
+  sigt <- res_f$sigt
+  cmeans <- res_f$cmeans
+  etat <- (rt - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -436,8 +571,14 @@ lmgarch <- function(rt, orders = c(1, 1),
     character(0)
   )
 
+  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
+  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
+
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
+    names_ar,
+    names_ma,
+    D_par_name,
     "omega",
     paste0("phi", 1:p),
     paste0("beta", 1:q),
@@ -446,9 +587,14 @@ lmgarch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  len_par <- length(pars)
-  hessian <- result$hessian[1:len_par, 1:len_par]
-  vcov_mat <- solve(hessian)
+  nhessian <- result$hessian[-(1:(3 + p_ar)), -(1:(3 + p_ar))]
+  vcov_mat <- tryCatch(
+    expr = {solve(nhessian)},
+    error = function(e1) {
+      warning("Unable to obtain standard errors.", call. = FALSE)
+      matrix(NA_real_, ncol = length(pars), nrow = length(pars))
+    }
+  )
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
@@ -476,11 +622,19 @@ lmgarch <- function(rt, orders = c(1, 1),
   bic <- (m2llhood + k * log(n)) / n
   aic <- (m2llhood + 2 * k) / n
 
-  if (inherits(rt, what = "zoo")) {
-    tp <- as.Date(time(rt))
-    sigt <- zoo::zoo(sigt, order.by = tp)
-    etat <- zoo::zoo(etat, order.by = tp)
-  }
+  # Apply time series formatting (if relevant) to all
+  # estimated series
+  series_out <- format_applier_ts(
+    rt = rt,
+    list_of_ts = list(
+      "cmeans" = cmeans,
+      "sigt" = sigt,
+      "etat" = etat
+    )
+  )
+  cmeans <- series_out$cmeans
+  sigt <- series_out$sigt
+  etat <- series_out$etat
 
   list_out <- fEGarch_fit_lmgarch(
     pars = pars,
@@ -488,12 +642,14 @@ lmgarch <- function(rt, orders = c(1, 1),
     vcov_mat = vcov_mat,
     rt = rt,
     sigt = sigt,
+    cmeans = cmeans,
     etat = etat,
     llhood = llhood,
     inf_criteria = c("aic" = aic, "bic" = bic),
     cond_dist = cond_d,
     orders = orders,
-    long_memo = TRUE
+    long_memo = TRUE,
+    armaspec = armaspec
   )
 
   list_out
@@ -534,6 +690,9 @@ setMethod(
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
+    " \n",
+    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
     " \n",
     "Fitted parameters:\n"
   )
