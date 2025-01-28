@@ -220,6 +220,7 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
                            mu = 0,
                            ar = 0.7,
                            ma = 0.5,
+                           D = 0.25,
                            omega_sig = -9,
                            phi = 0.8,
                            psi = numeric(0),
