@@ -394,15 +394,25 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
   out <- list(
     "rt" = ts(c(sim[["rt"]])),
     "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]]))
+    "etat" = ts(c(sim[["etat"]])),
+    "cmeans" = ts(rep(mu, n))
   )
 
   if (check) {
+    rt <- rt - mu    # subtract mean again and then feed these as
+                     # the errors into an ARMA / FARIMA model
     if (D == 0) {
+
+      yt_data <- arma_sim_cpp(errors = rt, ar = ar, ma = ma, n_out = n, mu = mu)
 
     } else if (D > 0) {
 
+      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N - 1)[-1]
+      yt_data <- farima_sim_cpp(errors = rt, coef_inf = coef_inf, n_out = n, mu = mu)
+
     }
+    out[["rt"]] <- ts(c(yt_data[["yt"]]))
+    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
   }
 
   out
