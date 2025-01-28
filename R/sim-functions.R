@@ -216,8 +216,10 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'mat <- do.call(cbind, sim)
 #'plot(mat, main = "")
 #'
-fEGarch_sim <- function(spec = fiegarch_spec(), pars = list(
+fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = list(
                            mu = 0,
+                           ar = 0.7,
+                           ma = 0.5,
                            omega_sig = -9,
                            phi = 0.8,
                            psi = numeric(0),

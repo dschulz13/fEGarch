@@ -204,7 +204,9 @@ The main functions of the package are:
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
-- `fiaparch_sim()`: FIAPARCH simulation.
+- `fiaparch_sim()`: FIAPARCH simulation,
+
+- `arma_spec()`: ARMA or FARIMA model specification for simultaneously modelling the conditional mean.
 
 The package, however, provides many other useful functions for you to discover.
 

@@ -13,7 +13,8 @@
 #'\code{"ts"} class object.
 #'@param drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
-#'parameter \eqn{d} in a long-memory GARCH-type model; by default,
+#'parameter \eqn{d} in a long-memory GARCH-type model in the conditional
+#'volatility model part; by default,
 #'\eqn{d} being searched for on the
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
@@ -22,7 +23,8 @@
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
-#'parameter \eqn{d} in a long-memory ARMA-type model; by default,
+#'parameter \eqn{d} in a long-memory ARMA-type model in the conditional
+#'mean model part; by default,
 #'\eqn{D} being searched for on the
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
@@ -128,9 +130,15 @@
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
+#'# Pure conditional volatility model
 #'spec <- fEGarch_spec()
 #'model <- fEGarch(spec, rt)
 #'model
+#'# Simultaneously model conditional mean
+#'spec <- egarch_spec()
+#'model2 <- fEGarch(spec, rt, armaspec = arma_spec(orders = c(1, 1)))
+#'model2
+#'
 #'
 #'@references
 #'\itemize{

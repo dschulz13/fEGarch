@@ -750,15 +750,15 @@ egarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_par)
   skew <- if (skew_par) theta[[step2p3 + d_par + extra_par]] else 0
 
   list(
-    mu = mu,
-    omega_sig = omega_sig,
-    phi = phi,
-    psi = psi,
-    kappa = kappa,
-    gamma = gamma,
-    d = d,
-    shape = shape,
-    skew = skew
+    "mu" = mu,
+    "omega_sig" = omega_sig,
+    "phi" = phi,
+    "psi" = psi,
+    "kappa" = kappa,
+    "gamma" = gamma,
+    "d" = d,
+    "shape" = shape,
+    "skew" = skew
   )
 
 }
@@ -886,8 +886,8 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     beta = beta,
     E_asy = E_asy,
     E_mag = E_mag,
-    Elnsig2,
-    pows, mods, mode
+    Elnsig2 = Elnsig2,
+    powers = pows, modulus = mods, mode = mode
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -935,6 +935,8 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
   E_asy <- E_vals$E_asy
   E_mag <- E_vals$E_mag
+
+  Elnsig2 <- omega_sig
 
   sigt <- c(sigt_egarch_longCpp(
     x = x,

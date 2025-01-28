@@ -85,6 +85,9 @@ model1
 #> Long memory: TRUE
 #> Cond. distribution: norm
 #>  
+#> ARMA orders (cond. mean): (0, 0)
+#> Long memory (cond. mean): FALSE
+#> 
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
@@ -147,6 +150,9 @@ model10
 #> Long memory: FALSE
 #> Cond. distribution: std
 #>  
+#> ARMA orders (cond. mean): (0, 0)
+#> Long memory (cond. mean): FALSE
+#> 
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
@@ -190,6 +196,9 @@ model11
 #> Long memory: FALSE
 #> Cond. distribution: norm
 #>  
+#> ARMA orders (cond. mean): (1, 1)
+#> Long memory (cond. mean): FALSE
+#> 
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
@@ -280,17 +289,20 @@ model_fiaparch
 #> Long memory: TRUE
 #> Cond. distribution: std
 #>  
+#> ARMA orders (cond. mean): (0, 0)
+#> Long memory (cond. mean): FALSE
+#>  
 #> Fitted parameters:
 #> 
-#>          par     se    tval   pval
-#> mu    0.0004 0.0013  0.3392 0.7345
-#> omega 0.0002 0.0006  0.3723 0.7097
-#> phi1  0.1796 0.1249  1.4372 0.1507
-#> beta1 0.4952 0.2493  1.9864 0.0470
-#> gamma 1.0000 0.3048  3.2809 0.0010
-#> delta 1.2438 0.0503 24.7130 0.0000
-#> d     0.3959 0.1825  2.1692 0.0301
-#> df    7.8297 2.7589  2.8380 0.0045
+#>          par      se   tval   pval
+#> mu    0.0004  0.0088 0.0491 0.9608
+#> omega 0.0002  0.0250 0.0087 0.9931
+#> phi1  0.1796  0.3601 0.4986 0.6181
+#> beta1 0.4952  3.7868 0.1308 0.8960
+#> gamma 1.0000  1.1617 0.8608 0.3893
+#> delta 1.2438  7.0383 0.1767 0.8597
+#> d     0.3959  4.5456 0.0871 0.9306
+#> df    7.8299 21.5866 0.3627 0.7168
 #>  
 #> Information criteria:
 #> AIC: -6.5484, BIC: -6.5398
@@ -326,7 +338,10 @@ The main functions of the package are:
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
-- `fiaparch_sim()`: FIAPARCH simulation.
+- `fiaparch_sim()`: FIAPARCH simulation,
+
+- `arma_spec()`: ARMA or FARIMA model specification for simultaneously
+  modelling the conditional mean.
 
 The package, however, provides many other useful functions for you to
 discover.

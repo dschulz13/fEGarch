@@ -115,13 +115,15 @@ goal_fun_creator_lmgarch <- function(
 #'the series' mean in the maximum-likelihood estimation process; for
 #'\code{include_mean = FALSE}, the mean is fixed to zero.
 #'@param drange a two-element numeric vector that gives the boundaries of the
-#'search interval for the fractional differencing parameter \eqn{d}; is
+#'search interval for the fractional differencing parameter \eqn{d} in the conditional
+#'volatility model part; is
 #'overwritten by the settings of the arguments \code{LB} and \code{UB}.
 #'@param armaspec an object of class "arma_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
-#'parameter \eqn{d} in a long-memory ARMA-type model; by default,
+#'parameter \eqn{D} in a long-memory ARMA-type model in the conditional mean
+#'model part; by default,
 #'\eqn{D} being searched for on the
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
@@ -210,6 +212,9 @@ goal_fun_creator_lmgarch <- function(
 #'estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is therefore
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
+#'
+#'An ARMA-LMGARCH or a FARIMA-LMGARCH can be fitted by adjusting the
+#'argument \code{armaspec} correspondingly.
 #'
 #'@export
 #'
