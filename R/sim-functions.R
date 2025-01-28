@@ -216,11 +216,11 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'mat <- do.call(cbind, sim)
 #'plot(mat, main = "")
 #'
-fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = list(
+fEGarch_sim <- function(spec = egarch_spec(), pars = list(
                            mu = 0,
-                           ar = 0.7,
-                           ma = 0.5,
-                           D = 0.25,
+                           ar = numeric(0),
+                           ma = numeric(0),
+                           D = 0,
                            omega_sig = -9,
                            phi = 0.8,
                            psi = numeric(0),
@@ -234,6 +234,7 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
                          ), n = 1000, nstart = 5e3) {
 
   nn <- n + nstart          # pre-sample plus sample number of observations
+  N <- n
 
   # Parameter defaults (relevant if a truncated parameter list is provided)
   pars_default <- lookup_table$sim_pars_default
@@ -256,6 +257,20 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
   skew <- pars_default$skew
   cond_dist <- spec@cond_dist
   lm <- spec@long_memo
+
+  # ARMA / FARIMA parameters
+  ar <- pars_default$ar
+  ma <- pars_default$ma
+  D <- pars_default$D
+
+  # Simulate even more observations if ARMA / FARIMA required
+  check <- length(ar) + length(ma) > 0 || D > 0
+  nn <- if (check) {
+    N <- N + nstart
+    nn + nstart
+  } else {
+    nn
+  }
 
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
@@ -314,7 +329,7 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
 
   sim <- egarch_longmemo_type_sim(
     innov = innov, omega_sig = omega_sig, coef_inf = coef_inf,
-    kappa = kappa, gamma = gamma, n_out = n, mu = mu,
+    kappa = kappa, gamma = gamma, n_out = N, mu = mu,
     E_mag = E_mag, E_asy = E_asy, powers = powers,
     modulus = modulus, mode = mode)
 
@@ -323,7 +338,7 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
   sim <- egarch_shortmemo_type_sim(
     innov = innov, omega_sig = omega_sig, ar_coef = phi,
     ma_coef = c(1, psi),
-    kappa = kappa, gamma = gamma, n_out = n, mu = mu,
+    kappa = kappa, gamma = gamma, n_out = N, mu = mu,
     E_mag = E_mag, E_asy = E_asy, powers = powers,
     modulus = modulus, mode = mode)
 
@@ -351,7 +366,7 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
       sim <- loggarch_longmemo_type_sim(
         innov, omega_sig,
         coef_inf = coef_inf,
-        n_out = n,
+        n_out = N,
         mu = mu,
         Econst = E_const)
 
@@ -368,7 +383,7 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
       sim <- loggarch_shortmemo_type_sim(
         innov, omega_sig,
         ar_coef = phi, ma_coef = psi + phi,
-        n_out = n,
+        n_out = N,
         mu = mu,
         Econst = E_const)
 
@@ -381,6 +396,16 @@ fEGarch_sim <- function(spec = egarch_spec(), armaspec = arma_spec(), pars = lis
     "sigt" = ts(c(sim[["sigt"]])),
     "etat" = ts(c(sim[["etat"]]))
   )
+
+  if (check) {
+    if (D == 0) {
+
+    } else if (D > 0) {
+
+    }
+  }
+
+  out
 
 }
 

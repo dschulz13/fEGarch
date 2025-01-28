@@ -78,6 +78,9 @@ lookup_table <- list(
   ),
   sim_pars_default = list(
      mu = 0,
+     ar = numeric(0),
+     ma = numeric(0),
+     D = 0,
      omega_sig = -9,
      phi = 0.8,
      psi = numeric(0),
@@ -91,6 +94,9 @@ lookup_table <- list(
    ),
    sim_pars_default_fiaparch = list(
      mu = 0,
+     ar = numeric(0),
+     ma = numeric(0),
+     D = 0,
      omega = 0.0004,
      phi = 0.2,
      beta = 0.4,
