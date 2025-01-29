@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
+#include "signVec.h"
 
 // [[Rcpp::export]]
 int signCpp(const double val) {

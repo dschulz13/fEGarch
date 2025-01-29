@@ -5,9 +5,10 @@
 \title{Simulate From Models of the Broader EGARCH Family}
 \usage{
 fEGarch_sim(
-  spec = fiegarch_spec(),
-  pars = list(mu = 0, omega_sig = -9, phi = 0.8, psi = numeric(0), kappa = -0.2, gamma =
-    0.3, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
+  spec = egarch_spec(),
+  pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, omega_sig = -9, phi = 0.8,
+    psi = numeric(0), kappa = -0.2, gamma = 0.3, d = 0, df = 10, shape = 2, P = 3, skew =
+    1),
   n = 1000,
   nstart = 5000
 )
@@ -15,7 +16,12 @@ fEGarch_sim(
 \arguments{
 \item{spec}{an object of class \code{"egarch_type_spec"} or
 \code{"loggarch_type_spec"} returned by \code{\link{fEGarch_spec}}
-or related wrapper functions.}
+or related wrapper functions; note that the model orders in the
+conditional mean and in the
+conditional variance as well as the long-memory settings are not
+controlled through the element
+\code{orders} and \code{long_memo} of \code{spec} but
+solely through the parameter settings in \code{pars}.}
 
 \item{pars}{a named list with the parameter specifications; the user
 can provide a named list with only the settings they would like to adjust
@@ -25,13 +31,18 @@ relative to the default settings.}
 
 \item{nstart}{the number of burn-in observations to simulate before
 the final \code{n} values to keep; the first \code{nstart} values
-are not returned.}
+are not returned; if a dual model, i.e. with model in the conditional
+mean and in the conditional variance, is considered, two times \code{nstart}
+is considered in the first simulation step in the conditional variance,
+so that \code{n + nstart} values can be fed into the second simulation
+step for the conditional mean.}
 }
 \value{
-A list with three elements is returned: \code{rt} are the simulated
-observations, \code{etat} are the underlying innovations, and
+A list with four elements is returned: \code{rt} are the simulated
+observations, \code{etat} are the underlying innovations,
 \code{sigt} are the correspondingly simulated conditional
-standard deviations. These three elements are formatted as
+standard deviations, and \code{cmeans} are the simulated
+conditional means. These four elements are formatted as
 \code{"ts"} class time series objects.
 }
 \description{

@@ -30,3 +30,47 @@ arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
   return arma::sqrt(sig2);
 
 }
+
+// [[Rcpp::export]]
+Rcpp::List lmgarch_sim_Cpp(const arma::vec& innov, const double omega,
+                          const arma::rowvec& coef_inf,
+                          const int n_out,
+                          const double mu) {
+
+  const int n = innov.size();
+
+  const int n_pre = 1;
+  const int n_all = n + n_pre;
+
+  double sig2;
+  arma::vec sigt = arma::vec(n);
+
+  const arma::rowvec coef_rev = arma::reverse(coef_inf);
+
+  arma::vec rt = arma::zeros<arma::vec>(n_all);
+  arma::vec eps2 = arma::zeros<arma::vec>(n_all);
+
+  const int n_coef_m1 = coef_inf.size() - 1;
+  int npp1;
+
+  for (int i = 0; i < n; ++i) {
+
+    npp1 = 1 + i;
+
+    sig2 = omega +
+      arma::as_scalar(coef_rev.subvec(n_coef_m1 - i, n_coef_m1) * eps2.subvec(0, i));
+
+    sigt(i) = std::sqrt(sig2);
+
+    rt(npp1) = innov(i) * sigt(i);
+    eps2(npp1) = std::pow(rt(npp1), 2.0);
+
+  }
+
+  const arma::vec sigt_out = sigt.subvec(n - n_out, n - 1);
+  const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
+
+  const arma::vec rt_out = rt.subvec(n_all - n_out, n_all - 1) + mu;
+
+  return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
+}

@@ -5,8 +5,8 @@
 \title{Simulate From FIAPARCH Models}
 \usage{
 fiaparch_sim(
-  pars = list(mu = 0, omega_sig = 4e-04, phi = 0.2, beta = 0.4, gamma = 0.1, delta = 2, d
-    = 0.25, df = 10, shape = 2, P = 3, skew = 1),
+  pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, omega = 4e-04, phi = 0.2,
+    beta = 0.4, gamma = 0.1, delta = 2, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   n = 1000,
   nstart = 5000
@@ -24,13 +24,18 @@ the conditional distribution to consider.}
 
 \item{nstart}{the number of burn-in observations to simulate before
 the final \code{n} values to keep; the first \code{nstart} values
-are not returned.}
+are not returned; if a dual model, i.e. with model in the conditional
+mean and in the conditional variance, is considered, two times \code{nstart}
+is considered in the first simulation step in the conditional variance,
+so that \code{n + nstart} values can be fed into the second simulation
+step for the conditional mean.}
 }
 \value{
-A list with three elements is returned: \code{rt} are the simulated
-observations, \code{etat} are the underlying innovations, and
+A list with four elements is returned: \code{rt} are the simulated
+observations, \code{etat} are the underlying innovations,
 \code{sigt} are the correspondingly simulated conditional
-standard deviations. These three elements are formatted as
+standard deviations, and \code{cmeans} are the simulated
+conditional means. These four elements are formatted as
 \code{"ts"} class time series objects.
 }
 \description{

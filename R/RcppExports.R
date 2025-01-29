@@ -17,12 +17,32 @@ pdf_skew_sald <- function(x, P, skew) {
     .Call('_fEGarch_pdf_skew_sald', PACKAGE = 'fEGarch', x, P, skew)
 }
 
+forecast_arma_Cpp <- function(x, et, mu, ma_e, ar_e, horizon) {
+    .Call('_fEGarch_forecast_arma_Cpp', PACKAGE = 'fEGarch', x, et, mu, ma_e, ar_e, horizon)
+}
+
+forecast_farima_Cpp <- function(x, mu, coef_inf, horizon) {
+    .Call('_fEGarch_forecast_farima_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf, horizon)
+}
+
 fitted_arma_Cpp <- function(x, mu, ma, ar) {
     .Call('_fEGarch_fitted_arma_Cpp', PACKAGE = 'fEGarch', x, mu, ma, ar)
 }
 
 fitted_farima_Cpp <- function(x, mu, coef_inf) {
     .Call('_fEGarch_fitted_farima_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf)
+}
+
+arma_sim_Cpp <- function(innov, mu, ma, ar, nout) {
+    .Call('_fEGarch_arma_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, ma, ar, nout)
+}
+
+farima_sim_Cpp <- function(innov, mu, coef_inf, nout) {
+    .Call('_fEGarch_farima_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, coef_inf, nout)
+}
+
+sigt_egarch__forecast_shortCpp <- function(x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon) {
+    .Call('_fEGarch_sigt_egarch__forecast_shortCpp', PACKAGE = 'fEGarch', x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon)
 }
 
 signCpp <- function(val) {
@@ -71,6 +91,10 @@ pdf_skew_sged <- function(x, shape, skew) {
 
 sigt_lmgarch_Cpp <- function(x, mu, omega, coef_inf, E_e2) {
     .Call('_fEGarch_sigt_lmgarch_Cpp', PACKAGE = 'fEGarch', x, mu, omega, coef_inf, E_e2)
+}
+
+lmgarch_sim_Cpp <- function(innov, omega, coef_inf, n_out, mu) {
+    .Call('_fEGarch_lmgarch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, n_out, mu)
 }
 
 sigt_loggarch_long <- function(x, mu, coef_inf, Elneta2, Elnsig2) {

@@ -187,14 +187,23 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'
 #'@param spec an object of class \code{"egarch_type_spec"} or
 #'\code{"loggarch_type_spec"} returned by \code{\link{fEGarch_spec}}
-#'or related wrapper functions.
+#'or related wrapper functions; note that the model orders in the
+#'conditional mean and in the
+#'conditional variance as well as the long-memory settings are not
+#'controlled through the element
+#'\code{orders} and \code{long_memo} of \code{spec} but
+#'solely through the parameter settings in \code{pars}.
 #'@param pars a named list with the parameter specifications; the user
 #'can provide a named list with only the settings they would like to adjust
 #'relative to the default settings.
 #'@param n the number of observations to return.
 #'@param nstart the number of burn-in observations to simulate before
 #'the final \code{n} values to keep; the first \code{nstart} values
-#'are not returned.
+#'are not returned; if a dual model, i.e. with model in the conditional
+#'mean and in the conditional variance, is considered, two times \code{nstart}
+#'is considered in the first simulation step in the conditional variance,
+#'so that \code{n + nstart} values can be fed into the second simulation
+#'step for the conditional mean.
 #'
 #'@details
 #'See the documentation on \code{\link{fEGarch_spec}} for information
@@ -202,10 +211,11 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'an easy way to simulate from these models.
 #'
 #'@return
-#'A list with three elements is returned: \code{rt} are the simulated
-#'observations, \code{etat} are the underlying innovations, and
+#'A list with four elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations,
 #'\code{sigt} are the correspondingly simulated conditional
-#'standard deviations. These three elements are formatted as
+#'standard deviations, and \code{cmeans} are the simulated
+#'conditional means. These four elements are formatted as
 #'\code{"ts"} class time series objects.
 #'
 #'@export
@@ -216,7 +226,8 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'mat <- do.call(cbind, sim)
 #'plot(mat, main = "")
 #'
-fEGarch_sim <- function(spec = egarch_spec(), pars = list(
+fEGarch_sim <- function(spec = egarch_spec(),
+                        pars = list(
                            mu = 0,
                            ar = numeric(0),
                            ma = numeric(0),
@@ -226,7 +237,7 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
                            psi = numeric(0),
                            kappa = -0.2,
                            gamma = 0.3,
-                           d = 0.25,
+                           d = 0,
                            df = 10,
                            shape = 2,
                            P = 3,
@@ -256,15 +267,16 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
   P <- pars_default$P
   skew <- pars_default$skew
   cond_dist <- spec@cond_dist
-  lm <- spec@long_memo
+  lm <- d != 0
 
   # ARMA / FARIMA parameters
   ar <- pars_default$ar
   ma <- pars_default$ma
   D <- pars_default$D
+  lm_arma <- D != 0
 
   # Simulate even more observations if ARMA / FARIMA required
-  check <- length(ar) + length(ma) > 0 || D > 0
+  check <- length(ar) + length(ma) > 0 || lm_arma
   nn <- if (check) {
     N <- N + nstart
     nn + nstart
@@ -399,20 +411,22 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
   )
 
   if (check) {
-    rt <- rt - mu    # subtract mean again and then feed these as
-                     # the errors into an ARMA / FARIMA model
-    if (D == 0) {
+    rt <- out$rt - mu        # subtract mean again and then feed these as
+                             # the errors into an ARMA / FARIMA model
+    if (!lm_arma) {
 
-      yt_data <- arma_sim_cpp(errors = rt, ar = ar, ma = ma, n_out = n, mu = mu)
+      yt_data <- arma_sim_Cpp(innov = rt, ar = ar, ma = ma, nout = n, mu = mu)
 
-    } else if (D > 0) {
+    } else {
 
-      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N - 1)[-1]
-      yt_data <- farima_sim_cpp(errors = rt, coef_inf = coef_inf, n_out = n, mu = mu)
+      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
-    out[["rt"]] <- ts(c(yt_data[["yt"]]))
+    out[["rt"]] <- ts(c(yt_data[["rt"]]))
     out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- ts(tail(out[["etat"]], n))
+    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
   }
 
   out
@@ -433,7 +447,11 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
 #'@param n the number of observations to return.
 #'@param nstart the number of burn-in observations to simulate before
 #'the final \code{n} values to keep; the first \code{nstart} values
-#'are not returned.
+#'are not returned; if a dual model, i.e. with model in the conditional
+#'mean and in the conditional variance, is considered, two times \code{nstart}
+#'is considered in the first simulation step in the conditional variance,
+#'so that \code{n + nstart} values can be fed into the second simulation
+#'step for the conditional mean.
 #'
 #'@details
 #'See the documentation on \code{\link{fiaparch}} for information
@@ -441,10 +459,11 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
 #'an easy way to simulate from these models.
 #'
 #'@return
-#'A list with three elements is returned: \code{rt} are the simulated
-#'observations, \code{etat} are the underlying innovations, and
+#'A list with four elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations,
 #'\code{sigt} are the correspondingly simulated conditional
-#'standard deviations. These three elements are formatted as
+#'standard deviations, and \code{cmeans} are the simulated
+#'conditional means. These four elements are formatted as
 #'\code{"ts"} class time series objects.
 #'
 #'@export
@@ -457,7 +476,10 @@ fEGarch_sim <- function(spec = egarch_spec(), pars = list(
 
 fiaparch_sim <- function(pars = list(
                            mu = 0,
-                           omega_sig = 0.0004,
+                           ar = numeric(0),
+                           ma = numeric(0),
+                           D = 0,
+                           omega = 0.0004,
                            phi = 0.2,
                            beta = 0.4,
                            gamma = 0.1,
@@ -473,6 +495,7 @@ fiaparch_sim <- function(pars = list(
   cond_dist <- match.arg(cond_dist)
 
   nn <- n + nstart          # pre-sample plus sample number of observations
+  N <- n
 
   # Parameter defaults (relevant if a truncated parameter list is provided)
   pars_default <- lookup_table$sim_pars_default_fiaparch
@@ -494,6 +517,21 @@ fiaparch_sim <- function(pars = list(
   shape <- pars_default$shape
   skew <- pars_default$skew
 
+  # ARMA / FARIMA parameters
+  ar <- pars_default$ar
+  ma <- pars_default$ma
+  D <- pars_default$D
+  lm_arma <- D != 0
+
+  # Simulate even more observations if ARMA / FARIMA required
+  check <- length(ar) + length(ma) > 0 || lm_arma
+  nn <- if (check) {
+    N <- N + nstart
+    nn + nstart
+  } else {
+    nn
+  }
+
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
   } else if (cond_dist %in% c("ald", "sald")) {
@@ -512,13 +550,180 @@ fiaparch_sim <- function(pars = list(
 
   sim <- fiaparch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,
-    gamma = gamma, delta = delta, n_out = n, mu = mu)
+    gamma = gamma, delta = delta, n_out = N, mu = mu)
 
   out <- list(
     "rt" = ts(c(sim[["rt"]])),
     "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]]))
+    "etat" = ts(c(sim[["etat"]])),
+    "cmeans" = ts(rep(mu, n))
   )
+
+  if (check) {
+    rt <- out$rt - mu        # subtract mean again and then feed these as
+                             # the errors into an ARMA / FARIMA model
+    if (!lm_arma) {
+
+      yt_data <- arma_sim_Cpp(innov = rt, ar = ar, ma = ma, nout = n, mu = mu)
+
+    } else {
+
+      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
+
+    }
+    out[["rt"]] <- ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- ts(tail(out[["etat"]], n))
+    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+  }
+
+  out
+
+}
+
+#'Simulate From LMGARCH Models
+#'
+#'A streamlined simulation function to simulate from
+#'long-memory generalized autoregressive conditional
+#'heteroskedasticity (LMGARCH) models.
+#'
+#'@param pars a named list with the parameter specifications; the user
+#'can provide a named list with only the settings they would like to adjust
+#'relative to the default settings.
+#'@param cond_dist a one-element character vector specifying
+#'the conditional distribution to consider.
+#'@param n the number of observations to return.
+#'@param nstart the number of burn-in observations to simulate before
+#'the final \code{n} values to keep; the first \code{nstart} values
+#'are not returned; if a dual model, i.e. with model in the conditional
+#'mean and in the conditional variance, is considered, two times \code{nstart}
+#'is considered in the first simulation step in the conditional variance,
+#'so that \code{n + nstart} values can be fed into the second simulation
+#'step for the conditional mean.
+#'
+#'@details
+#'See the documentation on \code{\link{lmgarch}} for information
+#'on the LMGARCH model. This function provides
+#'an easy way to simulate from these models.
+#'
+#'@return
+#'A list with four elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations,
+#'\code{sigt} are the correspondingly simulated conditional
+#'standard deviations, and \code{cmeans} are the simulated
+#'conditional means. These four elements are formatted as
+#'\code{"ts"} class time series objects.
+#'
+#'@export
+#'
+#'@examples
+#'sim <- lmgarch_sim(n = 1000)
+#'mat <- do.call(cbind, sim)
+#'plot(mat, main = "")
+#'
+
+lmgarch_sim <- function(pars = list(
+                           mu = 0,
+                           ar = numeric(0),
+                           ma = numeric(0),
+                           D = 0,
+                           omega = 0.0004,
+                           phi = 0.2,
+                           beta = 0.4,
+                           d = 0.25,
+                           df = 10,
+                           shape = 2,
+                           P = 3,
+                           skew = 1
+                         ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
+                         n = 1000, nstart = 5e3) {
+
+  cond_dist <- match.arg(cond_dist)
+
+  nn <- n + nstart          # pre-sample plus sample number of observations
+  N <- n
+
+  # Parameter defaults (relevant if a truncated parameter list is provided)
+  pars_default <- lookup_table$sim_pars_default_fiaparch
+  names_pars <- names(pars)
+  for (nam in names_pars) {
+    pars_default[[nam]] <- pars[[nam]]
+  }
+
+  # Extract parameter settings
+  mu <- pars_default$mu
+  omega <- pars_default$omega
+  phi <- pars_default$phi
+  beta <- -pars_default$beta      # "-" required to create a polynomial with positive signs
+  d <- pars_default$d
+  df <- pars_default$df
+  P <- pars_default$P
+  shape <- pars_default$shape
+  skew <- pars_default$skew
+
+  # ARMA / FARIMA parameters
+  ar <- pars_default$ar
+  ma <- pars_default$ma
+  D <- pars_default$D
+  lm_arma <- D != 0
+
+  # Simulate even more observations if ARMA / FARIMA required
+  check <- length(ar) + length(ma) > 0 || lm_arma
+  nn <- if (check) {
+    N <- N + nstart
+    nn + nstart
+  } else {
+    nn
+  }
+
+  if (cond_dist %in% c("std", "sstd")) {
+    shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+  } else if (cond_dist %in% c("ald", "sald")) {
+    shape <- P
+  }
+
+  # Simulate innovations following selected distribution
+  sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
+  innov <- sim_fun(nn, shape = shape, skew = skew)
+
+  # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
+  # and for the sample with the exception of the very last sample time point
+
+  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+                                     max_i = nn)[-1]
+
+  sim <- lmgarch_sim_Cpp(
+    innov = innov, omega = omega, coef_inf = coef_inf,
+    n_out = N, mu = mu)
+
+  out <- list(
+    "rt" = ts(c(sim[["rt"]])),
+    "sigt" = ts(c(sim[["sigt"]])),
+    "etat" = ts(c(sim[["etat"]])),
+    "cmeans" = ts(rep(mu, n))
+  )
+
+  if (check) {
+    rt <- out$rt - mu        # subtract mean again and then feed these as
+                             # the errors into an ARMA / FARIMA model
+    if (!lm_arma) {
+
+      yt_data <- arma_sim_Cpp(innov = rt, ar = ar, ma = ma, nout = n, mu = mu)
+
+    } else {
+
+      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
+
+    }
+    out[["rt"]] <- ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- ts(tail(out[["etat"]], n))
+    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+  }
+
+  out
 
 }
 
