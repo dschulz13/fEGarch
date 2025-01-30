@@ -41,8 +41,8 @@ farima_sim_Cpp <- function(innov, mu, coef_inf, nout) {
     .Call('_fEGarch_farima_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, coef_inf, nout)
 }
 
-sigt_egarch__forecast_shortCpp <- function(x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon) {
-    .Call('_fEGarch_sigt_egarch__forecast_shortCpp', PACKAGE = 'fEGarch', x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon)
+sigt_egarch_forecast_shortCpp <- function(x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon) {
+    .Call('_fEGarch_sigt_egarch_forecast_shortCpp', PACKAGE = 'fEGarch', x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon)
 }
 
 signCpp <- function(val) {

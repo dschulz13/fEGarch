@@ -1250,6 +1250,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (is.null(control$trace)) {control$trace <- FALSE}
 
+  p_all <- p + p_ar
+
   if (cond_d %in% c("ald", "sald")) {
 
     P_range <- c(1, 8)   # P-values to consider
@@ -1296,7 +1298,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       ineq_fun = constr_fun, control = control, rt_core = rt_core,
-      dfun1 = dfun1, dfun2 = dfun2, p_all = p + p_ar,
+      dfun1 = dfun1, dfun2 = dfun2, p_all = p_all,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
 
@@ -1314,17 +1316,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     result <- fitted_models[[which.min(coll_nllh)]] # Save the model with the optimal P
 
-    return(coll_nllh)    # Return the model
-
   } else {
 
     # Use dfun1 and dfun2 directly without further adjustments
     goal_fun <- function(theta, rt) {
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
-
-
-    p_all <- p + p_ar
 
     result <- suppressWarnings(Rsolnp::solnp(
       pars = start_pars,
@@ -1805,6 +1802,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     c(c1, c2)
   }
 
+  p_all <- p + p_ar
+
   if (is.null(control$trace)) {control$trace <- FALSE}
 
   if (cond_d %in% c("ald", "sald")) {
@@ -1848,7 +1847,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       control = control, rt_core = rt_core, ineq_fun = constr_fun,
-      dfun1 = dfun1, dfun2 = dfun2, p_all = p + p_ar,
+      dfun1 = dfun1, dfun2 = dfun2, p_all = p_all,
       .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
     )
 
@@ -1871,8 +1870,6 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     goal_fun <- function(theta, rt) {
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
-
-    p_all <- p + p_ar
 
     result <- suppressWarnings(Rsolnp::solnp(
       pars = start_pars,

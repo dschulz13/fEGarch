@@ -148,9 +148,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigt_egarch__forecast_shortCpp
-arma::vec sigt_egarch__forecast_shortCpp(const arma::vec& x, const arma::vec& et, const arma::vec& sigt, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E_asy, const double E_mag, const double Elnsig2, const arma::vec& powers, const arma::vec& modulus, const std::string& mode, const int horizon);
-RcppExport SEXP _fEGarch_sigt_egarch__forecast_shortCpp(SEXP xSEXP, SEXP etSEXP, SEXP sigtSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E_asySEXP, SEXP E_magSEXP, SEXP Elnsig2SEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP, SEXP horizonSEXP) {
+// sigt_egarch_forecast_shortCpp
+arma::vec sigt_egarch_forecast_shortCpp(const arma::vec& x, const arma::vec& et, const arma::vec& sigt, const double mu, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E_asy, const double E_mag, const double Elnsig2, const arma::vec& powers, const arma::vec& modulus, const std::string& mode, const int horizon);
+RcppExport SEXP _fEGarch_sigt_egarch_forecast_shortCpp(SEXP xSEXP, SEXP etSEXP, SEXP sigtSEXP, SEXP muSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E_asySEXP, SEXP E_magSEXP, SEXP Elnsig2SEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP, SEXP horizonSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -169,7 +169,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type mode(modeSEXP);
     Rcpp::traits::input_parameter< const int >::type horizon(horizonSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_egarch__forecast_shortCpp(x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon));
+    rcpp_result_gen = Rcpp::wrap(sigt_egarch_forecast_shortCpp(x, et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -537,7 +537,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_fitted_farima_Cpp", (DL_FUNC) &_fEGarch_fitted_farima_Cpp, 3},
     {"_fEGarch_arma_sim_Cpp", (DL_FUNC) &_fEGarch_arma_sim_Cpp, 5},
     {"_fEGarch_farima_sim_Cpp", (DL_FUNC) &_fEGarch_farima_sim_Cpp, 4},
-    {"_fEGarch_sigt_egarch__forecast_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch__forecast_shortCpp, 15},
+    {"_fEGarch_sigt_egarch_forecast_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_forecast_shortCpp, 15},
     {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
     {"_fEGarch_signVecCpp", (DL_FUNC) &_fEGarch_signVecCpp, 1},
     {"_fEGarch_sigt_egarch_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_shortCpp, 12},
