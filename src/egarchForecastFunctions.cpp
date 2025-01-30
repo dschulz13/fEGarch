@@ -134,11 +134,12 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
   const int nm1 = n - 1;
   const int nHm1 = nm1 + horizon;
   const int np1 = -n + 1;
+  const int z = nHm1 + np1;
 
   for (int i = 0; i < horizon; ++i) {
 
     lnsig2(i) = Elnsig2 +
-      arma::as_scalar(coef_r.subvec(nHm1 + np1 - i, nHm1) * series_g.subvec(0, nm1 + i));
+      arma::as_scalar(coef_r.subvec(z - i, nHm1) * series_g.subvec(0, nm1 + i));
 
   }
 
