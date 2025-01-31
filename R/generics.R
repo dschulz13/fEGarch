@@ -68,6 +68,10 @@ setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 0.5 - 1e-6), armaspec
 
 #====================================================#
 
+setGeneric("fEGarch_predict", function(object, n.ahead, ...) {standardGeneric("fEGarch_predict")})
+
+#====================================================#
+
 #'Generics for Accessing Model Estimation Output Elements
 #'
 #'Accessors for the output returned by the main fitting functions of

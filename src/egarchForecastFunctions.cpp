@@ -7,14 +7,12 @@ using namespace Rcpp;
 arma::vec sigt_egarch_forecast_shortCpp(
                                const arma::vec& et,
                                const arma::vec& sigt,
-                               const double mu,
                                const double omega,
                                const arma::rowvec& phi,
                                const arma::rowvec& alpha,
                                const arma::rowvec& beta,
                                const double E_asy,
                                const double E_mag,
-                               const double Elnsig2,
                                const arma::vec& powers,
                                const arma::vec& modulus,
                                const std::string& mode,
@@ -132,14 +130,14 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
   series_g.subvec(0, n - 1) = kappa * et_asy + gamma * et_mag;
 
   const int nm1 = n - 1;
-  const int nHm1 = nm1 + horizon;
+  const int nHm2 = nm1 + horizon - 1;
   const int np1 = -n + 1;
-  const int z = nHm1 + np1;
+  const int z = nHm2 + np1;
 
   for (int i = 0; i < horizon; ++i) {
 
     lnsig2(i) = Elnsig2 +
-      arma::as_scalar(coef_r.subvec(z - i, nHm1) * series_g.subvec(0, nm1 + i));
+      arma::as_scalar(coef_r.subvec(z - i, nHm2) * series_g.subvec(0, nm1 + i));
 
   }
 

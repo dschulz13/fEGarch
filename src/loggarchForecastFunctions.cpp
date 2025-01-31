@@ -17,18 +17,15 @@ arma::vec sigt_loggarch_forecast_long(const arma::vec& et,
 
   const arma::rowvec coef_inf_r = arma::reverse(coef_inf);
 
-  int il;
   int nm1 = n - 1;
-  const int nHm1 = nm1 + horizon;
+  const int nHm2 = nm1 + horizon - 1;
   const int np1 = - n + 1;
-  const int z = nHm1 + np1;
+  const int z = nHm2 + np1;
 
   for (int i = 0; i < horizon; ++i) {
 
-    il = i + 1;
-
     lnsig2(i) = Elnsig2 +
-      arma::as_scalar(coef_inf_r.subvec(z - i, nHm1) * g_fun.subvec(0, n - 1 + i));
+      arma::as_scalar(coef_inf_r.subvec(z - i, nHm2) * g_fun.subvec(0, nm1 + i));
 
   }
 
@@ -43,15 +40,13 @@ arma::vec sigt_loggarch_forecast_short(const arma::vec& et,
                        const arma::rowvec& phi,
                        const arma::rowvec& psi,
                        const double Elneta2,
-                       const double Elnsig2,
                        const int horizon) {
 
   const int n = et.size();
   const int p = phi.size();
   const int q = psi.size();
   const int l = std::max(p, q);
-  const int nl = n + l;
-  arma::vec lnsig2 = arma::vec(l + horizon).fill(Elnsig2);
+  arma::vec lnsig2 = arma::zeros<arma::vec>(l + horizon);
   lnsig2.subvec(0, l - 1) = arma::log(arma::pow(sigt.subvec(n - l, n - 1), 2.0));
   arma::vec g_fun = arma::vec(l + horizon).fill(0);
   g_fun.subvec(0, l - 1) = arma::log(arma::pow(et.subvec(n - l, n - 1), 2.0));
