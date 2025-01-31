@@ -574,6 +574,7 @@ methods::setMethod("predict", "fEGarch_fit",
 
     fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, ...)
 
+
   }
 )
 
