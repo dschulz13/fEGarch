@@ -663,6 +663,71 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   }
 )
 
+# For LMGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
+  function(object, n.ahead = 1, ...) {
+
+  garch_orders <- object@orders
+  p <- garch_orders[[1]]
+  q <- garch_orders[[2]]
+
+  model_pars <- object@pars
+  names_phi <- paste0("phi", 1:p)
+  phi <- model_pars[names_phi]
+
+  names_beta <- paste0("beta", 1:q)
+  beta <- -model_pars[names_beta]   # change sign to use esemifar::farima_to_ar function correctly later
+
+  omega <- model_pars[["omega"]]
+
+  d <- if (lm_garch) model_pars[["d"]] else numeric(0)
+
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    model_pars[["mu"]]
+  } else {
+    0
+  }
+
+  # ARMA / FARIMA specifications
+  arma_specs <- fetch_arma_pars_fit(object)
+  ar <- arma_specs$ar
+  ma <- arma_specs$ma
+  D <- arma_specs$D
+  pqg0 <- arma_specs$pqg0
+  lm_arma <- arma_specs$lm_arma
+
+  E_const <- if (n.ahead >= 2) {
+    1
+  } else {
+    0
+  }
+
+
+  # ARMA / FARIMA point forecasts of cond. mean
+  mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
+                                   lm_arma = lm_arma, mu = mu,
+                                   x = zoo::coredata(object@rt),
+                                   innov = zoo::coredata(object@rt - object@cmeans),
+                                   n.ahead = n.ahead)
+
+  # LMGARCH point forecasts of cond. volatility
+
+  coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+                                     max_i = n + n.ahead - 1)[-1]
+  sigt_fc <- c(sigt_lmgarch_forecast(
+      rt = zoo::coredata(object@rt - object@cmeans),
+      coef_inf = coef_inf_garch,
+      omega = omega,
+      horizon = n.ahead))
+
+  list(
+    cmeans = mean_fc,
+    sigt = sigt_fc
+  )
+
+  }
+)
+
 #'@export
 methods::setMethod("predict", "fEGarch_fit",
   function(object, n.ahead = 1, ...) {
