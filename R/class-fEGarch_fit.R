@@ -296,22 +296,22 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
   mean_fc <- if (pqg0 || lm_arma) {
 
     if (!lm_arma) {
-      forecast_arma_Cpp(
+      c(forecast_arma_Cpp(
         x = x,
         et = innov,
         mu = mu,
         ma_e = ma,
         ar_e = ar,
         horizon = n.ahead
-      )
+      ))
     } else {
       coef_inf_arma <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = length(x) + n.ahead - 1)[-1]
-      forecast_farima_Cpp(
+      c(forecast_farima_Cpp(
         x = x,
         mu = mu,
         horizon = n.ahead,
         coef_inf = coef_inf_arma
-      )
+      ))
     }
 
   } else {
@@ -334,39 +334,40 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   p <- garch_orders[[1]]
   q <- garch_orders[[2]]
 
+  model_pars <- object@pars
   names_phi <- paste0("phi", 1:p)
-  phi <- pars[names_phi]
+  phi <- model_pars[names_phi]
 
   psi <- if (q > 1) {
     names_psi <- paste0("psi", 1:(q - 1))
-    pars[names_psi]
+    model_pars[names_psi]
   } else {
     numeric(0)
   }
   psi_2 <- psi
   psi <- c(1, psi)
-  kappa <- pars[["kappa"]]
-  gamma <- pars[["gamma"]]
+  kappa <- model_pars[["kappa"]]
+  gamma <- model_pars[["gamma"]]
 
-  d <- if (lm_garch) pars[["d"]] else numeric(0)
+  d <- if (lm_garch) model_pars[["d"]] else numeric(0)
 
   cond_dist <- object@cond_dist
 
   skew <- if (cond_dist %in% c("snorm", "sstd", "sged", "sald")) {
-    pars[["skew"]]
+    model_pars[["skew"]]
   } else {
     numeric(0)
   }
 
   shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
     lp <- length(pars)
-    pars[[lp - 1]]
+    model_pars[[lp - 1]]
   } else  {
     numeric(0)
   }
 
-  mu <- if (exists("mu", where = as.list(pars))) {
-    pars[["mu"]]
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    model_pars[["mu"]]
   } else {
     0
   }
@@ -403,7 +404,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
                             abs.tol = 1e-6,
                             pow = pow1, shape = shape, skew = skew, dfun = dfun)[[1]]
 
-  Elnsig2 <- pars[["omega_sig"]]
+  Elnsig2 <- model_pars[["omega_sig"]]
 
   # ARMA / FARIMA point forecasts of cond. mean
   mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
@@ -420,7 +421,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
     alpha <- psi * kappa
     beta <- psi * gamma
     omega <- Elnsig2 * (1 - sum(phi))
-    sigt_egarch_forecast_shortCpp(
+    c(sigt_egarch_forecast_shortCpp(
       et = zoo::coredata(object@etat),
       sigt = zoo::coredata(object@sigt),
       omega = omega,
@@ -433,12 +434,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
       modulus = modulus,
       mode = mode,
       horizon = n.ahead
-    )
+    ))
   } else {
     coef_inf_garch <- esemifar::farima_to_ma(
-      ar = phi, ma = psi_2, d = d, max_i = length(object@rt) + horizon - 2
+      ar = phi, ma = psi_2, d = d, max_i = length(object@rt) + n.ahead - 2
     )
-    sigt_egarch_forecast_longCpp(
+    c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
       kappa = kappa,
@@ -449,8 +450,8 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
       powers = powers,
       modulus = modulus,
       mode = mode,
-      horizon = horizon
-    )
+      horizon = n.ahead
+    ))
   }
 
   list(
@@ -470,31 +471,32 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   p <- garch_orders[[1]]
   q <- garch_orders[[2]]
 
+  model_pars <- object@pars
   names_phi <- paste0("phi", 1:p)
-  phi <- pars[names_phi]
+  phi <- model_pars[names_phi]
 
   names_psi <- paste0("psi", 1:q)
-  psi <- pars[names_psi]
+  psi <- model_pars[names_psi]
 
-  d <- if (lm_garch) pars[["d"]] else numeric(0)
+  d <- if (lm_garch) model_pars[["d"]] else numeric(0)
 
   cond_dist <- object@cond_dist
 
   skew <- if (cond_dist %in% c("snorm", "sstd", "sged", "sald")) {
-    pars[["skew"]]
+    model_pars[["skew"]]
   } else {
     numeric(0)
   }
 
   shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
     lp <- length(pars)
-    pars[[lp - 1]]
+    model_pars[[lp - 1]]
   } else  {
     numeric(0)
   }
 
-  mu <- if (exists("mu", where = as.list(pars))) {
-    pars[["mu"]]
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    model_pars[["mu"]]
   } else {
     0
   }
@@ -519,7 +521,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
     shape = shape, skew = skew, dfun = dfun
   )[[1]]
 
-  Elnsig2 <- pars[["omega_sig"]]
+  Elnsig2 <- model_pars[["omega_sig"]]
 
   # ARMA / FARIMA point forecasts of cond. mean
   mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
@@ -530,11 +532,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
 
   # EGARCH point forecasts of cond. volatility
 
-  mode <- mode_mat[pow1g0 + 1, pow2g0 + 1]
-
   sigt_fc <- if (!lm_garch) {
     omega <- Elnsig2 * (1 - sum(phi))
-    sigt_loggarch_forecast_short(
+    c(sigt_loggarch_forecast_short(
       et = zoo::coredata(object@etat),
       sigt = zoo::coredata(object@sigt),
       omega = omega,
@@ -542,11 +542,11 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
       psi = psi,
       Elneta2 = Elneta2,
       horizon = n.ahead
-    )
+    ))
   } else {
     coef_inf_garch <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
                                      max_i = n + n.ahead - 1)[-1]
-    sigt_egarch_forecast_longCpp(
+    c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
       kappa = kappa,
@@ -557,8 +557,8 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
       powers = powers,
       modulus = modulus,
       mode = mode,
-      horizon = horizon
-    )
+      horizon = n.ahead
+    ))
   }
 
   list(
@@ -569,12 +569,28 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   }
 )
 
+#'@export
 methods::setMethod("predict", "fEGarch_fit",
   function(object, n.ahead = 1, ...) {
 
     fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, ...)
 
+    rt <- object@rt
+    if (inherits(rt, "zoo")) {
+      tp <- time(rt)
+      tp_f <- as.Date(tail(tp, 1)) + (1:n.ahead)
+      fcasts$cmeans <- zoo::zoo(fcasts$cmeans, order.by = tp_f)
+      fcasts$sigt <- zoo::zoo(fcasts$sigt, order.by = tp_f)
+    } else if (inherits(rt, "ts")) {
+      tp <- time(rt)
+      frequ <- frequency(rt)
+      start <- tail(tp, 1) + 1 / frequ
+      fcasts$cmeans <- ts(fcasts$cmeans, start = start, frequency = frequ)
+      fcasts$sigt <- ts(fcasts$sigt, start = start, frequency = frequ)
+    }
+    fcasts
 
   }
 )
+
 

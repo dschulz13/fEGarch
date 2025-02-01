@@ -41,8 +41,8 @@ farima_sim_Cpp <- function(innov, mu, coef_inf, nout) {
     .Call('_fEGarch_farima_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, coef_inf, nout)
 }
 
-sigt_egarch_forecast_shortCpp <- function(et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon) {
-    .Call('_fEGarch_sigt_egarch_forecast_shortCpp', PACKAGE = 'fEGarch', et, sigt, mu, omega, phi, alpha, beta, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon)
+sigt_egarch_forecast_shortCpp <- function(et, sigt, omega, phi, alpha, beta, E_asy, E_mag, powers, modulus, mode, horizon) {
+    .Call('_fEGarch_sigt_egarch_forecast_shortCpp', PACKAGE = 'fEGarch', et, sigt, omega, phi, alpha, beta, E_asy, E_mag, powers, modulus, mode, horizon)
 }
 
 sigt_egarch_forecast_longCpp <- function(et, coef_inf, kappa, gamma, E_asy, E_mag, Elnsig2, powers, modulus, mode, horizon) {
@@ -105,8 +105,8 @@ sigt_loggarch_forecast_long <- function(et, coef_inf, Elneta2, Elnsig2, horizon)
     .Call('_fEGarch_sigt_loggarch_forecast_long', PACKAGE = 'fEGarch', et, coef_inf, Elneta2, Elnsig2, horizon)
 }
 
-sigt_loggarch_forecast_short <- function(et, sigt, omega, phi, psi, Elneta2, Elnsig2, horizon) {
-    .Call('_fEGarch_sigt_loggarch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, psi, Elneta2, Elnsig2, horizon)
+sigt_loggarch_forecast_short <- function(et, sigt, omega, phi, psi, Elneta2, horizon) {
+    .Call('_fEGarch_sigt_loggarch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, psi, Elneta2, horizon)
 }
 
 sigt_loggarch_long <- function(x, mu, coef_inf, Elneta2, Elnsig2) {

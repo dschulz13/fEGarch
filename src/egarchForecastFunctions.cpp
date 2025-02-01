@@ -36,16 +36,16 @@ arma::vec sigt_egarch_forecast_shortCpp(
   const arma::vec eta_i = et.subvec(n - l, n - 1);
 
   if (mode == "pow_pow") {
-    transf1 = (signVecCpp(eta_i) * arma::pow(arma::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+    transf1 = (signVecCpp(eta_i) % arma::pow(arma::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
     transf2 = (arma::pow(arma::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
   } else if (mode == "log_log") {
-    transf1 = signVecCpp(eta_i) * arma::log(arma::abs(eta_i) + mod1) - E_asy;
+    transf1 = signVecCpp(eta_i) % arma::log(arma::abs(eta_i) + mod1) - E_asy;
     transf2 = arma::log(arma::abs(eta_i) + mod2) - E_mag;
   } else if (mode == "pow_log") {
-    transf1 = (signVecCpp(eta_i) * arma::pow(arma::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+    transf1 = (signVecCpp(eta_i) % arma::pow(arma::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
     transf2 = arma::log(arma::abs(eta_i) + mod2) - E_mag;
   } else if (mode == "log_pow") {
-    transf1 = signVecCpp(eta_i) * arma::log(arma::abs(eta_i) + mod1) - E_asy;
+    transf1 = signVecCpp(eta_i) % arma::log(arma::abs(eta_i) + mod1) - E_asy;
     transf2 = (arma::pow(arma::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
   } else {
     Rcpp::stop("Invalid mode specified");
@@ -107,20 +107,17 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
   arma::vec et_asy(n);
   arma::vec et_mag(n);
 
-  std::function<double(double)> compute_abs_eta_pow1;
-  std::function<double(double)> compute_abs_eta_pow2;
-
   if (mode == "pow_pow") {
-    et_asy = (signVecCpp(et) * arma::pow(arma::abs(et) + mod1, pow1) - E_asy) / pow1;
+    et_asy = (signVecCpp(et) % arma::pow(arma::abs(et) + mod1, pow1) - E_asy) / pow1;
     et_mag = (arma::pow(arma::abs(et) + mod2, pow2) - E_mag) / pow2;
   } else if (mode == "log_log") {
-    et_asy = signVecCpp(et) * arma::log(arma::abs(et) + mod1) - E_asy;
+    et_asy = signVecCpp(et) % arma::log(arma::abs(et) + mod1) - E_asy;
     et_mag = arma::log(arma::abs(et) + mod2) - E_mag;
   } else if (mode == "pow_log") {
-    et_asy = (signVecCpp(et) * arma::pow(arma::abs(et) + mod1, pow1) - E_asy) / pow1;
+    et_asy = (signVecCpp(et) % arma::pow(arma::abs(et) + mod1, pow1) - E_asy) / pow1;
     et_mag = arma::log(arma::abs(et) + mod2) - E_mag;
   } else if (mode == "log_pow") {
-    et_asy = signVecCpp(et) * arma::log(arma::abs(et) + mod1) - E_asy;
+    et_asy = signVecCpp(et) % arma::log(arma::abs(et) + mod1) - E_asy;
     et_mag = (arma::pow(arma::abs(et) + mod2, pow2) - E_mag) / pow2;
   } else {
     Rcpp::stop("Invalid mode specified");
