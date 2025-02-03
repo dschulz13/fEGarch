@@ -279,10 +279,8 @@ fiaparch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
-  rt_core <- zoo::coredata(rt)
-  if (n_test > 0) {
-    rt_core <- head(rt_core, -n_test)
-  }
+  split_rt <- split_ts(rt, n_test)
+  rt_core <- zoo::coredata(split_rt$train)
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -655,8 +653,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = rt,
-    n_test = n_test,
+    rt = split_rt$train,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -671,7 +668,7 @@ fiaparch <- function(rt, orders = c(1, 1),
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = rt,
+    rt = split_rt$train,
     sigt = sigt,
     cmeans = cmeans,
     etat = etat,
@@ -680,7 +677,8 @@ fiaparch <- function(rt, orders = c(1, 1),
     cond_dist = cond_d,
     orders = orders,
     long_memo = TRUE,
-    meanspec = meanspec
+    meanspec = meanspec,
+    test_obs = split_rt$test
   )
 
   list_out

@@ -76,7 +76,7 @@ setGeneric("fEGarch_predict_roll", function(object, test_sample, step_size = 1, 
 
 #====================================================#
 
-setGeneric("predict_roll", function(object, test_sample, step_size = 1, ...) {standardGeneric("predict_roll")})
+setGeneric("predict_roll", function(object, step_size = 1, ...) {standardGeneric("predict_roll")})
 
 #====================================================#
 #'Generics for Accessing Model Estimation Output Elements

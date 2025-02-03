@@ -10,6 +10,7 @@ fEGarch(
   drange = c(0, 0.5 - 1e-06),
   meanspec = mean_spec(),
   Drange = c(0, 0.5 - 1e-06),
+  n_test = 0,
   start_pars = NULL,
   LB = NULL,
   UB = NULL,
@@ -49,6 +50,10 @@ mean model part; by default,
 interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
+
+\item{n_test}{a single numerical value indicating, how many observations
+at the end of \code{rt} not to include in the fitting process and to
+reserve for backtesting.}
 
 \item{start_pars}{a vector with starting parameters for the
 optimization; must be of the same length as the output vector of
@@ -90,7 +95,8 @@ specification. It contains the following elements.
 \item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 \item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 \item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+\item{\code{rt}:}{the input object \code{rt} (or at least the training data, if \code{n_test} is greater than zero);
+if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
 \item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
 \item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 \item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
@@ -104,6 +110,8 @@ specification. It contains the following elements.
 \item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
 of class \code{"mean_spec"} that is identical to the object passed to the input argument
 \code{meanspec}.}
+\item{\code{test_obs}:}{the observations at the end up the input \code{rt} reserved for
+testing following \code{n_test}.}
 }
 }
 \description{

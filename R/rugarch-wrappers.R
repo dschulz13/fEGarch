@@ -2,9 +2,11 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
                         include_mean = TRUE,
                         meanspec = mean_spec(),
+                        n_test = 0,
                         start_pars = NULL) {
 
-  rt_core <- zoo::coredata(rt)
+  split_rt <- split_ts(rt, n_test)
+  rt_core <- zoo::coredata(split_rt$train)
 
   cond_dist <- match.arg(cond_dist)
 
@@ -46,7 +48,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
   names(inf_crit) <- c("aic", "bic")
 
   series_out <- format_applier_ts(
-    rt = rt,
+    rt = split_rt$train,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sig,
@@ -58,7 +60,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
   etat <- series_out$etat
 
   out <- fEGarch_fit_rugarch_wrapper(
-    rt = rt,
+    rt = split_rt$train,
     sigt = sig,
     cmeans = cmeans,
     etat = etat,
@@ -72,7 +74,8 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     rugarch_model = est,
     long_memo = FALSE,
     model = model,
-    meanspec = meanspec
+    meanspec = meanspec,
+    test_obs = split_rt$test
   )
   out
 }

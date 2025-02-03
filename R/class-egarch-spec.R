@@ -945,11 +945,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1)) {
 
-  # Coredata of rt with possible time series formatting
-  rt_core <- zoo::coredata(rt)
-  if (n_test > 0) {
-    rt_core <- head(rt_core, -n_test)
-  }
+  split_rt <- split_ts(rt, n_test)
+  rt_core <- zoo::coredata(split_rt$train)
 
   n <- length(rt_core)
 
@@ -1365,8 +1362,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = rt,
-    n_test = n_test,
+    rt = split_rt$train,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1381,7 +1377,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = rt,
+    rt = split_rt$train,
     cmeans = cmeans,
     sigt = sigt,
     etat = etat,
@@ -1392,7 +1388,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     powers = pow,
     modulus = mod,
     long_memo = lm,
-    meanspec = meanspec
+    meanspec = meanspec,
+    test_obs = split_rt$test
   )
 
   list_out
@@ -1552,10 +1549,9 @@ goal_fun_creator_loggarch <- function(
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
   function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
-  rt_core <- zoo::coredata(rt)
-  if (n_test > 0) {
-    rt_core <- head(rt_core, -n_test)
-  }
+
+  split_rt <- split_ts(rt, n_test)
+  rt_core <- zoo::coredata(split_rt$train)
 
   order <- orders(spec)
   p <- order[[1]]
@@ -1914,8 +1910,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = rt,
-    n_test = n_test,
+    rt = split_rt$train,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1930,7 +1925,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = rt,
+    rt = split_rt$train,
     cmeans = cmeans,
     sigt = sigt,
     etat = etat,
@@ -1939,7 +1934,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     cond_dist = cond_d,
     orders = order,
     long_memo = lm,
-    meanspec = meanspec
+    meanspec = meanspec,
+    test_obs = split_rt$test
   )
 
   list_out

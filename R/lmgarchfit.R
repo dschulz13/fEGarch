@@ -279,10 +279,9 @@ lmgarch <- function(rt, orders = c(1, 1),
     message("Only orders p=1 with q=1 are currently supported for FIAPARCH models.")
   }
 
-  rt_core <- zoo::coredata(rt)
-  if (n_test > 0) {
-    rt_core <- head(rt_core, -n_test)
-  }
+  split_rt <- split_ts(rt, n_test)
+  rt_core <- zoo::coredata(split_rt$train)
+
   p <- orders[[1]]
   q <- orders[[2]]
 
@@ -637,8 +636,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = rt,
-    n_test = n_test,
+    rt = split_rt$train,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -653,7 +651,7 @@ lmgarch <- function(rt, orders = c(1, 1),
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = rt,
+    rt = split_rt$train,
     sigt = sigt,
     cmeans = cmeans,
     etat = etat,
@@ -662,7 +660,8 @@ lmgarch <- function(rt, orders = c(1, 1),
     cond_dist = cond_d,
     orders = orders,
     long_memo = TRUE,
-    meanspec = meanspec
+    meanspec = meanspec,
+    test_obs = split_rt$test
   )
 
   list_out

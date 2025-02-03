@@ -12,6 +12,7 @@ aparch_ru(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   meanspec = mean_spec(),
+  n_test = 0,
   start_pars = NULL
 )
 
@@ -20,6 +21,7 @@ gjrgarch_ru(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   meanspec = mean_spec(),
+  n_test = 0,
   start_pars = NULL
 )
 
@@ -28,6 +30,7 @@ egarch_ru(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
   meanspec = mean_spec(),
+  n_test = 0,
   start_pars = NULL
 )
 }
@@ -45,6 +48,10 @@ distribution to consider.}
 \item{meanspec}{an object of class "mean_spec"; indicates the
 specifications for the model in the conditional mean.}
 
+\item{n_test}{a single numerical value indicating, how many observations
+at the end of \code{rt} not to include in the fitting process and to
+reserve for backtesting.}
+
 \item{start_pars}{a named list with starting parameters.}
 }
 \value{
@@ -53,7 +60,7 @@ A list with the following named elements is returned.
 \item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 \item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 \item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+\item{\code{rt}:}{the input object \code{rt} (or at least the training data, if \code{n_test} is greater than zero); if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
 \item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 \item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
 \item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
@@ -65,6 +72,8 @@ A list with the following named elements is returned.
 \item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
 of class \code{"mean_spec"} that is identical to the object passed to the input argument
 \code{meanspec}.}
+\item{\code{test_obs}:}{the observations at the end up the input \code{rt} reserved for
+testing following \code{n_test}.}
 }
 }
 \description{

@@ -44,6 +44,7 @@ Collate:
   'RcppExports.R'
   'arma-farima-wrappers.R'
   'format_applier_ts.R'
+  'ts_split_train_and_test.R'
   'snorm-distribution-functions.R'
   'sstd-distribution-functions.R'
   'sged-distribution-functions.R'
