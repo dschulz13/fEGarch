@@ -55,7 +55,6 @@ spec1 <- fEGarch_spec(
   orders = c(1, 1),            # the model orders;
   long_memo = TRUE,            # include long memory?;
   cond_dist = "norm",          # the conditional distribution;
-  include_mean = TRUE,         # estimate the mean?;
   powers = c(0, 0),            # powers of the asymmetry and magnitude terms, respectively;
   modulus = c(TRUE, TRUE)      # whether or not to apply a modulus transformation
                                # to the asymmetry and magnitude terms, respectively
@@ -112,8 +111,8 @@ $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
 
 A convenient way to implement various specific model specifications is
 available via a selection of wrappers for `fEGarch_spec()`. They all
-only have the function arguments `orders`, `include_mean` and
-`cond_dist` from `fEGarch_spec()`.
+only have the function arguments `orders` and `cond_dist` from
+`fEGarch_spec()`.
 
 ``` r
 ### 3. Use shortcuts for submodel specifications
@@ -126,10 +125,9 @@ spec7 <- filoggarch_spec()      # Specification for FILog-GARCH
 spec8 <- fimloggarch_spec()     # Specification for FIMLog-GARCH
 spec9 <- fimegarch_spec()       # Specification for FIMEGARCH
 
-# -> All with adjustable arguments "orders", "cond_dist" and "include_mean".
+# -> All with adjustable arguments "orders" and "cond_dist".
 
-spec10 <- megarch_spec(orders = c(2, 1), cond_dist = "std",
-                           include_mean = FALSE)
+spec10 <- megarch_spec(orders = c(2, 1), cond_dist = "std")
 ```
 
 They can all be used in `fEGarch()`. In the following, the previously
@@ -155,34 +153,36 @@ model10
 #> 
 #> Fitted parameters:
 #> 
-#>               par     se      tval   pval
-#> omega_sig -9.0482 0.0693 -130.6438 0.0000
-#> phi1       0.9705 0.1193    8.1347 0.0000
-#> phi2       0.0008 0.1163    0.0069 0.9945
-#> kappa     -0.3057 0.0351   -8.7180 0.0000
-#> gamma      0.1648 0.0191    8.6312 0.0000
-#> df         7.4375 0.6277   11.8484 0.0000
+#>               par     se     tval   pval
+#> mu         0.0004 0.0001   3.5822 0.0003
+#> omega_sig -9.3706 0.1136 -82.5099 0.0000
+#> phi1       0.9797 0.2122   4.6167 0.0000
+#> phi2      -0.0036 0.2056  -0.0176 0.9860
+#> kappa     -0.2945 0.0666  -4.4238 0.0000
+#> gamma      0.1654 0.0268   6.1794 0.0000
+#> df         7.0254 0.6843  10.2669 0.0000
 #>  
 #> Information criteria:
-#> AIC: -6.5358, BIC: -6.5294
+#> AIC: -6.5387, BIC: -6.5312
 ```
 
 As a further extension, dual-models with autoregressive moving-average
 (ARMA) model or fractionally integrated ARMA (FARIMA / ARFIMA) model in
 the conditional mean simultaneously with error process from the EGARCH
-family can be defined and estimated. For this purpose, the `arma_spec()`
+family can be defined and estimated. For this purpose, the `mean_spec()`
 function must be utilized in addition to the previous steps.
 
 ``` r
 spec_egarch <- egarch_spec()
-spec_arma <- arma_spec(
-  orders = c(1, 1),
-  long_memo = FALSE
+spec_arma <- mean_spec(
+  orders = c(1, 1),     # ARMA orders
+  long_memo = FALSE,    # Long-memory?
+  include_mean = TRUE   # Estimate uncond. mean?
 )
 model11 <- fEGarch(
   spec = spec_egarch,
   rt = rt,
-  armaspec = spec_arma
+  meanspec = spec_arma
 )
 model11
 #> *************************************
@@ -340,7 +340,7 @@ The main functions of the package are:
 
 - `fiaparch_sim()`: FIAPARCH simulation,
 
-- `arma_spec()`: ARMA or FARIMA model specification for simultaneously
+- `mean_spec()`: ARMA or FARIMA model specification for simultaneously
   modelling the conditional mean.
 
 The package, however, provides many other useful functions for you to
