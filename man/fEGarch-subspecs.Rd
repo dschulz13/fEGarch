@@ -9,7 +9,6 @@ egarch_type_spec(
   orders = c(1, 1),
   long_memo = TRUE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
 )
@@ -17,8 +16,7 @@ egarch_type_spec(
 loggarch_type_spec(
   orders = c(1, 1),
   long_memo = TRUE,
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 }
 \arguments{
@@ -38,11 +36,6 @@ distribution (\code{"norm"}), a \eqn{t}-distribution
 (\code{"ged"}), an average Laplace distribution (\code{"ald"})
 and the skewed versions of them
 (\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).}
-
-\item{include_mean}{a logical value indicating whether or
-not to include the mean in the estimation procedure; for
-\code{include_mean = FALSE}, the mean of the series
-\code{rt} is fixed to zero and not being estimated.}
 
 \item{powers}{a two-element numeric vector that states the
 exponents in the power-transformations of the asymmetry and the

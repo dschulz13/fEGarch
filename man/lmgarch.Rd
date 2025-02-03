@@ -8,9 +8,8 @@ lmgarch(
   rt,
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE,
   drange = c(0, 0.5 - 1e-06),
-  armaspec = arma_spec(),
+  meanspec = mean_spec(),
   Drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
@@ -38,16 +37,12 @@ an average Laplace distribution (\code{"ald"}),
 and their four skewed variants (\code{"snorm"}, \code{"sstd"},
 \code{"sged"}, \code{"sald"}).}
 
-\item{include_mean}{a logical value indicating whether or not to include
-the series' mean in the maximum-likelihood estimation process; for
-\code{include_mean = FALSE}, the mean is fixed to zero.}
-
 \item{drange}{a two-element numeric vector that gives the boundaries of the
 search interval for the fractional differencing parameter \eqn{d} in the conditional
 volatility model part; is
 overwritten by the settings of the arguments \code{LB} and \code{UB}.}
 
-\item{armaspec}{an object of class "arma_spec"; indicates the
+\item{meanspec}{an object of class "mean_spec"; indicates the
 specifications for the model in the conditional mean.}
 
 \item{Drange}{a two-element numeric vector that indicates the boundaries
@@ -107,9 +102,9 @@ is returned. It contains the following elements.
 \item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
 \item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 \item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
-\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
-of class \code{"arma_spec"} that is identical to the object passed to the input argument
-\code{armaspec}.}
+\item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
+of class \code{"mean_spec"} that is identical to the object passed to the input argument
+\code{meanspec}.}
 }
 }
 \description{
@@ -176,7 +171,7 @@ not obtained and the ones obtained for the remaining estimates do not account
 for \eqn{\hat{P}}.
 
 An ARMA-LMGARCH or a FARIMA-LMGARCH can be fitted by adjusting the
-argument \code{armaspec} correspondingly.
+argument \code{meanspec} correspondingly.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

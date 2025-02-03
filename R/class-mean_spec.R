@@ -1,25 +1,29 @@
-setClass("arma_spec",
+setClass("mean_spec",
   slots = c(
     orders = "numeric",
-    long_memo = "logical"
+    long_memo = "logical",
+    include_mean = "logical"
   ),
   prototype = list(
     orders = c(0, 0),
-    long_memo = FALSE
+    long_memo = FALSE,
+    include_mean = TRUE
   )
 )
 
-setValidity("arma_spec", function(object){
+setValidity("mean_spec", function(object){
   if (order_checker_arma(object@orders)) {
     "@orders must be of length two and both elements must be at least zero"
   } else if (lmemo_checker(object@long_memo)) {
     "@long_memo must be of length one"
+  } else if (mean_checker(object@include_mean)) {
+    "@include_mean must be of length one"
   } else {
     TRUE
   }
 })
 
-#'Specification of ARMA Models
+#'Specification of Conditional Mean Models
 #'
 #'Specify the model for the conditional mean in a dual model, where the
 #'conditional mean is modelled through an ARMA or a FARIMA model and the
@@ -30,9 +34,12 @@ setValidity("arma_spec", function(object){
 #'the second element is the moving-average order \eqn{q^{*}}.
 #'@param long_memo a logical value that indicates whether the
 #'long-memory version of the model should be considered or not.
-#'
+#'@param include_mean a logical value indicating whether or
+#'not to include the constant unconditional mean in the estimation
+#'procedure; for \code{include_mean = FALSE}, the unconditional
+#'mean of the series is fixed to zero and not being estimated.
 #'@return
-#'An object of class \code{"arma_spec"} is returned.
+#'An object of class \code{"mean_spec"} is returned.
 #'
 #'@details
 #'Let \eqn{\left\{y_t\right\}}, with \eqn{t \in \mathbb{Z}} as the time index,
@@ -60,24 +67,26 @@ setValidity("arma_spec", function(object){
 #'@export
 #'
 #'@examples
-#'arma_spec()
-#'arma_spec(orders = c(1, 1))
+#'mean_spec()
+#'mean_spec(orders = c(1, 1))
 #'
-arma_spec <- function(
+mean_spec <- function(
     orders = c(0, 0),
-    long_memo = FALSE
+    long_memo = FALSE,
+    include_mean = TRUE
 ) {
 
-  new("arma_spec",
+  new("mean_spec",
     orders = orders,
-    long_memo = long_memo
+    long_memo = long_memo,
+    include_mean = include_mean
   )
 
 }
 
-#'Accessors for Class \code{"arma_spec"}
+#'Accessors for Class \code{"mean_spec"}
 #'
-#'Access and change elements in objects of class \code{"arma_spec"}.
+#'Access and change elements in objects of class \code{"mean_spec"}.
 #'The method names represent the name of the element to access /
 #'manipulate.
 #'
@@ -86,31 +95,37 @@ arma_spec <- function(
 #'
 #'@details
 #'These methods are intended to be used for accessing or manipulating
-#'individual elements of objects of class \code{"arma_spec"}.
+#'individual elements of objects of class \code{"mean_spec"}.
 #'
-#'@name arma_spec_methods
-#'@aliases orders,arma_spec-method
+#'@name mean_spec_methods
+#'@aliases orders,mean_spec-method
 #'
 #'@return
-#'These methods return an object of class \code{"arma_spec"}.
+#'These methods return an object of class \code{"mean_spec"}.
 #'
 #'@export
 #'
 #'@examples
-#'test_obj <- arma_spec()
+#'test_obj <- mean_spec()
 #'orders(test_obj)
 #'orders(test_obj) <- c(1, 1)
 #'orders(test_obj)
 #'
-setMethod("orders", "arma_spec", function(x) {x@orders})
+setMethod("orders", "mean_spec", function(x) {x@orders})
 #'@export
-#'@rdname arma_spec_methods
-#'@aliases long_memo,arma_spec-method
-setMethod("long_memo", "arma_spec", function(x) {x@long_memo})
+#'@rdname mean_spec_methods
+#'@aliases long_memo,mean_spec-method
+setMethod("long_memo", "mean_spec", function(x) {x@long_memo})
 #'@export
-#'@rdname arma_spec_methods
-setMethod("orders<-", "arma_spec", function(x, value) {x@orders <- value; validObject(x); x})
+#'@rdname mean_spec_methods
+#'@aliases include_mean,mean_spec-method
+setMethod("include_mean", "mean_spec", function(x) {x@include_mean})
 #'@export
-#'@rdname arma_spec_methods
-setMethod("long_memo<-", "arma_spec", function(x, value) {x@long_memo <- value; validObject(x); x})
+#'@rdname mean_spec_methods
+setMethod("orders<-", "mean_spec", function(x, value) {x@orders <- value; validObject(x); x})
 #'@export
+#'@rdname mean_spec_methods
+setMethod("long_memo<-", "mean_spec", function(x, value) {x@long_memo <- value; validObject(x); x})
+#'@export
+#'@rdname mean_spec_methods
+setMethod("include_mean<-", "mean_spec", function(x, value) {x@include_mean <- value; validObject(x); x})

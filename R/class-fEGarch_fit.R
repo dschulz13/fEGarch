@@ -13,7 +13,8 @@ setClass("fEGarch_fit",
     cond_dist = "character",
     orders = "numeric",
     long_memo = "logical",
-    armaspec = "arma_spec"
+    meanspec = "mean_spec",
+    test_obs = "ANY"
   ),
   prototype = list(
     pars = numeric(1),
@@ -28,7 +29,8 @@ setClass("fEGarch_fit",
     cond_dist = character(1),
     orders = numeric(1),
     long_memo = logical(1),
-    armaspec = arma_spec()
+    meanspec = mean_spec(),
+    test_obs = numeric(1)
   )
 )
 
@@ -83,7 +85,8 @@ fEGarch_fit_egarch <- function(
     powers,
     modulus,
     long_memo,
-    armaspec
+    meanspec,
+    test_obs
 ) {
 
   new("fEGarch_fit_egarch",
@@ -101,7 +104,8 @@ fEGarch_fit_egarch <- function(
     powers = powers,
     modulus = modulus,
     long_memo = long_memo,
-    armaspec = armaspec
+    meanspec = meanspec,
+    test_obs = test_obs
   )
 
 }
@@ -119,7 +123,8 @@ fEGarch_fit_loggarch <- function(
     cond_dist,
     orders,
     long_memo,
-    armaspec
+    meanspec,
+    test_obs
 ) {
 
   new("fEGarch_fit_loggarch",
@@ -135,7 +140,8 @@ fEGarch_fit_loggarch <- function(
     cond_dist = cond_dist,
     orders = orders,
     long_memo = long_memo,
-    armaspec = armaspec
+    meanspec = meanspec,
+    test_obs = test_obs
   )
 
 }
@@ -154,7 +160,8 @@ fEGarch_fit_fiaparch <- function(
     cond_dist,
     orders,
     long_memo,
-    armaspec
+    meanspec,
+    test_obs
 ) {
 
   new("fEGarch_fit_fiaparch",
@@ -170,7 +177,8 @@ fEGarch_fit_fiaparch <- function(
     cond_dist = cond_dist,
     orders = orders,
     long_memo = long_memo,
-    armaspec = armaspec
+    meanspec = meanspec,
+    test_obs = test_obs
   )
 
 }
@@ -188,7 +196,8 @@ fEGarch_fit_lmgarch <- function(
     cond_dist,
     orders,
     long_memo,
-    armaspec
+    meanspec,
+    test_obs
 ) {
 
   new("fEGarch_fit_lmgarch",
@@ -204,7 +213,8 @@ fEGarch_fit_lmgarch <- function(
     cond_dist = cond_dist,
     orders = orders,
     long_memo = long_memo,
-    armaspec = armaspec
+    meanspec = meanspec,
+    test_obs = test_obs
   )
 
 }
@@ -224,7 +234,8 @@ fEGarch_fit_rugarch_wrapper <- function(
     long_memo,
     rugarch_model,
     model,
-    armaspec
+    meanspec,
+    test_obs
 ) {
 
   new("fEGarch_fit_rugarch_wrapper",
@@ -242,7 +253,8 @@ fEGarch_fit_rugarch_wrapper <- function(
     long_memo = long_memo,
     rugarch_model = rugarch_model,
     model = model,
-    armaspec = armaspec
+    meanspec = meanspec,
+    test_obs = test_obs
   )
 
 }
@@ -251,8 +263,8 @@ fEGarch_fit_rugarch_wrapper <- function(
 
 fetch_arma_pars_fit <- function(object) {
 
-  lm_arma <-  object@armaspec@long_memo
-  arma_orders <- object@armaspec@orders
+  lm_arma <-  object@meanspec@long_memo
+  arma_orders <- object@meanspec@orders
 
   p_ar <- arma_orders[[1]]
   q_ma <- arma_orders[[2]]
@@ -373,12 +385,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   # EGARCH settings
   powers <- object@powers
@@ -502,12 +514,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   dfun <- lookup_table[["fun1"]][[cond_dist]]
 
@@ -597,12 +609,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   cond_dist <- object@cond_dist
 
@@ -689,12 +701,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   E_const <- if (n.ahead >= 2) {
     1
@@ -810,12 +822,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   # EGARCH settings
   powers <- object@powers
@@ -939,12 +951,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   dfun <- lookup_table[["fun1"]][[cond_dist]]
 
@@ -1034,12 +1046,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   cond_dist <- object@cond_dist
 
@@ -1126,12 +1138,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
   }
 
   # ARMA / FARIMA specifications
-  arma_specs <- fetch_arma_pars_fit(object)
-  ar <- arma_specs$ar
-  ma <- arma_specs$ma
-  D <- arma_specs$D
-  pqg0 <- arma_specs$pqg0
-  lm_arma <- arma_specs$lm_arma
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
 
   E_const <- if (n.ahead >= 2) {
     1

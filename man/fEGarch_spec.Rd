@@ -9,7 +9,6 @@ fEGarch_spec(
   orders = c(1, 1),
   long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
 )
@@ -35,11 +34,6 @@ distribution (\code{"norm"}), a \eqn{t}-distribution
 (\code{"ged"}), an average Laplace distribution (\code{"ald"})
 and the skewed versions of them
 (\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).}
-
-\item{include_mean}{a logical value indicating whether or
-not to include the mean in the estimation procedure; for
-\code{include_mean = FALSE}, the mean of the series
-\code{rt} is fixed to zero and not being estimated.}
 
 \item{powers}{a two-element numeric vector that states the
 exponents in the power-transformations of the asymmetry and the
@@ -155,16 +149,17 @@ established Log-GARCH models as part of the broad EGARCH family
 
 While the arguments \code{powers} and \code{modulus} are only relevant
 under a type I model, i.e. for \code{model_type = "eGARCH"}, the arguments
-\code{orders}, \code{long_memo}, \code{cond_dist} and
-\code{include_mean} are meaningful for both \code{model_type = "eGARCH"}
+\code{orders}, \code{long_memo} and \code{cond_dist} are
+meaningful for both \code{model_type = "eGARCH"}
 and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
 The first element of the two-element vector orders is the order \eqn{p},
 while the second element is the order \eqn{q}. Furthermore, for
 \code{long_memo = TRUE}, the metnioned models are kept as they are, while
 for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
-\code{cond_dist} controls the conditional distribution and for
-\code{include_mean = FALSE}, \eqn{\mu} is not being estimated and fixed
-to zero.
+\code{cond_dist} controls the conditional distribution.
+The unconditional mean \eqn{\mu} is controlled via the function
+\code{\link{mean_spec}}; for \code{include_mean = FALSE} therein, \eqn{\mu} is not being estimated and fixed
+to zero; its default is however \code{include_mean = TRUE}.
 
 See also the closely related spec-functions that immediately create
 specifications of specific submodels of the broad EGARCH family. These
@@ -193,7 +188,6 @@ spec5 <- fEGarch_spec(
  orders = c(1, 1),
  long_memo = TRUE,
  cond_dist = "std",
- include_mean = TRUE,
  powers = c(0.25, 0.75),
  modulus = c(TRUE, FALSE)
 )

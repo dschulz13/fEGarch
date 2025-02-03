@@ -7,13 +7,11 @@
 \alias{long_memo,base_garch_spec-method}
 \alias{modulus,egarch_type_spec-method}
 \alias{cond_dist,base_garch_spec-method}
-\alias{include_mean,base_garch_spec-method}
 \alias{orders<-,base_garch_spec-method}
 \alias{powers<-,egarch_type_spec-method}
 \alias{long_memo<-,base_garch_spec-method}
 \alias{modulus<-,egarch_type_spec-method}
 \alias{cond_dist<-,base_garch_spec-method}
-\alias{include_mean<-,base_garch_spec-method}
 \title{Accessors for Classes \code{"base_garch_spec"} and \code{"egarch_spec"}}
 \usage{
 \S4method{orders}{base_garch_spec}(x)
@@ -26,8 +24,6 @@
 
 \S4method{cond_dist}{base_garch_spec}(x)
 
-\S4method{include_mean}{base_garch_spec}(x)
-
 \S4method{orders}{base_garch_spec}(x) <- value
 
 \S4method{powers}{egarch_type_spec}(x) <- value
@@ -37,8 +33,6 @@
 \S4method{modulus}{egarch_type_spec}(x) <- value
 
 \S4method{cond_dist}{base_garch_spec}(x) <- value
-
-\S4method{include_mean}{base_garch_spec}(x) <- value
 }
 \arguments{
 \item{x}{the input object or object to modify.}

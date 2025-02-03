@@ -14,50 +14,42 @@
 \usage{
 megarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 fimegarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 egarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 fiegarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 mloggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 fimloggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 loggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 
 filoggarch_spec(
   orders = c(1, 1),
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 )
 }
 \arguments{
@@ -71,11 +63,6 @@ distribution (\code{"norm"}), a \eqn{t}-distribution
 (\code{"ged"}), an average Laplace distribution (\code{"ald"})
 and the skewed versions of them
 (\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).}
-
-\item{include_mean}{a logical value indicating whether or
-not to include the mean in the estimation procedure; for
-\code{include_mean = FALSE}, the mean of the series
-\code{rt} is fixed to zero and not being estimated.}
 }
 \value{
 Depending on the spec-fun function, either an object of class

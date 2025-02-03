@@ -19,7 +19,7 @@
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
-#'@param armaspec an object of class "arma_spec"; indicates the
+#'@param meanspec an object of class "mean_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
@@ -29,6 +29,9 @@
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
+#'@param n_test a single numerical value indicating, how many observations
+#'at the end of \code{rt} not to include in the fitting process and to
+#'reserve for backtesting.
 #'@param start_pars a vector with starting parameters for the
 #'optimization; must be of the same length as the output vector of
 #'parameters; the default NULL uses internally saved default sets
@@ -69,7 +72,8 @@
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
+#'\item{\code{rt}:}{the input object \code{rt} (or at least the training data, if \code{n_test} is greater than zero);
+#'if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
 #'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
@@ -80,17 +84,19 @@
 #'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 #'\item{\code{powers}:}{a two-element numeric vector stating the powers considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
 #'\item{\code{modulus}:}{a two-element logical vector stating the modulus transformations (\code{TRUE}, otherwise \code{FALSE}) considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
-#'\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
-#'of class \code{"arma_spec"} that is identical to the object passed to the input argument
-#'\code{armaspec}.}
+#'\item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
+#'of class \code{"mean_spec"} that is identical to the object passed to the input argument
+#'\code{meanspec}.}
+#'\item{\code{test_obs}:}{the observations at the end up the input \code{rt} reserved for
+#'testing following \code{n_test}.}
 #'}
 #'
 #'@details
 #'For details on the models in the conditional variance, see \link[fEGarch]{fEGarch_spec}.
-#'For details on the models in the conditional mean, see \link[fEGarch]{armaspec}.
-#'The combined model defined through \link[fEGarch]{armaspec} and
+#'For details on the models in the conditional mean, see \link[fEGarch]{meanspec}.
+#'The combined model defined through \link[fEGarch]{meanspec} and
 #'\link[fEGarch]{fEGarch_spec} is the specified model. It can be thought of
-#'as the model described in \link[fEGarch]{armaspec} with \eqn{\left\{r_t\right\}}
+#'as the model described in \link[fEGarch]{meanspec} with \eqn{\left\{r_t\right\}}
 #'therein being governed by a model from the EGARCH family as described in
 #'\link[fEGarch]{fEGarch_spec}, however with mean of \eqn{\left\{r_t\right\}} fixed
 #'to zero.
@@ -136,7 +142,7 @@
 #'model
 #'# Simultaneously model conditional mean
 #'spec <- egarch_spec()
-#'model2 <- fEGarch(spec, rt, armaspec = arma_spec(orders = c(1, 1)))
+#'model2 <- fEGarch(spec, rt, meanspec = mean_spec(orders = c(1, 1)))
 #'model2
 #'
 #'
@@ -158,11 +164,13 @@
 
 fEGarch <- function(spec = egarch_spec(),
     rt, drange = c(0, 0.5 - 1e-6),
-    armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6),
+    meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+    n_test = 0,
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
-  fEGarch_fit(spec, rt, drange, armaspec, Drange = Drange, start_pars, LB, UB, control,
+  fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
+              n_test = n_test, start_pars, LB, UB, control,
               parallel, ncores)
 
 }

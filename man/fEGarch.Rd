@@ -8,7 +8,7 @@ fEGarch(
   spec = egarch_spec(),
   rt,
   drange = c(0, 0.5 - 1e-06),
-  armaspec = arma_spec(),
+  meanspec = mean_spec(),
   Drange = c(0, 0.5 - 1e-06),
   start_pars = NULL,
   LB = NULL,
@@ -38,7 +38,7 @@ interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
 
-\item{armaspec}{an object of class "arma_spec"; indicates the
+\item{meanspec}{an object of class "mean_spec"; indicates the
 specifications for the model in the conditional mean.}
 
 \item{Drange}{a two-element numeric vector that indicates the boundaries
@@ -101,9 +101,9 @@ specification. It contains the following elements.
 \item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 \item{\code{powers}:}{a two-element numeric vector stating the powers considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
 \item{\code{modulus}:}{a two-element logical vector stating the modulus transformations (\code{TRUE}, otherwise \code{FALSE}) considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
-\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
-of class \code{"arma_spec"} that is identical to the object passed to the input argument
-\code{armaspec}.}
+\item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
+of class \code{"mean_spec"} that is identical to the object passed to the input argument
+\code{meanspec}.}
 }
 }
 \description{
@@ -112,10 +112,10 @@ broader EGARCH family to some observed time series.
 }
 \details{
 For details on the models in the conditional variance, see \link[fEGarch]{fEGarch_spec}.
-For details on the models in the conditional mean, see \link[fEGarch]{armaspec}.
-The combined model defined through \link[fEGarch]{armaspec} and
+For details on the models in the conditional mean, see \link[fEGarch]{meanspec}.
+The combined model defined through \link[fEGarch]{meanspec} and
 \link[fEGarch]{fEGarch_spec} is the specified model. It can be thought of
-as the model described in \link[fEGarch]{armaspec} with \eqn{\left\{r_t\right\}}
+as the model described in \link[fEGarch]{meanspec} with \eqn{\left\{r_t\right\}}
 therein being governed by a model from the EGARCH family as described in
 \link[fEGarch]{fEGarch_spec}, however with mean of \eqn{\left\{r_t\right\}} fixed
 to zero.
@@ -161,7 +161,7 @@ model <- fEGarch(spec, rt)
 model
 # Simultaneously model conditional mean
 spec <- egarch_spec()
-model2 <- fEGarch(spec, rt, armaspec = arma_spec(orders = c(1, 1)))
+model2 <- fEGarch(spec, rt, meanspec = mean_spec(orders = c(1, 1)))
 model2
 
 

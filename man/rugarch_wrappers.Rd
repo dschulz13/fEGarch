@@ -11,8 +11,7 @@ aparch_ru(
   rt,
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-  include_mean = TRUE,
-  armaspec = arma_spec(),
+  meanspec = mean_spec(),
   start_pars = NULL
 )
 
@@ -20,8 +19,7 @@ gjrgarch_ru(
   rt,
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-  include_mean = TRUE,
-  armaspec = arma_spec(),
+  meanspec = mean_spec(),
   start_pars = NULL
 )
 
@@ -29,8 +27,7 @@ egarch_ru(
   rt,
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),
-  include_mean = TRUE,
-  armaspec = arma_spec(),
+  meanspec = mean_spec(),
   start_pars = NULL
 )
 }
@@ -45,11 +42,7 @@ numeric vector.}
 \item{cond_dist}{a single-element character vector with the conditional
 distribution to consider.}
 
-\item{include_mean}{a logical that indicates whether or not to include
-the mean in the maximum-likelihood estimation. If \code{FALSE}, the mean
-is fixed to zero.}
-
-\item{armaspec}{an object of class "arma_spec"; indicates the
+\item{meanspec}{an object of class "mean_spec"; indicates the
 specifications for the model in the conditional mean.}
 
 \item{start_pars}{a named list with starting parameters.}
@@ -69,9 +62,9 @@ A list with the following named elements is returned.
 \item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 \item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
 \item{\code{rugarch_model}:}{the estimation object returned by \code{ugarchfit()} of the \code{rugarch} package (Ghalanos, 2024).}
-\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
-of class \code{"arma_spec"} that is identical to the object passed to the input argument
-\code{armaspec}.}
+\item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
+of class \code{"mean_spec"} that is identical to the object passed to the input argument
+\code{meanspec}.}
 }
 }
 \description{

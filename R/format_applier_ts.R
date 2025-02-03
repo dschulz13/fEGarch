@@ -1,7 +1,12 @@
-format_applier_ts <- function(rt, list_of_ts) {
+format_applier_ts <- function(rt, n_test, list_of_ts) {
 
   if (inherits(rt, what = "zoo")) {
-    tp <- as.Date(time(rt))
+    time_rt <- if (n_test == 0) {
+      time(rt)
+    } else {
+      head(time(rt), -n_test)
+    }
+    tp <- as.Date(time_rt)
     out <- lapply(list_of_ts, FUN = function(.x, tp) {
       zoo::zoo(.x, order.by = tp)
     }, tp = tp)

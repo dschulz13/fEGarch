@@ -111,14 +111,11 @@ goal_fun_creator_lmgarch <- function(
 #'an average Laplace distribution (\code{"ald"}),
 #'and their four skewed variants (\code{"snorm"}, \code{"sstd"},
 #'\code{"sged"}, \code{"sald"}).
-#'@param include_mean a logical value indicating whether or not to include
-#'the series' mean in the maximum-likelihood estimation process; for
-#'\code{include_mean = FALSE}, the mean is fixed to zero.
 #'@param drange a two-element numeric vector that gives the boundaries of the
 #'search interval for the fractional differencing parameter \eqn{d} in the conditional
 #'volatility model part; is
 #'overwritten by the settings of the arguments \code{LB} and \code{UB}.
-#'@param armaspec an object of class "arma_spec"; indicates the
+#'@param meanspec an object of class "mean_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
 #'of the interval over which to search for the fractional differencing
@@ -128,6 +125,9 @@ goal_fun_creator_lmgarch <- function(
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
+#'@param n_test a single numerical value indicating, how many observations
+#'at the end of \code{rt} not to include in the fitting process and to
+#'reserve for backtesting.
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
@@ -214,7 +214,7 @@ goal_fun_creator_lmgarch <- function(
 #'for \eqn{\hat{P}}.
 #'
 #'An ARMA-LMGARCH or a FARIMA-LMGARCH can be fitted by adjusting the
-#'argument \code{armaspec} correspondingly.
+#'argument \code{meanspec} correspondingly.
 #'
 #'@export
 #'
@@ -225,7 +225,8 @@ goal_fun_creator_lmgarch <- function(
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
 #'\item{\code{se}:}{a named numeric vector with the obtained standard errors in accordance with the parameter estimates.}
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
-#'\item{\code{rt}:}{the input object \code{rt}; if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
+#'\item{\code{rt}:}{the input object \code{rt}  (or at least the training data, if \code{n_test} is greater than zero);
+#'if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
 #'\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 #'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
@@ -234,9 +235,11 @@ goal_fun_creator_lmgarch <- function(
 #'\item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
 #'\item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
 #'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
-#'\item{\code{armaspec}:}{the settings for the model in the conditional mean; is an object
-#'of class \code{"arma_spec"} that is identical to the object passed to the input argument
-#'\code{armaspec}.}
+#'\item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
+#'of class \code{"mean_spec"} that is identical to the object passed to the input argument
+#'\code{meanspec}.}
+#'\item{\code{test_obs}:}{the observations at the end up the input \code{rt} reserved for
+#'testing following \code{n_test}.}
 #'}
 #'
 #'@examples
@@ -265,8 +268,9 @@ goal_fun_creator_lmgarch <- function(
 #'
 lmgarch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        include_mean = TRUE, drange = c(0, 0.5 - 1e-6),
-                        armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6),
+                        drange = c(0, 0.5 - 1e-6),
+                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+                        n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
@@ -276,25 +280,28 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   rt_core <- zoo::coredata(rt)
+  if (n_test > 0) {
+    rt_core <- head(rt_core, -n_test)
+  }
   p <- orders[[1]]
   q <- orders[[2]]
 
   cond_d <- match.arg(cond_dist)
 
   # ARMA orders
-  order_arma <- orders(armaspec)
+  order_arma <- orders(meanspec)
   p_ar <- order_arma[[1]]
   q_ma <- order_arma[[2]]
 
   pdf_fun2 <- lookup_table$fun2[[cond_d]]
 
-  incl_mean <- include_mean
+  incl_mean <- meanspec@include_mean
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
   # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(armaspec)
+  lm_arma <- long_memo(meanspec)
   # Assign ARMA / FARIMA function
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
@@ -310,7 +317,7 @@ lmgarch <- function(rt, orders = c(1, 1),
     arma_fit
   }
 
-  n <- length(rt)
+  n <- length(rt_core)
   sigt_fun <- sigt_lmgarch_R
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
@@ -391,7 +398,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   if (is.null(start_pars)) {
 
     start_pars <- c(
-      list(NULL, mean(rt))[[incl_mean + 1]],
+      list(NULL, mean(rt_core))[[incl_mean + 1]],
       rep(0.05 / p_ar, p_ar),
       rep(0.05 / q_ma, q_ma),
       D_start,
@@ -408,7 +415,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   if (is.null(LB)) {
 
     LB <- c(
-      list(NULL, min(rt))[[incl_mean + 1]],
+      list(NULL, min(rt_core))[[incl_mean + 1]],
       rep(-2, p_ar),
       rep(-2, q_ma),
       D_low,
@@ -425,7 +432,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   if (is.null(UB)) {
 
     UB <- c(
-      list(NULL, max(rt))[[incl_mean + 1]],
+      list(NULL, max(rt_core))[[incl_mean + 1]],
       rep(2, p_ar),
       rep(2, q_ma),
       D_up,
@@ -563,7 +570,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
   sigt <- res_f$sigt
   cmeans <- res_f$cmeans
-  etat <- (rt - cmeans) / sigt
+  etat <- (rt_core - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -621,7 +628,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   rownames(vcov_mat) <- par_names
 
   k <- length(pars)
-  n <- length(rt)
+  n <- length(rt_core)
 
   m2llhood <- -2 * llhood
   bic <- (m2llhood + k * log(n)) / n
@@ -631,6 +638,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   # estimated series
   series_out <- format_applier_ts(
     rt = rt,
+    n_test = n_test,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -654,7 +662,7 @@ lmgarch <- function(rt, orders = c(1, 1),
     cond_dist = cond_d,
     orders = orders,
     long_memo = TRUE,
-    armaspec = armaspec
+    meanspec = meanspec
   )
 
   list_out
@@ -696,8 +704,8 @@ setMethod(
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
     " \n",
-    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
-    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
+    "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     " \n",
     "Fitted parameters:\n"
   )

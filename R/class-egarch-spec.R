@@ -2,14 +2,12 @@ setClass("base_garch_spec",
   slots = c(
     orders = "numeric",
     long_memo = "logical",
-    cond_dist = "character",
-    include_mean = "logical"
+    cond_dist = "character"
   ),
   prototype = list(
     orders = c(1, 1),
     long_memo = FALSE,
-    cond_dist = "norm",
-    include_mean = TRUE
+    cond_dist = "norm"
   )
 )
 
@@ -20,8 +18,6 @@ setValidity("base_garch_spec", function(object){
     "@long_memo must be of length one"
   } else if (distr_checker(object@cond_dist)) {
     "@cond_dist must be of length one and from the available model options"
-  } else if (mean_checker(object@include_mean)) {
-    "@include_mean must be of length one"
   } else {
     TRUE
   }
@@ -30,8 +26,7 @@ setValidity("base_garch_spec", function(object){
 base_garch_spec <- function(
     orders = c(1, 1),
     long_memo = TRUE,
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
 
   cond_dist <- tryCatch(
@@ -44,8 +39,7 @@ base_garch_spec <- function(
   new("base_garch_spec",
     orders = orders,
     long_memo = long_memo,
-    cond_dist = cond_dist,
-    include_mean = include_mean
+    cond_dist = cond_dist
   )
 
 }
@@ -95,10 +89,6 @@ setValidity("egarch_type_spec", function(object){
 #'(\code{"ged"}), an average Laplace distribution (\code{"ald"})
 #'and the skewed versions of them
 #'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).
-#'@param include_mean a logical value indicating whether or
-#'not to include the mean in the estimation procedure; for
-#'\code{include_mean = FALSE}, the mean of the series
-#'\code{rt} is fixed to zero and not being estimated.
 #'@param powers a two-element numeric vector that states the
 #'exponents in the power-transformations of the asymmetry and the
 #'magnitude terms in that order (see Details for more information).
@@ -125,7 +115,6 @@ egarch_type_spec <- function(
   orders = c(1, 1),
   long_memo = TRUE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
 ) {
@@ -141,7 +130,6 @@ egarch_type_spec <- function(
     orders = orders,
     long_memo = long_memo,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = powers,
     modulus = modulus
   )
@@ -153,8 +141,7 @@ egarch_type_spec <- function(
 loggarch_type_spec <- function(
   orders = c(1, 1),
   long_memo = TRUE,
-  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE
+  cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
 
   cond_dist <- tryCatch(
@@ -167,8 +154,7 @@ loggarch_type_spec <- function(
   new("loggarch_type_spec",
     orders = orders,
     long_memo = long_memo,
-    cond_dist = cond_dist,
-    include_mean = include_mean
+    cond_dist = cond_dist
   )
 
 }
@@ -195,10 +181,6 @@ loggarch_type_spec <- function(
 #'(\code{"ged"}), an average Laplace distribution (\code{"ald"})
 #'and the skewed versions of them
 #'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).
-#'@param include_mean a logical value indicating whether or
-#'not to include the mean in the estimation procedure; for
-#'\code{include_mean = FALSE}, the mean of the series
-#'\code{rt} is fixed to zero and not being estimated.
 #'@param powers a two-element numeric vector that states the
 #'exponents in the power-transformations of the asymmetry and the
 #'magnitude terms in that order (see Details for more information).
@@ -305,16 +287,17 @@ loggarch_type_spec <- function(
 #'
 #'While the arguments \code{powers} and \code{modulus} are only relevant
 #'under a type I model, i.e. for \code{model_type = "eGARCH"}, the arguments
-#'\code{orders}, \code{long_memo}, \code{cond_dist} and
-#'\code{include_mean} are meaningful for both \code{model_type = "eGARCH"}
+#'\code{orders}, \code{long_memo} and \code{cond_dist} are
+#'meaningful for both \code{model_type = "eGARCH"}
 #'and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
 #'The first element of the two-element vector orders is the order \eqn{p},
 #'while the second element is the order \eqn{q}. Furthermore, for
 #'\code{long_memo = TRUE}, the metnioned models are kept as they are, while
 #'for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
-#'\code{cond_dist} controls the conditional distribution and for
-#'\code{include_mean = FALSE}, \eqn{\mu} is not being estimated and fixed
-#'to zero.
+#'\code{cond_dist} controls the conditional distribution.
+#'The unconditional mean \eqn{\mu} is controlled via the function
+#'\code{\link{mean_spec}}; for \code{include_mean = FALSE} therein, \eqn{\mu} is not being estimated and fixed
+#'to zero; its default is however \code{include_mean = TRUE}.
 #'
 #'See also the closely related spec-functions that immediately create
 #'specifications of specific submodels of the broad EGARCH family. These
@@ -364,7 +347,6 @@ loggarch_type_spec <- function(
 #'  orders = c(1, 1),
 #'  long_memo = TRUE,
 #'  cond_dist = "std",
-#'  include_mean = TRUE,
 #'  powers = c(0.25, 0.75),
 #'  modulus = c(TRUE, FALSE)
 #')
@@ -375,7 +357,6 @@ fEGarch_spec <- function(
   orders = c(1, 1),
   long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-  include_mean = TRUE,
   powers = c(1, 1),
   modulus = c(FALSE, FALSE)
 ) {
@@ -403,9 +384,6 @@ fEGarch_spec <- function(
       stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
     }
   )
-  if (is.null(include_mean) || is.na(include_mean)) {
-    include_mean <- TRUE
-  }
   if ((is.null(powers) || all(is.na(powers))) && (model_type == "eGARCH")) {
     powers <- c(1, 1)
   }
@@ -415,7 +393,6 @@ fEGarch_spec <- function(
       orders = orders,
       long_memo = long_memo,
       cond_dist = cond_dist,
-      include_mean = include_mean,
       powers = powers,
       modulus = modulus
     )
@@ -423,8 +400,7 @@ fEGarch_spec <- function(
     out <- loggarch_type_spec(
       orders = orders,
       long_memo = long_memo,
-      cond_dist = cond_dist,
-      include_mean = include_mean
+      cond_dist = cond_dist
     )
   }
 
@@ -480,10 +456,6 @@ setMethod("modulus", "egarch_type_spec", function(x) {x@modulus})
 #'@rdname spec_methods
 #'@aliases cond_dist,base_garch_spec-method
 setMethod("cond_dist", "base_garch_spec", function(x) {x@cond_dist})
-#'@export
-#'@rdname spec_methods
-#'@aliases include_mean,base_garch_spec-method
-setMethod("include_mean", "base_garch_spec", function(x) {x@include_mean})
 
 #'@export
 #'@rdname spec_methods
@@ -500,9 +472,6 @@ setMethod("modulus<-", "egarch_type_spec", function(x, value) {x@modulus <- valu
 #'@export
 #'@rdname spec_methods
 setMethod("cond_dist<-", "base_garch_spec", function(x, value) {x@cond_dist <- value; validObject(x); x})
-#'@export
-#'@rdname spec_methods
-setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mean <- value; validObject(x); x})
 
 #'EGARCH Family Submodel Specification
 #'
@@ -519,10 +488,6 @@ setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mea
 #'(\code{"ged"}), an average Laplace distribution (\code{"ald"})
 #'and the skewed versions of them
 #'(\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).
-#'@param include_mean a logical value indicating whether or
-#'not to include the mean in the estimation procedure; for
-#'\code{include_mean = FALSE}, the mean of the series
-#'\code{rt} is fixed to zero and not being estimated.
 #'
 #'@export
 #'
@@ -589,15 +554,13 @@ setMethod("include_mean<-", "base_garch_spec", function(x, value) {x@include_mea
 
 megarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "eGARCH",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = c(0, 1),
     modulus = c(TRUE, FALSE)
   )
@@ -607,15 +570,13 @@ megarch_spec <- function(
 #'@rdname submodel-specs
 fimegarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "eGARCH",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = c(0, 1),
     modulus = c(TRUE, FALSE)
   )
@@ -625,15 +586,13 @@ fimegarch_spec <- function(
 #'@rdname submodel-specs
 egarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "eGARCH",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = c(1, 1),
     modulus = c(FALSE, FALSE)
   )
@@ -643,15 +602,13 @@ egarch_spec <- function(
 #'@rdname submodel-specs
 fiegarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "eGARCH",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = c(1, 1),
     modulus = c(FALSE, FALSE)
   )
@@ -661,15 +618,13 @@ fiegarch_spec <- function(
 #'@rdname submodel-specs
 mloggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "eGARCH",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = c(0, 0),
     modulus = c(TRUE, TRUE)
   )
@@ -679,15 +634,13 @@ mloggarch_spec <- function(
 #'@rdname submodel-specs
 fimloggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "eGARCH",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
-    include_mean = include_mean,
     powers = c(0, 0),
     modulus = c(TRUE, TRUE)
   )
@@ -697,15 +650,13 @@ fimloggarch_spec <- function(
 #'@rdname submodel-specs
 loggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "logGARCH",
     orders = orders,
     long_memo = FALSE,
-    cond_dist = cond_dist,
-    include_mean = include_mean
+    cond_dist = cond_dist
   )
 }
 
@@ -713,15 +664,13 @@ loggarch_spec <- function(
 #'@rdname submodel-specs
 filoggarch_spec <- function(
     orders = c(1, 1),
-    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-    include_mean = TRUE
+    cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
     model_type = "logGARCH",
     orders = orders,
     long_memo = TRUE,
-    cond_dist = cond_dist,
-    include_mean = include_mean
+    cond_dist = cond_dist
   )
 }
 
@@ -992,14 +941,17 @@ goal_fun_creator_egarch <- function(
 }
 
 setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6),
-    start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
+  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+    n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1)) {
 
   # Coredata of rt with possible time series formatting
   rt_core <- zoo::coredata(rt)
+  if (n_test > 0) {
+    rt_core <- head(rt_core, -n_test)
+  }
 
-  n <- length(rt)
+  n <- length(rt_core)
 
   # Obtain model orders
   order <- orders(spec)
@@ -1009,7 +961,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   cond_d <- cond_dist(spec)
 
   # ARMA orders
-  order_arma <- orders(armaspec)
+  order_arma <- orders(meanspec)
   p_ar <- order_arma[[1]]
   q_ma <- order_arma[[2]]
 
@@ -1018,7 +970,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
-  incl_mean <- include_mean(spec)
+  incl_mean <- include_mean(meanspec)
 
   # Look up internally saved settings for additional parameters
   # from "data-raw/lookup.R"
@@ -1028,7 +980,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Long-memory setting (for GARCH-part)
   lm <- long_memo(spec)
   # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(armaspec)
+  lm_arma <- long_memo(meanspec)
   # Assign ARMA / FARIMA function
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
@@ -1164,8 +1116,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   }
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
-    mean_rt <- mean(rt)
-    lrt2_shift <- log((rt - mean_rt)^2) + 1.27
+    mean_rt <- mean(rt_core)
+    lrt2_shift <- log((rt_core - mean_rt)^2) + 1.27
 
     if (is.null(start_pars)) {
 
@@ -1191,7 +1143,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       mean_lrt2_s <- mean(lrt2_shift)
 
       LB <- c(
-        list(NULL, min(rt))[[incl_mean + 1]],
+        list(NULL, min(rt_core))[[incl_mean + 1]],
         rep(-2, p_ar),
         rep(-2, q_ma),
         D_low,
@@ -1211,7 +1163,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       mean_lrt2_s <- mean(lrt2_shift)
 
       UB <- c(
-        list(NULL, max(rt))[[incl_mean + 1]],
+        list(NULL, max(rt_core))[[incl_mean + 1]],
         rep(2, p_ar),
         rep(2, q_ma),
         D_up,
@@ -1348,7 +1300,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   cmeans <- final_series$cmeans
 
   mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt - cmeans) / sigt
+  etat <- (rt_core - cmeans) / sigt
 
   psi_names <- if (q > 1) {paste0("psi", 1:(q - 1))} else {NULL}
 
@@ -1404,7 +1356,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   colnames(vcov_mat) <- par_names
 
   k <- length(pars)
-  n <- length(rt)
+  n <- length(rt_core)
 
   m2llhood <- -2 * llhood
   bic <- (m2llhood + k * log(n)) / n
@@ -1414,6 +1366,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # estimated series
   series_out <- format_applier_ts(
     rt = rt,
+    n_test = n_test,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1439,7 +1392,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     powers = pow,
     modulus = mod,
     long_memo = lm,
-    armaspec = armaspec
+    meanspec = meanspec
   )
 
   list_out
@@ -1598,18 +1551,21 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), armaspec = arma_spec(), Drange = c(0, 0.5 - 1e-6), start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
   rt_core <- zoo::coredata(rt)
+  if (n_test > 0) {
+    rt_core <- head(rt_core, -n_test)
+  }
 
   order <- orders(spec)
   p <- order[[1]]
   q <- order[[2]]
   cond_d <- cond_dist(spec)
 
-  incl_mean <- include_mean(spec)
+  incl_mean <- include_mean(meanspec)
 
   # ARMA orders
-  order_arma <- orders(armaspec)
+  order_arma <- orders(meanspec)
   p_ar <- order_arma[[1]]
   q_ma <- order_arma[[2]]
 
@@ -1621,7 +1577,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   lm <- long_memo(spec) # GARCH-part
   # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(armaspec)
+  lm_arma <- long_memo(meanspec)
   # Assign ARMA / FARIMA function
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
@@ -1727,14 +1683,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     d_name <- character(0)
   }
 
-  mean_rt <- mean(rt)
-  lrt2_shift <- log((rt - mean_rt)^2) + 1.27
+  mean_rt <- mean(rt_core)
+  lrt2_shift <- log((rt_core - mean_rt)^2) + 1.27
   mean_lrt2_s <- mean(lrt2_shift)
 
   if (is.null(start_pars)) {
 
     start_pars <- c(
-      list(NULL, mean(rt))[[incl_mean + 1]],
+      list(NULL, mean(rt_core))[[incl_mean + 1]],
       rep(0.05 / p_ar, p_ar),
       rep(0.05 / q_ma, q_ma),
       D_start,
@@ -1751,7 +1707,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (is.null(LB)) {
 
     LB <- c(
-      list(NULL, min(rt))[[incl_mean + 1]],
+      list(NULL, min(rt_core))[[incl_mean + 1]],
       rep(-2, p_ar),
       rep(-2, q_ma),
       D_low,
@@ -1768,7 +1724,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (is.null(UB)) {
 
     UB <- c(
-      list(NULL, max(rt))[[incl_mean + 1]],
+      list(NULL, max(rt_core))[[incl_mean + 1]],
       rep(2, p_ar),
       rep(2, q_ma),
       D_up,
@@ -1897,7 +1853,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   cmeans <- final_series$cmeans
 
   mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt - cmeans) / sigt
+  etat <- (rt_core - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -1949,7 +1905,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   colnames(vcov_mat) <- par_names
 
   k <- length(pars)
-  n <- length(rt)
+  n <- length(rt_core)
 
   m2llhood <- -2 * llhood
   bic <- (m2llhood + k * log(n)) / n
@@ -1959,6 +1915,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # estimated series
   series_out <- format_applier_ts(
     rt = rt,
+    n_test = n_test,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1982,7 +1939,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     cond_dist = cond_d,
     orders = order,
     long_memo = lm,
-    armaspec = armaspec
+    meanspec = meanspec
   )
 
   list_out
@@ -2038,8 +1995,8 @@ setMethod(
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
     " \n",
-    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
-    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
+    "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     "\n",
     "Fitted parameters:\n"
   )
@@ -2092,8 +2049,8 @@ setMethod(
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
     " \n",
-    "ARMA orders (cond. mean): (", x@armaspec@orders[[1]], ", ", x@armaspec@orders[[2]], ")\n",
-    "Long memory (cond. mean): ", x@armaspec@long_memo, "\n",
+    "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
+    "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     "\n",
     "Fitted parameters:\n"
   )

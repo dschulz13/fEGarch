@@ -25,7 +25,3 @@ model_type_checker <- function(model_type) {
 distr_checker <- function(distribution) {
   !((length(distribution) == 1) && (distribution %in% c("norm", "snorm", "ged", "ald", "sged", "std", "sstd", "sald")))
 }
-
-mean_checker <- function(include_mean) {
-  !(length(include_mean) == 1)
-}
