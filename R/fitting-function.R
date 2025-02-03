@@ -1,6 +1,6 @@
 #'Fitting Function for Models of the Broader EGARCH Family
 #'
-#'Use maximum-likelihood estimation to fit a model from the
+#'Use quasi-maximum-likelihood estimation to fit a model from the
 #'broader EGARCH family to some observed time series.
 #'
 #'@param spec an S4 object of class \code{"egarch_type_spec"}

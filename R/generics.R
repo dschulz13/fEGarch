@@ -72,7 +72,7 @@ setGeneric("fEGarch_predict", function(object, n.ahead, ...) {standardGeneric("f
 
 #====================================================#
 
-setGeneric("fEGarch_predict_roll", function(object, test_sample, step_size = 1, ...) {standardGeneric("fEGarch_predict_roll")})
+setGeneric("fEGarch_predict_roll", function(object, step_size = 1, ...) {standardGeneric("fEGarch_predict_roll")})
 
 #====================================================#
 

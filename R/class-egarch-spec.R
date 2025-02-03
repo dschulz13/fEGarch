@@ -1481,7 +1481,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     p = p,
     q = q,
     incl_mean = incl_mean,
-    d_par = FALSE,
+    d_par = TRUE,
     extra_par = extra_par,
     skew_par = skew_par
   )

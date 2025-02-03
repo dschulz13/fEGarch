@@ -115,7 +115,7 @@ testing following \code{n_test}.}
 }
 }
 \description{
-Use maximum-likelihood estimation to fit a model from the
+Use quasi-maximum-likelihood estimation to fit a model from the
 broader EGARCH family to some observed time series.
 }
 \details{

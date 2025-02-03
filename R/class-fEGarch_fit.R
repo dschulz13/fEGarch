@@ -775,8 +775,8 @@ methods::setMethod("predict", "fEGarch_fit",
 # Forecasting methods (rolling one-step)
 
 # For EGARCH-type
-methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
-  function(object, n.ahead = 1, ...) {
+methods::setMethod("fEGarch_predict_roll", "fEGarch_fit_egarch",
+  function(object, step_size = 1, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -1181,9 +1181,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
 #'@export
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, test_sample, step_size = 1, ...) {
+  function(object, step_size = 1, ...) {
 
-    fcasts <- fEGarch_predict_roll(object = object, test_sample = test_sample,
+    fcasts <- fEGarch_predict_roll(object = object,
                                    step_size = step_size, ...)
 
     rt <- object@rt

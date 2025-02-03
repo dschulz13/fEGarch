@@ -142,3 +142,82 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
 
 }
 
+//Rolling forecast functions
+
+// // [[Rcpp::export]]
+// arma::vec sigt_egarch_rollcast_shortCpp(
+//                                const arma::vec& rt_test,
+//                                const arma::vec& et,
+//                                const arma::vec& sigt,
+//                                const double omega,
+//                                const arma::rowvec& phi,
+//                                const arma::rowvec& alpha,
+//                                const arma::rowvec& beta,
+//                                const double E_asy,
+//                                const double E_mag,
+//                                const arma::vec& powers,
+//                                const arma::vec& modulus,
+//                                const std::string& mode,
+//                                const int step_size) {
+//
+//   const int n = sigt.size();
+//   const int p = phi.size();
+//   const int q = alpha.size();
+//   const int l = std::max(p, q);
+//   const int Hl = horizon + l;
+//
+//   int il, il1, ilp, ilq;
+//
+//   const double mod1 = modulus(0);
+//   const double mod2 = modulus(1);
+//   const double pow1 = powers.size() > 0 ? powers(0) : 1.0; // Default to 1.0 for safety
+//   const double pow2 = powers.size() > 1 ? powers(1) : 1.0;
+//
+//   arma::vec transf1(l);
+//   arma::vec transf2(l);
+//   const arma::vec eta_i = et.subvec(n - l, n - 1);
+//
+//   if (mode == "pow_pow") {
+//     transf1 = (signVecCpp(eta_i) % arma::pow(arma::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+//     transf2 = (arma::pow(arma::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
+//   } else if (mode == "log_log") {
+//     transf1 = signVecCpp(eta_i) % arma::log(arma::abs(eta_i) + mod1) - E_asy;
+//     transf2 = arma::log(arma::abs(eta_i) + mod2) - E_mag;
+//   } else if (mode == "pow_log") {
+//     transf1 = (signVecCpp(eta_i) % arma::pow(arma::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+//     transf2 = arma::log(arma::abs(eta_i) + mod2) - E_mag;
+//   } else if (mode == "log_pow") {
+//     transf1 = signVecCpp(eta_i) % arma::log(arma::abs(eta_i) + mod1) - E_asy;
+//     transf2 = (arma::pow(arma::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
+//   } else {
+//     Rcpp::stop("Invalid mode specified");
+//   }
+//
+//   arma::vec et_asy = arma::zeros<arma::vec>(Hl);
+//   et_asy.subvec(0, l - 1) = transf1;
+//
+//   arma::vec et_mag = arma::zeros<arma::vec>(Hl);
+//   et_mag.subvec(0, l - 1) = transf2;
+//
+//   arma::vec lnsig2 = arma::zeros<arma::vec>(Hl);
+//   lnsig2.subvec(0, l - 1) = arma::log(arma::pow(sigt.subvec(n - l, n - 1), 2.0));
+//
+//   const arma::rowvec alpha_r = arma::reverse(alpha);
+//   const arma::rowvec phi_r = arma::reverse(phi);
+//   const arma::rowvec beta_r = arma::reverse(beta);
+//
+//   for (int i = 0; i < horizon; ++i) {
+//     il = i + l;
+//     il1 = il - 1;
+//     ilp = il - p;
+//     ilq = il - q;
+//
+//     lnsig2(il) = omega +
+//       arma::as_scalar(alpha_r * et_asy.subvec(ilq, il1)) +
+//       arma::as_scalar(beta_r * et_mag.subvec(ilq, il1)) +
+//       arma::as_scalar(phi_r * lnsig2.subvec(ilp, il1));
+//
+//   }
+//
+//   return arma::exp(0.5 * lnsig2.subvec(l, Hl - 1));
+// }
