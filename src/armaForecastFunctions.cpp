@@ -80,3 +80,5 @@ arma::vec forecast_farima_Cpp(const arma::vec& x, const double mu,
   return x_dm_fc.subvec(n, nH - 1) + mu;
 
 }
+
+

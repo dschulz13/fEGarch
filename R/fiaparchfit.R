@@ -263,6 +263,9 @@ goal_fun_creator_fiaparch <- function(
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
 #'memory in stock market volatility. Journal of Econometrics, 73(1):
 #'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
+#'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
+#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
+#'413-449. DOI: 10.1093/jjfinec/nbj015.}
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
 #'and a new model. Journal of Empirical Finance, 1(1):
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
