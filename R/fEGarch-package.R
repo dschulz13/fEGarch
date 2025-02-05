@@ -32,7 +32,8 @@
 #'As a popular alternative for the sake of comparison, a FIAPARCH
 #'model can be fitted as well using \code{\link{fiaparch}}. The
 #'corresponding documentation page also includes further information
-#'on the model.
+#'on the model. Similarly, \code{\link{lmgarch}} can be utilized for
+#'fitting LMGARCH models.
 #'
 #'In addition, the package provides functionalities in order to
 #'simultaneously model the conditional mean (using either autoregressive
@@ -53,8 +54,14 @@
 #'\item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 #'models given a model specification and an observation series,}
 #'\item{\code{\link{fiaparch}}:}{fitting a FIAPARCH model,}
+#'\item{\code{\link{lmgarch}}:}{fitting an LMGARCH model,}
 #'\item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model,}
 #'\item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model.}
+#'\item{\code{\link{lmgarch_sim}}:}{simulating from an LMGARCH model,}
+#'\item{\code{\link{predict,fEGarch_fit-method}}:}{multistep point forecasts of
+#'the conditional mean and the conditional standard deviation,}
+#'\item{\code{\link{predict_roll,fEGarch_fit-method}}:}{rolling point forecasts of
+#'the conditional mean and the conditional standard deviation over a test set.}
 #'}
 #'
 #'@section Datasets:

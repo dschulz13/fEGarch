@@ -37,7 +37,7 @@ baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
   integ <- vapply(
     X = q,
     FUN = function(.x, dfun, shape, skew, int_fun) {
-      integrate(int_fun, lower = q, upper = Inf, dfun = dfun, shape = shape, skew = skew,
+      integrate(int_fun, lower = .x, upper = Inf, dfun = dfun, shape = shape, skew = skew,
               subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6)[[1]]
     }, FUN.VALUE = numeric(1),
     shape = shape, skew = skew, dfun = dfun, int_fun = int_fun
@@ -62,12 +62,18 @@ baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
 #'for \code{"std"} or \code{"sstd"}, specify the degrees of freedom
 #'\code{df}, for \code{"ged"} or \code{"sged"}, give the shape
 #'parameter \code{shape}, and for \code{"ald"} or \code{"sald"},
-#'use the additional argument \code{"P"}.
+#'use the additional argument \code{P}; moreover, for the skewed
+#'distributions \code{"snorm"}, \code{"sstd"}, \code{"sged"} and
+#'\code{"sald"}, the skewness parameter \code{skew} must
+#'be provided as well.
 #'
 #'@details
 #'The VaR is found numerically using numerical root finding
-#'via \code{uniroot}, whereas the ES is obtained through
-#'numerical integration using \code{integrate}.
+#'via \code{uniroot} (of the \code{stats} package), whereas the ES is obtained through
+#'numerical integration, where firstly the VaR at the corresponding
+#'confidence level is computed using \code{VaR_calc}, and where
+#'subsequently \code{integrate} (of the \code{stats} package) is
+#'used at the tail of the distribution.
 #'
 #'@export
 #'
@@ -105,7 +111,13 @@ VaR_calc <- function(level = 0.99,
   } else {
     l[["shape"]]
   }
+  if (!(dist %in% c("norm", "snorm"))) {
+    stopifnot('Provide additional arguments "df", "shape" or "P" for the corresponding distributions "std", "ged", "ald", "sstd", "sged" and "sald".' = !is.null(shape))
+  }
   skew <- l[["skew"]]
+  if (dist %in% c("snorm", "sstd", "sged", "sald")) {
+    stopifnot('For skewed distributions, please provide argument "skew".' = !is.null(skew))
+  }
   baseVaR_calc(level = level, cond_dist = dist, shape = shape, skew = skew)
 }
 
@@ -124,6 +136,13 @@ ES_calc <- function(level = 0.975,
   } else {
     l[["shape"]]
   }
+  if (!(dist %in% c("norm", "snorm"))) {
+    stopifnot('Provide additional arguments "df", "shape" or "P" for the corresponding distributions "std", "ged", "ald", "sstd", "sged" and "sald".' = !is.null(shape))
+  }
   skew <- l[["skew"]]
+  if (dist %in% c("snorm", "sstd", "sged", "sald")) {
+    stopifnot('For skewed distributions, please provide argument "skew".' = !is.null(skew))
+  }
+
   baseES_calc(level = level, cond_dist = dist, shape = shape, skew = skew)
 }

@@ -29,7 +29,10 @@ considered to be standardized with mean zero and variance one).}
 for \code{"std"} or \code{"sstd"}, specify the degrees of freedom
 \code{df}, for \code{"ged"} or \code{"sged"}, give the shape
 parameter \code{shape}, and for \code{"ald"} or \code{"sald"},
-use the additional argument \code{"P"}.}
+use the additional argument \code{P}; moreover, for the skewed
+distributions \code{"snorm"}, \code{"sstd"}, \code{"sged"} and
+\code{"sald"}, the skewness parameter \code{skew} must
+be provided as well.}
 }
 \value{
 Returns a numeric vector of the same length as the input
@@ -42,8 +45,11 @@ can then be used to obtain the conditional VaR and ES following GARCH-type model
 }
 \details{
 The VaR is found numerically using numerical root finding
-via \code{uniroot}, whereas the ES is obtained through
-numerical integration using \code{integrate}.
+via \code{uniroot} (of the \code{stats} package), whereas the ES is obtained through
+numerical integration, where firstly the VaR at the corresponding
+confidence level is computed using \code{VaR_calc}, and where
+subsequently \code{integrate} (of the \code{stats} package) is
+used at the tail of the distribution.
 }
 \examples{
 

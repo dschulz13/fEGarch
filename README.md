@@ -341,7 +341,15 @@ The main functions of the package are:
 - `fiaparch_sim()`: FIAPARCH simulation,
 
 - `mean_spec()`: ARMA or FARIMA model specification for simultaneously
-  modelling the conditional mean.
+  modelling the conditional mean,
+
+- `predict()`: a forecasting method to compute multistep point forecasts
+  of the conditional mean and the conditional standard deviation
+  following one of the package’s fitted models,
+
+- `predict_roll()`: a method to compute rolling point forecasts of the
+  conditional mean and the conditional standard deviation over a test
+  set following one of the package’s fitted models.
 
 The package, however, provides many other useful functions for you to
 discover.
