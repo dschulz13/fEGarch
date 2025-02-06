@@ -159,7 +159,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   E_mag <- stats::integrate(fun_mag, lower = -Inf, upper = Inf,
                             subdivisions = 1000L, rel.tol = 1e-6,
                             abs.tol = 1e-6,
-                            pow = pow1, shape = shape, skew = skew, dfun = dfun)[[1]]
+                            pow = pow2, shape = shape, skew = skew, dfun = dfun)[[1]]
 
   Elnsig2 <- model_pars[["omega_sig"]]
 
