@@ -30,8 +30,8 @@ split_ts <- function(xt, n_test = 0) {
         start = start_test, frequency = frequ
       )
     } else {
-      xt_train <- head(xt, -n_test)
-      xt_test <- tails(xt, n_test)
+      xt_train <- utils::head(xt, -n_test)
+      xt_test <- utils::tail(xt, n_test)
     }
     out <- list(
       train = xt_train,
