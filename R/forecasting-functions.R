@@ -341,6 +341,8 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   p <- garch_orders[[1]]
   q <- garch_orders[[2]]
 
+  n <- length(object@rt)
+
   model_pars <- object@pars
   names_phi <- paste0("phi", 1:p)
   phi <- model_pars[names_phi]
@@ -352,7 +354,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   gamma <- model_pars[["gamma"]]
   delta <- model_pars[["delta"]]
 
-  d <- if (lm_garch) model_pars[["d"]] else numeric(0)
+  d <- model_pars[["d"]]
 
   mu <- if (exists("mu", where = as.list(model_pars))) {
     model_pars[["mu"]]
@@ -378,6 +380,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
   shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
     sel_word <- switch(
+      cond_dist,
       "std" = "df",
       "sstd" = "df",
       "ged" = "shape",
@@ -392,7 +395,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
   dfun <- lookup_table[["fun1"]][[cond_dist]]
   int_fun <- function(x, skew, shape, gamma, delta, dfun) {
-    (abs(x) - gamma(x))^delta * dfun(x, shape = shape, skew = skew)
+    (abs(x) - gamma * x)^delta * dfun(x, shape = shape, skew = skew)
   }
   E_const <- if (n.ahead >= 2) {
     stats::integrate(
@@ -451,7 +454,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
   omega <- model_pars[["omega"]]
 
-  d <- if (lm_garch) model_pars[["d"]] else numeric(0)
+  d <- model_pars[["d"]]
 
   mu <- if (exists("mu", where = as.list(model_pars))) {
     model_pars[["mu"]]

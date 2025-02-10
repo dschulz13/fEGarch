@@ -16,7 +16,7 @@ arma::vec sigt_lmgarch_forecast(const arma::vec& rt,
 
   const arma::rowvec coef_inf_r = arma::reverse(coef_inf);
 
-  int nm1 = n - 1;
+  const int nm1 = n - 1;
   const int nHm2 = nm1 + horizon - 1;
   const int np1 = - n + 1;
   const int z = nHm2 + np1;
@@ -30,6 +30,6 @@ arma::vec sigt_lmgarch_forecast(const arma::vec& rt,
 
   }
 
-  return arma::sqrt(sig2.subvec(n, n + horizon - 1));
+  return arma::sqrt(sig2);
 
 }
