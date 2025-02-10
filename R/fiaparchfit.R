@@ -432,7 +432,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      -1 + 1e-6, 1,
+      -1 + 1e-6, 0.1,
       d_low,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
