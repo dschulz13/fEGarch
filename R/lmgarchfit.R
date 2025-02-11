@@ -305,7 +305,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
     D_par_name <- "D"
-    D_start <- mean(Drange)
+    D_start <- 0.25 #mean(Drange)
     D_low <- Drange[[1]]
     D_up <- Drange[[2]]
     farima_fit
@@ -391,7 +391,7 @@ lmgarch <- function(rt, orders = c(1, 1),
 
   d_low <- drange[[1]]
   d_up <- drange[[2]]
-  d_spar <- d_low + abs(d_up - d_low) / 2
+  d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
   d_name <- "d"
 
   if (is.null(start_pars)) {

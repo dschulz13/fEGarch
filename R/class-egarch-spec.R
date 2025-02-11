@@ -982,7 +982,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
     D_par_name <- "D"
-    D_start <- mean(Drange)
+    D_start <- 0.25 #mean(Drange)
     D_low <- Drange[[1]]
     D_up <- Drange[[2]]
     farima_fit
@@ -1105,7 +1105,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   if (lm) {
     d_low <- drange[[1]]
     d_up <- drange[[2]]
-    d_spar <- d_low + abs(d_up - d_low) / 2
+    d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
     d_name <- "d"
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
@@ -1578,7 +1578,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
     D_par_name <- "D"
-    D_start <- mean(Drange)
+    D_start <- 0.25 #mean(Drange)
     D_low <- Drange[[1]]
     D_up <- Drange[[2]]
     farima_fit
@@ -1672,7 +1672,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (lm) {
     d_low <- drange[[1]]
     d_up <- drange[[2]]
-    d_spar <- d_low + abs(d_up - d_low) / 2
+    d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
     d_name <- "d"
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
