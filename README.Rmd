@@ -189,6 +189,10 @@ TS2 <- cbind(
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 ```
 
+### Forecasting
+
+The package provides the two commands `predict()` and `predict_roll()` to compute, given a fitted model from the package, either multistep out-of-sample point forecasts of the conditional standard deviation (and of the conditional mean) or rolling point forecasts (of arbitrarily selectable step size) of the conditional standard deviation (and of the conditional mean) over some reserved test sample.
+
 ## Main functions
 
 The main functions of the package are:

@@ -65,6 +65,7 @@ Collate:
   'rugarch-wrappers.R'
   'class-fEGarch_forecast.R'
   'forecasting-functions.R'
+  'fEGarch_fit-plot.R'
 Depends: 
     R (>= 2.10),
     methods
@@ -77,7 +78,9 @@ Imports:
     utils,
     rugarch,
     future,
-    furrr
+    furrr,
+    rlang,
+    ggplot2
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

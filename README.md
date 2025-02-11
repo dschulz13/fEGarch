@@ -90,12 +90,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0001   4.2392 0.0000
-#> omega_sig -8.6599 0.1394 -62.1382 0.0000
-#> phi1       0.8680 0.0241  36.0575 0.0000
-#> kappa     -0.2362 0.0155 -15.2780 0.0000
-#> gamma      0.3194 0.0208  15.3494 0.0000
-#> d          0.2754 0.0415   6.6391 0.0000
+#> mu         0.0003 0.0001   4.9179 0.0000
+#> omega_sig -8.6599 0.1602 -54.0429 0.0000
+#> phi1       0.8680 0.0242  35.8454 0.0000
+#> kappa     -0.2362 0.0148 -16.0047 0.0000
+#> gamma      0.3194 0.0209  15.2664 0.0000
+#> d          0.2754 0.0417   6.6094 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.4945, BIC: -6.4880
@@ -154,13 +154,13 @@ model10
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0004 0.0001   3.5822 0.0003
-#> omega_sig -9.3706 0.1136 -82.5099 0.0000
-#> phi1       0.9797 0.2122   4.6167 0.0000
-#> phi2      -0.0036 0.2056  -0.0176 0.9860
-#> kappa     -0.2945 0.0666  -4.4238 0.0000
-#> gamma      0.1654 0.0268   6.1794 0.0000
-#> df         7.0254 0.6843  10.2669 0.0000
+#> mu         0.0004 0.0001   4.8264 0.0000
+#> omega_sig -9.3706 0.0998 -93.9361 0.0000
+#> phi1       0.9793 0.0767  12.7753 0.0000
+#> phi2      -0.0033 0.0754  -0.0437 0.9651
+#> kappa     -0.2946 0.0256 -11.5216 0.0000
+#> gamma      0.1655 0.0147  11.2769 0.0000
+#> df         7.0253 0.5986  11.7360 0.0000
 #>  
 #> Information criteria:
 #> AIC: -6.5387, BIC: -6.5312
@@ -295,14 +295,14 @@ model_fiaparch
 #> Fitted parameters:
 #> 
 #>          par      se   tval   pval
-#> mu    0.0004  0.0088 0.0491 0.9608
-#> omega 0.0002  0.0250 0.0087 0.9931
-#> phi1  0.1796  0.3601 0.4986 0.6181
-#> beta1 0.4952  3.7868 0.1308 0.8960
-#> gamma 1.0000  1.1617 0.8608 0.3893
-#> delta 1.2438  7.0383 0.1767 0.8597
-#> d     0.3959  4.5456 0.0871 0.9306
-#> df    7.8299 21.5866 0.3627 0.7168
+#> mu    0.0004  0.0022 0.1927 0.8472
+#> omega 0.0002  0.0302 0.0072 0.9942
+#> phi1  0.1796  2.2587 0.0795 0.9366
+#> beta1 0.4953  3.0033 0.1649 0.8690
+#> gamma 1.0000  2.4218 0.4129 0.6797
+#> delta 1.2437  7.9755 0.1559 0.8761
+#> d     0.3960  5.1534 0.0768 0.9388
+#> df    7.8299 48.4538 0.1616 0.8716
 #>  
 #> Information criteria:
 #> AIC: -6.5484, BIC: -6.5398
@@ -323,6 +323,15 @@ plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 ```
 
 <img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+
+### Forecasting
+
+The package provides the two commands `predict()` and `predict_roll()`
+to compute, given a fitted model from the package, either multistep
+out-of-sample point forecasts of the conditional standard deviation (and
+of the conditional mean) or rolling point forecasts (of arbitrarily
+selectable step size) of the conditional standard deviation (and of the
+conditional mean) over some reserved test sample.
 
 ## Main functions
 
