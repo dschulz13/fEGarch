@@ -109,6 +109,10 @@ lmgarch_sim_Cpp <- function(innov, omega, coef_inf, n_out, mu) {
     .Call('_fEGarch_lmgarch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, n_out, mu)
 }
 
+sigt_loggarch_forecast_short <- function(et, sigt, omega, phi, psi, Elneta2, horizon) {
+    .Call('_fEGarch_sigt_loggarch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, psi, Elneta2, horizon)
+}
+
 sigt_loggarch_forecast_long <- function(et, coef_inf, Elneta2, Elnsig2, horizon) {
     .Call('_fEGarch_sigt_loggarch_forecast_long', PACKAGE = 'fEGarch', et, coef_inf, Elneta2, Elnsig2, horizon)
 }

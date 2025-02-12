@@ -227,6 +227,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   garch_orders <- object@orders
   p <- garch_orders[[1]]
   q <- garch_orders[[2]]
+  n <- length(object@rt)
 
   model_pars <- object@pars
   names_phi <- paste0("phi", 1:p)
@@ -247,6 +248,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
 
   shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
     sel_word <- switch(
+      cond_dist,
       "std" = "df",
       "sstd" = "df",
       "ged" = "shape",
@@ -298,29 +300,28 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
 
   sigt_fc <- if (!lm_garch) {
     omega <- Elnsig2 * (1 - sum(phi))
+    l <- max(p, q)
+    phi_s <- psi_s <- rep(0, l)
+    phi_s[1:p] <- phi
+    psi_s[1:q] <- psi
+    alpha <- phi_s + psi_s
     c(sigt_loggarch_forecast_short(
       et = zoo::coredata(object@etat),
       sigt = zoo::coredata(object@sigt),
       omega = omega,
       phi = phi,
-      psi = psi,
+      psi = alpha,
       Elneta2 = Elneta2,
       horizon = n.ahead
     ))
   } else {
     coef_inf_garch <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
                                      max_i = n + n.ahead - 1)[-1]
-    c(sigt_egarch_forecast_longCpp(
+    c(sigt_loggarch_forecast_long(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
-      kappa = kappa,
-      gamma = gamma,
-      E_asy = E_asy,
-      E_mag = E_mag,
+      Elneta2 = Elneta2,
       Elnsig2 = Elnsig2,
-      powers = powers,
-      modulus = modulus,
-      mode = mode,
       horizon = n.ahead
     ))
   }
@@ -444,6 +445,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
   garch_orders <- object@orders
   p <- garch_orders[[1]]
   q <- garch_orders[[2]]
+  n <- length(object@rt)
 
   model_pars <- object@pars
   names_phi <- paste0("phi", 1:p)

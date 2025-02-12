@@ -434,6 +434,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigt_loggarch_forecast_short
+arma::vec sigt_loggarch_forecast_short(const arma::vec& et, const arma::vec& sigt, const double omega, const arma::rowvec& phi, const arma::rowvec& psi, const double Elneta2, const int horizon);
+RcppExport SEXP _fEGarch_sigt_loggarch_forecast_short(SEXP etSEXP, SEXP sigtSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP psiSEXP, SEXP Elneta2SEXP, SEXP horizonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type et(etSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sigt(sigtSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type psi(psiSEXP);
+    Rcpp::traits::input_parameter< const double >::type Elneta2(Elneta2SEXP);
+    Rcpp::traits::input_parameter< const int >::type horizon(horizonSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_loggarch_forecast_short(et, sigt, omega, phi, psi, Elneta2, horizon));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sigt_loggarch_forecast_long
 arma::vec sigt_loggarch_forecast_long(const arma::vec& et, const arma::rowvec& coef_inf, const double Elneta2, const double Elnsig2, const int horizon);
 RcppExport SEXP _fEGarch_sigt_loggarch_forecast_long(SEXP etSEXP, SEXP coef_infSEXP, SEXP Elneta2SEXP, SEXP Elnsig2SEXP, SEXP horizonSEXP) {
@@ -618,6 +635,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_lmgarch_forecast", (DL_FUNC) &_fEGarch_sigt_lmgarch_forecast, 4},
     {"_fEGarch_sigt_lmgarch_Cpp", (DL_FUNC) &_fEGarch_sigt_lmgarch_Cpp, 5},
     {"_fEGarch_lmgarch_sim_Cpp", (DL_FUNC) &_fEGarch_lmgarch_sim_Cpp, 5},
+    {"_fEGarch_sigt_loggarch_forecast_short", (DL_FUNC) &_fEGarch_sigt_loggarch_forecast_short, 7},
     {"_fEGarch_sigt_loggarch_forecast_long", (DL_FUNC) &_fEGarch_sigt_loggarch_forecast_long, 5},
     {"_fEGarch_sigt_loggarch_long", (DL_FUNC) &_fEGarch_sigt_loggarch_long, 5},
     {"_fEGarch_sigt_loggarch_short", (DL_FUNC) &_fEGarch_sigt_loggarch_short, 7},
