@@ -136,10 +136,16 @@ where
 Everything else is defined as before. Since
 \deqn{\phi^{-1}(B)(1-B)^{-d}\psi(B) - 1=\sum_{i=1}^{\infty}\gamma_i B^{i}=\gamma_1 B\left[\sum_{i=1}^{\infty}(\gamma_i/\gamma_1)B^{i-1}\right]=\gamma_1 B\left[1+\sum_{i=1}^{\infty}\theta_i B^{i}\right]=\theta(B)\gamma_1 B,}
 where \eqn{\theta_i = \gamma_{i+1}/\gamma_{1}}, \eqn{i=0,1,\dots}, and by defining
-\deqn{g\left(\eta_{t-1}\right)=\gamma_1\left\{\ln\left(\eta_{t-1}^2\right)-E\left[\ln\left(\eta_{t-1}^2\right)\right]\right\},}
+\deqn{g\left(\eta_{t-1}\right)=\gamma_1\left\{\ln\left(\eta_{t-1}^2\right)-E\left[\ln\left(\eta_{t-1}^2\right)\right]\right\} = 2\gamma_1\left\{\ln\left(\left|\eta_{t-1}\right|\right)-E\left[\ln\left(\left|\eta_{t-1}\right|\right)\right]\right\},}
 the equation of \eqn{\ln\left(\sigma_t^2\right)} can be stated to be
 \deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\theta(B)g(\eta_{t-1})}
-as in the broad EGARCH family at the very beginning.
+as in the broad EGARCH family at the very beginning. Therefore, Log-GARCH
+and FI-Log-GARCH models are equivalent to the type I models, where
+\eqn{\kappa = 0} with usage of \eqn{g_{1,m}} with \eqn{p_m = 0} and where
+\eqn{\gamma = 2\gamma_1}. Nonetheless,
+in this package, the type II models make use of the more common
+parameterization of \eqn{\ln\left(\sigma_t^2\right)} stated at the
+beginning of the type II model description.
 
 This describes the
 established Log-GARCH models as part of the broad EGARCH family
