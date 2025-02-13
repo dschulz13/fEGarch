@@ -239,10 +239,10 @@ loggarch_type_spec <- function(
 #'
 #'Generally, we consider two cases:
 #'\deqn{g_{1,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left|\eta_t\right|^{p_a}/p_a \text{ and}}
-#'\deqn{g_{2,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left(\left|\eta_t\right| + 1\right)^{p_a} / p_{a}}
+#'\deqn{g_{2,a}\left(\eta_t\right)=\text{sgn}\left(\eta_t\right)\left[\left(\left|\eta_t\right| + 1\right)^{p_a} - 1\right] / p_{a}}
 #'whereas
 #'\deqn{g_{1,m}\left(\eta_t\right)=\left|\eta_t\right|^{p_m}/p_m \text{ and}}
-#'\deqn{g_{2,m}\left(\eta_t\right)=\left(\left|\eta_t\right| + 1\right)^{p_m} / p_{m}.}
+#'\deqn{g_{2,m}\left(\eta_t\right)=\left[\left(\left|\eta_t\right| + 1\right)^{p_m} - 1\right] / p_{m}.}
 #'Note that \eqn{\text{sgn}\left(\eta_t\right)} denotes the sign of
 #'\eqn{\eta_t}. \eqn{g_{1,\cdot}} incorporates a power transformation
 #'and \eqn{g_{2,\cdot}} a modulus transformation together with a power

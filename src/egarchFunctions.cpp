@@ -56,10 +56,10 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
 
   if (mode == "pow_pow") {
     compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+      return (signCpp(eta_i) * (std::pow(std::abs(eta_i) + mod1, pow1) - mod1) - E_asy) / pow1;
     };
     compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - mod2 - E_mag) / pow2;
     };
   } else if (mode == "log_log") {
     compute_abs_eta_pow1 = [mod1, E_asy](double eta_i) {
@@ -70,7 +70,7 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
     };
   } else if (mode == "pow_log") {
     compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+      return (signCpp(eta_i) * (std::pow(std::abs(eta_i) + mod1, pow1) - mod1) - E_asy) / pow1;
     };
     compute_abs_eta_pow2 = [mod2, E_mag](double eta_i) {
       return std::log(std::abs(eta_i) + mod2) - E_mag;
@@ -80,7 +80,7 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
       return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E_asy;
     };
     compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - mod2 - E_mag) / pow2;
     };
   } else {
     Rcpp::stop("Invalid mode specified");
@@ -143,10 +143,10 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
 
   if (mode == "pow_pow") {
     compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+      return (signCpp(eta_i) * (std::pow(std::abs(eta_i) + mod1, pow1) - mod1) - E_asy) / pow1;
     };
     compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - mod2 - E_mag) / pow2;
     };
   } else if (mode == "log_log") {
     compute_abs_eta_pow1 = [mod1, E_asy](double eta_i) {
@@ -157,7 +157,7 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
     };
   } else if (mode == "pow_log") {
     compute_abs_eta_pow1 = [pow1, mod1, E_asy](double eta_i) {
-      return (signCpp(eta_i) * std::pow(std::abs(eta_i) + mod1, pow1) - E_asy) / pow1;
+      return (signCpp(eta_i) * (std::pow(std::abs(eta_i) + mod1, pow1) - mod1) - E_asy) / pow1;
     };
     compute_abs_eta_pow2 = [mod2, E_mag](double eta_i) {
       return std::log(std::abs(eta_i) + mod2) - E_mag;
@@ -167,7 +167,7 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
       return signCpp(eta_i) * std::log(std::abs(eta_i) + mod1) - E_asy;
     };
     compute_abs_eta_pow2 = [pow2, mod2, E_mag](double eta_i) {
-      return (std::pow(std::abs(eta_i) + mod2, pow2) - E_mag) / pow2;
+      return (std::pow(std::abs(eta_i) + mod2, pow2) - mod2 - E_mag) / pow2;
     };
   } else {
     Rcpp::stop("Invalid mode specified");
@@ -222,17 +222,17 @@ Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_s
   arma::vec mag_term = arma::vec(n);
 
   if (mode == "pow_pow") {
-    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
-    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+    asy_term = (signVecCpp(innov) % (arma::pow(arma::abs(innov) + mod1, pow1) - mod1) - E_asy) / pow1;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - mod2 - E_mag) / pow2;
   } else if (mode == "log_log") {
     asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
     mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
   } else if (mode == "pow_log") {
-    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
+    asy_term = (signVecCpp(innov) % (arma::pow(arma::abs(innov) + mod1, pow1) - mod1) - E_asy) / pow1;
     mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
   } else if (mode == "log_pow") {
     asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
-    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - mod2 - E_mag) / pow2;
   } else {
     Rcpp::stop("Invalid mode specified");
   }
@@ -289,17 +289,17 @@ Rcpp::List egarch_shortmemo_type_sim(const arma::vec& innov, const double omega_
   arma::vec mag_term = arma::vec(n);
 
   if (mode == "pow_pow") {
-    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
-    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+    asy_term = (signVecCpp(innov) % (arma::pow(arma::abs(innov) + mod1, pow1) - mod1) - E_asy) / pow1;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - mod2 - E_mag) / pow2;
   } else if (mode == "log_log") {
     asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
     mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
   } else if (mode == "pow_log") {
-    asy_term = (signVecCpp(innov) % arma::pow(arma::abs(innov) + mod1, pow1) - E_asy) / pow1;
+    asy_term = (signVecCpp(innov) % (arma::pow(arma::abs(innov) + mod1, pow1) - mod1) - E_asy) / pow1;
     mag_term = arma::log(arma::abs(innov) + mod2) - E_mag;
   } else if (mode == "log_pow") {
     asy_term = signVecCpp(innov) % arma::log(arma::abs(innov) + mod1) - E_asy;
-    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - E_mag) / pow2;
+    mag_term = (arma::pow(arma::abs(innov) + mod2, pow2) - mod2 - E_mag) / pow2;
   } else {
     Rcpp::stop("Invalid mode specified");
   }

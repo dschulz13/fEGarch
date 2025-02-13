@@ -155,7 +155,7 @@ exp_funs <- list(
     ),
     list(
       function(x, pow, shape, skew, dfun) {sign(x) * log(abs(x) + 1) * dfun(x, shape = shape, skew = skew)},
-      function(x, pow, shape, skew, dfun) {sign(x) * (abs(x) + 1)^pow * dfun(x, shape = shape, skew = skew)}
+      function(x, pow, shape, skew, dfun) {sign(x) * ((abs(x) + 1)^pow - 1) * dfun(x, shape = shape, skew = skew)}
     )
   ),
   "mag" = list(
@@ -165,7 +165,7 @@ exp_funs <- list(
     ),
     list(
       function(x, pow, shape, skew, dfun) {log(abs(x) + 1) * dfun(x, shape = shape, skew = skew)},
-      function(x, pow, shape, skew, dfun) {(abs(x) + 1)^pow * dfun(x, shape = shape, skew = skew)}
+      function(x, pow, shape, skew, dfun) {((abs(x) + 1)^pow - 1) * dfun(x, shape = shape, skew = skew)}
     )
   )
 )
