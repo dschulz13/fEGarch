@@ -5,7 +5,8 @@
 #distributions. Makes use of a numerical approach,
 #where the uniroot() function looks for the input
 #quantile of the distribution's corresponding CDF
-#R function that matches the "level" argument.
+#R function that matches the one minus the "level" argument.
+#The result is thus with negative sign.
 #This way, internally, there are inverse CDF functions
 #defined, i.e. functions that return the quantile for
 #an input cumulative probability.
@@ -15,7 +16,7 @@
 baseVaR_calc <- function(level = 0.95, cond_dist, shape, skew) {
   dFUN <- lookup_table$fun1[[cond_dist]]
   vapply(
-    X = level,
+    X = 1 - level,
     FUN = function(.x, dfun, shape, skew) {
       inv_cdf_fun(p = .x, dfun = dfun, shape = shape, skew = skew)
     }, FUN.VALUE = numeric(1),
@@ -37,7 +38,7 @@ baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
   integ <- vapply(
     X = q,
     FUN = function(.x, dfun, shape, skew, int_fun) {
-      integrate(int_fun, lower = .x, upper = Inf, dfun = dfun, shape = shape, skew = skew,
+      integrate(int_fun, lower = -Inf, upper = .x, dfun = dfun, shape = shape, skew = skew,
               subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6)[[1]]
     }, FUN.VALUE = numeric(1),
     shape = shape, skew = skew, dfun = dfun, int_fun = int_fun
@@ -54,7 +55,9 @@ baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
 #'can then be used to obtain the conditional VaR and ES following GARCH-type models.
 #'
 #'@param level a numeric vector with the confidence level(s) to calculate
-#'the VaR or ES for.
+#'the VaR or ES for; the quantiles are the VaR or ES
+#'computed at one minus the input level; the result is thus with negative sign
+#'for common \code{level} input such as \code{0.975} or \code{0.99}.
 #'@param dist a single character value (or the default vector) that
 #'specifies the distribution to consider (all distributions are
 #'considered to be standardized with mean zero and variance one).

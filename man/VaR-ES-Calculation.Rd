@@ -19,7 +19,9 @@ ES_calc(
 }
 \arguments{
 \item{level}{a numeric vector with the confidence level(s) to calculate
-the VaR or ES for.}
+the VaR or ES for; the quantiles are the VaR or ES
+computed at one minus the input level; the result is thus with negative sign
+for common \code{level} input such as \code{0.975} or \code{0.99}.}
 
 \item{dist}{a single character value (or the default vector) that
 specifies the distribution to consider (all distributions are

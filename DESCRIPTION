@@ -66,6 +66,7 @@ Collate:
   'class-fEGarch_forecast.R'
   'forecasting-functions.R'
   'fEGarch_fit-plot.R'
+  'class-fEGarch_risk.R'
   'ufRisk-functions.R'
 Depends: 
     R (>= 2.10),
@@ -81,7 +82,8 @@ Imports:
     future,
     furrr,
     rlang,
-    ggplot2
+    ggplot2,
+    ufRisk
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
