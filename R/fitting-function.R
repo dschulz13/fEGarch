@@ -165,8 +165,10 @@
 fEGarch <- function(spec = egarch_spec(),
     rt, drange = c(0, 0.5 - 1e-6),
     meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+    nonparspec = locpol_spec(), use_nonpar = FALSE,
     n_test = 0,
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
+    control_nonpar = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
   fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
