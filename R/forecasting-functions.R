@@ -508,23 +508,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 methods::setMethod("predict_internal", "fEGarch_fit",
   function(object, n.ahead = 1, ...) {
 
-    if (!is.null(object@nonpar_model)) {
-
-      mu_h <- utils::tail(zoo::coredata(object@cmeans), 1)
-      scale_h <- utils::tail(zoo::coredata(object@scale_fun), 1)
-
-      object@sigt <- object@sigt / object@scale_fun
-      object@rt <- (object@rt - mu_h) / object@scale_fun
-      object@test_obs <- (object@test_obs - mu_h) / scale_h
-
-    }
-
     fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, ...)
-
-    if (!is.null(nonpar_model)) {
-      fcasts$sigt <- fcasts$sigt * scale_h
-      fcasts$cmeans <- rep(mu_h, length(out$sigt))
-    }
 
     rt <- object@rt
     if (inherits(rt, "zoo")) {
@@ -619,12 +603,30 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 methods::setMethod("predict", "fEGarch_fit",
   function(object, n.ahead = 1, ...) {
 
+    np_check <- !is.null(object@nonpar_model)
+    object_orig <- object
+
+    if (np_check) {
+
+      mu_h <- utils::tail(zoo::coredata(object@cmeans), 1)
+      scale_h <- utils::tail(zoo::coredata(object@scale_fun), 1)
+
+      object@sigt <- object@sigt / object@scale_fun
+      object@rt <- (object@rt - mu_h) / object@scale_fun
+
+    }
+
     fcasts <- predict_internal(object = object, n.ahead = n.ahead, ...)
+
+    if (np_check) {
+      fcasts$cmeans <- rep(mu_h, length(fcasts$cmeans))
+      fcasts$sigt <- fcasts$sigt * scale_h
+    }
 
     fEGarch_forecast(
       cmeans = fcasts$cmeans,
       sigt = fcasts$sigt,
-      model = object
+      model = object_orig
     )
 
   }
@@ -637,14 +639,28 @@ methods::setMethod("predict", "fEGarch_fit",
 methods::setMethod("predict_roll", "fEGarch_fit",
   function(object, step_size = 1, ...) {
 
-    test_obs <- object@test_obs
     n_test <- length(test_obs)
     object2 <- object
 
+    np_check <- !is.null(object@nonpar_model)
+
     sigt_out <- cmeans_out <- rep(NA, n_test)
-    object2@rt <- zoo::coredata(object2@rt)
-    object2@sigt <- zoo::coredata(object2@sigt)
-    object2@cmeans <- zoo::coredata(object2@cmeans)
+    if (np_check) {
+      mu_h <- utils::tail(zoo::coredata(object2@cmeans), 1)
+      scale_h <- utils::tail(zoo::coredata(object2@scale_fun), 1)
+      test_obs <- (object@test_obs - mu_h) / scale_h
+      object2@rt <- zoo::coredata((object2@rt - object2@cmeans) / object2@scale_fun)
+      object2@sigt <- zoo::coredata(object2@sigt / object2@scale_fun)
+      object2@cmeans <- rep(0, length(object2@rt))
+      object2@scale_fun <- NULL
+      object2@nonpar_model <- NULL
+    } else {
+      test_obs <- object@test_obs
+      object2@rt <- zoo::coredata(object2@rt)
+      object2@sigt <- zoo::coredata(object2@sigt)
+      object2@cmeans <- zoo::coredata(object2@cmeans)
+    }
+
     object2@etat <- zoo::coredata(object2@etat)
 
     for (i in seq_len(n_test)) {
@@ -660,9 +676,18 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     if (step_size > 1) {
 
       object3 <- object
-      object3@rt <- zoo::coredata(object3@rt)
-      object3@sigt <- zoo::coredata(object3@sigt)
-      object3@cmeans <- zoo::coredata(object3@cmeans)
+
+      if (np_check) {
+        object3@rt <- zoo::coredata((object3@rt - object3@cmeans) / object3@scale_fun)
+        object3@sigt <- zoo::coredata(object3@sigt / object3@scale_fun)
+        object3@cmeans <- rep(0, length(object3@rt))
+        object3@scale_fun <- NULL
+        object3@nonpar_model <- NULL
+      } else {
+        object3@rt <- zoo::coredata(object3@rt)
+        object3@sigt <- zoo::coredata(object3@sigt)
+        object3@cmeans <- zoo::coredata(object3@cmeans)
+      }
       object3@etat <- zoo::coredata(object3@etat)
       sigt_out_s <- cmeans_out_s <- rep(NA, n_test)
       for (i in step_size:n_test) {
@@ -692,6 +717,11 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       start <- tp[[1]]
       cmeans_out <- ts(cmeans_out, start = start, frequency = frequ)
       sigt_out <- ts(sigt_out, start = start, frequency = frequ)
+    }
+
+    if (np_check) {
+      sigt_out <- sigt_out * scale_h
+      cmeans_out <- cmeans_out + mu_h
     }
 
     fEGarch_forecast(
