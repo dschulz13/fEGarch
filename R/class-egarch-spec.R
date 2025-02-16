@@ -1385,6 +1385,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     vcov_mat = vcov_mat,
     rt = split_rt$train,
     cmeans = cmeans,
+    scale_fun = NULL,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
@@ -1395,7 +1396,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     modulus = mod,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = split_rt$test
+    test_obs = split_rt$test,
+    nonpar_model = NULL
   )
 
   list_out
@@ -1933,6 +1935,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     vcov_mat = vcov_mat,
     rt = split_rt$train,
     cmeans = cmeans,
+    scale_fun = NULL,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
@@ -1941,7 +1944,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     orders = order,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = split_rt$test
+    test_obs = split_rt$test,
+    nonpar_model = NULL
   )
 
   list_out
@@ -1985,6 +1989,15 @@ setMethod(
   )
   row.names(df) <- par_names
 
+  check_nonpar <- !is.null(x@nonpar_model)
+  bwidth <- if (check_nonpar) {
+    paste0(
+      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", x@nonpar_model$b0), ")"
+    )
+  } else {
+    ""
+  }
+
   part1 <- paste0(
     "*************************************\n",
     "*     Fitted EGARCH Family Model    *\n",
@@ -2000,6 +2013,8 @@ setMethod(
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     "\n",
+    "Scale estimation: ", paste0(check_nonpar, bwidth),
+    " \n",
     "Fitted parameters:\n"
   )
 
@@ -2041,6 +2056,15 @@ setMethod(
   )
   row.names(df) <- par_names
 
+  check_nonpar <- !is.null(x@nonpar_model)
+  bwidth <- if (check_nonpar) {
+    paste0(
+      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", x@nonpar_model$b0), ")"
+    )
+  } else {
+    ""
+  }
+
   part1 <- paste0(
     "*************************************\n",
     "*     Fitted EGARCH Family Model    *\n",
@@ -2054,6 +2078,8 @@ setMethod(
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     "\n",
+    "Scale estimation: ", paste0(check_nonpar, bwidth),
+    " \n",
     "Fitted parameters:\n"
   )
 

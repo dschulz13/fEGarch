@@ -508,7 +508,23 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 methods::setMethod("predict_internal", "fEGarch_fit",
   function(object, n.ahead = 1, ...) {
 
+    if (!is.null(object@nonpar_model)) {
+
+      mu_h <- utils::tail(zoo::coredata(object@cmeans), 1)
+      scale_h <- utils::tail(zoo::coredata(object@scale_fun), 1)
+
+      object@sigt <- object@sigt / object@scale_fun
+      object@rt <- (object@rt - mu_h) / object@scale_fun
+      object@test_obs <- (object@test_obs - mu_h) / scale_h
+
+    }
+
     fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, ...)
+
+    if (!is.null(nonpar_model)) {
+      fcasts$sigt <- fcasts$sigt * scale_h
+      fcasts$cmeans <- rep(mu_h, length(out$sigt))
+    }
 
     rt <- object@rt
     if (inherits(rt, "zoo")) {

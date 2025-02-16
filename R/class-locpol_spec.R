@@ -47,7 +47,7 @@ setValidity("locpol_spec", function(object){
 #'An object of class \code{"locpol_spec"} is returned.
 #'
 #'@details
-#'
+#'Test
 #'
 #'@export
 #'

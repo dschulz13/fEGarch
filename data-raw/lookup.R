@@ -186,4 +186,22 @@ sigt_funs_loggarch <- list(
   get("sigt_loggarch_long_R", envir = asNamespace("fEGarch"))
 )
 
+smoots_default <- list(
+  Mcf = "NP",
+  InfR = "Nai",
+  bStart = 0.15,
+  bvc = "Y",
+  cb = 0.05,
+  method = "lpr"
+)
+
+esemifar_default <- list(
+  pmin = 0, pmax = 1,
+  qmin = 0, qmax = 1,
+  InfR = "Nai",
+  bStart = 0.15,
+  cb = 0.05,
+  method = "lpr"
+)
+
 #usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, internal = TRUE, overwrite = TRUE)

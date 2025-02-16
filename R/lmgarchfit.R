@@ -125,6 +125,12 @@ goal_fun_creator_lmgarch <- function(
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
+#'@param nonparspec an object of class \code{"locpol_spec"} returned
+#'by \code{\link{locpol_spec()}}; defines the settings of the nonparametric
+#'smoothing technique for \code{use_nonpar = TRUE}.
+#'@param use_nonpar a logical indicating whether or not to implement a
+#'semiparametric extension of the volatility model defined through \code{spec};
+#'see "Details" for more information.
 #'@param n_test a single numerical value indicating, how many observations
 #'at the end of \code{rt} not to include in the fitting process and to
 #'reserve for backtesting.
@@ -142,6 +148,10 @@ goal_fun_creator_lmgarch <- function(
 #'an internally saved default set of values is used.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
+#'@param control_nonpar a list containing changes to the arguments
+#'for the hyperparameter estimation algorithm in the nonparametric
+#'scale function estimation for
+#'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
 #'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
@@ -216,6 +226,52 @@ goal_fun_creator_lmgarch <- function(
 #'An ARMA-LMGARCH or a FARIMA-LMGARCH can be fitted by adjusting the
 #'argument \code{meanspec} correspondingly.
 #'
+#'As an alternative, a semiparametric extension of the pure models
+#'in the conditional variance can be implemented. If \code{use_nonpar = TRUE},
+#'\code{meanspec} is omitted and before fitting a zero-mean model in the
+#'conditional volatility following the remaining function arguments, a smooth scale function,
+#'i.e. a function representing the unconditional standard deviation over time,
+#'is being estimated following the specifications in \code{nonparspec} and
+#'\code{control_nonpar}. This preliminary step stabilizes the input
+#'series \code{rt}, as long-term changes in the unconditional variance
+#'are being estimated and removed before the parametric step using
+#'\code{\link[esemifar]{tsmoothlm}}. \code{control_nonpar} can be adjusted following
+#'to make changes to the arguments of \code{\link[esemifar]{tsmoothlm}}
+#'for long-memory specifications. These arguments specify settings
+#'for the automated bandwidth selection algorithms implemented by this
+#'function. By default, we use the settings
+#'\code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
+#'\code{qmax = 1}, \code{InfR = "Nai"},
+#'\code{bStart = 0.15}, \code{cb = 0.05}, and
+#'\code{method = "lpr"} for \code{\link[esemifar]{tsmoothlm}}.
+#'\code{\link{locpol_spec}} passed to \code{nonparspec} handles
+#'more direct settings of the local polynomial smoother itself. See
+#'the documentation for these functions to get a detailed overview
+#'of these settings. Assume \eqn{\{r_t\}} to be the observed series, where
+#'\eqn{t = 1, 2, \dots, n},
+#'then \eqn{r_t^{*} = r_t - \bar{r}}, with \eqn{\bar{r}} being the arithmetic
+#'mean over the observed \eqn{r_t}, is computed and subsequently
+#'\eqn{y_t = \ln\left[\left(r_t^{*}\right)^2\right]}. The subtraction of
+#'\eqn{\bar{r}} is necessary so that \eqn{r_t^{*}} are all different from zero
+#'almost surely. Once \eqn{y_t} are available, its trend \eqn{m(x_t)},
+#'with \eqn{x_t} as the rescaled time on the interval \eqn{[0, 1]}, is
+#'being estimated using
+#'\code{\link[esemifar]{tsmoothlm}} and denoted here by
+#'\eqn{\hat{m}(x_t)}. Then from \eqn{\hat{\xi}_t = y_t - \hat{m}(x_t)}
+#'obtain \eqn{\hat{C} = -\ln\left\{\sum_{t=1}^{n}\exp\left(\hat{\xi}_t\right)\right\}},
+#'and obtain the estimated scale function as
+#'\eqn{\hat{s}(x_t)=\exp\left[\left(\hat{\mu}(x_t) - \hat{C}\right) / 2\right]}.
+#'The stabilized / standardized version of the series \eqn{\left\{r_t\right\}}
+#'is then \eqn{\tilde{r}_t = r_t^{*} / \hat{s}(x_t)}, to which
+#'a purely parametric volatility model following the remaining function arguments
+#'is then
+#'fitted. The estimated volatility at a given time point is then
+#'the product of the estimate of the corresponding scale function value
+#'and of the estimated conditional standard deviation (following the parametric
+#'model part) for that same time point. See for example Feng et al. (2022)
+#'or Letmathe et al. (2023) for more information on the semiparametric extension
+#'of volatility models.
+#'
 #'@export
 #'
 #'@return
@@ -228,7 +284,8 @@ goal_fun_creator_lmgarch <- function(
 #'\item{\code{rt}:}{the input object \code{rt}  (or at least the training data, if \code{n_test} is greater than zero);
 #'if \code{rt} was a \code{"zoo"} object, the formatting is kept.}
 #'\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
-#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
+#'\item{\code{sigt}:}{the estimated conditional standard deviations (or for \code{use_nonpar = TRUE} the estimated total
+#'volatilities, i.e. scale function value times conditional standard deviation); if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} object, the formatting is also applied to \code{etat}.}
 #'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
 #'\item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
@@ -240,6 +297,10 @@ goal_fun_creator_lmgarch <- function(
 #'\code{meanspec}.}
 #'\item{\code{test_obs}:}{the observations at the end up the input \code{rt} reserved for
 #'testing following \code{n_test}.}
+#'\item{\code{scale_fun}:}{the estimated scale function values, if \code{use_nonpar = TRUE}, otherwise
+#'\code{NULL}; formatting of \code{rt} is reused.}
+#'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
+#'\code{use_nonpar = TRUE}.}
 #'}
 #'
 #'@examples
@@ -261,22 +322,50 @@ goal_fun_creator_lmgarch <- function(
 #'\item{Conrad, C., & Karanasos, M. (2006). The impulse response function
 #'of the long memory GARCH process. Economics Letters, 90(1):
 #'34-41. DOI: 10.1016/j.econlet.2005.07.001.}
+#'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
+#'Trend Stationary Time Series. The R Journal,
+#'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 #'\item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of
 #'long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 #'265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
+#'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
+#'in R. Comunications in Statistics - Theory and Methods,
+#'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'}
 #'
 lmgarch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                         drange = c(0, 0.5 - 1e-6),
                         meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+                        nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
+                        control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
     message("Only orders p=1 with q=1 are currently supported for FIAPARCH models.")
+  }
+
+  if (use_nonpar) {
+
+    nonpar_result <- nonpar_est(
+      rt = rt,
+      lm = TRUE,
+      nonparspec = nonparspec,
+      n_test = n_test,
+      control_nonpar = control_nonpar
+    )
+
+    meanspec <- mean_spec(
+      orders = c(0, 0),
+      long_memo = FALSE,
+      include_mean = FALSE
+    )    # Force to not estimate the mean in parametric part
+    n_test <- 0
+    rt <- nonpar_result$et
+
   }
 
   split_rt <- split_ts(rt, n_test)
@@ -664,6 +753,23 @@ lmgarch <- function(rt, orders = c(1, 1),
     test_obs = split_rt$test
   )
 
+  if (use_nonpar) {
+    mu <- rep(nonpar_result$mu, length(rt))
+    list_out@rt <- nonpar_result$rt_train
+    format_list <- format_applier_ts(
+      rt = nonpar_result$rt_train,
+      list_of_ts = list(
+        scale_fun = nonpar_result$scale_fun,
+        cmeans = mu
+      )
+    )
+    list_out@scale_fun <- format_list$scale_fun
+    list_out@cmeans <- format_list$cmeans
+    list_out@test_obs <- nonpar_result$test_obs
+    list_out@sigt <- list_out@sigt * format_list$scale_fun
+    list_out@nonpar_model <- nonpar_result$est_nonpar
+  }
+
   list_out
 
 }
@@ -693,6 +799,15 @@ setMethod(
   )
   row.names(df) <- par_names
 
+  check_nonpar <- !is.null(x@nonpar_model)
+  bwidth <- if (check_nonpar) {
+    paste0(
+      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", x@nonpar_model$b0), ")"
+    )
+  } else {
+    ""
+  }
+
   part1 <- paste0(
     "*************************************\n",
     "*        Fitted LMGARCH Model       *\n",
@@ -705,6 +820,8 @@ setMethod(
     " \n",
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
+    " \n",
+    "Scale estimation: ", paste0(check_nonpar, bwidth),
     " \n",
     "Fitted parameters:\n"
   )

@@ -1,3 +1,40 @@
+nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
+
+    split_data <- split_ts(rt, n_test = n_test)
+    rt_train <- split_data$train
+    rt_test <- split_data$test
+
+    args <- list(smoots_default, esemifar_default)[[lm + 1]]
+    smooth_fun <- list(smoots::tsmooth, esemifar::tsmoothlm)[[lm + 1]]
+    if (length(control_nonpar) > 0) {
+      names_l <- names(control_nonpar)
+      for (i in names_l) {
+        args[[i]] <- control_nonpar[[i]]
+      }
+    }
+    args[["p"]] <- nonparspec@poly_order
+    args[["mu"]] <- nonparspec@kernel_order
+    args[["bb"]] <- list("shorten" = 0, "extend" = 1)[[nonparspec@boundary_method]]
+    mu <- mean(rt_train)
+    rt_dm <- rt_train - mu
+    yt <- zoo::coredata(log(rt_dm^2))
+    args[["y"]] <- yt
+    est_nonpar <- do.call(smooth_fun, args = args)
+    res <- est_nonpar$res
+    C <- -log(mean(exp(res)))
+    scale_fun <- exp((est_nonpar$ye - C) / 2)
+    rt_orig <- rt_train
+    et <- rt_dm / scale_fun
+    list(
+      et = et,
+      scale_fun = scale_fun,
+      test_obs = rt_test,
+      rt_train = rt_train,
+      est_nonpar = est_nonpar,
+      mu = mu
+    )
+}
+
 #'Fitting Function for Models of the Broader EGARCH Family
 #'
 #'Use quasi-maximum-likelihood estimation to fit a model from the
@@ -29,6 +66,12 @@
 #'interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
+#'@param nonparspec an object of class \code{"locpol_spec"} returned
+#'by \code{\link{locpol_spec()}}; defines the settings of the nonparametric
+#'smoothing technique for \code{use_nonpar = TRUE}.
+#'@param use_nonpar a logical indicating whether or not to implement a
+#'semiparametric extension of the volatility model defined through \code{spec};
+#'see "Details" for more information.
 #'@param n_test a single numerical value indicating, how many observations
 #'at the end of \code{rt} not to include in the fitting process and to
 #'reserve for backtesting.
@@ -46,6 +89,10 @@
 #'of upper boundary values.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
+#'@param control_nonpar a list containing changes to the arguments
+#'for the hyperparameter estimation algorithm in the nonparametric
+#'scale function estimation for
+#'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
 #'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
@@ -74,7 +121,8 @@
 #'\item{\code{vcov_mat}:}{the variance-covariance matrix of the parameter estimates with named columns and rows.}
 #'\item{\code{rt}:}{the input object \code{rt} (or at least the training data, if \code{n_test} is greater than zero);
 #'if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is kept.}
-#'\item{\code{sigt}:}{the estimated conditional standard deviations; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
+#'\item{\code{sigt}:}{the estimated conditional standard deviations (or for \code{use_nonpar = TRUE} the estimated total
+#'volatilities, i.e. scale function value times conditional standard deviation); if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{sigt}.}
 #'\item{\code{cmeans}:}{the estimated conditional means; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{cmeans}.}
 #'\item{\code{etat}:}{the obtained residuals; if \code{rt} was a \code{"zoo"} or \code{"ts"} object, the formatting is also applied to \code{etat}.}
 #'\item{\code{orders}:}{a two-element numeric vector stating the considered model orders.}
@@ -89,6 +137,11 @@
 #'\code{meanspec}.}
 #'\item{\code{test_obs}:}{the observations at the end up the input \code{rt} reserved for
 #'testing following \code{n_test}.}
+#'\item{\code{scale_fun}:}{the estimated scale function values, if \code{use_nonpar = TRUE}, otherwise
+#'\code{NULL}; formatting of \code{rt} is reused.}
+#'\item{\code{nonpar_model}:}{the estimation object returned by either
+#'\code{\link[smoots]{tsmooth}} or \code{\link[esemifar]{tsmoothlm}} for
+#'\code{use_nonpar = TRUE}.}
 #'}
 #'
 #'@details
@@ -133,6 +186,58 @@
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
 #'
+#'As an alternative, a semiparametric extension of the pure models
+#'in the conditional variance can be implemented. If \code{use_nonpar = TRUE},
+#'\code{meanspec} is omitted and before fitting a zero-mean model in the
+#'conditional volatility following \code{spec}, a smooth scale function,
+#'i.e. a function representing the unconditional standard deviation over time,
+#'is being estimated following the specifications in \code{nonparspec} and
+#'\code{control_nonpar}. This preliminary step stabilizes the input
+#'series \code{rt}, as long-term changes in the unconditional variance
+#'are being estimated and removed before the parametric step using
+#'either \code{\link[smoots]{tsmooth}} or \code{\link[esemifar]{tsmoothlm}}
+#'depending on whether \code{spec} specifies a model with short memory
+#'or with long memory. \code{control_nonpar} can be adjusted following
+#'the arguments of \code{\link[smoots]{tsmooth}} for short-memory
+#'specifications of \code{spec}, on the other hand changes to
+#'arguments of \code{\link[esemifar]{tsmoothlm}} can be passed to it
+#'for long-memory specifications. These arguments specify settings
+#'for the automated bandwidth selection algorithms implemented by these
+#'two functions. By default, we use the settings
+#'\code{Mcf = "NP"}, \code{InfR = "Nai"},
+#'\code{bStart = 0.15}, \code{bvc = "Y"}, \code{cb = 0.05},
+#'and \code{method = "lpr"} within the call to \code{\link[smoots]{tsmooth}},
+#'as well as \code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
+#'\code{qmax = 1}, \code{InfR = "Nai"},
+#'\code{bStart = 0.15}, \code{cb = 0.05}, and
+#'\code{method = "lpr"} for \code{\link[esemifar]{tsmoothlm}}.
+#'\code{\link{locpol_spec}} passed to \code{nonparspec} handles
+#'more direct settings of the local polynomial smoother itself. See
+#'the documentation for these functions to get a detailed overview
+#'of these settings. Assume \eqn{\{r_t\}} to be the observed series, where
+#'\eqn{t = 1, 2, \dots, n},
+#'then \eqn{r_t^{*} = r_t - \bar{r}}, with \eqn{\bar{r}} being the arithmetic
+#'mean over the observed \eqn{r_t}, is computed and subsequently
+#'\eqn{y_t = \ln\left[\left(r_t^{*}\right)^2\right]}. The subtraction of
+#'\eqn{\bar{r}} is necessary so that \eqn{r_t^{*}} are all different from zero
+#'almost surely. Once \eqn{y_t} are available, its trend \eqn{m(x_t)},
+#'with \eqn{x_t} as the rescaled time on the interval \eqn{[0, 1]}, is
+#'being estimated using either \code{\link[smoots]{tsmooth}} or
+#'\code{\link[esemifar]{tsmoothlm}} and denoted here by
+#'\eqn{\hat{m}(x_t)}. Then from \eqn{\hat{\xi}_t = y_t - \hat{m}(x_t)}
+#'obtain \eqn{\hat{C} = -\ln\left\{\sum_{t=1}^{n}\exp\left(\hat{\xi}_t\right)\right\}},
+#'and obtain the estimated scale function as
+#'\eqn{\hat{s}(x_t)=\exp\left[\left(\hat{\mu}(x_t) - \hat{C}\right) / 2\right]}.
+#'The stabilized / standardized version of the series \eqn{\left\{r_t\right\}}
+#'is then \eqn{\tilde{r}_t = r_t^{*} / \hat{s}(x_t)}, to which
+#'a purely parametric volatility model following \code{spec} is then
+#'fitted. The estimated volatility at a given time point is then
+#'the product of the estimate of the corresponding scale function value
+#'and of the estimated conditional standard deviation (following the parametric
+#'model part) for that same time point. See for example Feng et al. (2022)
+#'or Letmathe et al. (2023) for more information on the semiparametric extension
+#'of volatility models.
+#'
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
@@ -153,8 +258,14 @@
 #'\item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
 #'Working Papers CIE No. 137, Paderborn University, Center for International Economics.
 #'URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
+#'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
+#'Trend Stationary Time Series. The R Journal,
+#'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
+#'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
+#'in R. Comunications in Statistics - Theory and Methods,
+#'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
 #'\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
 #'59(2), 347–370. DOI: 10.2307/2938260.}
@@ -171,9 +282,47 @@ fEGarch <- function(spec = egarch_spec(),
     control_nonpar = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
-  fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
+  if (use_nonpar) {
+
+    nonpar_result <- nonpar_est(
+      rt = rt,
+      lm = spec@long_memo,
+      nonparspec = nonparspec,
+      n_test = n_test,
+      control_nonpar = control_nonpar
+    )
+
+    meanspec <- mean_spec(
+      orders = c(0, 0),
+      long_memo = FALSE,
+      include_mean = FALSE
+    )    # Force to not estimate the mean in parametric part
+    n_test <- 0
+    rt <- nonpar_result$et
+
+  }
+
+  out <- fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
               n_test = n_test, start_pars, LB, UB, control,
               parallel, ncores)
 
+  if (use_nonpar) {
+    mu <- rep(nonpar_result$mu, length(rt))
+    out@rt <- nonpar_result$rt_train
+    format_list <- format_applier_ts(
+      rt = nonpar_result$rt_train,
+      list_of_ts = list(
+        scale_fun = nonpar_result$scale_fun,
+        cmeans = mu
+      )
+    )
+    out@scale_fun <- format_list$scale_fun
+    out@cmeans <- format_list$cmeans
+    out@test_obs <- nonpar_result$test_obs
+    out@sigt <- out@sigt * format_list$scale_fun
+    out@nonpar_model <- nonpar_result$est_nonpar
+  }
+
+  out
 }
 

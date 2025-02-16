@@ -76,6 +76,7 @@ Depends:
 Imports:
     Rcpp (>= 1.0.9),
     Rsolnp,
+    smoots,
     esemifar,
     zoo,
     stats,

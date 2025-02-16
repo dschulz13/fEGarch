@@ -128,3 +128,14 @@ setGeneric("se", function(x) {standardGeneric("se")})
 #'@export
 #'@aliases vcov_mat vcov_mat,ANY-method
 setGeneric("vcov_mat", function(x) {standardGeneric("vcov_mat")})
+
+#########################
+
+setGeneric("poly_order", function(x) {standardGeneric("poly_order")})
+setGeneric("kernel_order", function(x) {standardGeneric("kernel_order")})
+setGeneric("boundary_method", function(x) {standardGeneric("boundary_method")})
+
+setGeneric("poly_order<-", function(x, value) {standardGeneric("poly_order<-")})
+setGeneric("kernel_order<-", function(x, value) {standardGeneric("kernel_order<-")})
+setGeneric("boundary_method<-", function(x, value) {standardGeneric("boundary_method<-")})
+
