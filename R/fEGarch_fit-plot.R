@@ -8,7 +8,7 @@ set_default <- function(obj, repl) {
   obj
 }
 
-check_which <-function(which) {
+check_which <- function(which) {
 
     if (is.null(which)) {
     text_prompt <- data.frame(

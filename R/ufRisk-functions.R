@@ -122,7 +122,7 @@ setMethod("measure_risk", "fEGarch_fit",
       names_q <- paste0("VaR", level)
       lVaR <- list()
       for (i in seq_along(q_VaR)) {
-        lVaR[[names_q[[i]]]] <- zoo::zoo(zoo::coredata(object@cmeans + q_VaR[[i]] * object@sigt), order.by = time(object@sigt))
+        lVaR[[names_q[[i]]]] <- object@cmeans + q_VaR[[i]] * object@sigt
       }
     } else {
       lVaR <- list()
@@ -133,14 +133,14 @@ setMethod("measure_risk", "fEGarch_fit",
       names_q <- paste0("ES", level)
       lES <- list()
       for (i in seq_along(q_ES)) {
-        lES[[names_q[[i]]]] <- zoo::zoo(zoo::coredata(object@cmeans + q_ES[[i]] * object@sigt), order.by = time(object@sigt))
+        lES[[names_q[[i]]]] <- object@cmeans + q_ES[[i]] * object@sigt
       }
     } else {
       lES <- list()
     }
 
     fEGarch_risk(
-      measures = list(VaR = lVaR, ES = lES),
+      measures = list("VaR" = lVaR, "ES" = lES),
       observations = object@rt
     )
 
