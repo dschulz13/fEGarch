@@ -70,6 +70,7 @@ Collate:
   'fEGarch_fit-plot.R'
   'class-fEGarch_risk.R'
   'ufRisk-functions.R'
+  'reexport-pipe.R'
 Depends: 
     R (>= 2.10),
     methods
@@ -86,7 +87,8 @@ Imports:
     furrr,
     rlang,
     ggplot2,
-    ufRisk
+    ufRisk,
+    magrittr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
