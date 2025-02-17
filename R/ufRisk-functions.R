@@ -172,8 +172,8 @@ trafftest <- function(object) {
     VaR.e = -zoo::coredata(object@measures$VaR$VaR0.975),
     VaR.v = -zoo::coredata(object@measures$VaR$VaR0.99),
     ES = -zoo::coredata(object@measures$ES$ES0.975),
-    a.v = 0.99,
-    a.e = 0.975,
+    a.v = 0.01,
+    a.e = 0.025,
     dfree = 10
   )
 
