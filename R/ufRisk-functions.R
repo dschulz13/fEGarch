@@ -165,159 +165,18 @@ setMethod("measure_risk", "fEGarch_forecast",
 
 
 #'@export
-varcast_fEGarch <- function(
-    x,
-    level_VaR = 0.99,
-    level_ES = 0.975,
-    par_model_spec = list(
-      spec = egarch_spec(), include_mean = TRUE, drange = c(0, 0.5 - 1e-06), start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)
-    ),
-    nonpar_lm_model_spec = list(p = 3, pmax = 1, qmax = 1, pmin = 0, qmin = 0, mu = 1, InfR = "Nai", bStart = 0.15, bb = 1, cb = 0.05),
-    nonpar_sm_model_spec = list(p = 3, mu = 1, bStart = 0.15, alg = "B"),
-    n.out = 250,
-    smooth = FALSE
-) {
+trafftest <- function(object) {
 
-  args_p <- list(
-      spec = egarch_spec(), include_mean = TRUE, drange = c(0, 0.5 - 1e-06),
-      start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-      parallel = TRUE, ncores = max(1, future::availableCores() - 1)
+  l <- list(
+    ret.out = zoo::coredata(object@observations),
+    VaR.e = -zoo::coredata(object@measures$VaR$VaR0.975),
+    VaR.v = -zoo::coredata(object@measures$VaR$VaR0.99),
+    ES = -zoo::coredata(object@measures$ES$ES0.975),
+    a.v = 0.99,
+    a.e = 0.975
   )
-  elems <- names(par_model_spec)
-  for (nam in elems) {
-    args_p[[nam]] <- par_model_spec[[nam]]
-  }
 
-
-  rt <- diff(log(x))
-
-  a.v <- level_VaR
-  a.e <- level_ES
-
-  if (!smooth) {
-
-    est <- fEGarch(spec = args_p$spec, rt = rt, drange = args_p$drange,
-                   meanspec = mean_spec(include_mean = args_p$include_mean),
-                   start_pars = ars_p$start_pars,
-                   LB = args_p$LB,
-                   UB = args_p$UB, n_test = n.out,
-                   control = args_p$control,
-                   parallel = args_p$parallel,
-                   ncores = args_p$ncores)
-
-    fcast <- predict_roll(est)
-    risk <- measure_risk(fcast, level = c(a.v, a.e))
-    name.v <- paste0("VaR", a.v)
-    name.VaR.e <- paste0("VaR", a.e)
-    name.ES.e <- paste0("ES", a.e)
-    VaR.v <- -risk@measures$VaR[[name.v]]
-    VaR.e <- -risk@measures$VaR[[name.VaR.e]]
-    ES.e <- -risk@measures$ES[[name.ES.e]]
-    mu <- if (args_p$include_mean) {
-      est@pars[["mu"]]
-    } else {
-      0
-    }
-    est_np <- NULL
-    sig.in <- est@sigt
-    sig.fc <- fcast@sigt
-    scale_fc <- NULL
-    scale <- NULL
-    est_np <- NULL
-  } else {
-
-    rt_tr <- utils::head(rt, -n.out)
-    rt_te <- utils::tail(rt, n.out)
-
-    mu <- mean(rt_tr)
-    rt_dm <- rt_tr - mu
-    yt <- zoo::coredata(log((rt_dm)^2))
-
-
-    lm <- long_memo(args_p$spec)
-    if (!lm) {
-      func <- smoots::msmooth
-      input_np <- nonpar_sm_model_spec
-      args_np <- list(p = 3, mu = 1, bStart = 0.15, alg = "B")
-    } else {
-      func <- esemifar::tsmoothlm
-      input_np <- nonpar_lm_model_spec
-      args_np <- list(p = 3, pmax = 1, qmax = 1, pmin = 0, qmin = 0, mu = 1, InfR = "Nai", bStart = 0.15, bb = 1, cb = 0.05)
-    }
-    names_np <- names(input_np)
-    for (j in names_np) {
-      args_np[[j]] <- input_np[[j]]
-    }
-
-    args_np[["y"]] <- yt
-
-    est_np <- do.call(what = func, args = args_np)
-    res <- est_np$res
-    C <- -log(mean(exp(res)))
-    scale_f <- exp((est_np$ye - C) / 2)
-
-    scale_fcast <- rep(utils::tail(scale_f, 1), n.out)
-
-    eps <- c(rt_dm / scale_f, (rt_te - mu) / scale_fcast)
-
-    est <- fEGarch(
-      spec = args_p$spec,
-      rt = eps,
-      drange = args_p$drange,
-      meanspec = mean_spec(include_mean = FALSE),
-      n_test = n.out,
-      start_pars = args_p$start_pars,
-      LB = args_p$LB,
-      UB = args_p$UB,
-      control = args_p$control,
-      parallel = args_p$parallel,
-      ncores = args_p$ncores
-    )
-
-    fcast <- predict_roll(est)
-    risk <- measure_risk(fcast, level = c(a.v, a.e))
-    name.v <- paste0("VaR", a.v)
-    name.VaR.e <- paste0("VaR", a.e)
-    name.ES.e <- paste0("ES", a.e)
-    VaR.v <- -risk@measures$VaR[[name.v]] * scale_fcast - mu
-    VaR.e <- -risk@measures$VaR[[name.VaR.e]] * scale_fcast - mu
-    ES.e <- -risk@measures$ES[[name.ES.e]] * scale_fcast - mu
-
-    sig.in <- est@sigt * scale_f
-    sig.fc <- fcast@sigt * scale_fcast
-    scale <- scale_f
-    scale_fc <- scale_fcast
-
-  }
-
-  list(
-    mean = mu,
-    ret_in = rt_tr,
-    ret_out = rt_te,
-    sig_in = sig.in,
-    sig_fc = sig.fc,
-    scale = scale,
-    scale_fc = scale_fc,
-    VaR_e = VaR.e,
-    VaR_v = VaR.v,
-    ES = ES.e,
-    level_VaR = a.v,
-    level_ES = a.e,
-    model_par = est,
-    model_nonpar = est_np
-  )
+  ufRisk::trafftest(l)
 
 }
-
-#'@export
-#'@importFrom ufRisk covtest
-ufRisk::covtest
-
-#'@export
-#'@importFrom ufRisk trafftest
-ufRisk::trafftest
-
-#'@export
-#'@importFrom ufRisk lossfunc
-ufRisk::lossfunc
 
