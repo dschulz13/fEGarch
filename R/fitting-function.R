@@ -28,7 +28,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
     list(
       et = et,
       scale_fun = scale_fun,
-      test_obs = zoo::zoo(zoo::coredata(rt_test), order.by = time(rt_test)),
+      test_obs = if (n_test > 0) {zoo::zoo(zoo::coredata(rt_test), order.by = time(rt_test))} else if (n_test == 0) {NULL},
       rt_train = zoo::zoo(zoo::coredata(rt_train), order.by = time(rt_train)),
       est_nonpar = est_nonpar,
       mu = mu

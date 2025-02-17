@@ -743,6 +743,7 @@ lmgarch <- function(rt, orders = c(1, 1),
     rt = split_rt$train,
     sigt = sigt,
     cmeans = cmeans,
+    scale_fun = NULL,
     etat = etat,
     llhood = llhood,
     inf_criteria = c("aic" = aic, "bic" = bic),
@@ -750,7 +751,8 @@ lmgarch <- function(rt, orders = c(1, 1),
     orders = orders,
     long_memo = TRUE,
     meanspec = meanspec,
-    test_obs = split_rt$test
+    test_obs = split_rt$test,
+    nonpar_model = NULL
   )
 
   if (use_nonpar) {

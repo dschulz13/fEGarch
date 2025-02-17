@@ -87,6 +87,8 @@ model1
 #> ARMA orders (cond. mean): (0, 0)
 #> Long memory (cond. mean): FALSE
 #> 
+#> Scale estimation: FALSE
+#>  
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
@@ -97,7 +99,7 @@ model1
 #> gamma      0.3194 0.0209  15.2664 0.0000
 #> d          0.2754 0.0417   6.6094 0.0000
 #>  
-#> Information criteria:
+#> Information criteria (parametric part):
 #> AIC: -6.4945, BIC: -6.4880
 ```
 
@@ -151,6 +153,8 @@ model10
 #> ARMA orders (cond. mean): (0, 0)
 #> Long memory (cond. mean): FALSE
 #> 
+#> Scale estimation: FALSE
+#>  
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
@@ -162,7 +166,7 @@ model10
 #> gamma      0.1655 0.0147  11.2769 0.0000
 #> df         7.0253 0.5986  11.7360 0.0000
 #>  
-#> Information criteria:
+#> Information criteria (parametric part):
 #> AIC: -6.5387, BIC: -6.5312
 ```
 
@@ -199,6 +203,8 @@ model11
 #> ARMA orders (cond. mean): (1, 1)
 #> Long memory (cond. mean): FALSE
 #> 
+#> Scale estimation: FALSE
+#>  
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
@@ -210,9 +216,57 @@ model11
 #> kappa     -0.1339 0.0081  -16.5671 0.0000
 #> gamma      0.1617 0.0123   13.1245 0.0000
 #>  
-#> Information criteria:
+#> Information criteria (parametric part):
 #> AIC: -6.4969, BIC: -6.4894
 ```
+
+Yet another alternative is the fitting of semiparametric extensions of
+conditional variance models. Modelling the conditional mean
+simultaneously via an ARMA or FARIMA model in such a semiparametric
+extension is currently not possible. The nonparametric, smooth scale
+function reflecting the unconditional standard deviation over time is
+estimated using automated local polynomial regression with two different
+algorithms for short-memory and long-memory errors.
+
+``` r
+model12 <- fiegarch_spec(cond_dist = "std") %>%
+  fEGarch(rt = SP500, use_nonpar = TRUE)
+model12
+#> *************************************
+#> *     Fitted EGARCH Family Model    *
+#> *************************************
+#>  
+#> Type: eGARCH
+#> Orders: (1, 1)
+#> Modulus: (FALSE, FALSE)
+#> Powers: (1, 1)
+#> Long memory: TRUE
+#> Cond. distribution: std
+#>  
+#> ARMA orders (cond. mean): (0, 0)
+#> Long memory (cond. mean): FALSE
+#> 
+#> Scale estimation: TRUE (poly_order = 3; bandwidth = 0.1866)
+#>  
+#> Fitted parameters:
+#> 
+#>               par     se     tval   pval
+#> omega_sig -0.6202 0.1711  -3.6236 0.0003
+#> phi1       0.7624 0.0714  10.6768 0.0000
+#> kappa     -0.1532 0.0140 -10.9674 0.0000
+#> gamma      0.1258 0.0130   9.6861 0.0000
+#> d          0.4329 0.0733   5.9050 0.0000
+#> df         7.4682 0.5606  13.3213 0.0000
+#>  
+#> Information criteria (parametric part):
+#> AIC: 2.4356, BIC: 2.4421
+plot(cbind("Standardized" = (SP500 - mean(SP500)) / sd(SP500), 
+           "Scale-adjusted" = (SP500 - mean(SP500)) / model12@scale_fun),
+     xlab = "Year",
+     main = "Standardized log-returns and their scale-adjusted version")
+```
+
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ### Illustrations
 
@@ -239,7 +293,7 @@ returned object, also to the estimated conditional standard deviations.
 plot(TS, xlab = "Year", main = "Example application")
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 Furthermore, also the conditional means of the previously estimated
 `model11` object can be obtained.
@@ -264,7 +318,7 @@ plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ### Alternatives
 
@@ -292,6 +346,8 @@ model_fiaparch
 #> ARMA orders (cond. mean): (0, 0)
 #> Long memory (cond. mean): FALSE
 #>  
+#> Scale estimation: FALSE
+#>  
 #> Fitted parameters:
 #> 
 #>          par      se   tval   pval
@@ -304,7 +360,7 @@ model_fiaparch
 #> d     0.3960  5.1534 0.0768 0.9388
 #> df    7.8299 48.4538 0.1616 0.8716
 #>  
-#> Information criteria:
+#> Information criteria (parametric part):
 #> AIC: -6.5484, BIC: -6.5398
 ```
 
@@ -322,7 +378,7 @@ TS2 <- cbind(
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 ### Forecasting
 
