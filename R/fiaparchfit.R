@@ -301,7 +301,7 @@ goal_fun_creator_fiaparch <- function(
 #'\item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
 #'\item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
 #'\item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
-#'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
+#'\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted parametric model part; for purely parametric models, these criteria are valid for the entire model; for semiparametric models, they are only valid for the parametric step and are not valid for the entire model.}
 #'\item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object
 #'of class \code{"mean_spec"} that is identical to the object passed to the input argument
 #'\code{meanspec}.}
@@ -842,14 +842,14 @@ setMethod(
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     " \n",
-    "Scale estimation: ", paste0(check_nonpar, bwidth),
+    "Scale estimation: ", paste0(check_nonpar, bwidth), "\n",
     " \n",
     "Fitted parameters:\n"
   )
 
   part2 <- paste0(
     " \n",
-    "Information criteria:\n",
+    "Information criteria (parametric part):\n",
     "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
     ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
   )

@@ -121,7 +121,7 @@ volatilities, i.e. scale function value times conditional standard deviation); i
 \item{\code{cond_dist}:}{a character value stating the conditional distribution considered in the model fitting.}
 \item{\code{long_memo}:}{a logical value stating whether or not long memory was considered in the model fitting.}
 \item{\code{llhood}:}{the log-likelihood value obtained at the optimal parameter combination.}
-\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted model.}
+\item{\code{inf_criteria}:}{a named two-element numeric vector with the corresponding AIC (first element) and BIC (second element) of the fitted parametric model part; for purely parametric models, these criteria are valid for the entire model; for semiparametric models, they are only valid for the parametric step and are not valid for the entire model.}
 \item{\code{powers}:}{a two-element numeric vector stating the powers considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
 \item{\code{modulus}:}{a two-element logical vector stating the modulus transformations (\code{TRUE}, otherwise \code{FALSE}) considered for the asymmetry term (first element) and the magnitude term (second element); only exists, if a type I model was fitted.}
 \item{\code{meanspec}:}{the settings for the model in the conditional mean; is an object

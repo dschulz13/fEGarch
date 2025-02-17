@@ -204,4 +204,4 @@ esemifar_default <- list(
   method = "lpr"
 )
 
-#usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, internal = TRUE, overwrite = TRUE)
+#usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, smoots_default, esemifar_default, internal = TRUE, overwrite = TRUE)

@@ -619,7 +619,7 @@ methods::setMethod("predict", "fEGarch_fit",
     fcasts <- predict_internal(object = object, n.ahead = n.ahead, ...)
 
     if (np_check) {
-      fcasts$cmeans <- rep(mu_h, length(fcasts$cmeans))
+      fcasts$cmeans <- fcasts$cmeans + mu_h
       fcasts$sigt <- fcasts$sigt * scale_h
     }
 
@@ -639,10 +639,11 @@ methods::setMethod("predict", "fEGarch_fit",
 methods::setMethod("predict_roll", "fEGarch_fit",
   function(object, step_size = 1, ...) {
 
-    n_test <- length(test_obs)
+    n_test <- length(object@test_obs)
     object2 <- object
 
     np_check <- !is.null(object@nonpar_model)
+    step_size_check <- step_size > 1
 
     sigt_out <- cmeans_out <- rep(NA, n_test)
     if (np_check) {
@@ -654,11 +655,29 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       object2@cmeans <- rep(0, length(object2@rt))
       object2@scale_fun <- NULL
       object2@nonpar_model <- NULL
+
+      if (step_size_check) {
+        object3 <- object
+        object3@rt <- object2@rt
+        object3@sigt <- object2@sigt
+        object3@cmeans <- object3@cmeans
+        object3@scale_fun <- NULL
+        object3@nonpar_model <- NULL
+      }
+
     } else {
       test_obs <- object@test_obs
       object2@rt <- zoo::coredata(object2@rt)
       object2@sigt <- zoo::coredata(object2@sigt)
       object2@cmeans <- zoo::coredata(object2@cmeans)
+
+      if (step_size_check) {
+        object3 <- object
+        object3@rt <- object2@rt
+        object3@sigt <- object2@sigt
+        object3@cmeans <- object2@cmeans
+      }
+
     }
 
     object2@etat <- zoo::coredata(object2@etat)
@@ -675,19 +694,6 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     if (step_size > 1) {
 
-      object3 <- object
-
-      if (np_check) {
-        object3@rt <- zoo::coredata((object3@rt - object3@cmeans) / object3@scale_fun)
-        object3@sigt <- zoo::coredata(object3@sigt / object3@scale_fun)
-        object3@cmeans <- rep(0, length(object3@rt))
-        object3@scale_fun <- NULL
-        object3@nonpar_model <- NULL
-      } else {
-        object3@rt <- zoo::coredata(object3@rt)
-        object3@sigt <- zoo::coredata(object3@sigt)
-        object3@cmeans <- zoo::coredata(object3@cmeans)
-      }
       object3@etat <- zoo::coredata(object3@etat)
       sigt_out_s <- cmeans_out_s <- rep(NA, n_test)
       for (i in step_size:n_test) {

@@ -363,14 +363,14 @@ setMethod(
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     " \n",
-    "Scale estimation: ", paste0(check_nonpar, bwidth),
+    "Scale estimation: ", paste0(check_nonpar, bwidth), "\n",
     " \n",
     "Fitted parameters:\n"
   )
 
   part2 <- paste0(
     " \n",
-    "Information criteria:\n",
+    "Information criteria (parametric part):\n",
     "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
     ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
   )

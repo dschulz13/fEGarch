@@ -62,8 +62,18 @@ locpol_spec <- function(
     boundary_method = c("extend", "shorten")
 ) {
 
-  poly_order <- match.arg(poly_order)
-  kernel_order <- match.arg(kernel_order)
+  if (all(poly_order %in% c(3, 1))) {
+    poly_order <- poly_order[[1]]
+  } else {
+    stop("@poly_order must be one from 1 or 3.")
+  }
+
+  if (all(kernel_order %in% c(1, 0, 2, 3))) {
+    kernel_order <- kernel_order[[1]]
+  } else {
+    stop("@kernel_order must be one from 0, 1, 2 or 3.")
+  }
+
   boundary_method <- match.arg(boundary_method)
 
   new("locpol_spec",
