@@ -173,7 +173,8 @@ trafftest <- function(object) {
     VaR.v = -zoo::coredata(object@measures$VaR$VaR0.99),
     ES = -zoo::coredata(object@measures$ES$ES0.975),
     a.v = 0.99,
-    a.e = 0.975
+    a.e = 0.975,
+    dfree = 10
   )
 
   ufRisk::trafftest(l)
