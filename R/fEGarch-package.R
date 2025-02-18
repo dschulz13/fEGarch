@@ -129,12 +129,10 @@
 #'
 #'@useDynLib fEGarch
 #'@docType package
-#'@name fEGarch-package
-#'@aliases fEGarch-package
 #'@importFrom Rcpp sourceCpp
 #'@importFrom methods new validObject
 #'@importFrom stats integrate pnorm rnorm rt runif time uniroot
 #'@importFrom utils tail
 #'@importFrom ggplot2 autoplot
 #'
-NULL
+"_PACKAGE"
