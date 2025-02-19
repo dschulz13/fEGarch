@@ -2,12 +2,14 @@ setClass("locpol_spec",
   slots = c(
     poly_order = "numeric",
     kernel_order = "numeric",
-    boundary_method = "character"
+    boundary_method = "character",
+    bwidth = "ANY"
   ),
   prototype = list(
     poly_order = 3,
     kernel_order = 1,
-    boundary_method = "extend"
+    boundary_method = "extend",
+    bwidth = NULL
   )
 )
 
@@ -18,6 +20,8 @@ setValidity("locpol_spec", function(object){
     "@kernel_order must be of length one and one of the integers from 0, 1, 2, 3"
   } else if (bmethod_checker_locpol(object@boundary_method)) {
     '@boundary_method must be of length one and either "shorten" or "extend"'
+  } else if (bwidth_checker_locpol(object@bwidth)) {
+    '@bwidth must be either NULL (for automatic bandwidth selection) or a single numeric value between 0 and 0.5'
   } else {
     TRUE
   }
@@ -42,6 +46,9 @@ setValidity("locpol_spec", function(object){
 #'toward the interior for the loss of window width toward the boundary,
 #'i.e. the total smoothing window width reduces more and more when
 #'getting closer to the first and last time points.
+#'@param bwidth the smoothing bandwidth; for NULL, i.e. the default, an automated
+#'bandwidth selection is employed; otherwise a single numeric value between
+#'0 and 0.5 must be provided.
 #'
 #'@return
 #'An object of class \code{"locpol_spec"} is returned.
@@ -106,7 +113,8 @@ setValidity("locpol_spec", function(object){
 locpol_spec <- function(
     poly_order = c(3, 1),
     kernel_order = c(1, 0, 2, 3),
-    boundary_method = c("extend", "shorten")
+    boundary_method = c("extend", "shorten"),
+    bwidth = NULL
 ) {
 
   if (all(poly_order %in% c(3, 1))) {
@@ -126,7 +134,8 @@ locpol_spec <- function(
   new("locpol_spec",
     poly_order = poly_order,
     kernel_order = kernel_order,
-    boundary_method = boundary_method
+    boundary_method = boundary_method,
+    bwidth = bwidth
   )
 
 }
@@ -169,10 +178,17 @@ setMethod("kernel_order", "locpol_spec", function(x) {x@kernel_order})
 setMethod("boundary_method", "locpol_spec", function(x) {x@boundary_method})
 #'@export
 #'@rdname locpol_spec_methods
-setMethod("poly_order<-", "mean_spec", function(x, value) {x@poly_order <- value; validObject(x); x})
+#'@aliases bwidth,locpol_spec-method
+setMethod("bwidth", "locpol_spec", function(x) {x@bwidth})
 #'@export
 #'@rdname locpol_spec_methods
-setMethod("kernel_order<-", "mean_spec", function(x, value) {x@kernel_order <- value; validObject(x); x})
+setMethod("poly_order<-", "locpol_spec", function(x, value) {x@poly_order <- value; validObject(x); x})
 #'@export
 #'@rdname locpol_spec_methods
-setMethod("boundary_method<-", "mean_spec", function(x, value) {x@boundary_method <- value; validObject(x); x})
+setMethod("kernel_order<-", "locpol_spec", function(x, value) {x@kernel_order <- value; validObject(x); x})
+#'@export
+#'@rdname locpol_spec_methods
+setMethod("boundary_method<-", "locpol_spec", function(x, value) {x@boundary_method <- value; validObject(x); x})
+#'@export
+#'@rdname locpol_spec_methods
+setMethod("bwidth<-", "locpol_spec", function(x, value) {x@bwidth <- value; validObject(x); x})

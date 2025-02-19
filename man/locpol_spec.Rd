@@ -7,7 +7,8 @@
 locpol_spec(
   poly_order = c(3, 1),
   kernel_order = c(1, 0, 2, 3),
-  boundary_method = c("extend", "shorten")
+  boundary_method = c("extend", "shorten"),
+  bwidth = NULL
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ interior by the amount that is lost toward the boundary; for
 toward the interior for the loss of window width toward the boundary,
 i.e. the total smoothing window width reduces more and more when
 getting closer to the first and last time points.}
+
+\item{bwidth}{the smoothing bandwidth; for NULL, i.e. the default, an automated
+bandwidth selection is employed; otherwise a single numeric value between
+0 and 0.5 must be provided.}
 }
 \value{
 An object of class \code{"locpol_spec"} is returned.

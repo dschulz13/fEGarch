@@ -5,9 +5,11 @@
 \alias{poly_order,locpol_spec-method}
 \alias{kernel_order,locpol_spec-method}
 \alias{boundary_method,locpol_spec-method}
-\alias{poly_order<-,mean_spec-method}
-\alias{kernel_order<-,mean_spec-method}
-\alias{boundary_method<-,mean_spec-method}
+\alias{bwidth,locpol_spec-method}
+\alias{poly_order<-,locpol_spec-method}
+\alias{kernel_order<-,locpol_spec-method}
+\alias{boundary_method<-,locpol_spec-method}
+\alias{bwidth<-,locpol_spec-method}
 \title{Accessors for Class \code{"locpol_spec"}}
 \usage{
 \S4method{poly_order}{locpol_spec}(x)
@@ -16,11 +18,15 @@
 
 \S4method{boundary_method}{locpol_spec}(x)
 
-\S4method{poly_order}{mean_spec}(x) <- value
+\S4method{bwidth}{locpol_spec}(x)
 
-\S4method{kernel_order}{mean_spec}(x) <- value
+\S4method{poly_order}{locpol_spec}(x) <- value
 
-\S4method{boundary_method}{mean_spec}(x) <- value
+\S4method{kernel_order}{locpol_spec}(x) <- value
+
+\S4method{boundary_method}{locpol_spec}(x) <- value
+
+\S4method{bwidth}{locpol_spec}(x) <- value
 }
 \arguments{
 \item{x}{the input object or object to modify.}

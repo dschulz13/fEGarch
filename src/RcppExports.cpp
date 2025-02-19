@@ -62,6 +62,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigt_aparch_Cpp
+arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu, const arma::rowvec& phi, const arma::rowvec& beta, const double gamma, const double delta, const double omega);
+RcppExport SEXP _fEGarch_sigt_aparch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP phiSEXP, SEXP betaSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP omegaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_aparch_Cpp(x, mu, phi, beta, gamma, delta, omega));
+    return rcpp_result_gen;
+END_RCPP
+}
 // forecast_arma_Cpp
 arma::vec forecast_arma_Cpp(const arma::vec& x, const arma::vec& et, const double mu, const arma::rowvec& ma_e, const arma::rowvec& ar_e, const int horizon);
 RcppExport SEXP _fEGarch_forecast_arma_Cpp(SEXP xSEXP, SEXP etSEXP, SEXP muSEXP, SEXP ma_eSEXP, SEXP ar_eSEXP, SEXP horizonSEXP) {
@@ -612,6 +629,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_ald", (DL_FUNC) &_fEGarch_pdf_ald, 4},
     {"_fEGarch_pdf_ald_v1", (DL_FUNC) &_fEGarch_pdf_ald_v1, 2},
     {"_fEGarch_pdf_skew_sald", (DL_FUNC) &_fEGarch_pdf_skew_sald, 3},
+    {"_fEGarch_sigt_aparch_Cpp", (DL_FUNC) &_fEGarch_sigt_aparch_Cpp, 7},
     {"_fEGarch_forecast_arma_Cpp", (DL_FUNC) &_fEGarch_forecast_arma_Cpp, 6},
     {"_fEGarch_forecast_farima_Cpp", (DL_FUNC) &_fEGarch_forecast_farima_Cpp, 4},
     {"_fEGarch_fitted_arma_Cpp", (DL_FUNC) &_fEGarch_fitted_arma_Cpp, 4},

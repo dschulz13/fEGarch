@@ -12,4 +12,8 @@ bmethod_checker_locpol <- function(boundary_method) {
   !((length(boundary_method) == 1) && (boundary_method %in% c("shorten", "extend")))
 }
 
+bwidth_checker_locpol <- function(bwidth) {
+  !((is.null(bwidth)) || (is.numeric(bwidth) && length(bwidth) == 1 && bwidth > 0 && bwidth < 0.5))
+}
+
 # Function "lmemo_checker" can be reused from "inpout_checkers_egarch_spec.R".

@@ -188,7 +188,7 @@ sigt_funs_loggarch <- list(
 
 smoots_default <- list(
   Mcf = "NP",
-  InfR = "Nai",
+  InfR = "Opt",
   bStart = 0.15,
   bvc = "Y",
   cb = 0.05,
@@ -198,7 +198,7 @@ smoots_default <- list(
 esemifar_default <- list(
   pmin = 0, pmax = 1,
   qmin = 0, qmax = 1,
-  InfR = "Nai",
+  InfR = "Opt",
   bStart = 0.15,
   cb = 0.05,
   method = "lpr"

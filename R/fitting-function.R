@@ -4,13 +4,21 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
     rt_train <- split_data$train
     rt_test <- split_data$test
 
-    args <- list(smoots_default, esemifar_default)[[lm + 1]]
-    smooth_fun <- list(smoots::tsmooth, esemifar::tsmoothlm)[[lm + 1]]
-    if (length(control_nonpar) > 0) {
-      names_l <- names(control_nonpar)
-      for (i in names_l) {
-        args[[i]] <- control_nonpar[[i]]
+    bw <- nonparspec@bwidth
+    if (is.null(bw)) {
+      args <- list(smoots_default, esemifar_default)[[lm + 1]]
+      smooth_fun <- list(smoots::tsmooth, esemifar::tsmoothlm)[[lm + 1]]
+      if (length(control_nonpar) > 0) {
+        names_l <- names(control_nonpar)
+        for (i in names_l) {
+          args[[i]] <- control_nonpar[[i]]
+        }
       }
+    } else {
+      args <- list()
+      smooth_fun <- smoots::gsmooth
+      args[["b"]] <- bw
+      args[["v"]] <- 0
     }
     args[["p"]] <- nonparspec@poly_order
     args[["mu"]] <- nonparspec@kernel_order
@@ -204,11 +212,11 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'for long-memory specifications. These arguments specify settings
 #'for the automated bandwidth selection algorithms implemented by these
 #'two functions. By default, we use the settings
-#'\code{Mcf = "NP"}, \code{InfR = "Nai"},
+#'\code{Mcf = "NP"}, \code{InfR = "Opt"},
 #'\code{bStart = 0.15}, \code{bvc = "Y"}, \code{cb = 0.05},
 #'and \code{method = "lpr"} within the call to \code{\link[smoots]{tsmooth}},
 #'as well as \code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
-#'\code{qmax = 1}, \code{InfR = "Nai"},
+#'\code{qmax = 1}, \code{InfR = "Opt"},
 #'\code{bStart = 0.15}, \code{cb = 0.05}, and
 #'\code{method = "lpr"} for \code{\link[esemifar]{tsmoothlm}}.
 #'\code{\link{locpol_spec}} passed to \code{nonparspec} handles
@@ -236,7 +244,10 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'and of the estimated conditional standard deviation (following the parametric
 #'model part) for that same time point. See for example Feng et al. (2022)
 #'or Letmathe et al. (2023) for more information on the semiparametric extension
-#'of volatility models.
+#'of volatility models. Moreover, if \code{bwidth} in the object passed to \code{nonparspec}
+#'is not at its default \code{NULL} but instead a numeric value between \code{0} and \code{0.5},
+#'the automated badnwidth selection is skipped and the provided bandwidth in \code{bwidth}
+#'is used.
 #'
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

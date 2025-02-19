@@ -342,9 +342,14 @@ setMethod(
   row.names(df) <- par_names
 
   check_nonpar <- !is.null(x@nonpar_model)
+  b <- if (is.null(x@nonpar_model$b0)) {
+    x@nonpar_model$b
+  } else {
+    x@nonpar_model$b0
+  }
   bwidth <- if (check_nonpar) {
     paste0(
-      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", x@nonpar_model$b0), ")"
+      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", b), ")"
     )
   } else {
     ""

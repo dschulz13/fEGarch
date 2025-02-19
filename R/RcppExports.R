@@ -17,6 +17,10 @@ pdf_skew_sald <- function(x, P, skew) {
     .Call('_fEGarch_pdf_skew_sald', PACKAGE = 'fEGarch', x, P, skew)
 }
 
+sigt_aparch_Cpp <- function(x, mu, phi, beta, gamma, delta, omega) {
+    .Call('_fEGarch_sigt_aparch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, gamma, delta, omega)
+}
+
 forecast_arma_Cpp <- function(x, et, mu, ma_e, ar_e, horizon) {
     .Call('_fEGarch_forecast_arma_Cpp', PACKAGE = 'fEGarch', x, et, mu, ma_e, ar_e, horizon)
 }
