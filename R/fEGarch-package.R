@@ -129,6 +129,8 @@
 #'
 #'@useDynLib fEGarch
 #'@docType package
+#'@name fEGarch
+#'@aliases fEGarch-package
 #'@importFrom Rcpp sourceCpp
 #'@importFrom methods new validObject
 #'@importFrom stats integrate pnorm rnorm rt runif time uniroot

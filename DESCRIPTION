@@ -72,6 +72,7 @@ Collate:
   'class-fEGarch_risk.R'
   'ufRisk-functions.R'
   'reexport-pipe.R'
+  'test-functions.R'
 Depends: 
     R (>= 3.5),
     methods

@@ -45,6 +45,10 @@ farima_sim_Cpp <- function(innov, mu, coef_inf, nout) {
     .Call('_fEGarch_farima_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, coef_inf, nout)
 }
 
+autocorCpp <- function(xt, lag_max) {
+    .Call('_fEGarch_autocorCpp', PACKAGE = 'fEGarch', xt, lag_max)
+}
+
 sigt_egarch_forecast_shortCpp <- function(et, sigt, omega, phi, alpha, beta, E_asy, E_mag, powers, modulus, mode, horizon) {
     .Call('_fEGarch_sigt_egarch_forecast_shortCpp', PACKAGE = 'fEGarch', et, sigt, omega, phi, alpha, beta, E_asy, E_mag, powers, modulus, mode, horizon)
 }

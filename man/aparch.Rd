@@ -249,7 +249,7 @@ of volatility models.
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
-model <- fiaparch(rt)
+model <- aparch(rt)
 model
 
 }

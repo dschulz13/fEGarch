@@ -165,6 +165,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// autocorCpp
+arma::vec autocorCpp(const arma::vec& xt, const int lag_max);
+RcppExport SEXP _fEGarch_autocorCpp(SEXP xtSEXP, SEXP lag_maxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type xt(xtSEXP);
+    Rcpp::traits::input_parameter< const int >::type lag_max(lag_maxSEXP);
+    rcpp_result_gen = Rcpp::wrap(autocorCpp(xt, lag_max));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sigt_egarch_forecast_shortCpp
 arma::vec sigt_egarch_forecast_shortCpp(const arma::vec& et, const arma::vec& sigt, const double omega, const arma::rowvec& phi, const arma::rowvec& alpha, const arma::rowvec& beta, const double E_asy, const double E_mag, const arma::vec& powers, const arma::vec& modulus, const std::string& mode, const int horizon);
 RcppExport SEXP _fEGarch_sigt_egarch_forecast_shortCpp(SEXP etSEXP, SEXP sigtSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP E_asySEXP, SEXP E_magSEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP, SEXP horizonSEXP) {
@@ -636,6 +648,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_fitted_farima_Cpp", (DL_FUNC) &_fEGarch_fitted_farima_Cpp, 3},
     {"_fEGarch_arma_sim_Cpp", (DL_FUNC) &_fEGarch_arma_sim_Cpp, 5},
     {"_fEGarch_farima_sim_Cpp", (DL_FUNC) &_fEGarch_farima_sim_Cpp, 4},
+    {"_fEGarch_autocorCpp", (DL_FUNC) &_fEGarch_autocorCpp, 2},
     {"_fEGarch_sigt_egarch_forecast_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_forecast_shortCpp, 12},
     {"_fEGarch_sigt_egarch_forecast_longCpp", (DL_FUNC) &_fEGarch_sigt_egarch_forecast_longCpp, 11},
     {"_fEGarch_signCpp", (DL_FUNC) &_fEGarch_signCpp, 1},
