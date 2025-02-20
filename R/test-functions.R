@@ -1,10 +1,10 @@
 # Generics
-setGeneric("ljung_box", function(object, m_max = 10, ...) {standardGeneric("ljung_box")})
+setGeneric("ljung_box", function(object, m_max = 20, adj = FALSE, ...) {standardGeneric("ljung_box")})
 
 
 
 #'@export
-setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 10, type = c("single", "squared"), ...) {
+setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, type = c("single", "squared"), ...) {
 
   type <- match.arg(type)
   et <- object@etat
@@ -21,16 +21,25 @@ setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 10, type = c("sin
 
   stats <- (n * (n + 2)) * cumsum(cors^2 / (n - (1:m_max)))
 
-  p_vals <- 1 - pchisq(stats, df = 1:m_max)
+  n_par <- if (adj) {
+    length(object@pars)
+  } else {
+    0
+  }
+
+  dfr <- (1:m_max) - n_par
+  n_df_pos <- sum(dfr > 0)
+  p_vals <- c(rep(NA_real_, m_max - n_df_pos), 1 - pchisq(tail(stats, n_df_pos), df = tail(dfr, n_df_pos)))
 
 
   m <- 1:m_max
 
-  df <- matrix(NA, nrow = m_max, ncol = 2)
+  df <- matrix(NA_real_, nrow = m_max, ncol = 3)
   df[, 1] <- m
-  df[, 2] <- as.numeric(sprintf("%.4f", p_vals))
+  df[, 2] <- dfr
+  df[, 3] <- suppressWarnings(as.numeric(sprintf("%.4f", p_vals)))
   rownames(df) <- rep("", m_max)
-  colnames(df) <- c("m", "pval")
+  colnames(df) <- c("m", "df", "pval")
 
   out1 <- paste0(
     "H0: autocorrelations for lags 1 to m simultaneously equal to zero\n",
