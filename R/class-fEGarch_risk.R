@@ -2,22 +2,34 @@
 setClass("fEGarch_risk",
   slots = c(
     measures = "list",
-    observations = "ANY"
+    observations = "ANY",
+    cmeans = "ANY",
+    sigt = "ANY",
+    model = "ANY"
   ),
   prototype = list(
     measures = list(1),
-    observations = numeric(1)
+    observations = numeric(1),
+    cmeans = numeric(1),
+    sigt = numeric(1),
+    model = numeric(1)
   )
 )
 
 fEGarch_risk <- function(
     measures,
-    observations
+    observations,
+    cmeans,
+    sigt,
+    model
 ) {
 
   new("fEGarch_risk",
     measures = measures,
-    observations = observations
+    observations = observations,
+    cmeans = cmeans,
+    sigt = sigt,
+    model = model
   )
 
 }
