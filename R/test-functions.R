@@ -1,5 +1,5 @@
 # Generics
-setGeneric("ljung_box", function(object, m_max = 20, adj = FALSE, ...) {standardGeneric("ljung_box")})
+setGeneric("ljung_box", function(object, m_max = 20, adj = FALSE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, ...) {standardGeneric("ljung_box")})
 
 
 
@@ -19,7 +19,12 @@ setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, 
   cors <- c(autocorCpp(et_transf, lag_max = m_max))
   n <- length(et)
 
-  stats <- (n * (n + 2)) * cumsum(cors^2 / (n - (1:m_max)))
+  stats <- rep(NA, m_max)
+
+  for (i in 1:m_max) {
+    w <- weights(lag = 1:i)
+    stats[[i]] <- (n * (n + 2)) * sum((cors[1:i]^2 * w) / (n - (1:i)))
+  }
 
   n_par <- if (adj) {
     length(object@pars)
@@ -42,13 +47,16 @@ setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, 
   colnames(df) <- c("m", "df", "pval")
 
   out1 <- paste0(
+    "\n*************************************************\n",
+    "*Ljung-Box test for autocorrelation in residuals*\n",
+    "*************************************************\n\n",
     "H0: autocorrelations for lags 1 to m simultaneously equal to zero\n",
     "Mode: ", type, "\n"
   )
   cat(out1, fill = TRUE)
   print(df)
 
-  invisible(NULL)
+  invisible(df)
 
 })
 
