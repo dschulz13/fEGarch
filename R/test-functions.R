@@ -1,10 +1,10 @@
 # Generics
-setGeneric("ljung_box", function(object, m_max = 20, adj = FALSE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, ...) {standardGeneric("ljung_box")})
+setGeneric("ljung_box_test", function(object, m_max = 20, adj = FALSE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
 
 
 
 #'@export
-setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, type = c("single", "squared"), ...) {
+setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, type = c("single", "squared"), ...) {
 
   type <- match.arg(type)
   et <- object@etat
@@ -46,18 +46,79 @@ setMethod("ljung_box", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, 
   rownames(df) <- rep("", m_max)
   colnames(df) <- c("m", "df", "pval")
 
-  out1 <- paste0(
-    "\n*************************************************\n",
-    "*Ljung-Box test for autocorrelation in residuals*\n",
-    "*************************************************\n\n",
-    "H0: autocorrelations for lags 1 to m simultaneously equal to zero\n",
-    "Mode: ", type, "\n"
-  )
-  cat(out1, fill = TRUE)
-  print(df)
-
+  if (!silent) {
+    out1 <- paste0(
+      "\n************************************************************\n",
+      "* Weighted Ljung-Box test for autocorrelation in residuals *\n",
+      "************************************************************\n\n",
+      "H0: autocorrelations for lags 1 to m simultaneously equal to zero\n",
+      "Mode: ", type, "\n"
+    )
+    cat(out1, fill = TRUE)
+    print(df)
+  }
   invisible(df)
 
 })
 
 
+# Generics
+setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
+
+
+
+#'@export
+setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...) {
+
+  et <- zoo::coredata(object@etat)
+  et_h <- head(et, -1)
+
+  It <- as.numeric(et_h < 0)
+  It2 <- 1 - It
+
+  V1 <- It
+  V2 <- It * et_h
+  V3 <- It2 * et_h
+  Y <- et[-1]^2
+
+  n <- length(Y)
+
+  reg <- stats::lm(Y ~ V1 + V2 + V3)
+
+  sum_stats <- summary(reg)
+  R2 <- sum_stats$r.squared
+
+  pvals_reg <- unname(sum_stats$coefficients[, 4, drop = TRUE][-1])
+
+  p_joint <- 1 - pchisq(n * R2, df = 3)
+  p_all <- c(pvals_reg, p_joint)
+
+  mat <- matrix(NA, ncol = 1, nrow = 4)
+  rownames(mat) <- c(
+    "Sign bias",
+    "Negative sign bias",
+    "Positive sign bias",
+    "Joint"
+  )
+  mat[, 1] <- as.numeric(sprintf("%.4f", p_all))
+  colnames(mat) <- "pval"
+
+  if (!silent) {
+    out1 <- paste0(
+      "\n******************\n",
+      "* Sign bias test *\n",
+      "******************\n\n",
+      "H0 (sign bias):      negative shocks have no significant effect\n",
+      "                     on volatility beyond symmetric model\n",
+      "H0 (neg. sign bias): magnitude of negative shocks has no\n",
+      "                     additional impact on volatility\n",
+      "H0 (pos. sign bias): magnitude of positive shocks has no\n",
+      "                     additional impact on volatility\n",
+      "H0 (joint):          all three of the above simultaneously\n"
+    )
+    cat(out1, fill = TRUE)
+    print(mat)
+  }
+  invisible(mat)
+
+})
