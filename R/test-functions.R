@@ -2,15 +2,47 @@
 setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
 
 
-
+#'Weighted Ljung-Box Test for Autocorrelation
+#'
+#'Apply a (weighted) Ljung-Box test to check
+#'the standardized residuals of a fitted model
+#'from this package for remaining autocorrelation.
+#'Two different options allow to check either the
+#'simple residuals or the squared residuals.
+#'
+#'@param object an object \code{"fEGarch_fit"} as returned
+#'by the fitting functions of this package, for example
+#'by \code{\link{fEGarch}}.
+#'@param m_max the maximum lag; tests will be conducted for 1 up to
+#'\code{m_max}.
+#'@param adj a logical value indicating whether or not to adjust
+#'the degrees of freedom in the chi-square distribution according
+#'to the number of estimated parameters.
+#'@param weights a function with argument \code{lag} stating how
+#'weights should be calculated.
+#'@param silent a logical value reflecting whether or not test results
+#'should be printed in a well-formatted manner to the console.
+#'@param ... currently without use.
+#'
 #'@export
-setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, type = c("single", "squared"), ...) {
+#'
+#'@return
+#'Returns a numeric matrix invisibly.
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
+#'spec <- fEGarch_spec()
+#'model <- fEGarch(spec, rt)
+#'ljung_box_test(model)
+#'
+setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, type = c("simple", "squared"), ...) {
 
   type <- match.arg(type)
   et <- object@etat
 
   fun <- list(
-    "single" = function(et) {et},
+    "simple" = function(et) {et},
     "squared" = function(et) {et^2}
   )[[type]]
 
@@ -67,9 +99,32 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TR
 # Generics
 setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
 
-
-
+#'Sign Bias Test
+#'
+#'Apply a sign bias test to check
+#'the standardized residuals of a fitted model
+#'from this package for remaining significant
+#'sign effects.
+#'
+#'@param object an object \code{"fEGarch_fit"} as returned
+#'by the fitting functions of this package, for example
+#'by \code{\link{fEGarch}}.
+#'@param silent a logical value reflecting whether or not test results
+#'should be printed in a well-formatted manner to the console.
+#'@param ... currently without use.
+#'
 #'@export
+#'
+#'@return
+#'Returns a numeric matrix invisibly.
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
+#'spec <- fEGarch_spec()
+#'model <- fEGarch(spec, rt)
+#'sign_bias_test(model)
+#'
 setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...) {
 
   et <- zoo::coredata(object@etat)
@@ -131,12 +186,12 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...)
 setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
 
 
-#'Pearson Goodness-of-Fit Test for Standardized Model Residuals
+#'Adjusted Pearson Goodness-of-Fit Test for Standardized Model Residuals
 #'
-#'Consider a probability integral transform on the standardized
-#'residuals of a fitted model and apply a Pearson goodness-of-fit
-#'test to the binned data using a selection of predefined number of
-#'bins.
+#'Consider a probability integral transform on the magnitudes of the
+#'standardized residuals of a fitted model and apply a
+#'Pearson goodness-of-fit test to the binned data using a
+#'selection of predefined number of bins.
 #'
 #'@param object an object of class \code{"fEGarch_fit"} as returned
 #'by the fitting functions of this package like for example
@@ -150,23 +205,39 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'@param ... currently without purpose.
 #'
 #'@details
-#'
+#'Use a probability integral transform on the magnitudes of the
+#'standardized residuals of a fitted model. This is then the
+#'basis to conduct a Pearson goodness-of-fit chi-square test.
 #'
 #'@return
 #'Returns a numeric matrix invisibly.
 #'
 #'@export
-setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
+#'spec <- fEGarch_spec()
+#'model <- fEGarch(spec, rt)
+#'goodn_of_fit_test(model)
+#'
+setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20, 30, 40, 50, 60), adj = TRUE, silent = FALSE, ...) {
 
   model <- object
   pars <- model@pars
   cond_d <- model@cond_dist
   n_par <- length(pars)
 
-  int_fun <- lookup_table[["fun1"]][[cond_d]]
+  int_fun_s <- lookup_table[["fun1"]][[cond_d]]
+
+  int_fun <- function(x, int_fun_s, shape, skew) {
+    xa <- abs(x)
+    int_fun_s(x = xa, shape = shape, skew = skew) + int_fun_s(x = -xa, shape = shape, skew = skew)
+  }
 
   args <- list(
-    "dfun" = int_fun
+    "dfun" = int_fun,
+    "int_fun_s" = int_fun_s
   )
 
   args[["shape"]] <- if (!(cond_d %in% c("norm", "snorm"))) {
@@ -195,6 +266,7 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30
   rownames(out_mat) <- rep("", lb)
   colnames(out_mat) <- c("n_bins", "df", "pval")
   et <- zoo::coredata(model@etat)
+  et_a <- abs(et)
   n <- length(et)
   adjust <- n_par * adj
 
@@ -206,19 +278,19 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30
 
     args[["p"]] <- p
 
-    quantiles <- do.call(inv_cdf_fun, args = args)   # Get quantiles so that each slice has the same probability
+    quantiles <- -rev(do.call(inv_cdf_fun, args = args))   # Get quantiles corresponding to class bounds
 
     np1 <- length(p) + 1
     frequ_et <- rep(NA, np1)
-    p_adj <- c(-Inf, p, Inf)
+    q_adj <- c(-Inf, quantiles, Inf)
 
     for (j in seq_along(frequ_et)) {
-      frequ_et <- sum(et > p_adj[[j]] & et <= p_adj[[j + 1]])
+      frequ_et[[j]] <- sum(et_a >= q_adj[[j]] & et_a < q_adj[[j + 1]])
     }
 
-    expec <- n * one_div_nb
+    expec <- n * one_div_nb   # expected frequencies in each class
 
-    stat <- sum((frequ_et - expec)^2 / expec)
+    stat <- sum((frequ_et - expec)^2 / expec)   # test statistic
 
     df <- nb - 1 - adjust
 
@@ -240,9 +312,10 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30
 
   if (!silent) {
     out1 <- paste0(
-      "\n*************************************\n",
-      "  * Goodness-of-fit test on residuals *\n",
-      "***************************************\n\n",
+    "\n************************************\n",
+      "* Adjusted Pearson goodness-of-fit *\n",
+      "*         test on residuals        *\n",
+      "************************************\n\n",
       "H0: standardized model residuals align with\n",
       "    assumed innovation distribution\n"
     )

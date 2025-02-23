@@ -12,11 +12,12 @@ check_which <- function(which) {
 
     if (is.null(which)) {
     text_prompt <- data.frame(
-      c("(1) returns:", "(2) means:", "(3) stand_deviations:"),
+      c("(1) returns:", "(2) means:", "(3) stand_deviations:", "(4) residuals:"),
       c(
         "Input training series",
         "Fitted conditional means",
-        "Fitted conditional standard deviations"
+        "Fitted conditional standard deviations",
+        "Standardized residuals"
       )
     )
     colnames(text_prompt) <- NULL
@@ -29,7 +30,7 @@ check_which <- function(which) {
 
     which <- ""
 
-    while(!(which %in% c(0, 1, 2, 3, "returns", "means", "stand_deviations"))) {
+    while(!(which %in% c(0, 1, 2, 3, 4, "returns", "means", "stand_deviations", "residuals"))) {
 
         which <- readline("Keyword or position number: ")
 
@@ -107,6 +108,27 @@ plot_sigt <- function(obj, ...) {
   do.call(plot, args = dots)
 }
 
+plot_etat <- function(obj, ...) {
+  dots <- list(...)
+  defaults <- list(
+    xlab = "Time",
+    ylab = "Value",
+    main = paste0('Residuals'),
+    type = "l"
+  )
+  dots <- set_default(dots, defaults)
+  rt <- obj@etat
+  if (inherits(obj@rt, "zoo") || inherits(obj@rt, "ts")) {
+    tp <- c(time(rt))
+    rt <- zoo::coredata(rt)
+  } else {
+    tp <- seq_along(rt)
+  }
+  dots[["y"]] <- rt
+  dots[["x"]] <- tp
+
+  do.call(plot, args = dots)
+}
 
 ### Base R plot method
 
@@ -121,7 +143,9 @@ plot_sigt <- function(obj, ...) {
 #'enter \code{"returns"} or \code{1} to show a plot of the input training series;
 #'enter \code{"means"} or \code{2} to show the
 #'fitted conditional means; enter \code{"stand_deviations"} or \code{3} to show
-#'the fitted conditional standard deviations; the
+#'the fitted conditional standard deviations; use
+#'\code{"residuals"} or \code{4} to show the standardized residuals
+#'following the fitted model; the
 #'default is \code{which = NULL} which then lets you select a plot
 #'interactively in the R console.
 #'@param ... further arguments to pass to \code{\link[base]{plot}}.
@@ -169,9 +193,11 @@ setMethod("plot", "fEGarch_fit", function(x, which = NULL, ...) {
     "returns" = plot_returns,
     "means" = plot_cmeans,
     "standard_deviations" = plot_sigt,
+    "residuals" = plot_etat,
     "1" = plot_returns,
     "2" = plot_cmeans,
-    "3" = plot_sigt
+    "3" = plot_sigt,
+    "4" = plot_etat
   )
 
   plot_fun(x, ...)
@@ -224,6 +250,20 @@ plot_sigt_gg <- function(obj, ...) {
     ggplot2::ggtitle('Estimated conditional standard deviations')
 }
 
+plot_etat_gg <- function(obj, ...) {
+
+  rt <- obj@etat
+
+  df <- data.frame(
+    Time = c(stats::time(rt)),
+    Value = zoo::coredata(rt)
+  )
+
+  ggplot2::ggplot(df, ggplot2::aes(x = .data[["Time"]], y = .data[["Value"]])) +
+    ggplot2::geom_line() +
+    ggplot2::ggtitle('Residuals')
+}
+
 setGeneric(
   "autoplot",
   function(object, ...) standardGeneric("autoplot"),
@@ -241,8 +281,10 @@ setGeneric(
 #'enter \code{"returns"} or \code{1} to show a plot of the input training series;
 #'enter \code{"means"} or \code{2} to show the
 #'fitted conditional means; enter \code{"stand_deviations"} or \code{3} to show
-#'the fitted conditional standard deviations; the
-#'default is \code{which = NULL} which then lets you select a plot
+#'the fitted conditional standard deviations;
+#'use \code{"residuals"} or \code{4} to show the standardized residuals
+#'following the fitted model;
+#'the default is \code{which = NULL} which then lets you select a plot
 #'interactively in the R console.
 #'@param ... no purpose and only implemented for compatibility.
 #'
@@ -292,9 +334,11 @@ setMethod("autoplot", "fEGarch_fit", function(object, which = NULL, ...) {
     "returns" = plot_returns_gg,
     "means" = plot_cmeans_gg,
     "standard_deviations" = plot_sigt_gg,
+    "residuals" = plot_etat_gg,
     "1" = plot_returns_gg,
     "2" = plot_cmeans_gg,
-    "3" = plot_sigt_gg
+    "3" = plot_sigt_gg,
+    "4" = plot_etat_gg
   )
 
   P <- plot_fun(object, ...)
