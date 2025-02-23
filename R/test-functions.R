@@ -1,10 +1,10 @@
 # Generics
-setGeneric("ljung_box_test", function(object, m_max = 20, adj = FALSE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
+setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
 
 
 
 #'@export
-setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = FALSE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, type = c("single", "squared"), ...) {
+setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, type = c("single", "squared"), ...) {
 
   type <- match.arg(type)
   et <- object@etat
@@ -42,7 +42,7 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = FA
   df <- matrix(NA_real_, nrow = m_max, ncol = 3)
   df[, 1] <- m
   df[, 2] <- dfr
-  df[, 3] <- suppressWarnings(as.numeric(sprintf("%.4f", p_vals)))
+  df[, 3] <- suppressWarnings(p_vals)
   rownames(df) <- rep("", m_max)
   colnames(df) <- c("m", "df", "pval")
 
@@ -55,7 +55,9 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = FA
       "Mode: ", type, "\n"
     )
     cat(out1, fill = TRUE)
-    print(df)
+    df2 <- df
+    df2[, 3] <- suppressWarnings(as.numeric(sprintf("%.4f", p_vals)))
+    print(df2)
   }
   invisible(df)
 
@@ -100,7 +102,7 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...)
     "Positive sign bias",
     "Joint"
   )
-  mat[, 1] <- as.numeric(sprintf("%.4f", p_all))
+  mat[, 1] <- p_all
   colnames(mat) <- "pval"
 
   if (!silent) {
@@ -117,8 +119,138 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...)
       "H0 (joint):          all three of the above simultaneously\n"
     )
     cat(out1, fill = TRUE)
-    print(mat)
+    mat2 <- mat
+    mat2[, 1] <- as.numeric(sprintf("%.4f", p_all))
+    print(mat2)
   }
   invisible(mat)
 
+})
+
+# Generics
+setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
+
+
+#'Pearson Goodness-of-Fit Test for Standardized Model Residuals
+#'
+#'Consider a probability integral transform on the standardized
+#'residuals of a fitted model and apply a Pearson goodness-of-fit
+#'test to the binned data using a selection of predefined number of
+#'bins.
+#'
+#'@param object an object of class \code{"fEGarch_fit"} as returned
+#'by the fitting functions of this package like for example
+#'\code{\link{fEGarch}}.
+#'@param n_bins a numeric vector giving the number of bins to use.
+#'@param adj a logical value indicating whether or not to adjust
+#'the number of degrees of freedom using the number of estimated
+#'model parameters.
+#'@param silent a logical indicating whether or not to print
+#'the test results in a well-formatted manner to the console.
+#'@param ... currently without purpose.
+#'
+#'@details
+#'
+#'
+#'@return
+#'Returns a numeric matrix invisibly.
+#'
+#'@export
+setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {
+
+  model <- object
+  pars <- model@pars
+  cond_d <- model@cond_dist
+  n_par <- length(pars)
+
+  int_fun <- lookup_table[["fun1"]][[cond_d]]
+
+  args <- list(
+    "dfun" = int_fun
+  )
+
+  args[["shape"]] <- if (!(cond_d %in% c("norm", "snorm"))) {
+    par_name <- switch(
+      cond_d,
+      "std" = "df",
+      "sstd" = "df",
+      "ged" = "shape",
+      "sged" = "shape",
+      "ald" = "P",
+      "sald" = "P"
+    )
+    pars[[par_name]]
+  } else {
+    0
+  }
+
+  args[["skew"]] <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
+    pars[["skew"]]
+  } else {
+    0
+  }
+
+  lb <- length(n_bins)
+  out_mat <- matrix(NA, nrow = lb, ncol = 3)
+  rownames(out_mat) <- rep("", lb)
+  colnames(out_mat) <- c("n_bins", "df", "pval")
+  et <- zoo::coredata(model@etat)
+  n <- length(et)
+  adjust <- n_par * adj
+
+  for (i in 1:lb) {
+
+    nb <- n_bins[[i]]
+    one_div_nb <- 1 / nb
+    p <- seq(from = one_div_nb, to = 1 - one_div_nb, by = one_div_nb)
+
+    args[["p"]] <- p
+
+    quantiles <- do.call(inv_cdf_fun, args = args)   # Get quantiles so that each slice has the same probability
+
+    np1 <- length(p) + 1
+    frequ_et <- rep(NA, np1)
+    p_adj <- c(-Inf, p, Inf)
+
+    for (j in seq_along(frequ_et)) {
+      frequ_et <- sum(et > p_adj[[j]] & et <= p_adj[[j + 1]])
+    }
+
+    expec <- n * one_div_nb
+
+    stat <- sum((frequ_et - expec)^2 / expec)
+
+    df <- nb - 1 - adjust
+
+    pval <- if (df >= 1) {
+      1 - pchisq(stat, df = df)
+    } else {
+      NA
+    }
+
+    out_mat[i, ] <- c(
+      nb,
+      df,
+      pval
+    )
+
+  }
+
+
+
+  if (!silent) {
+    out1 <- paste0(
+      "\n*************************************\n",
+      "  * Goodness-of-fit test on residuals *\n",
+      "***************************************\n\n",
+      "H0: standardized model residuals align with\n",
+      "    assumed innovation distribution\n"
+    )
+    cat(out1, fill = TRUE)
+    mat2 <- out_mat
+    mat2[, 3] <- as.numeric(sprintf("%.4f", out_mat[, 3]))
+    print(mat2)
+  }
+
+  invisible(out_mat)
 })
