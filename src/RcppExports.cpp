@@ -380,6 +380,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigt_garch_Cpp
+arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu, const arma::rowvec& phi, const arma::rowvec& beta, const double omega);
+RcppExport SEXP _fEGarch_sigt_garch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP phiSEXP, SEXP betaSEXP, SEXP omegaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_garch_Cpp(x, mu, phi, beta, omega));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pdf_ged
 arma::vec pdf_ged(const arma::vec& rt, const arma::vec& mu, const arma::vec& sigt, const double shape);
 RcppExport SEXP _fEGarch_pdf_ged(SEXP rtSEXP, SEXP muSEXP, SEXP sigtSEXP, SEXP shapeSEXP) {
@@ -660,6 +675,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 7},
     {"_fEGarch_sigt_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_fiaparch_Cpp, 6},
     {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 7},
+    {"_fEGarch_sigt_garch_Cpp", (DL_FUNC) &_fEGarch_sigt_garch_Cpp, 5},
     {"_fEGarch_pdf_ged", (DL_FUNC) &_fEGarch_pdf_ged, 4},
     {"_fEGarch_pdf_ged_v1", (DL_FUNC) &_fEGarch_pdf_ged_v1, 2},
     {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},

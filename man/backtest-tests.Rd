@@ -26,16 +26,26 @@
 
 \item{silent}{a logical value indicating whether or not to
 print test results in a nicely formatted manner to the console.}
+
+\item{...}{currently without use.}
 }
 \value{
-A list with the two elements \code{VaR} and \code{ES} is returned
-invisibly.
+All methods return a list invisibly. The elements of the list differ
+slightly depending on the method. Moreover, for \code{silent = FALSE},
+the default, test results are printed to the console.
 }
 \description{
 Run traffic light tests for value at risk (VaR) and expected
-shortfall (ES).
+shortfall (ES) as well as a selection of coverage and independence
+tests for VaR.
 }
 \details{
+\code{backtest_suite} runs all the other backtesting methods.
+\code{cov_tests} runs all of \code{uncond_cov_test},
+\code{indep_test} and \code{cond_cov_test}.
+
+Traffic light tests (\code{trafflight_test}):
+
 Given an input object \code{object} of class \code{"fEGarch_risk"},
 traffic light tests for value at risk (VaR) and expected shortfall (ES)
 are applied to the individual risk measure series in the object. Note
@@ -44,6 +54,67 @@ the corresponding VaR series of the same confidence level must also
 be present in \code{object}. If this is not fulfilled,
 messages will be printed to the console, making the user aware of
 this issue.
+
+Let the number of test observations be denoted by
+\eqn{n\in \mathbb{N}} and let \eqn{\{r_t\}}, \eqn{t=1,\dots,n},
+be the test returns. \eqn{\{\text{VaR}_t\}} are the (one-step rolling) VaR point forecasts
+for the same period with confidence level \eqn{\alpha}. Denote by
+\eqn{I_t} an indicator that equals 1, whenever \eqn{r_t < \text{VaR}_t}, and
+0 otherwise, and define \eqn{K_1 = \sum_{t=1}^{n}I_t}. \eqn{I_t} are assumed
+to follow a binomial distribution with probability \eqn{P = \alpha} for any \eqn{I_t = 0}.
+Then \eqn{C} is computed as the cumulative probability of observing \eqn{K_1}
+under \eqn{P}. The forecasted VaR series is then classified following \eqn{C}. If
+\eqn{C < 0.95}, then it is sorted into the green zone, if \eqn{0.95 \leq C < 0.9999},
+then the series belongs to the yellow zone, and if \eqn{C \geq 0.9999},
+then the class of the VaR series is the red zone.
+
+The traffic light test for the ES uses a similar classification system
+based on the severity of breaches
+\deqn{B = \sum_{t = 1}^{n} \frac{1-F(\hat \eta_t)-\alpha}{1-\alpha}I_t,}
+where \eqn{F} is the (fitted) cumulative distribution function of the
+standardized innovations and with \eqn{\hat \eta_t} as the standardized residuals
+of a fitted GARCH-type model (or of its semiparametric extension).
+Then \eqn{B \overset{a}{\sim}N(\mu_{\text{ES}}, \sigma^2_{\text{ES}})} with
+\eqn{\mu_{\text{ES}} = 0.5(1-\alpha)n} and
+\eqn{\sigma^2_{\text{ES}} = (1-\alpha)[(1+3\alpha) / 12]}. The cumulative
+probability of observing a severity of breaches of \eqn{B} or less can
+be computed and classified in the same way as for the VaR traffic light test
+using this asymptotic distribution.
+
+Coverage and independence tests (\code{cov_tests}):
+
+Following Christoffersen (1998), the backtesting suite also includes
+a selection of coverage and independence tests regarding the VaR. Let the number of test
+observations be denoted by \eqn{n\in \mathbb{N}} and let \eqn{\{r_t\}}, \eqn{t=1,\dots,n},
+be the test returns. \eqn{\{\text{VaR}_t\}} are the (one-step rolling) VaR point forecasts
+for the same period with confidence level \eqn{\alpha}. Furthermore, define
+\eqn{I_t} to be an indicator that equals \eqn{1}, whenever \eqn{r_t < \text{VaR}_t} and
+zero otherwise. Let \eqn{K_1 = \sum_{t=1}^{n}I_t} and \eqn{K_0 = n - K_1}. Furthermore,
+\eqn{\hat z_1 = K_1 / (K_0 + K_1)} and \eqn{\hat z_0 = K_0 / (K_0 + K_1)} as well as
+\deqn{L_{\hat z} = \hat z_0^{K_0} \hat z_1^{K_1}}
+and
+\deqn{L_{\alpha} = \alpha^{K_0}(1-\alpha)^{K_1}.}
+
+In addition, we require \eqn{I^{*}_{i,j}(t)}, \eqn{t = 2,\dots,n} and \eqn{i,j \in \{0,1\}},
+to be other indicators that equal 1, whenever \eqn{I_t=j} and
+simultaneously \eqn{I_{t-1} = i}. Per consequence,
+\eqn{K_{i,j}=\sum_{t=2}^{n} I^{*}_{i,j}(t)} and \eqn{\hat z_{i,j} = K_{i,j} / (K_{i,0} + K_{i, 1})}.
+Moreover, \eqn{\hat z_1^{*} = (K_{0,1}+K_{1,1}) / (n - 1)} and
+\eqn{\hat z_0^{*} = 1-\hat z_1^{*}}. Now,
+\deqn{L_{\hat z_{0,0}} = \hat z_{0,0}^{K_{0,0}} \hat z_{0,1}^{K_{0,1}} \hat z_{1,0}^{K_{1,0}} \hat z_{1,1}^{K_{1,1}}}
+and
+\deqn{L_{\hat z^{*}} = (\hat z_{0}^{*})^{(K_{0,0} + K_{1,0})} (\hat z_{1}^{*})^{(K_{0,1} + K_{1,1})}.}
+
+Ultimately,
+\deqn{L_{\alpha^{*}} = \alpha^{(K_{0,0} + K_{1,0})}(1-\alpha)^{(K_{0,1} + K_{1, 1})}.}
+
+The three test statistics following Christoffersen (1998) are then
+\deqn{S_{\text{uc}} = -2 \ln\left[L_{\alpha} / L_{\hat{p}}\right] \overset{a}{\sim} \chi^2 (1),}
+\deqn{S_{\text{ind}} = -2 \ln\left[L_{\hat z^{*}} / L_{\hat{z}_{0,0}}\right] \overset{a}{\sim} \chi^2 (1), \hspace{4mm} \text{and}}
+\deqn{S_{\text{cc}} = -2 \ln\left[L_{\alpha^{*}} / L_{\hat{z}_{0,0}}\right] \overset{a}{\sim} \chi^2 (2),}
+where \eqn{S_{\text{uc}}} is the test statistic of the unconditional coverage test,
+\eqn{S_{\text{ind}}} is that of the independence test and
+\eqn{S_{\text{cc}}} is that of the conditional coverage test.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
@@ -52,5 +123,7 @@ model <- fEGarch(egarch_spec(), rt, n_test = 250)
 fcast <- predict_roll(model)
 risk <- measure_risk(fcast, measure = c("VaR", "ES"), level = c(0.95, 0.975, 0.99))
 trafflight_test(risk)
+cov_tests(risk)
+backtest_suite(risk)
 
 }

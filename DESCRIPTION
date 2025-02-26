@@ -60,6 +60,7 @@ Collate:
   'fitting-function.R'
   'sim-functions.R'
   'aparchfit.R'
+  'garchfit.R'
   'fiaparchfit.R'
   'lmgarchfit.R'
   'varescalc.R'

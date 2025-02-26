@@ -93,6 +93,10 @@ fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu) {
     .Call('_fEGarch_fiaparch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, gamma, delta, n_out, mu)
 }
 
+sigt_garch_Cpp <- function(x, mu, phi, beta, omega) {
+    .Call('_fEGarch_sigt_garch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, omega)
+}
+
 pdf_ged <- function(rt, mu, sigt, shape) {
     .Call('_fEGarch_pdf_ged', PACKAGE = 'fEGarch', rt, mu, sigt, shape)
 }

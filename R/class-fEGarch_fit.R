@@ -62,6 +62,10 @@ setClass("fEGarch_fit_aparch",
   contains = "fEGarch_fit"
 )
 
+setClass("fEGarch_fit_garch",
+  contains = "fEGarch_fit"
+)
+
 setClass("fEGarch_fit_lmgarch",
   contains = "fEGarch_fit"
 )
@@ -224,6 +228,46 @@ fEGarch_fit_aparch <- function(
 ) {
 
   new("fEGarch_fit_aparch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model
+  )
+
+}
+
+fEGarch_fit_garch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model
+) {
+
+  new("fEGarch_fit_garch",
     pars = pars,
     se = se,
     vcov_mat = vcov_mat,
