@@ -480,7 +480,7 @@ garch <- function(rt, orders = c(1, 1),
       D_start,
       var(rt_core),
       rep(0.05 / p, p),
-      rep(0.5 / q, q),
+      rep(0.8 / q, q),
       sval,
       list(NULL, 1)[[skew_par + 1]]
     )
@@ -495,8 +495,8 @@ garch <- function(rt, orders = c(1, 1),
       rep(-2, q_ma),
       D_low,
       1e-10,
-      rep(1e-6, p),
-      rep(1e-6, q),
+      rep(0, p),
+      rep(0, q),
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
     )
@@ -511,8 +511,8 @@ garch <- function(rt, orders = c(1, 1),
       rep(2, q_ma),
       D_up,
       var(rt_core) * 1000,
-      rep(1 - 1e-6, p),
-      rep(1 - 1e-6, q),
+      rep(1 - 1e-10, p),
+      rep(1 - 1e-10, q),
       uval,
       list(NULL, Inf)[[skew_par + 1]]
     )
@@ -538,6 +538,7 @@ garch <- function(rt, orders = c(1, 1),
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
+  #if (is.null(control$delta)) {control$delta <- 1e-10}
 
   if (cond_d %in% c("ald", "sald")) {
 
@@ -610,7 +611,7 @@ garch <- function(rt, orders = c(1, 1),
           control = control,
           ineqfun = ineq_fun,
           ineqLB = 0,
-          ineqUB = 1 - 1e-8,
+          ineqUB = 1 - 1e-10,
           rt = rt_core
         ))
       },
@@ -663,7 +664,7 @@ garch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- result$hessian[-1, -1]
+  nhessian <- numDeriv::hessian(func = goal_fun, x = pars, rt = rt_core)
 
   vcov_mat <- tryCatch(
     expr = {solve(nhessian)},

@@ -477,10 +477,6 @@ setMethod("uncond_cov_test", "fEGarch_risk",
       K0 <- n - K1
 
       z0 <- K0 / n
-      if (z0 %in% c(0, 1)) {
-        message(paste0("Test cannot be conducted for ", VaR_names[[i]], " due to zero breaches"))
-        next
-      }
 
       stat <- -2 * log(alpha^K0 * (1 - alpha)^K1 / (z0^K0 * (1 - z0)^K1))
       pval <- 1 - pchisq(stat, df = 1)
@@ -562,11 +558,6 @@ setMethod("indep_test", "fEGarch_risk",
 
       K0 <- K00 + K01
       K1 <- K10 + K11
-
-      if (K0 %in% c(0, 1) || K1 %in% c(0, 1)) {
-        message(paste0("Test cannot be conducted for ", VaR_names[[i]], " due to zero breaches"))
-        next
-      }
 
       z00 <- K00 / K0
       z10 <- K10 / K1
@@ -651,12 +642,6 @@ setMethod("cond_cov_test", "fEGarch_risk",
       It <- obs < zoo::coredata(VaR[[i]])
       K1 <- sum(It[-1])
       K0 <- n_adj - K1
-      z0 <- K0 / n_adj
-
-      if (z0 %in% c(0, 1)) {
-        message(paste0("Test cannot be conducted for ", VaR_names[[i]], " due to zero breaches"))
-        next
-      }
 
       L_a <- alpha^K0 * (1 - alpha)^K1
 
@@ -776,21 +761,42 @@ loss0 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$VaR)
-  m <- length(VaR_names)
+  VaR_names <- names(object@measures$ES)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
 
-  list_out <- vector(mode = "list", length = m)
-  names(list_out) <- VaR_names
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
 
-  for (i in 1:m) {
-    VaR <- zoo::coredata(object@measures$VaR[[i]])
-    idx <- obs < VaR
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
 
-    l1 <- rep(NA, n)
-    l1[idx] <- (VaR[idx] - obs[idx])^2
-    l1[!idx] <- 0
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      l1[!idx] <- 0
 
-    list_out[[i]] <- sum(l1)
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      l1[!idx] <- 0
+
+      list_out$ES[[i]] <- sum(l1)
+    }
   }
 
   list_out
@@ -802,21 +808,42 @@ loss1 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$VaR)
-  m <- length(VaR_names)
+  VaR_names <- names(object@measures$ES)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
 
-  list_out <- vector(mode = "list", length = m)
-  names(list_out) <- VaR_names
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
 
-  for (i in 1:m) {
-    VaR <- zoo::coredata(object@measures$VaR[[i]])
-    idx <- obs < VaR
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
 
-    l1 <- rep(NA, n)
-    l1[idx] <- (VaR[idx] - obs[idx])^2
-    l1[!idx] <- penalty * abs(VaR[!idx])
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      l1[!idx] <- penalty * abs(VaR[!idx])
 
-    list_out[[i]] <- sum(l1)
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      l1[!idx] <- penalty * abs(ES[!idx])
+
+      list_out$ES[[i]] <- sum(l1)
+    }
   }
 
   list_out
@@ -828,21 +855,42 @@ loss2 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$VaR)
-  m <- length(VaR_names)
+  VaR_names <- names(object@measures$ES)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
 
-  list_out <- vector(mode = "list", length = m)
-  names(list_out) <- VaR_names
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
 
-  for (i in 1:m) {
-    VaR <- zoo::coredata(object@measures$VaR[[i]])
-    idx <- obs < VaR
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
 
-    l1 <- rep(NA, n)
-    l1[idx] <- (VaR[idx] - obs[idx])^2
-    l1[!idx] <- penalty * (abs(VaR[!idx] - obs[!idx]))
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      l1[!idx] <- penalty * (abs(VaR[!idx] - obs[!idx]))
 
-    list_out[[i]] <- sum(l1)
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      l1[!idx] <- penalty * (abs(ES[!idx] - obs[!idx]))
+
+      list_out$ES[[i]] <- sum(l1)
+    }
   }
 
   list_out
@@ -854,25 +902,50 @@ loss3 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$VaR)
-  m <- length(VaR_names)
+  VaR_names <- names(object@measures$ES)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
 
-  list_out <- vector(mode = "list", length = m)
-  names(list_out) <- VaR_names
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
 
-  for (i in 1:m) {
-    VaR <- zoo::coredata(object@measures$VaR[[i]])
-    idx <- obs < VaR
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
 
-    l1 <- rep(NA, n)
-    l1[idx] <- (VaR[idx] - obs[idx])^2
-    diffe <- abs(VaR[!idx] - obs[!idx])
-    VaR_a <- abs(VaR[!idx])
-    selector <- diffe > VaR_a
-    diffe[selector] <- VaR_a[selector]
-    l1[!idx] <- penalty * diffe
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      diffe <- abs(VaR[!idx] - obs[!idx])
+      VaR_a <- abs(VaR[!idx])
+      selector <- diffe > VaR_a
+      diffe[selector] <- VaR_a[selector]
+      l1[!idx] <- penalty * diffe
 
-    list_out[[i]] <- sum(l1)
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      diffe <- abs(ES[!idx] - obs[!idx])
+      ES_a <- abs(ES[!idx])
+      selector <- diffe > ES_a
+      diffe[selector] <- ES_a[selector]
+      l1[!idx] <- penalty * diffe
+
+      list_out$ES[[i]] <- sum(l1)
+    }
   }
 
   list_out
@@ -881,6 +954,53 @@ loss3 <- function(object, penalty = 1e-4, ...) {
 
 setGeneric("loss_functions", function(object, penalty = 1e-4, ...) {standardGeneric("loss_functions")})
 
+#'Loss Function Calculation
+#'
+#'Compute loss function values given log-returns and corresponding
+#'value at risk (VaR) and expected shortfall (ES) series.
+#'
+#'@param object an object of class \code{"fEGarch_risk"} as returned
+#'by the model fitting functions of this package, for example
+#'\code{\link{fEGarch}}.
+#'@param penalty the penalty term to use in the opportunity cost terms.
+#'@param ...
+#'
+#'@details
+#'Let \eqn{n \in \mathbb{N}} be the number of observations of a (log-)return
+#'series \eqn{\{r_t\}}, \eqn{t=1,\dots,n}, and let \eqn{\text{VaR}_t} and
+#'\eqn{\text{ES}_t} be the
+#'estimated or forecasted VaR and ES (at some confidence level \eqn{\alpha}) at time
+#'\eqn{t}, respectively. Such series are included in an object of class
+#'\code{"fEGarch_risk"}. In the following, a risk measure at time \eqn{t} is
+#'simply denoted by \eqn{\text{RM}_t} and can either mean
+#'\eqn{\text{VaR}_t} or
+#'\eqn{\text{ES}_t}.
+#'
+#'Based on a calculated VaR and / or expected shortfall (ES), capital needs
+#'to be held back following regulatory rules. Commonly, among many models
+#'used for forecasting risk measures that fulfill regulatory conditions,
+#'loss functions are computed that also consider opportunity costs in to
+#'assess, what model that fulfills regulatory rules minimizes such loss
+#'functions. Let \eqn{\Omega \geq 0} be the penalty term.
+#'
+#'For all loss functions we have
+#'\deqn{\text{LF}_i = \sum_{t=1}^{n} l_{t,i}, \hspace{3mm} i = 0,1,2,3,}
+#'as the loss function with
+#'\deqn{l_{t,i} = (\text{RM}_t - r_t)^2, \hspace{3mm} i = 0,1,2,3,}
+#'for \eqn{r_t < \text{RM}_t}. They differ in how the case
+#'\eqn{r_t \geq \text{RM}_t} is treated.
+#'
+#'The regulatory loss function (\code{rlf}) uses \eqn{l_{t,0} = 0}.
+#'
+#'The firm's loss function (Sarma et al., 2003) (\code{flf}) considers
+#'\eqn{l_{t,1}=\Omega |\text{RM}_t|}.
+#'
+#'The adjusted loss function (Abad et al., 2015) (\code{alf}) makes use
+#'of \eqn{l_{t,2} = \Omega |\text{RM}_t - r_t|}.
+#'
+#'The corrected loss function (Feng, forthcoming) (\code{clf}) has
+#'\eqn{l_{t,3} = \Omega \text{min}\left(|\text{RM}_t - r_t|, |\text{RM}_t|\right)}.
+#'
 #'@export
 setMethod("loss_functions", "fEGarch_risk",
   function(object, penalty = 1e-4, ...) {

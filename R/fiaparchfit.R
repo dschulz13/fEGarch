@@ -579,6 +579,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
+  #if (is.null(control$delta)) {control$delta <- 1e-10}
 
   if (cond_d %in% c("ald", "sald")) {
 

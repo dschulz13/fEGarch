@@ -1204,6 +1204,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
+  #if (is.null(control$delta)) {control$delta <- 1e-10}
 
   p_all <- p + p_ar
 
@@ -1765,6 +1766,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   p_all <- p + p_ar
 
   if (is.null(control$trace)) {control$trace <- FALSE}
+  #if (is.null(control$delta)) {control$delta <- 1e-10}
 
   if (cond_d %in% c("ald", "sald")) {
 

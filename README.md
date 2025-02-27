@@ -246,20 +246,20 @@ model12
 #> ARMA orders (cond. mean): (0, 0)
 #> Long memory (cond. mean): FALSE
 #> 
-#> Scale estimation: TRUE (poly_order = 3; bandwidth = 0.1866)
+#> Scale estimation: TRUE (poly_order = 3; bandwidth = 0.1493)
 #>  
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> omega_sig -0.6202 0.1711  -3.6236 0.0003
-#> phi1       0.7624 0.0714  10.6768 0.0000
-#> kappa     -0.1532 0.0140 -10.9674 0.0000
-#> gamma      0.1258 0.0130   9.6861 0.0000
-#> d          0.4329 0.0733   5.9050 0.0000
-#> df         7.4682 0.5606  13.3213 0.0000
+#> omega_sig -0.5382 0.1601  -3.3624 0.0008
+#> phi1       0.7907 0.0703  11.2403 0.0000
+#> kappa     -0.1519 0.0125 -12.1913 0.0000
+#> gamma      0.1236 0.0119  10.3523 0.0000
+#> d          0.3963 0.0846   4.6859 0.0000
+#> df         7.5374 0.6602  11.4166 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: 2.4356, BIC: 2.4421
+#> AIC: 2.4655, BIC: 2.4719
 plot(cbind("Standardized" = (SP500 - mean(SP500)) / sd(SP500), 
            "Scale-adjusted" = (SP500 - mean(SP500)) / model12@scale_fun),
      xlab = "Year",
@@ -267,6 +267,10 @@ plot(cbind("Standardized" = (SP500 - mean(SP500)) / sd(SP500),
 ```
 
 <img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+
+The estimated volatility is then the product of the estimated scale
+function and the estimated conditional standard deviation both obtained
+at the corresponding time point.
 
 ### Illustrations
 
