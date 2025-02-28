@@ -1337,7 +1337,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- result$hessian[-(1:p_all), -(1:p_all)]
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
   vcov_mat <- solve(nhess)
 
   if (cond_d %in% c("ald", "sald")) {
@@ -1888,7 +1888,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- result$hessian[-(1:p_all), -(1:p_all)]
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
   vcov_mat <- solve(nhess)
 
   if (cond_d %in% c("ald", "sald")) {

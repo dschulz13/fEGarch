@@ -689,7 +689,7 @@ aparch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- result$hessian #[-(1:(3 + p_ar)), -(1:(3 + p_ar))]
+  nhessian <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
 
   vcov_mat <- tryCatch(
     expr = {solve(nhessian)},

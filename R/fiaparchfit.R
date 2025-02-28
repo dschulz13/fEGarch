@@ -707,7 +707,14 @@ fiaparch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- result$hessian[-(1:(3 + p_ar)), -(1:(3 + p_ar))]
+
+  nhessian <- tryCatch(
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    error = function(e1) {
+      warning("Unable to obtain standard errors.", call. = FALSE)
+      matrix(NA_real_, ncol = length(pars), nrow = length(pars))
+    }
+  )
 
   vcov_mat <- tryCatch(
     expr = {solve(nhessian)},

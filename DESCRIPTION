@@ -42,6 +42,7 @@ RoxygenNote: 7.3.2
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
+  'hessCalc.R'
   'arma-farima-wrappers.R'
   'format_applier_ts.R'
   'ts_split_train_and_test.R'
@@ -92,7 +93,8 @@ Imports:
     ggplot2,
     ufRisk,
     magrittr,
-    cli
+    cli,
+    numDeriv
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

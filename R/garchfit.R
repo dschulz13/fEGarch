@@ -81,9 +81,15 @@ goal_fun_creator_garch <- function(
 
   out <- -sum(log(pdf_fun2(x, cmeans, sigt, shape, skew)))
 
-  out
+  out <- if (is.infinite(out)) {
+    1e15
+  } else {
+    out
+  }
 
+   out
 }
+
 
 
 #'GARCH Model Fitting
@@ -664,7 +670,7 @@ garch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- numDeriv::hessian(func = goal_fun, x = pars, rt = rt_core)
+  nhessian <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
 
   vcov_mat <- tryCatch(
     expr = {solve(nhessian)},
