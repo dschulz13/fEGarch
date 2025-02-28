@@ -8,13 +8,19 @@
 
 hessCalc <- function(pars, func, control.args = list(
 				eps = 1e-4,
-				d = 0.001,
+				d = 1e-4,
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,
 				v = 2,
-				show.details = TRUE), rt) {
+				show.details = FALSE), rt) {
 
-  numDeriv::hessian(func = func, x = pars, method = "Richardson",
+  out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
                     method.args = control.args, rt = rt)
 
+  if (any(is.nan(out))) {
+    out <- matrix(NA, nrow = length(pars), ncol = length(pars))
+    warning("Unable to compute Hessian matrix. No standard errors available.")
+  }
+
+  out
 }

@@ -670,12 +670,18 @@ garch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+  nhessian <- hessCalc(pars = unname(pars), func = goal_fun, control.args = list(
+				eps = 1e-4,
+				d = 1e-3,
+				zero.tol = sqrt(.Machine$double.eps / 7e-7),
+				r = 4,
+				v = 2,
+				show.details = FALSE), rt = rt_core)
 
   vcov_mat <- tryCatch(
     expr = {solve(nhessian)},
     error = function(e1) {
-      warning("Unable to obtain standard errors.", call. = FALSE)
+      warning("Unable to obtain standard errors from Hessian matrix.", call. = FALSE)
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
     }
   )
