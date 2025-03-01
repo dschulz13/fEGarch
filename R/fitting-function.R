@@ -178,7 +178,12 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'and FILog-GARCH (Feng et al., 2020) models.
 #'
 #'In the current package version, standard errors of parameter estimates are
-#'computed from the Hessian at the optimum of the log-likelihood.
+#'computed from the Hessian at the optimum of the log-likelihood using
+#'\code{\link[numDeriv]{hessian}}. To ensure numerical stability and
+#'applicability to a huge variety of differently scaled data, parametric
+#'models are first fitted to data that is scaled to have sample variance
+#'1. Parameter estimates and other quantities are then either
+#'retransformed or recalculated afterwards for the original data.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
 #'distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that

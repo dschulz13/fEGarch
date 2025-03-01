@@ -946,13 +946,27 @@ goal_fun_creator_egarch <- function(
 
 }
 
+
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1)) {
 
   split_rt <- split_ts(rt, n_test)
-  rt_core <- zoo::coredata(split_rt$train)
+  rt_core_o <- zoo::coredata(split_rt$train)
+
+  # Make rt have sample variance 1; more robust for
+  # differently scaled data; results like parameters
+  # and the log-likelihood with regard to the original data
+  # can be computed easily later,
+  # as, if required, the corresponding values returned for the scaled data
+  # are just multiplied by a constant
+  # or shifted by a constant. This transformation just shifts the
+  # entire log-likelihood by a constant and therefore does not affect
+  # the shape of the log-likelihood.
+
+  scale_const <- sd(rt_core_o)         # for rescaling later
+  rt_core <- rt_core_o / scale_const   # now has sample variance 1
 
   n <- length(rt_core)
 
@@ -1111,16 +1125,19 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   if (lm) {
     d_low <- drange[[1]]
     d_up <- drange[[2]]
-    d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
+    d_spar <- 0.25
     d_name <- "d"
+    phi_start <- rep(0.5 / p, p)
+    psi_start <- rep(-0.3 / (q - 1), q - 1)
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
     d_name <- character(0)
+    phi_start <- rep(0.8 / p, p)
+    psi_start <- rep(-0.3 / (q - 1), q - 1)
   }
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
     mean_rt <- mean(rt_core)
-    lrt2_shift <- log((rt_core - mean_rt)^2) + 1.27
 
     if (is.null(start_pars)) {
 
@@ -1129,10 +1146,10 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         rep(0.05 / p_ar, p_ar),
         rep(0.05 / q_ma, q_ma),
         D_start,
-        mean(lrt2_shift),
-        rep(0.2 / p, p),
-        rep(0, q - 1),
-        -0.2, 0.3,
+        0,
+        phi_start,
+        psi_start,
+        -0.25, 0.2,
         #0, 0,
         d_spar,
         sval,
@@ -1143,14 +1160,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     if (is.null(LB)) {
 
-      mean_lrt2_s <- mean(lrt2_shift)
-
       LB <- c(
         list(NULL, min(rt_core))[[incl_mean + 1]],
         rep(-2, p_ar),
         rep(-2, q_ma),
         D_low,
-        mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
+        -10,
         rep(-2, p),
         rep(-2, q - 1),
         rep(-1, 2),
@@ -1163,14 +1178,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     if (is.null(UB)) {
 
-      mean_lrt2_s <- mean(lrt2_shift)
-
       UB <- c(
         list(NULL, max(rt_core))[[incl_mean + 1]],
         rep(2, p_ar),
         rep(2, q_ma),
         D_up,
-        mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
+        10,
         rep(2, p),
         rep(2, q - 1),
         rep(1, 2),
@@ -1294,17 +1307,30 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   }
 
   pars <- result$pars
-  llhood <- -tail(result$values, 1)
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega_sig
+  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
+
+  # Compute log-likelihood which is shifted from the obtained negative
+  # log-likelihood at the optimum; "-tail(result$values, 1)" is the
+  # log-likelihood at the optimum for the scaled data, which is too large by
+  # "n * log(scale_const)" in comparison to original data
+  llhood <- -tail(result$values, 1) - n * log(scale_const)
+
+  # Compute the conditional standard deviations at the optimum
+  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pow, mod,
               mode)
   sigt <- final_series$sigt
   cmeans <- final_series$cmeans
 
-  mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt_core - cmeans) / sigt
+  # Standardized residuals
+  etat <- (rt_core_o - cmeans) / sigt
 
   psi_names <- if (q > 1) {paste0("psi", 1:(q - 1))} else {NULL}
 
@@ -1337,7 +1363,11 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+  # Compute the (negative) hessian at the optimum using a finite-difference
+  # approximation via "hessian" from "numDeriv"; is usually more stable
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)
+  # Obtain the variance-covariance matrix as the inverse of the
+  # negative hessian
   vcov_mat <- solve(nhess)
 
   if (cond_d %in% c("ald", "sald")) {
@@ -1560,7 +1590,12 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
 
   split_rt <- split_ts(rt, n_test)
-  rt_core <- zoo::coredata(split_rt$train)
+  rt_core_o <- zoo::coredata(split_rt$train)
+
+  scale_const <- sd(rt_core_o)         # for rescaling later
+  rt_core <- rt_core_o / scale_const   # now has sample variance 1
+
+  n <- length(rt_core)
 
   order <- orders(spec)
   p <- order[[1]]
@@ -1683,25 +1718,27 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     d_up <- drange[[2]]
     d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
     d_name <- "d"
+    phi_start <- rep(0.55 / p, p)
+    beta_start <- rep(-0.5 / q, q)
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
     d_name <- character(0)
+    phi_start <- rep(0.85 / p, p)
+    beta_start <- rep(-0.8 / q, q)
   }
 
   mean_rt <- mean(rt_core)
-  lrt2_shift <- log((rt_core - mean_rt)^2) + 1.27
-  mean_lrt2_s <- mean(lrt2_shift)
 
   if (is.null(start_pars)) {
 
     start_pars <- c(
-      list(NULL, mean(rt_core))[[incl_mean + 1]],
+      list(NULL, mean_rt)[[incl_mean + 1]],
       rep(0.05 / p_ar, p_ar),
       rep(0.05 / q_ma, q_ma),
       D_start,
-      mean_lrt2_s,
-      rep(0.55 / p, p),
-      rep(-0.5 / q, q),
+      0,
+      phi_start,
+      beta_start,
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -1716,7 +1753,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       rep(-2, p_ar),
       rep(-2, q_ma),
       D_low,
-      mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
+      -10,
       rep(-2, p),
       rep(-2, q),
       d_low,
@@ -1733,7 +1770,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       rep(2, p_ar),
       rep(2, q_ma),
       D_up,
-      mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
+      10,
       rep(2, p),
       rep(2, q),
       d_up,
@@ -1849,17 +1886,27 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
 
   pars <- result$pars
-  llhood <- -tail(result$values, 1)
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega_sig
+  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
+  # Compute log-likelihood which is shifted from the obtained negative
+  # log-likelihood at the optimum; "-tail(result$values, 1)" is the
+  # log-likelihood at the optimum for the scaled data, which is too large by
+  # "n * log(scale_const)" in comparison to original data
+  llhood <- -tail(result$values, 1) - n * log(scale_const)
+
+  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun)
 
   sigt <- final_series$sigt
   cmeans <- final_series$cmeans
 
-  mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt_core - cmeans) / sigt
+  etat <- (rt_core_o - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -1888,7 +1935,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)
   vcov_mat <- solve(nhess)
 
   if (cond_d %in% c("ald", "sald")) {

@@ -369,7 +369,10 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   split_rt <- split_ts(rt, n_test)
-  rt_core <- zoo::coredata(split_rt$train)
+  rt_core_o <- zoo::coredata(split_rt$train)
+
+  scale_const <- sd(rt_core_o)         # for rescaling later
+  rt_core <- rt_core_o / scale_const   # now has sample variance 1
 
   p <- orders[[1]]
   q <- orders[[2]]
@@ -490,7 +493,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       rep(0.05 / p_ar, p_ar),
       rep(0.05 / q_ma, q_ma),
       D_start,
-      0.001,
+      var(rt_core),
       rep(0.05 / p, p),
       rep(0.4 / q, q),
       d_spar,
@@ -524,7 +527,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       rep(2, p_ar),
       rep(2, q_ma),
       D_up,
-      Inf,
+      10,
       rep(2, p),
       rep(2, q),
       d_up,
@@ -651,15 +654,26 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   pars <- result$pars
-  llhood <- -tail(result$values, 1)
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega
+  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] * scale_const^2
 
-  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
+  # Compute log-likelihood which is shifted from the obtained negative
+  # log-likelihood at the optimum; "-tail(result$values, 1)" is the
+  # log-likelihood at the optimum for the scaled data, which is too large by
+  # "n * log(scale_const)" in comparison to original data
+  llhood <- -tail(result$values, 1) - n * log(scale_const)
+
+  res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par)
 
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
   sigt <- res_f$sigt
   cmeans <- res_f$cmeans
-  etat <- (rt_core - cmeans) / sigt
+  etat <- (rt_core_o - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -689,7 +703,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   )
 
   nhessian <- tryCatch(
-    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)},
     error = function(e1) {
       warning("Unable to obtain standard errors.", call. = FALSE)
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
