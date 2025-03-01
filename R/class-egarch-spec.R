@@ -1146,10 +1146,17 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         rep(0.05 / p_ar, p_ar),
         rep(0.05 / q_ma, q_ma),
         D_start,
+<<<<<<< HEAD
         0,
         phi_start,
         psi_start,
         -0.25, 0.2,
+=======
+        mean(lrt2_shift),
+        rep(0.8 / p, p),
+        rep(0, q - 1),
+        -0.1, 0.2,
+>>>>>>> cf04b8e12abc9ea4e4ae4723bb829017ae0b14cb
         #0, 0,
         d_spar,
         sval,
