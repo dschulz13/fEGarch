@@ -73,8 +73,8 @@ model1
 
 Using the model description in the documentation of `fEGarch_spec()`, the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6599 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2362\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
+$$\ln\left(\sigma_t^2\right)=-8.6599 + (1-0.8679 B)^{-1}(1-B)^{-0.2756}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
 
@@ -183,20 +183,16 @@ The `fEGarch` package also allows for the estimation of FIAPARCH and LMGARCH mod
 
 ```{r}
 model_fiaparch <- fiaparch(rt, orders = c(1, 1), cond_dist = "std")
-model_lmgarch <- lmgarch(rt, orders = c(1, 1), cond_dist = "std")
-
 model_fiaparch
 ```
 
 ```{r, fig.height = 8}
 sigt_fiaparch <- sigt(model_fiaparch)
-sigt_lmgarch <- sigt(model_lmgarch)
 TS2 <- cbind(
   "Log-returns" = rt,
   "FIMLog-GARCH" = sigt1,
   "MEGARCH" = sigt10,
-  "FIAPARCH" = sigt_fiaparch,
-  "LMGARCH" = sigt_lmgarch
+  "FIAPARCH" = sigt_fiaparch
 )
 
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
