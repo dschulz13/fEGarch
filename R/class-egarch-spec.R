@@ -1369,6 +1369,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Obtain the variance-covariance matrix as the inverse of the
   # negative hessian
   vcov_mat <- solve(nhess)
+  diag_vcov <- diag(vcov_mat)
+  if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
+    vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
+    diag_vcov <- rep(NA, length(pars))
+    warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
+  }
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
@@ -1383,7 +1389,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  serrors <- sqrt(diag_vcov)
   names(pars) <- par_names
   names(serrors) <- par_names
   rownames(vcov_mat) <- par_names
@@ -1937,6 +1943,12 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)
   vcov_mat <- solve(nhess)
+  diag_vcov <- diag(vcov_mat)
+  if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
+    vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
+    diag_vcov <- rep(NA, length(pars))
+    warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
+  }
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
@@ -1951,7 +1963,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  serrors <- sqrt(diag_vcov)
   names(pars) <- par_names
   names(serrors) <- par_names
   rownames(vcov_mat) <- par_names

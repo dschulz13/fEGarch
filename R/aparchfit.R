@@ -509,7 +509,7 @@ aparch <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      -1 + 1e-6, 0.1,
+      -1 + 1e-4, 0.1,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
     )
@@ -526,7 +526,7 @@ aparch <- function(rt, orders = c(1, 1),
       10,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      1 - 1e-6, 5,
+      1 - 1e-4, 5,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
     )
@@ -713,6 +713,13 @@ aparch <- function(rt, orders = c(1, 1),
     }
   )
 
+  diag_vcov <- diag(vcov_mat)
+  if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
+    vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
+    diag_vcov <- rep(NA, length(pars))
+    warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
+  }
+
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
       pars <- c(pars, P_sel)
@@ -725,7 +732,7 @@ aparch <- function(rt, orders = c(1, 1),
     }
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  serrors <- sqrt(diag_vcov)
 
   names(pars) <- par_names
   names(serrors) <- par_names

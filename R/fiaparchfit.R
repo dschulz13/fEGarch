@@ -343,8 +343,8 @@ goal_fun_creator_fiaparch <- function(
 #'
 fiaparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        drange = c(0, 0.5 - 1e-6),
-                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+                        drange = c(0, 1),
+                        meanspec = mean_spec(), Drange = c(0, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
@@ -526,7 +526,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      -1 + 1e-6, 0.1,
+      -1 + 1e-4, 0.1,
       d_low,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
@@ -544,7 +544,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       10,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      1 - 1e-6, 5,
+      1 - 1e-4, 5,
       d_up,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
@@ -739,6 +739,13 @@ fiaparch <- function(rt, orders = c(1, 1),
     }
   )
 
+  diag_vcov <- diag(vcov_mat)
+  if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
+    vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
+    diag_vcov <- rep(NA, length(pars))
+    warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
+  }
+
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
       pars <- c(pars, P_sel)
@@ -751,7 +758,7 @@ fiaparch <- function(rt, orders = c(1, 1),
     }
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  serrors <- sqrt(diag_vcov)
 
   names(pars) <- par_names
   names(serrors) <- par_names

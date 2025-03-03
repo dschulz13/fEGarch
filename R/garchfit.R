@@ -81,13 +81,7 @@ goal_fun_creator_garch <- function(
 
   out <- -sum(log(pdf_fun2(x, cmeans, sigt, shape, skew)))
 
-  out <- if (is.infinite(out)) {
-    1e15
-  } else {
-    out
-  }
-
-   out
+  out
 }
 
 
@@ -453,7 +447,7 @@ garch <- function(rt, orders = c(1, 1),
     }
 
   } else {
-    sigt_fun             # ...else keep function for EGARCH-type
+    sigt_fun             # ...else keep function for GARCH-type
   }
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
@@ -692,6 +686,12 @@ garch <- function(rt, orders = c(1, 1),
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
     }
   )
+  diag_vcov <- diag(vcov_mat)
+  if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
+    vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
+    diag_vcov <- rep(NA, length(pars))
+    warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
+  }
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
@@ -705,7 +705,7 @@ garch <- function(rt, orders = c(1, 1),
     }
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  serrors <- sqrt(diag_vcov)
 
   names(pars) <- par_names
   names(serrors) <- par_names
