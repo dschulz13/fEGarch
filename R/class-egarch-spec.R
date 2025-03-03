@@ -1308,13 +1308,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   pars <- result$pars
 
-  # Adjust parameters according to scaling where necessary
-  if (incl_mean) {
-    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
-  }
-  # omega_sig
-  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
-
   # Compute log-likelihood which is shifted from the obtained negative
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
   # log-likelihood at the optimum for the scaled data, which is too large by
@@ -1368,13 +1361,20 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)
   # Obtain the variance-covariance matrix as the inverse of the
   # negative hessian
-  vcov_mat <- solve(nhess)
+  vcov_mat <- scale_const^2 * solve(nhess)   # Retransformation included
   diag_vcov <- diag(vcov_mat)
   if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
     vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
     diag_vcov <- rep(NA, length(pars))
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
+
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega_sig
+  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
