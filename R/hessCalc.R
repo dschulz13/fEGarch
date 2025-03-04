@@ -7,7 +7,7 @@
 # }
 
 hessCalc <- function(pars, func, control.args = list(
-				eps = 1e-7,
+				eps = 1e-4,
 				d = 1e-4,
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,
@@ -25,7 +25,19 @@ hessCalc <- function(pars, func, control.args = list(
   }
 
   if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
+    control.args$d <- 1e-6
+    out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
+              method.args = control.args, rt = rt)
+  }
+
+  if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
     control.args$d <- 1e-3
+    out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
+              method.args = control.args, rt = rt)
+  }
+
+  if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
+    control.args$d <- 1e-2
     out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
               method.args = control.args, rt = rt)
   }

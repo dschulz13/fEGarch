@@ -541,7 +541,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       rep(2, p_ar),
       rep(2, q_ma),
       D_up,
-      10,
+      20,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
       1 - 1e-4, 5,
@@ -670,26 +670,12 @@ fiaparch <- function(rt, orders = c(1, 1),
 
 
   pars <- result$pars
-  # Adjust parameters according to scaling where necessary
-  if (incl_mean) {
-    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
-  }
-  # omega
-  delta <- pars[[up_beta + 2]]
-  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] * scale_const^delta
 
   # Compute log-likelihood which is shifted from the obtained negative
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
   # log-likelihood at the optimum for the scaled data, which is too large by
   # "n * log(scale_const)" in comparison to original data
   llhood <- -tail(result$values, 1) - n * log(scale_const)
-
-  res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
-  sigt <- res_f$sigt
-  cmeans <- res_f$cmeans
-
-  etat <- (rt_core_o - cmeans) / sigt
 
   beta_names <- paste0("beta", 1:q)
 
@@ -724,15 +710,23 @@ fiaparch <- function(rt, orders = c(1, 1),
 
 
   nhessian <- tryCatch(
-    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)},
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
     error = function(e1) {
       warning("Unable to obtain standard errors.", call. = FALSE)
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
     }
   )
 
+  I_mat <- diag(length(pars))
+  delta <- pars[[up_beta + 2]]
+  if (incl_mean) {
+    I_mat[1, 1] <- scale_const
+  }
+  n_arma_im1 <- n_arma_im + 1
+  sc_delta <- scale_const^delta
+  I_mat[n_arma_im1, n_arma_im1] <- sc_delta
   vcov_mat <- tryCatch(
-    expr = {solve(nhessian)},
+    expr = {I_mat %*% solve(nhessian) %*% I_mat},
     error = function(e1) {
       warning("Unable to obtain standard errors.", call. = FALSE)
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
@@ -745,6 +739,20 @@ fiaparch <- function(rt, orders = c(1, 1),
     diag_vcov <- rep(NA, length(pars))
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
+
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega
+  pars[[n_arma_im1]] <- pars[[n_arma_im1]] * sc_delta
+
+  res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par)
+  sigt <- res_f$sigt
+  cmeans <- res_f$cmeans
+
+  etat <- (rt_core_o - cmeans) / sigt
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {

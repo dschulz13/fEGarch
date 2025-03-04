@@ -183,16 +183,19 @@ The `fEGarch` package also allows for the estimation of FIAPARCH and LMGARCH mod
 
 ```{r}
 model_fiaparch <- fiaparch(rt, orders = c(1, 1), cond_dist = "std")
+model_lmgarch <- lmgarch(rt, orders = c(1, 1), cond_dist = "std")
 model_fiaparch
 ```
 
 ```{r, fig.height = 8}
 sigt_fiaparch <- sigt(model_fiaparch)
+sigt_lmgarch <- sigt(model_lmgarch)
 TS2 <- cbind(
   "Log-returns" = rt,
   "FIMLog-GARCH" = sigt1,
   "MEGARCH" = sigt10,
-  "FIAPARCH" = sigt_fiaparch
+  "FIAPARCH" = sigt_fiaparch,
+  "LMGARCH" = sigt_lmgarch
 )
 
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)

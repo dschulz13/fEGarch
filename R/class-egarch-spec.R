@@ -1314,16 +1314,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # "n * log(scale_const)" in comparison to original data
   llhood <- -tail(result$values, 1) - n * log(scale_const)
 
-  # Compute the conditional standard deviations at the optimum
-  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pow, mod,
-              mode)
-  sigt <- final_series$sigt
-  cmeans <- final_series$cmeans
-
-  # Standardized residuals
-  etat <- (rt_core_o - cmeans) / sigt
 
   psi_names <- if (q > 1) {paste0("psi", 1:(q - 1))} else {NULL}
 
@@ -1358,10 +1348,14 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Compute the (negative) hessian at the optimum using a finite-difference
   # approximation via "hessian" from "numDeriv"; is usually more stable
-  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
   # Obtain the variance-covariance matrix as the inverse of the
   # negative hessian
-  vcov_mat <- scale_const^2 * solve(nhess)   # Retransformation included
+  I_mat <- diag(length(pars))    # Transformation matrix to rescale variance-covariance-matrix
+  if (incl_mean) {
+    I_mat[1, 1] <- scale_const   # For mean; not required for omega_sig, because that transformation is just an added constant
+  }
+  vcov_mat <- I_mat %*% solve(nhess) %*% I_mat   # Retransformation included
   diag_vcov <- diag(vcov_mat)
   if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
     vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
@@ -1375,6 +1369,17 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   }
   # omega_sig
   pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
+
+  # Compute the conditional standard deviations at the optimum
+  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pow, mod,
+              mode)
+  sigt <- final_series$sigt
+  cmeans <- final_series$cmeans
+
+  # Standardized residuals
+  etat <- (rt_core_o - cmeans) / sigt
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
@@ -1892,12 +1897,6 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
 
   pars <- result$pars
-  # Adjust parameters according to scaling where necessary
-  if (incl_mean) {
-    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
-  }
-  # omega_sig
-  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
 
   # Compute log-likelihood which is shifted from the obtained negative
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
@@ -1905,14 +1904,6 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # "n * log(scale_const)" in comparison to original data
   llhood <- -tail(result$values, 1) - n * log(scale_const)
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun)
-
-  sigt <- final_series$sigt
-  cmeans <- final_series$cmeans
-
-  etat <- (rt_core_o - cmeans) / sigt
 
   extra_par_name <- switch(
     cond_d,
@@ -1941,14 +1932,35 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core_o)
-  vcov_mat <- solve(nhess)
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+
+  I_mat <- diag(length(pars))
+  if (incl_mean) {
+    I_mat[1, 1] <- scale_const
+  }
+  vcov_mat <- I_mat %*% solve(nhess) %*% I_mat
   diag_vcov <- diag(vcov_mat)
   if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
     vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
     diag_vcov <- rep(NA, length(pars))
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
+
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega_sig
+  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
+
+  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun)
+
+  sigt <- final_series$sigt
+  cmeans <- final_series$cmeans
+
+  etat <- (rt_core_o - cmeans) / sigt
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {
