@@ -7,7 +7,7 @@
 # }
 
 hessCalc <- function(pars, func, control.args = list(
-				eps = 1e-4,
+				eps = 1e-8,
 				d = 1e-4,
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,
