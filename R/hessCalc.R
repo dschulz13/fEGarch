@@ -1,14 +1,8 @@
-# hessCalc <- function(pars, func, control.args = list(grad.eps=1e-4, grad.d=0.0001, grad.zero.tol=sqrt(.Machine$double.eps/7e-7),
-# 				hess.eps=1e-4, hess.d=0.1, hess.zero.tol=sqrt(.Machine$double.eps/7e-7), r=4, v=2), rt) {
-#
-#   numDeriv::hessian(func = func, x = pars, method = "Richardson",
-#                     method.args = control.args, rt = rt)
-#
-# }
-
+# Calculation of Hessian matrix using numDeriv::hessian;
+# usually produces more stable hessian matrix.
 hessCalc <- function(pars, func, control.args = list(
-				eps = 1e-8,
-				d = 1e-4,
+				eps = 1e-4,
+				d = 1e-3,
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,
 				v = 2,
@@ -18,28 +12,24 @@ hessCalc <- function(pars, func, control.args = list(
   out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
                     method.args = control.args, rt = rt)
 
-  if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
-    control.args$d <- 1e-5
+  # Try different settings
+  while (control.args$eps > 1e-14 && (any(is.nan(out)) || any(diag(solve(out)) < 0))) {
+
+    control.args$eps <- control.args$eps / 10
     out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
               method.args = control.args, rt = rt)
+
   }
 
-  if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
-    control.args$d <- 1e-6
-    out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
-              method.args = control.args, rt = rt)
-  }
+  control.args$eps <- 1e-4
 
-  if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
-    control.args$d <- 1e-3
-    out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
-              method.args = control.args, rt = rt)
-  }
+  # Try different settings
+  while (control.args$d > 1e-10 && (any(is.nan(out)) || any(diag(solve(out)) < 0))) {
 
-  if (any(is.nan(out)) || any(diag(solve(out)) < 0)) {
-    control.args$d <- 1e-2
+    control.args$d <- control.args$d / 10
     out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
               method.args = control.args, rt = rt)
+
   }
 
   if (any(is.nan(out))) {
