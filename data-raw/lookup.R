@@ -108,6 +108,21 @@ lookup_table <- list(
      shape = 2,
      skew = 1
    ),
+   sim_pars_default_aparch = list(
+     mu = 0,
+     ar = numeric(0),
+     ma = numeric(0),
+     D = 0,
+     omega = 0.0004,
+     phi = 0.2,
+     beta = 0.4,
+     gamma = 0.1,
+     delta = 2,
+     df = 10,
+     P = 3,
+     shape = 2,
+     skew = 1
+   ),
    sim_pars_default_lmgarch = list(
      mu = 0,
      ar = numeric(0),

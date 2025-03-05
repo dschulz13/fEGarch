@@ -42,47 +42,49 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
 
 }
 
-// // [[Rcpp::export]]
-// Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
-//                           const arma::rowvec& phi, const arma::rowvec& beta,
-//                           const double gamma, const double delta,
-//                           const int n_out,
-//                           const double mu) {
-//
-//   const int n = innov.size();
-//
-//   const int n_pre = 1;
-//   const int n_all = n + n_pre;
-//
-//   double sig_d;
-//   arma::vec sigt = arma::vec(n);
-//
-//   const arma::rowvec coef_rev = arma::reverse(coef_inf);
-//
-//   arma::vec rt = arma::zeros<arma::vec>(n_all);
-//   arma::vec g_fun = arma::zeros<arma::vec>(n_all);
-//
-//   const int n_coef_m1 = coef_inf.size() - 1;
-//   int npp1;
-//
-//   for (int i = 0; i < n; ++i) {
-//
-//     npp1 = 1 + i;
-//
-//     sig_d = omega +
-//       arma::as_scalar(coef_rev.subvec(n_coef_m1 - i, n_coef_m1) * g_fun.subvec(0, i));
-//
-//     sigt(i) = std::pow(sig_d, 1.0 / delta);
-//
-//     rt(npp1) = innov(i) * sigt(i);
-//     g_fun(npp1) = std::pow(std::abs(rt(npp1)) - gamma * rt(npp1), delta);
-//
-//   }
-//
-//   const arma::vec sigt_out = sigt.subvec(n - n_out, n - 1);
-//   const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
-//
-//   const arma::vec rt_out = rt.subvec(n_all - n_out, n_all - 1) + mu;
-//
-//   return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
-// }
+// [[Rcpp::export]]
+Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
+                          const arma::rowvec& phi, const arma::rowvec& beta,
+                          const double gamma, const double delta,
+                          const int n_out,
+                          const double mu,
+                          const double E_g,
+                          const double E_sigd) {
+
+  const int n = innov.size();
+
+  const int p = phi.size();
+  const int q = beta.size();
+  const int l = std::max(p, q);
+
+  const int n_pre = l;
+  const int n_all = n + n_pre;
+
+  arma::vec sig_d(n_all);
+  sig_d.fill(E_sigd);
+  arma::vec g_fun(n_all);
+  g_fun.fill(E_g);
+  g_fun.subvec(l, n_all - 1) = arma::pow(arma::abs(innov) - gamma * innov, delta);
+
+  const arma::rowvec phi_rev = arma::reverse(phi);
+  const arma::rowvec beta_rev = arma::reverse(beta);
+
+  int im1;
+
+  for (int i = l; i < n_all; ++i) {
+
+    im1 = i - 1;
+
+    sig_d(i) = omega +
+      arma::as_scalar(phi_rev * (sig_d.subvec(i - p, im1) % g_fun.subvec(i - p, im1))) +
+      arma::as_scalar(beta_rev * sig_d.subvec(i - q, im1));
+
+  }
+
+  const arma::vec sigt_out = arma::pow(sig_d.subvec(n_all - n_out, n_all - 1), 1.0 / delta);
+  const arma::vec innov_out = innov.subvec(n_all - n_out, n_all - 1);
+
+  const arma::vec rt_out = (sigt_out % innov_out) + mu;
+
+  return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
+}
