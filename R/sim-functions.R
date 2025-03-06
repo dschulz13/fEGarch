@@ -835,16 +835,19 @@ aparch_sim <- function(pars = list(
   innov <- sim_fun(nn, shape = shape, skew = skew)
 
   dfun <- lookup_table[["fun1"]][[cond_dist]]
-  int_fun <- function(x, shape, skew, gamma, delta, dfun) {
-    (abs(x) - gamma * x)^delta * dfun(x, shape = shape, skew = skew)
+  int_fun <- function(x, shape, skew, gamma_i, delta, dfun) {
+    (abs(x) - gamma_i * x)^delta * dfun(x, shape = shape, skew = skew)
   }
-  E_g <- stats::integrate(
-    f = int_fun, lower = -Inf, upper = Inf, subdivisions = 1000L,
-    rel.tol = 1e-6, abs.tol = 1e-6,
-    shape = shape, skew = skew, gamma = gamma, delta = delta,
-    dfun = dfun
-  )[[1]]
-  E_sigd <- omega / (1 - E_g * sum(phi) - sum(beta))
+  E_g <- rep(NA, length(gamma))
+  for (i in seq_along(gamma)) {
+    E_g <- stats::integrate(
+      f = int_fun, lower = -Inf, upper = Inf, subdivisions = 1000L,
+      rel.tol = 1e-6, abs.tol = 1e-6,
+      shape = shape, skew = skew, gamma_i = gamma[[i]], delta = delta,
+      dfun = dfun
+    )[[1]]
+  }
+  E_sigd <- omega / (1 - sum(phi * E_g) - sum(beta))
 
   sim <- aparch_sim_Cpp(
     innov = innov, omega = omega, phi = phi, beta = beta,

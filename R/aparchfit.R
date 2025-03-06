@@ -6,12 +6,13 @@ aparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
   omega <- theta[[step0]]
   step1 <- step0 + p
   step2 <- step1 + q
+  step3 <- step2 + p
   phi <- theta[(step0 + 1):step1]
   beta <- theta[(step1 + 1):step2]
-  gamma <- theta[[step2 + 1]]
-  delta <- theta[[step2 + 2]]
-  shape <- if (extra_par) theta[[step2 + 3]] else 0
-  skew <- if (skew_par) theta[[step2 + 3 + extra_par]] else 0
+  gamma <- theta[(step2 + 1):step3]
+  delta <- theta[[step3 + 1]]
+  shape <- if (extra_par) theta[[step3 + 2]] else 0
+  skew <- if (skew_par) theta[[step3 + 2 + extra_par]] else 0
 
   list(
     mu = mu,
@@ -27,7 +28,7 @@ aparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par) {
+              incl_mean, extra_par, skew_par, dfun) {
 
   all_pars <- aparch_grab_pars(
     theta = theta,
@@ -46,9 +47,20 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  # n <- length(x)
-  # coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-  #                                    max_i = n + 1000)[-1]
+  # Calculate expectations
+  E_g <- rep(NA, length(gamma))
+  int_fun <- function(x, gamma_i, delta, shape, skew, dfun) {
+    (abs(x) - gamma_i * x)^delta * dfun(x, shape = shape, skew = skew)
+  }
+
+  for (i in seq_along(gamma)) {
+    E_g[[i]] <- stats::integrate(
+      f = int_fun, lower = -Inf, upper = Inf,
+      subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+      gamma_i = gamma[[i]], delta = delta, shape = shape, skew = skew,
+      dfun = dfun
+    )[[1]]
+  }
 
   sigt <- c(sigt_aparch_Cpp(
     x = x,
@@ -57,7 +69,8 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
     beta = beta,
     gamma = gamma,
     delta = delta,
-    omega = omega
+    omega = omega,
+    E_g = E_g
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -67,6 +80,7 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
 goal_fun_creator_aparch <- function(
     theta,
     x,
+    pdf_fun1,
     pdf_fun2,
     p,
     q,
@@ -79,7 +93,7 @@ goal_fun_creator_aparch <- function(
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
+              incl_mean, extra_par, skew_par, pdf_fun1)
 
   sigt <- res_list$sigt
 
@@ -369,10 +383,10 @@ aparch <- function(rt, orders = c(1, 1),
   scale_const <- sd(rt_core_o)         # for rescaling later
   rt_core <- rt_core_o / scale_const   # now has sample variance 1
 
-  if (!all(orders == c(1, 1))) {
-    orders <- c(1, 1)
-    message("Only orders p=1 with q=1 are currently supported for APARCH models.")
-  }
+  # if (!all(orders == c(1, 1))) {
+  #   orders <- c(1, 1)
+  #   message("Only orders p=1 with q=1 are currently supported for APARCH models.")
+  # }
 
   p <- orders[[1]]
   q <- orders[[2]]
@@ -384,6 +398,7 @@ aparch <- function(rt, orders = c(1, 1),
   p_ar <- order_arma[[1]]
   q_ma <- order_arma[[2]]
 
+  pdf_fun1 <- lookup_table$fun1[[cond_d]]
   pdf_fun2 <- lookup_table$fun2[[cond_d]]
 
   incl_mean <- meanspec@include_mean
@@ -418,7 +433,7 @@ aparch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par) {
+         incl_mean, extra_par, skew_par, dfun) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -449,7 +464,7 @@ aparch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun)
       out$cmeans <- fitted_vs
       out
     }
@@ -463,6 +478,7 @@ aparch <- function(rt, orders = c(1, 1),
     goal_fun_creator_aparch(
      theta = theta,
      x = rt,
+     pdf_fun1 = pdf_fun1,
      pdf_fun2 = pdf_fun2,
      p = p,
      q = q,
@@ -492,7 +508,7 @@ aparch <- function(rt, orders = c(1, 1),
       var(rt_core),
       rep(0.05 / p, p),
       rep(0.5 / q, q),
-      0.1, 2,
+      rep(0.1, p), 2,
       sval,
       list(NULL, 1)[[skew_par + 1]]
     )
@@ -509,7 +525,7 @@ aparch <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      -1 + 1e-4, 0.1,
+      rep(-1 + 1e-4, p), 0.1,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
     )
@@ -526,7 +542,7 @@ aparch <- function(rt, orders = c(1, 1),
       10,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      1 - 1e-4, 5,
+      rep(1 - 1e-4, p), 5,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
     )
@@ -628,9 +644,26 @@ aparch <- function(rt, orders = c(1, 1),
       goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
     }
 
-    result <- tryCatch(
-      expr = {
-        suppressWarnings(Rsolnp::solnp(
+    # result <- tryCatch(
+    #   expr = {
+    #     suppressWarnings(Rsolnp::solnp(
+    #       pars = start_pars,
+    #       fun = goal_fun,
+    #       LB = LB,
+    #       UB = UB,
+    #       control = control,
+    #       # ineqfun = ineq_fun,
+    #       # ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
+    #       # ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
+    #       rt = rt_core
+    #     ))
+    #   },
+    #   error = function(e1) {
+    #     stop("Convergence failed.", call. = FALSE)
+    #   }
+    # )
+
+    result <- suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -641,11 +674,6 @@ aparch <- function(rt, orders = c(1, 1),
           # ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           rt = rt_core
         ))
-      },
-      error = function(e1) {
-        stop("Convergence failed.", call. = FALSE)
-      }
-    )
 
   }
 
@@ -683,7 +711,7 @@ aparch <- function(rt, orders = c(1, 1),
     "omega",
     paste0("phi", 1:p),
     beta_names,
-    "gamma",
+    paste0("gamma", 1:p),
     "delta",
     extra_par_name,
     list(NULL, "skew")[[skew_par + 1]]
@@ -723,7 +751,7 @@ aparch <- function(rt, orders = c(1, 1),
   pars[[n_arma_im1]] <- pars[[n_arma_im1]] * sc_delta
 
   res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
+              incl_mean, extra_par, skew_par, dfun = pdf_fun1)
   sigt <- res_f$sigt
   cmeans <- res_f$cmeans
 
