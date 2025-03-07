@@ -507,7 +507,7 @@ aparch <- function(rt, orders = c(1, 1),
       D_start,
       var(rt_core),
       rep(0.05 / p, p),
-      rep(0.5 / q, q),
+      rep(0.8 / q, q),
       rep(0.1, p), 2,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -542,7 +542,7 @@ aparch <- function(rt, orders = c(1, 1),
       10,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      rep(1 - 1e-4, p), 5,
+      rep(1 - 1e-4, p), 10,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
     )
@@ -676,7 +676,6 @@ aparch <- function(rt, orders = c(1, 1),
         ))
 
   }
-
 
   pars <- result$pars
 

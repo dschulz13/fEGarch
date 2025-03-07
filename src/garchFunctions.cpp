@@ -18,7 +18,7 @@ arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
   const arma::vec Y2 = arma::pow(x_dm, 2.0);
 
   //Initialization based on sample
-  const double E_Y2 = omega / (1 - arma::accu(phi) - arma::accu(beta));
+  const double E_Y2 = arma::mean(Y2);
   const double E_sig2 = E_Y2;
 
   arma::vec Y_fun = arma::vec(nl).fill(E_Y2);
@@ -44,7 +44,7 @@ arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
 Rcpp::List garch_sim_Cpp(const arma::vec& innov, const double omega,
                           const arma::rowvec& phi, const arma::rowvec& beta,
                           const int n_out,
-                          const double mu) {
+                          const double mu, const double EY2) {
 
   const int n = innov.size();
 
@@ -54,28 +54,45 @@ Rcpp::List garch_sim_Cpp(const arma::vec& innov, const double omega,
   const int n_pre = l;
   const int n_all = n + n_pre;
 
-  const double EY2 = omega / (1 - arma::accu(phi) - arma::accu(beta));
-
   arma::vec sig2 = arma::vec(n_all).fill(EY2);
+  arma::vec sig = arma::zeros<arma::vec>(n_all);
 
   const arma::rowvec phi_r = arma::reverse(phi);
   const arma::rowvec beta_r = arma::reverse(beta);
 
-  arma::vec innov2 = arma::ones(n_all);
-  innov2.subvec(l, n_all - 1) = arma::pow(innov, 2.0);
+  arma::vec Yt2 = arma::vec(n_all).fill(EY2);
+  arma::vec Yt = arma::vec(n);
+
+  int im1;
+  int imp;
+  int imq;
+  int iml;
+
+  double sig2i;
 
   for (int i = l; i < n_all; ++i) {
 
-    sig2(i) = omega +
-      arma::as_scalar(phi_r * (sig2.subvec(i - p, i - 1) % innov2.subvec(i - p, i - 1))) +
-      arma::as_scalar(beta_r * sig2.subvec(i - q, i - 1));
+    im1 = i - 1;
+    imp = i - p;
+    imq = i - q;
+    iml = i - l;
+
+    sig2i = omega +
+      arma::as_scalar(phi_r * Yt2.subvec(imp, im1)) +
+      arma::as_scalar(beta_r * sig2.subvec(imq, im1));
+
+    sig2(i) = sig2i;
+    sig(iml) = std::sqrt(sig2i);
+
+    Yt(iml) = sig(iml) * innov(iml);
+    Yt2(i) = std::pow(Yt(iml), 2.0);
 
   }
 
-  const arma::vec sigt_out = sig2.subvec(n_all - n_out, n_all - 1);
+  const arma::vec sigt_out = sig.subvec(n - n_out, n - 1);
   const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
-  const arma::vec rt_out = sigt_out % innov_out + mu;
+  const arma::vec rt_out = Yt.subvec(n - n_out, n - 1) + mu;
 
   return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
 }

@@ -9,15 +9,17 @@ hessCalc <- function(pars, func, control.args = list(
 				show.details = FALSE), rt) {
 
 
-  out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
-                    method.args = control.args, rt = rt)
+  out <- tryCatch(expr = {numDeriv::hessian(func = func, x = pars, method = "Richardson",
+                    method.args = control.args, rt = rt)},
+                  error = function(e1) {NaN})
 
   # Try different settings
   while (control.args$eps > 1e-14 && (any(is.nan(out)) || any(diag(solve(out)) < 0))) {
 
     control.args$eps <- control.args$eps / 10
-    out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
-              method.args = control.args, rt = rt)
+    out <- tryCatch(expr = {numDeriv::hessian(func = func, x = pars, method = "Richardson",
+              method.args = control.args, rt = rt)},
+              error = function(e1) {NaN})
 
   }
 
@@ -27,8 +29,9 @@ hessCalc <- function(pars, func, control.args = list(
   while (control.args$d > 1e-10 && (any(is.nan(out)) || any(diag(solve(out)) < 0))) {
 
     control.args$d <- control.args$d / 10
-    out <- numDeriv::hessian(func = func, x = pars, method = "Richardson",
-              method.args = control.args, rt = rt)
+    out <- tryCatch(expr= {numDeriv::hessian(func = func, x = pars, method = "Richardson",
+              method.args = control.args, rt = rt)},
+              error = function(e1) {NaN})
 
   }
 

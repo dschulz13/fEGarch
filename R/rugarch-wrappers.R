@@ -88,6 +88,7 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     etat = etat,
     pars = coef,
     se = serrors,
+    scale_fun = NULL,
     vcov_mat = vcov_mat,
     llhood = llh,
     orders = orders,
@@ -97,7 +98,8 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     long_memo = FALSE,
     model = model,
     meanspec = meanspec,
-    test_obs = split_rt$test
+    test_obs = split_rt$test,
+    nonpar_model = NULL
   )
 
   if (use_nonpar) {

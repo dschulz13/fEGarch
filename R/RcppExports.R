@@ -17,6 +17,10 @@ pdf_skew_sald <- function(x, P, skew) {
     .Call('_fEGarch_pdf_skew_sald', PACKAGE = 'fEGarch', x, P, skew)
 }
 
+sigt_aparch_forecast_short <- function(et, sigt, omega, phi, beta, gamma, delta, E_e, horizon) {
+    .Call('_fEGarch_sigt_aparch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, beta, gamma, delta, E_e, horizon)
+}
+
 sigt_aparch_Cpp <- function(x, mu, phi, beta, gamma, delta, omega, E_g) {
     .Call('_fEGarch_sigt_aparch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, gamma, delta, omega, E_g)
 }
@@ -97,8 +101,16 @@ fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu) {
     .Call('_fEGarch_fiaparch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, gamma, delta, n_out, mu)
 }
 
+sigt_garch_forecast_short <- function(et, sigt, omega, phi, beta, horizon) {
+    .Call('_fEGarch_sigt_garch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, beta, horizon)
+}
+
 sigt_garch_Cpp <- function(x, mu, phi, beta, omega) {
     .Call('_fEGarch_sigt_garch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, omega)
+}
+
+garch_sim_Cpp <- function(innov, omega, phi, beta, n_out, mu, EY2) {
+    .Call('_fEGarch_garch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, phi, beta, n_out, mu, EY2)
 }
 
 pdf_ged <- function(rt, mu, sigt, shape) {

@@ -1734,8 +1734,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   } else {
     d_spar <- d_low <- d_up <- numeric(0)
     d_name <- character(0)
-    phi_start <- rep(0.85 / p, p)
-    beta_start <- rep(-0.8 / q, q)
+    phi_start <- rep(0.95 / p, p)
+    beta_start <- rep(-0.9 / q, q)
   }
 
   mean_rt <- mean(rt_core)

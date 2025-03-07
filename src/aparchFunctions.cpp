@@ -20,7 +20,8 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
   const arma::vec x_dm = x - mu;
 
   const double E_sig_delta = omega / (1.0 - arma::as_scalar(phi * E_g) - arma::accu(beta));
-  const arma::vec E_init = E_g * E_sig_delta;
+  const arma::vec E_g_r = arma::reverse(E_g);
+  const arma::vec E_init = E_g_r * E_sig_delta;
   arma::vec sig_delta = arma::vec(nl).fill(E_sig_delta);
 
   const arma::rowvec phi_r = arma::reverse(phi);
@@ -34,7 +35,7 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
   int jl;
   int jm1;
 
-  for (int j = 0; j < p; ++j) {
+  for (int j = 0; j <= pm1; ++j) {
     if (j > 0) {
       jm1 = j - 1;
       g_fun.subvec(p - j, pm1) = arma::pow(arma::abs(x_dm.subvec(0, jm1)) - gamma_r.subvec(pm1 + 1 - j, pm1) % x_dm.subvec(0, jm1), delta);
@@ -84,17 +85,20 @@ Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
 
   arma::vec sig_d(n_all);
   sig_d.fill(E_sigd);
-  arma::vec g_fun = E_g;
+  arma::vec g_fun(p);
+  const arma::vec E_g_r = arma::reverse(E_g);
 
   const arma::rowvec phi_rev = arma::reverse(phi);
   const arma::rowvec beta_rev = arma::reverse(beta);
   const arma::vec gamma_r = arma::reverse(gamma);
 
   int lj;
+  int pm1 = p - 1;
 
-  for (int j = 0; j < p; ++j) {
-    if (j > 0) {
-      g_fun.subvec(p - j, p - 1) = arma::pow(arma::abs(innov.subvec(0, j - 1)) - gamma_r.subvec(p - j, p - 1) % innov.subvec(0, j - 1), delta);
+  for (int j = 0; j <= pm1; ++j) {
+    g_fun.subvec(0, pm1 - j) = E_g_r.subvec(0, pm1 - j);
+    if (j >= 1) {
+      g_fun.subvec(p - j, pm1) = arma::pow(arma::abs(innov.subvec(0, j - 1)) - gamma_r.subvec(p - j, p - 1) % innov.subvec(0, j - 1), delta);
     }
     lj = l + j;
     sig_d(lj) = omega +
@@ -109,7 +113,7 @@ Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
 
     im1 = i - 1;
 
-    g_fun = arma::pow(arma::abs(innov.subvec(i - lp, im1 - l)) - gamma * innov.subvec(i - lp, im1 - l), delta);
+    g_fun = arma::pow(arma::abs(innov.subvec(i - lp, im1 - l)) - (gamma_r % innov.subvec(i - lp, im1 - l)), delta);
 
     sig_d(i) = omega +
       arma::as_scalar(phi_rev * (sig_d.subvec(i - p, im1) % g_fun)) +
@@ -118,7 +122,7 @@ Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
   }
 
   const arma::vec sigt_out = arma::pow(sig_d.subvec(n_all - n_out, n_all - 1), 1.0 / delta);
-  const arma::vec innov_out = innov.subvec(n_all - n_out, n_all - 1);
+  const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
   const arma::vec rt_out = (sigt_out % innov_out) + mu;
 

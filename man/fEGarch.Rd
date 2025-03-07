@@ -7,9 +7,9 @@
 fEGarch(
   spec = egarch_spec(),
   rt,
-  drange = c(0, 0.5 - 1e-06),
+  drange = c(0, 1),
   meanspec = mean_spec(),
-  Drange = c(0, 0.5 - 1e-06),
+  Drange = c(0, 1),
   nonparspec = locpol_spec(),
   use_nonpar = FALSE,
   n_test = 0,
