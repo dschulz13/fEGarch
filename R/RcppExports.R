@@ -21,8 +21,8 @@ sigt_aparch_forecast_short <- function(et, sigt, omega, phi, beta, gamma, delta,
     .Call('_fEGarch_sigt_aparch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, beta, gamma, delta, E_e, horizon)
 }
 
-sigt_aparch_Cpp <- function(x, mu, phi, beta, gamma, delta, omega, E_g) {
-    .Call('_fEGarch_sigt_aparch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, gamma, delta, omega, E_g)
+sigt_aparch_Cpp <- function(x, mu, phi, beta, gamma, delta, omega, Esigd, E_e) {
+    .Call('_fEGarch_sigt_aparch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, gamma, delta, omega, Esigd, E_e)
 }
 
 aparch_sim_Cpp <- function(innov, omega, phi, beta, gamma, delta, n_out, mu, E_g, E_sigd) {

@@ -47,20 +47,9 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  # Calculate expectations
-  E_g <- rep(NA, length(gamma))
-  int_fun <- function(x, gamma_i, delta, shape, skew, dfun) {
-    (abs(x) - gamma_i * x)^delta * dfun(x, shape = shape, skew = skew)
-  }
-
-  for (i in seq_along(gamma)) {
-    E_g[[i]] <- stats::integrate(
-      f = int_fun, lower = -Inf, upper = Inf,
-      subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
-      gamma_i = gamma[[i]], delta = delta, shape = shape, skew = skew,
-      dfun = dfun
-    )[[1]]
-  }
+  # Initialization
+  Esigd <- sd(x)^delta
+  E_e <- 0
 
   sigt <- c(sigt_aparch_Cpp(
     x = x,
@@ -70,7 +59,8 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
     gamma = gamma,
     delta = delta,
     omega = omega,
-    E_g = E_g
+    Esigd = Esigd,
+    E_e = E_e
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))

@@ -9,7 +9,8 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
                        const arma::vec& gamma,
                        const double delta,
                        const double omega,
-                       const arma::vec E_g) {
+                       const double Esigd,
+                       const double E_e) {
 
   const int n = x.size();
   const int p = phi.size();
@@ -19,44 +20,33 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
 
   const arma::vec x_dm = x - mu;
 
-  const double E_sig_delta = omega / (1.0 - arma::as_scalar(phi * E_g) - arma::accu(beta));
-  const arma::vec E_g_r = arma::reverse(E_g);
-  const arma::vec E_init = E_g_r * E_sig_delta;
-  arma::vec sig_delta = arma::vec(nl).fill(E_sig_delta);
+  arma::vec r_transf = arma::vec(p).fill(E_e);
+  arma::vec sig_delta = arma::vec(nl).fill(Esigd);
 
   const arma::rowvec phi_r = arma::reverse(phi);
   const arma::vec gamma_r = arma::reverse(gamma);
   const arma::rowvec beta_r = arma::reverse(beta);
 
-  arma::vec g_fun = E_init;
-
   const int pm1 = p - 1;
 
-  int jl;
-  int jm1;
+  for (int j = l; j <= l + pm1; ++j) {
 
-  for (int j = 0; j <= pm1; ++j) {
-    if (j > 0) {
-      jm1 = j - 1;
-      g_fun.subvec(p - j, pm1) = arma::pow(arma::abs(x_dm.subvec(0, jm1)) - gamma_r.subvec(pm1 + 1 - j, pm1) % x_dm.subvec(0, jm1), delta);
+    if (j > l) {
+      r_transf.subvec(pm1 + l + 1 - j, pm1) = arma::pow(arma::abs(x_dm.subvec(0, j - 1 - l)) - gamma_r.subvec(p - j + l, pm1) % x_dm.subvec(0, j - 1 - l), delta);
     }
-    jl = j + l;
-    sig_delta(jl) = omega +
-      arma::as_scalar(phi_r * g_fun) +
-      arma::as_scalar(beta_r * sig_delta.subvec(jl - q, jl - 1));
+
+    sig_delta(j) = omega +
+      arma::as_scalar(phi_r * r_transf) +
+      arma::as_scalar(beta_r * sig_delta.subvec(j - q, j - 1));
+
   }
 
-  arma::vec xs(p);
+  const int lp = l + p;
 
-  int lp = l + p;
-
-  for (int i = l + p; i < nl; ++i) {
-
-    xs = x_dm.subvec(i - lp, i - l - 1);
-    g_fun = arma::pow(arma::abs(xs) - gamma_r % xs, delta);
+  for (int i = lp; i < nl; ++i) {
 
     sig_delta(i) = omega +
-      arma::as_scalar(phi_r * g_fun) +
+      arma::as_scalar(phi_r * arma::pow(arma::abs(x_dm.subvec(i - lp, i - lp + pm1)) - gamma_r % x_dm.subvec(i - lp, i - lp + pm1), delta)) +
       arma::as_scalar(beta_r * sig_delta.subvec(i - q, i - 1));
 
   }
