@@ -8,7 +8,8 @@ arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
                        const arma::rowvec& coef_inf,
                        const double gamma,
                        const double delta,
-                       const double omega_sig) {
+                       const double omega_sig,
+                       const double etransf_init) {
 
   const int n = x.size();
   const int l = n + 1000;
@@ -16,10 +17,8 @@ arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu,
 
   const arma::vec x_cent = x - mu;
   const arma::vec transf = arma::pow(arma::abs(x_cent) - gamma * x_cent, delta);
-  //Initialization based on sample
-  const double E_g_delta = arma::mean(transf);
-  //const double E_g_delta = 0.02;
-  arma::vec g_fun = arma::vec(l).fill(E_g_delta);
+
+  arma::vec g_fun = arma::vec(l).fill(etransf_init);
   g_fun.subvec(1000, l - 1) = transf;
 
   const arma::rowvec coef_r = arma::reverse(coef_inf);

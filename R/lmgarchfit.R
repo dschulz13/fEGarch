@@ -25,7 +25,7 @@ lmgarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par) {
+              incl_mean, extra_par, skew_par, e2_init) {
 
   all_pars <- lmgarch_grab_pars(
     theta = theta,
@@ -47,15 +47,12 @@ sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
                                      max_i = n + 1000)[-1]
 
-  # For initialization
-  E_e2 <- var(x)
-
   sigt <- c(sigt_lmgarch_Cpp(
     x = x,
     mu = mu,
     omega = omega,
     coef_inf = coef_inf,
-    E_e2 = E_e2
+    e2_init = e2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -73,11 +70,12 @@ goal_fun_creator_lmgarch <- function(
     incl_mean,
     extra_par,
     skew_par,
-    sig_fun
+    sig_fun,
+    e2_init
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
+              incl_mean, extra_par, skew_par, e2_init)
 
   sigt <- res_list$sigt
   cmeans <- res_list$cmeans
@@ -417,7 +415,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par) {
+         incl_mean, extra_par, skew_par, e2_init) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -448,7 +446,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, e2_init)
       out$cmeans <- fitted_vs
       out
     }
@@ -456,6 +454,8 @@ lmgarch <- function(rt, orders = c(1, 1),
   } else {
     sigt_fun             # ...else keep function for EGARCH-type
   }
+
+  e2_init <- var(rt_core)
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -470,7 +470,8 @@ lmgarch <- function(rt, orders = c(1, 1),
      incl_mean = incl_mean,
      extra_par,
      skew_par,
-     sig_fun = sigt_fun_adj
+     sig_fun = sigt_fun_adj,
+     e2_init = e2_init
     )
 
   }
@@ -730,6 +731,9 @@ lmgarch <- function(rt, orders = c(1, 1),
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
 
+  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, e2_init)
+
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
     pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
@@ -737,11 +741,8 @@ lmgarch <- function(rt, orders = c(1, 1),
   # omega
   pars[[n_arma_im1]] <- pars[[n_arma_im1]] * sc_2
 
-  res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
-
-  sigt <- res_f$sigt
-  cmeans <- res_f$cmeans
+  sigt <- res_f$sigt * scale_const
+  cmeans <- res_f$cmeans * scale_const
   etat <- (rt_core_o - cmeans) / sigt
 
   if (cond_d %in% c("ald", "sald")) {

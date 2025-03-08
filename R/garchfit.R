@@ -23,7 +23,7 @@ garch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_garch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par) {
+              incl_mean, extra_par, skew_par, sig2_init) {
 
   all_pars <- garch_grab_pars(
     theta = theta,
@@ -40,16 +40,13 @@ sigt_garch_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  # n <- length(x)
-  # coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-  #                                    max_i = n + 1000)[-1]
-
   sigt <- c(sigt_garch_Cpp(
     x = x,
     mu = mu,
     phi = phi,
     beta = beta,
-    omega = omega
+    omega = omega,
+    sig2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -67,11 +64,12 @@ goal_fun_creator_garch <- function(
     incl_mean,
     extra_par,
     skew_par,
-    sig_fun
+    sig_fun,
+    sig2_init
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
+              incl_mean, extra_par, skew_par, sig2_init)
 
   sigt <- res_list$sigt
 
@@ -410,7 +408,7 @@ garch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par) {
+         incl_mean, extra_par, skew_par, sig2_init) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -441,7 +439,7 @@ garch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, sig2_init)
       out$cmeans <- fitted_vs
       out
     }
@@ -449,6 +447,8 @@ garch <- function(rt, orders = c(1, 1),
   } else {
     sigt_fun             # ...else keep function for GARCH-type
   }
+
+  sig2_init <- var(rt_core)
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -463,7 +463,8 @@ garch <- function(rt, orders = c(1, 1),
      incl_mean = incl_mean,
      extra_par = extra_par,
      skew_par = skew_par,
-     sig_fun = sigt_fun_adj
+     sig_fun = sigt_fun_adj,
+     sig2_init = sig2_init
     )
 
   }
@@ -663,7 +664,13 @@ garch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhessian <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+  nhessian <- tryCatch(
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    error = function(e1) {
+      warning("Unable to obtain standard errors.", call. = FALSE)
+      matrix(NA, nrow = length(pars), ncol = length(pars))
+    }
+  )
 
   I_mat <- diag(length(pars))
   sc_2 <- scale_const^2
@@ -686,6 +693,10 @@ garch <- function(rt, orders = c(1, 1),
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
 
+
+  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, sig2_init)
+
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
     pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
@@ -693,10 +704,8 @@ garch <- function(rt, orders = c(1, 1),
   # omega
   pars[[n_arma_im1]] <- pars[[n_arma_im1]] * sc_2
 
-  res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
-  sigt <- res_f$sigt
-  cmeans <- res_f$cmeans
+  sigt <- res_f$sigt * scale_const
+  cmeans <- res_f$cmeans * scale_const
 
   mu <- c(0, pars[[1]])[[incl_mean + 1]]
   etat <- (rt_core_o - cmeans) / sigt

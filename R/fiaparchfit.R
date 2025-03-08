@@ -29,7 +29,7 @@ fiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par) {
+              incl_mean, extra_par, skew_par, etransf_init) {
 
   all_pars <- fiaparch_grab_pars(
     theta = theta,
@@ -59,7 +59,8 @@ sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
     coef_inf = coef_inf,
     gamma = gamma,
     delta = delta,
-    omega_sig = omega_sig
+    omega_sig = omega_sig,
+    etransf_init = etransf_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -78,11 +79,12 @@ goal_fun_creator_fiaparch <- function(
     extra_par,
     skew_par,
     penalty,
-    sig_fun
+    sig_fun,
+    etransf_init
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
+              incl_mean, extra_par, skew_par, etransf_init)
 
   sigt <- res_list$sigt
 
@@ -428,7 +430,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par) {
+         incl_mean, extra_par, skew_par, etransf_init) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -459,7 +461,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, etransf_init)
       out$cmeans <- fitted_vs
       out
     }
@@ -467,6 +469,17 @@ fiaparch <- function(rt, orders = c(1, 1),
   } else {
     sigt_fun             # ...else keep function for EGARCH-type
   }
+
+  # Get estimates of gamma and delta from short-memory
+  # model as guesses for initialization in the
+  # long-memory model
+  est_sm <- suppressMessages(suppressWarnings(
+    aparch_pre(rt_core, orders = c(1, 1), cond_dist = cond_dist)
+  ))
+  gamma0 <- est_sm[["gamma"]]
+  delta0 <- est_sm[["delta"]]
+  rt_dm <- rt_core - mean(rt_core)
+  etransf_init <- mean((abs(rt_dm) - gamma0 * rt_dm)^delta0)
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -482,7 +495,8 @@ fiaparch <- function(rt, orders = c(1, 1),
      extra_par = extra_par,
      skew_par = skew_par,
      penalty = FALSE,
-     sig_fun = sigt_fun_adj
+     sig_fun = sigt_fun_adj,
+     etransf_init = etransf_init
     )
 
   }
@@ -508,7 +522,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       var(rt_core),
       rep(0.2 / p, p),
       rep(0.4 / q, q),
-      0.1, 2,
+      gamma0, delta0,
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -740,6 +754,9 @@ fiaparch <- function(rt, orders = c(1, 1),
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
 
+  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, etransf_init)
+
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
     pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
@@ -747,10 +764,8 @@ fiaparch <- function(rt, orders = c(1, 1),
   # omega
   pars[[n_arma_im1]] <- pars[[n_arma_im1]] * sc_delta
 
-  res_f <- sigt_fun_adj(unname(pars), rt_core_o, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par)
-  sigt <- res_f$sigt
-  cmeans <- res_f$cmeans
+  sigt <- res_f$sigt * scale_const
+  cmeans <- res_f$cmeans * scale_const
 
   etat <- (rt_core_o - cmeans) / sigt
 

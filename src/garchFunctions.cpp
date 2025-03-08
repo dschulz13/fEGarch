@@ -6,7 +6,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
                        const arma::rowvec& phi, const arma::rowvec& beta,
-                       const double omega) {
+                       const double omega, const double sig2_init) {
 
   const int n = x.size();
   const int p = phi.size();
@@ -17,12 +17,8 @@ arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
   const arma::vec x_dm = x - mu;
   const arma::vec Y2 = arma::pow(x_dm, 2.0);
 
-  //Initialization based on sample
-  const double E_Y2 = arma::mean(Y2);
-  const double E_sig2 = E_Y2;
-
-  arma::vec Y_fun = arma::vec(nl).fill(E_Y2);
-  arma::vec sig_2 = arma::vec(nl).fill(E_sig2);
+  arma::vec Y_fun = arma::vec(nl).fill(sig2_init);
+  arma::vec sig_2 = arma::vec(nl).fill(sig2_init);
   Y_fun.subvec(l, nl - 1) = Y2;
 
   const arma::rowvec phi_r = arma::reverse(phi);

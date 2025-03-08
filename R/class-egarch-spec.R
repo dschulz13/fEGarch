@@ -795,7 +795,7 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
 sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode) {
+              mode, lnsig2_init) {
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -841,8 +841,8 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     beta = beta,
     E_asy = E_asy,
     E_mag = E_mag,
-    Elnsig2 = Elnsig2,
-    powers = pows, modulus = mods, mode = mode
+    powers = pows, modulus = mods, mode = mode,
+    lnsig2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -854,7 +854,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode) {
+              mode, lnsig2_init) {
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -927,13 +927,14 @@ goal_fun_creator_egarch <- function(
     int_fun_mag,
     sigt_fun,
     pows, mods,
-    mode
+    mode,
+    lnsig2_init
 ) {
 
   res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode)
+              mode, lnsig2_init)
 
   sigt <- res_list$sigt
   skew <- res_list$skew
@@ -1024,7 +1025,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     function(theta, x, dfun1, p, q, p_ar, q_ma,
          incl_mean, extra_par, skew_par,
          int_fun_asy, int_fun_mag, pows, mods,
-         mode) {
+         mode, lnsig2_init) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -1058,7 +1059,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
               FALSE, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode)
+              mode, lnsig2_init)
       out$cmeans <- fitted_vs
       out
     }
@@ -1090,6 +1091,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # on power and modulus settings from "data-raw/lookup.R"
   mode <- mode_mat[pow_asy_check, pow_mag_check]
 
+  # Initialize ln(sig_t^2) with some reasonable, fixed value
+  lnsig2_init <- log(var(rt_core))
+
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
   # must be kept flexible for (skewed) average Laplace distribution
@@ -1112,7 +1116,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       sigt_fun = sigt_fun_adj,
       pows = pow,
       mods = mod,
-      mode = mode
+      mode = mode,
+      lnsig2_init = lnsig2_init
     )
   }
 
@@ -1348,7 +1353,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Compute the (negative) hessian at the optimum using a finite-difference
   # approximation via "hessian" from "numDeriv"; is usually more stable
-  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+  nhess <- tryCatch(
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    error = function(e1) {
+      warning("Unable to obtain standard errors.", call. = FALSE)
+      matrix(NA, nrow = length(pars), ncol = length(pars))
+    }
+  )
   # Obtain the variance-covariance matrix as the inverse of the
   # negative hessian
   I_mat <- diag(length(pars))    # Transformation matrix to rescale variance-covariance-matrix
@@ -1363,6 +1374,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
 
+
+  # Compute the conditional standard deviations at the optimum
+  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun_asy, int_fun_mag, pow, mod,
+              mode, lnsig2_init)
+
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
     pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
@@ -1370,13 +1388,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # omega_sig
   pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
 
-  # Compute the conditional standard deviations at the optimum
-  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pow, mod,
-              mode)
-  sigt <- final_series$sigt
-  cmeans <- final_series$cmeans
+  sigt <- final_series$sigt * scale_const   # Readjust for different scale
+  cmeans <- final_series$cmeans * scale_const
 
   # Standardized residuals
   etat <- (rt_core_o - cmeans) / sigt
@@ -1476,7 +1489,7 @@ loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_pa
 
 sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun) {
+              int_fun, lnsig2_init) {
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1499,7 +1512,6 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
 
-  Elnsig2 <- omega_sig
   omega <- omega_sig * (1 - sum(phi))
   l <- max(p, q)
   phi_s <- psi_s <- rep(0, l)
@@ -1514,7 +1526,7 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     phi = phi,
     psi = alpha,
     Elneta2 = Elneta2,
-    Elnsig2 = Elnsig2
+    lnsig2_init = lnsig2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -1523,7 +1535,7 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
 sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun) {
+              int_fun, lnsig2_init) {
 
 
   all_pars <- loggarch_grab_pars(
@@ -1579,12 +1591,13 @@ goal_fun_creator_loggarch <- function(
     extra_par,
     skew_par,
     int_fun,
-    sigt_fun
+    sigt_fun,
+    lnsig2_init
 ) {
 
   res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun)
+              int_fun, lnsig2_init)
 
   sigt <- res_list$sigt
   cmeans <- res_list$cmeans
@@ -1653,7 +1666,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   sigt_fun_adj <- if (check) {
     function(theta, x, dfun1, p, q, p_ar, q_ma,
          incl_mean, extra_par, skew_par,
-         int_fun) {
+         int_fun, lnsig2_init) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -1686,7 +1699,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       # following the specified GARCH-type
       out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
               FALSE, extra_par, skew_par,
-              int_fun)
+              int_fun, lnsig2_init)
       out$cmeans <- fitted_vs
       out
     }
@@ -1699,6 +1712,10 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   int_fun <- function(x, shape, skew, dfun) {
     log(x^2) * dfun(x, shape = shape, skew = skew)
   }
+
+  # Initialization for ln(sig_t^2); for rt scaled to have sample var = 1,
+  # this will be zero always
+  lnsig2_init <- log(var(rt_core))
 
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_loggarch(
@@ -1714,7 +1731,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       extra_par = extra_par,
       skew_par = skew_par,
       int_fun = int_fun,
-      sigt_fun = sigt_fun_adj
+      sigt_fun = sigt_fun_adj,
+      lnsig2_init = lnsig2_init
     )
   }
 
@@ -1932,7 +1950,13 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+  nhess <- tryCatch(
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    error = function(e1) {
+      warning("Unable to obtain standard errors.", call. = FALSE)
+      matrix(NA, nrow = length(pars), ncol = length(pars))
+    }
+  )
 
   I_mat <- diag(length(pars))
   if (incl_mean) {
@@ -1946,6 +1970,10 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
 
+  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par,
+              int_fun, lnsig2_init)
+
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
     pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
@@ -1953,12 +1981,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # omega_sig
   pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core_o, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun)
-
-  sigt <- final_series$sigt
-  cmeans <- final_series$cmeans
+  sigt <- final_series$sigt * scale_const
+  cmeans <- final_series$cmeans * scale_const
 
   etat <- (rt_core_o - cmeans) / sigt
 

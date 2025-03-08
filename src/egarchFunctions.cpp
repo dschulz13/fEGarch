@@ -22,17 +22,17 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
                                const arma::rowvec& beta,
                                const double E_asy,
                                const double E_mag,
-                               const double Elnsig2,
                                const arma::vec& powers,
                                const arma::vec& modulus,
-                               const std::string& mode) {
+                               const std::string& mode,
+                               const double lnsig2_init) {
 
   const int n = x.size();
   const int p = phi.size();
   const int q = alpha.size();
   const int l = std::max(p, q);
   const int nl = n + l;
-  arma::vec lnsig2 = arma::vec(nl).fill(Elnsig2);
+  arma::vec lnsig2 = arma::vec(nl).fill(lnsig2_init);
   double eta_i;
   arma::vec series1 = arma::vec(nl).fill(0);
   arma::vec series2 = arma::vec(nl).fill(0);

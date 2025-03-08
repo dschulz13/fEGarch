@@ -46,14 +46,14 @@ arma::vec sigt_loggarch_short(const arma::vec& x, const double mu,
                        const arma::rowvec& phi,
                        const arma::rowvec& psi,
                        const double Elneta2,
-                       const double Elnsig2) {
+                       const double lnsig2_init) {
 
   const int n = x.size();
   const int p = phi.size();
   const int q = psi.size();
   const int l = std::max(p, q);
   const int nl = n + l;
-  arma::vec lnsig2 = arma::vec(nl).fill(Elnsig2);
+  arma::vec lnsig2 = arma::vec(nl).fill(lnsig2_init);
   double eta_i;
   arma::vec series_innov = arma::vec(nl).fill(0);
 

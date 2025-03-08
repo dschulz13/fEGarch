@@ -9,8 +9,8 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
                        const arma::vec& gamma,
                        const double delta,
                        const double omega,
-                       const double Esigd,
-                       const double E_e) {
+                       const double sigd_init,
+                       const double etransf_init) {
 
   const int n = x.size();
   const int p = phi.size();
@@ -20,8 +20,8 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
 
   const arma::vec x_dm = x - mu;
 
-  arma::vec r_transf = arma::vec(p).fill(E_e);
-  arma::vec sig_delta = arma::vec(nl).fill(Esigd);
+  arma::vec r_transf = arma::vec(p).fill(etransf_init);
+  arma::vec sig_delta = arma::vec(nl).fill(sigd_init);
 
   const arma::rowvec phi_r = arma::reverse(phi);
   const arma::vec gamma_r = arma::reverse(gamma);
