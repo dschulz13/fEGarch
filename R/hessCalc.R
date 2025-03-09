@@ -6,32 +6,42 @@ hessCalc <- function(pars, func, control.args = list(
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,
 				v = 2,
-				show.details = FALSE), rt) {
+				show.details = FALSE), rt, adj = TRUE) {
 
+
+  d_init <- control.args$d
+  eps_init <- control.args$eps
 
   out <- tryCatch(expr = {numDeriv::hessian(func = func, x = pars, method = "Richardson",
                     method.args = control.args, rt = rt)},
                   error = function(e1) {NaN})
 
+  sol <- tryCatch(expr = {solve(out)}, error = function(e1) {-1})
+
   # Try different settings
-  while (control.args$eps > 1e-14 && (any(is.nan(out)) || any(diag(solve(out)) < 0))) {
+  while (control.args$eps > 1e-14 && (any(is.nan(out)) || any(diag(sol) < 0))) {
 
     control.args$eps <- control.args$eps / 10
     out <- tryCatch(expr = {numDeriv::hessian(func = func, x = pars, method = "Richardson",
               method.args = control.args, rt = rt)},
               error = function(e1) {NaN})
 
+    sol <- tryCatch(expr = {solve(out)}, error = function(e1) {-1})
+
   }
 
-  control.args$eps <- 1e-4
+  control.args$eps <- eps_init
+  control.args$d <- d_init
 
   # Try different settings
-  while (control.args$d > 1e-10 && (any(is.nan(out)) || any(diag(solve(out)) < 0))) {
+  while (control.args$d > 1e-10 && (any(is.nan(out)) || any(diag(sol) < 0))) {
 
     control.args$d <- control.args$d / 10
     out <- tryCatch(expr= {numDeriv::hessian(func = func, x = pars, method = "Richardson",
               method.args = control.args, rt = rt)},
               error = function(e1) {NaN})
+
+    sol <- tryCatch(expr = {solve(out)}, error = function(e1) {-1})
 
   }
 
@@ -42,3 +52,4 @@ hessCalc <- function(pars, func, control.args = list(
 
   out
 }
+

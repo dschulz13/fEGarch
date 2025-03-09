@@ -809,6 +809,11 @@ aparch_sim <- function(pars = list(
   shape <- pars_default$shape
   skew <- pars_default$skew
 
+  l_phi <- length(phi)
+  l_gamma <- length(gamma)
+
+  stopfinot("Input parameter vectors phi and gamma must be of the same length." = l_phi == l_gamma)
+
   # ARMA / FARIMA parameters
   ar <- pars_default$ar
   ma <- pars_default$ma
@@ -851,7 +856,7 @@ aparch_sim <- function(pars = list(
 
   sim <- aparch_sim_Cpp(
     innov = innov, omega = omega, phi = phi, beta = beta,
-    gamma = gamma, delta = delta, n_out = N, mu = mu, E_g = E_g,
+    gamma = gamma, delta = delta, n_out = N, mu = mu,
     E_sigd = E_sigd)
 
   out <- list(
@@ -888,8 +893,8 @@ aparch_sim <- function(pars = list(
 #'Simulate From GARCH Models
 #'
 #'A streamlined simulation function to simulate from
-#'fractionally integrated asymmetric power autoregressive
-#'conditional heteroskedasticity (FIAPARCH) models.
+#'generalized autoregressive conditional heteroskedasticity
+#'(GARCH) models.
 #'
 #'@param pars a named list with the parameter specifications; the user
 #'can provide a named list with only the settings they would like to adjust
@@ -906,8 +911,8 @@ aparch_sim <- function(pars = list(
 #'step for the conditional mean.
 #'
 #'@details
-#'See the documentation on \code{\link{fiaparch}} for information
-#'on the FIAPARCH model. This function provides
+#'See the documentation on \code{\link{garch}} for information
+#'on the GARCH model. This function provides
 #'an easy way to simulate from these models.
 #'
 #'@return
@@ -921,7 +926,7 @@ aparch_sim <- function(pars = list(
 #'@export
 #'
 #'@examples
-#'sim <- fiaparch_sim(n = 1000)
+#'sim <- garch_sim(n = 1000)
 #'mat <- do.call(cbind, sim)
 #'plot(mat, main = "")
 #'
@@ -988,19 +993,6 @@ garch_sim <- function(pars = list(
   sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
   innov <- sim_fun(nn, shape = shape, skew = skew)
 
-  # dfun <- lookup_table[["fun1"]][[cond_dist]]
-  # int_fun <- function(x, shape, skew, gamma_i, delta, dfun) {
-  #   (abs(x) - gamma_i * x)^delta * dfun(x, shape = shape, skew = skew)
-  # }
-  # E_g <- rep(NA, length(gamma))
-  # for (i in seq_along(gamma)) {
-  #   E_g <- stats::integrate(
-  #     f = int_fun, lower = -Inf, upper = Inf, subdivisions = 1000L,
-  #     rel.tol = 1e-6, abs.tol = 1e-6,
-  #     shape = shape, skew = skew, gamma_i = gamma[[i]], delta = delta,
-  #     dfun = dfun
-  #   )[[1]]
-  # }
   EY2 <- omega / (1 - sum(phi) - sum(beta))
 
   sim <- garch_sim_Cpp(

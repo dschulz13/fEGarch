@@ -61,7 +61,6 @@ Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
                           const arma::vec& gamma, const double delta,
                           const int n_out,
                           const double mu,
-                          const arma::vec& E_g,
                           const double E_sigd) {
 
   const int n = innov.size();
@@ -75,39 +74,35 @@ Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
 
   arma::vec sig_d(n_all);
   sig_d.fill(E_sigd);
-  arma::vec g_fun(p);
-  const arma::vec E_g_r = arma::reverse(E_g);
+
+  // Initialize innovs with zeros
+  arma::vec innov_a = arma::zeros<arma::vec>(n_all);
+  innov_a.subvec(l, n_all - 1) = innov;
 
   const arma::rowvec phi_rev = arma::reverse(phi);
   const arma::rowvec beta_rev = arma::reverse(beta);
   const arma::vec gamma_r = arma::reverse(gamma);
 
-  int lj;
-  int pm1 = p - 1;
 
-  for (int j = 0; j <= pm1; ++j) {
-    g_fun.subvec(0, pm1 - j) = E_g_r.subvec(0, pm1 - j);
-    if (j >= 1) {
-      g_fun.subvec(p - j, pm1) = arma::pow(arma::abs(innov.subvec(0, j - 1)) - gamma_r.subvec(p - j, p - 1) % innov.subvec(0, j - 1), delta);
-    }
-    lj = l + j;
-    sig_d(lj) = omega +
-      arma::as_scalar(phi_rev * (sig_d.subvec(lj - p, lj - 1) % g_fun)) +
-      arma::as_scalar(beta_rev * sig_d.subvec(lj - q, lj - 1));
-  }
-
+  int imp;
   int im1;
-  const int lp = l + p;
+  int imq;
 
-  for (int i = l + p; i < n_all; ++i) {
+  arma::vec gfun(p);
+  arma::vec innov_sel(p);
 
+  for (int i = l; i < n_all; ++i) {
+
+    imp = i - p;
+    imq = i - q;
     im1 = i - 1;
 
-    g_fun = arma::pow(arma::abs(innov.subvec(i - lp, im1 - l)) - (gamma_r % innov.subvec(i - lp, im1 - l)), delta);
+    innov_sel = innov_a.subvec(imp, im1);
+    gfun = arma::pow(arma::abs(innov_sel) - gamma_r % innov_sel, delta);
 
     sig_d(i) = omega +
-      arma::as_scalar(phi_rev * (sig_d.subvec(i - p, im1) % g_fun)) +
-      arma::as_scalar(beta_rev * sig_d.subvec(i - q, im1));
+      arma::as_scalar(phi_rev * (sig_d.subvec(imp, im1) % gfun)) +
+      arma::as_scalar(beta_rev * sig_d.subvec(imq, im1));
 
   }
 

@@ -508,8 +508,8 @@ aparch <- function(rt, orders = c(1, 1),
       D_start,
       var(rt_core),
       rep(0.05 / p, p),
-      rep(0.8 / q, q),
-      rep(0.1, p), 2,
+      rep(0.9 / q, q),
+      rep(0.3, p), 2,
       sval,
       list(NULL, 1)[[skew_par + 1]]
     )
@@ -526,7 +526,7 @@ aparch <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      rep(-1 + 1e-4, p), 0.1,
+      rep(-1 + 1e-4, p), 0.3,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
     )
@@ -543,7 +543,7 @@ aparch <- function(rt, orders = c(1, 1),
       10,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      rep(1 - 1e-4, p), 10,
+      rep(1 - 1e-4, p), 3,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
     )
@@ -718,10 +718,17 @@ aparch <- function(rt, orders = c(1, 1),
   )
 
   nhessian <- tryCatch(
-    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core,
+                     control.args = list(
+				eps = 1e-4,
+				d = 1e-5,
+				zero.tol = sqrt(.Machine$double.eps / 7e-7),
+				r = 4,
+				v = 2,
+				show.details = FALSE))},
     error = function(e1) {
       warning("Unable to obtain standard errors.", call. = FALSE)
-      matrix(NA, nrow = length(pars), ncol = length(pars))
+      matrix(NA_real_, ncol = length(pars), nrow = length(pars))
     }
   )
 
@@ -1082,8 +1089,8 @@ aparch_pre <- function(rt, orders = c(1, 1),
       D_start,
       var(rt_core),
       rep(0.05 / p, p),
-      rep(0.8 / q, q),
-      rep(0.1, p), 2,
+      rep(0.9 / q, q),
+      rep(0.3, p), 2,
       sval,
       list(NULL, 1)[[skew_par + 1]]
     )
@@ -1100,7 +1107,7 @@ aparch_pre <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      rep(-1 + 1e-4, p), 0.1,
+      rep(-1 + 1e-4, p), 0.3,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
     )
@@ -1117,7 +1124,7 @@ aparch_pre <- function(rt, orders = c(1, 1),
       10,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      rep(1 - 1e-4, p), 10,
+      rep(1 - 1e-4, p), 3,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
     )

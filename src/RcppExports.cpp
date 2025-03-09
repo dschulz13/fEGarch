@@ -101,8 +101,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // aparch_sim_Cpp
-Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega, const arma::rowvec& phi, const arma::rowvec& beta, const arma::vec& gamma, const double delta, const int n_out, const double mu, const arma::vec& E_g, const double E_sigd);
-RcppExport SEXP _fEGarch_aparch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP betaSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP E_gSEXP, SEXP E_sigdSEXP) {
+Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega, const arma::rowvec& phi, const arma::rowvec& beta, const arma::vec& gamma, const double delta, const int n_out, const double mu, const double E_sigd);
+RcppExport SEXP _fEGarch_aparch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP phiSEXP, SEXP betaSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP E_sigdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -114,9 +114,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const int >::type n_out(n_outSEXP);
     Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type E_g(E_gSEXP);
     Rcpp::traits::input_parameter< const double >::type E_sigd(E_sigdSEXP);
-    rcpp_result_gen = Rcpp::wrap(aparch_sim_Cpp(innov, omega, phi, beta, gamma, delta, n_out, mu, E_g, E_sigd));
+    rcpp_result_gen = Rcpp::wrap(aparch_sim_Cpp(innov, omega, phi, beta, gamma, delta, n_out, mu, E_sigd));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -734,7 +733,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_skew_sald", (DL_FUNC) &_fEGarch_pdf_skew_sald, 3},
     {"_fEGarch_sigt_aparch_forecast_short", (DL_FUNC) &_fEGarch_sigt_aparch_forecast_short, 9},
     {"_fEGarch_sigt_aparch_Cpp", (DL_FUNC) &_fEGarch_sigt_aparch_Cpp, 9},
-    {"_fEGarch_aparch_sim_Cpp", (DL_FUNC) &_fEGarch_aparch_sim_Cpp, 10},
+    {"_fEGarch_aparch_sim_Cpp", (DL_FUNC) &_fEGarch_aparch_sim_Cpp, 9},
     {"_fEGarch_forecast_arma_Cpp", (DL_FUNC) &_fEGarch_forecast_arma_Cpp, 6},
     {"_fEGarch_forecast_farima_Cpp", (DL_FUNC) &_fEGarch_forecast_farima_Cpp, 4},
     {"_fEGarch_fitted_arma_Cpp", (DL_FUNC) &_fEGarch_fitted_arma_Cpp, 4},

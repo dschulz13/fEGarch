@@ -540,7 +540,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       1e-10,
       rep(1e-6, p),
       rep(1e-6, q),
-      -1 + 1e-4, 0.1,
+      -1 + 1e-4, 0.3,
       d_low,
       lval,
       list(NULL, 1e-15)[[skew_par + 1]]
@@ -558,7 +558,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       20,
       rep(1 - 1e-6, p),
       rep(1 - 1e-6, q),
-      1 - 1e-4, 10,
+      1 - 1e-4, 3,
       d_up,
       uval,
       list(NULL, Inf)[[skew_par + 1]]
@@ -724,7 +724,14 @@ fiaparch <- function(rt, orders = c(1, 1),
 
 
   nhessian <- tryCatch(
-    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core,
+                     control.args = list(
+				eps = 1e-4,
+				d = 1e-5,
+				zero.tol = sqrt(.Machine$double.eps / 7e-7),
+				r = 4,
+				v = 2,
+				show.details = FALSE))},
     error = function(e1) {
       warning("Unable to obtain standard errors.", call. = FALSE)
       matrix(NA_real_, ncol = length(pars), nrow = length(pars))
