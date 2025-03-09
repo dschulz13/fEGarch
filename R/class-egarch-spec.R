@@ -795,7 +795,7 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
 sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init) {
+              mode, lnsig2_init, trunc) {
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -854,7 +854,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init) {
+              mode, lnsig2_init, trunc) {
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -878,7 +878,7 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   psi_2 <- if (q > 1) psi[-1] else numeric(0)
   n <- length(x)
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
-                                     max_i = n - 1)
+                                     max_i = trunc - 1)
 
   E_vals <- expect_calc_egarch(
     int_fun_asy = int_fun_asy,
@@ -928,13 +928,14 @@ goal_fun_creator_egarch <- function(
     sigt_fun,
     pows, mods,
     mode,
-    lnsig2_init
+    lnsig2_init,
+    trunc
 ) {
 
   res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init)
+              mode, lnsig2_init, trunc)
 
   sigt <- res_list$sigt
   skew <- res_list$skew
@@ -951,7 +952,7 @@ goal_fun_creator_egarch <- function(
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1)) {
+    ncores = max(1, future::availableCores() - 1), trunc = 1000) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1025,7 +1026,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     function(theta, x, dfun1, p, q, p_ar, q_ma,
          incl_mean, extra_par, skew_par,
          int_fun_asy, int_fun_mag, pows, mods,
-         mode, lnsig2_init) {
+         mode, lnsig2_init, trunc) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -1041,7 +1042,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -1059,7 +1060,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
               FALSE, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init)
+              mode, lnsig2_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -1117,7 +1118,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       pows = pow,
       mods = mod,
       mode = mode,
-      lnsig2_init = lnsig2_init
+      lnsig2_init = lnsig2_init,
+      trunc = trunc
     )
   }
 
@@ -1379,7 +1381,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               int_fun_asy, int_fun_mag, pow, mod,
-              mode, lnsig2_init)
+              mode, lnsig2_init, trunc)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
@@ -1489,7 +1491,7 @@ loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_pa
 
 sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init) {
+              int_fun, lnsig2_init, trunc) {
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1535,7 +1537,7 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
 sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init) {
+              int_fun, lnsig2_init, trunc) {
 
 
   all_pars <- loggarch_grab_pars(
@@ -1562,7 +1564,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
   n <- length(x)
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
-                                     max_i = n)[-1]
+                                     max_i = trunc)[-1]
 
   Elnsig2 <- omega_sig
 
@@ -1592,12 +1594,13 @@ goal_fun_creator_loggarch <- function(
     skew_par,
     int_fun,
     sigt_fun,
-    lnsig2_init
+    lnsig2_init,
+    trunc
 ) {
 
   res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init)
+              int_fun, lnsig2_init, trunc)
 
   sigt <- res_list$sigt
   cmeans <- res_list$cmeans
@@ -1611,7 +1614,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1682,7 +1685,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -1699,7 +1702,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       # following the specified GARCH-type
       out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
               FALSE, extra_par, skew_par,
-              int_fun, lnsig2_init)
+              int_fun, lnsig2_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -1732,7 +1735,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       skew_par = skew_par,
       int_fun = int_fun,
       sigt_fun = sigt_fun_adj,
-      lnsig2_init = lnsig2_init
+      lnsig2_init = lnsig2_init,
+      trunc = trunc
     )
   }
 
@@ -1972,7 +1976,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init)
+              int_fun, lnsig2_init, trunc)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {

@@ -7,8 +7,8 @@ arma::vec sigt_aparch_forecast_short(
                                const arma::vec& et,
                                const arma::vec& sigt,
                                const double omega,
-                               const arma::rowvec& phi,
-                               const arma::rowvec& beta,
+                               const arma::vec& phi,
+                               const arma::vec& beta,
                                const arma::vec& gamma,
                                const double delta,
                                const arma::vec& E_e,
@@ -30,8 +30,8 @@ arma::vec sigt_aparch_forecast_short(
   arma::vec sigd(Hl);
   sigd.subvec(0, l - 1) = arma::pow(sigt.subvec(n - l, n - 1), delta);
 
-  const arma::rowvec phi_r = arma::reverse(phi);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec phi_r = arma::reverse(phi);
+  const arma::vec beta_r = arma::reverse(beta);
 
   int pm1;
 
@@ -54,8 +54,8 @@ arma::vec sigt_aparch_forecast_short(
     }
 
     sigd(il) = omega +
-      arma::as_scalar(phi_r * (sigd.subvec(ilp, il1) % transf)) +
-      arma::as_scalar(beta_r * sigd.subvec(ilq, il1));
+      arma::as_scalar(arma::dot(phi_r, (sigd.subvec(ilp, il1) % transf))) +
+      arma::as_scalar(arma::dot(beta_r, sigd.subvec(ilq, il1)));
 
   }
 

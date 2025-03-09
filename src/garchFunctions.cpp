@@ -5,7 +5,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
-                       const arma::rowvec& phi, const arma::rowvec& beta,
+                       const arma::vec& phi, const arma::vec& beta,
                        const double omega, const double sig2_init) {
 
   const int n = x.size();
@@ -21,14 +21,14 @@ arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
   arma::vec sig_2 = arma::vec(nl).fill(sig2_init);
   Y_fun.subvec(l, nl - 1) = Y2;
 
-  const arma::rowvec phi_r = arma::reverse(phi);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec phi_r = arma::reverse(phi);
+  const arma::vec beta_r = arma::reverse(beta);
 
   for (int i = l; i < nl; ++i) {
 
     sig_2(i) = omega +
-      arma::as_scalar(phi_r * Y_fun.subvec(i - p, i - 1)) +
-      arma::as_scalar(beta_r * sig_2.subvec(i - q, i - 1));
+      arma::as_scalar(arma::dot(phi_r, Y_fun.subvec(i - p, i - 1))) +
+      arma::as_scalar(arma::dot(beta_r, sig_2.subvec(i - q, i - 1)));
 
   }
 
@@ -38,7 +38,7 @@ arma::vec sigt_garch_Cpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 Rcpp::List garch_sim_Cpp(const arma::vec& innov, const double omega,
-                          const arma::rowvec& phi, const arma::rowvec& beta,
+                          const arma::vec& phi, const arma::vec& beta,
                           const int n_out,
                           const double mu, const double EY2) {
 
@@ -53,8 +53,8 @@ Rcpp::List garch_sim_Cpp(const arma::vec& innov, const double omega,
   arma::vec sig2 = arma::vec(n_all).fill(EY2);
   arma::vec sig = arma::zeros<arma::vec>(n_all);
 
-  const arma::rowvec phi_r = arma::reverse(phi);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec phi_r = arma::reverse(phi);
+  const arma::vec beta_r = arma::reverse(beta);
 
   arma::vec Yt2 = arma::vec(n_all).fill(EY2);
   arma::vec Yt = arma::vec(n);
@@ -74,8 +74,8 @@ Rcpp::List garch_sim_Cpp(const arma::vec& innov, const double omega,
     iml = i - l;
 
     sig2i = omega +
-      arma::as_scalar(phi_r * Yt2.subvec(imp, im1)) +
-      arma::as_scalar(beta_r * sig2.subvec(imq, im1));
+      arma::as_scalar(arma::dot(phi_r, Yt2.subvec(imp, im1))) +
+      arma::as_scalar(arma::dot(beta_r, sig2.subvec(imq, im1)));
 
     sig2(i) = sig2i;
     sig(iml) = std::sqrt(sig2i);

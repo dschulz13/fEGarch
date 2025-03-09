@@ -4,8 +4,8 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 Rcpp::List arma_sim_Cpp(const arma::vec& innov, const double mu,
-                            const arma::rowvec& ma,
-                            const arma::rowvec& ar,
+                            const arma::vec& ma,
+                            const arma::vec& ar,
                             const int nout) {
 
   const int p = ar.size();
@@ -16,8 +16,8 @@ Rcpp::List arma_sim_Cpp(const arma::vec& innov, const double mu,
 
   arma::vec x_dm = arma::zeros<arma::vec>(nl);
 
-  const arma::rowvec ar_rev = (p > 0) ? arma::reverse(ar) : arma::rowvec();
-  const arma::rowvec ma_rev = (q > 0) ? arma::reverse(ma) : arma::rowvec();
+  const arma::vec ar_rev = (p > 0) ? arma::reverse(ar) : arma::vec();
+  const arma::vec ma_rev = (q > 0) ? arma::reverse(ma) : arma::vec();
 
   const bool use_ar = (p > 0);
   const bool use_ma = (q > 0);
@@ -35,10 +35,10 @@ Rcpp::List arma_sim_Cpp(const arma::vec& innov, const double mu,
     im1 = i - 1;
 
     if (use_ar) {
-      ar_term = arma::as_scalar(ar_rev * x_dm.subvec(i - p, im1));
+      ar_term = arma::as_scalar(arma::dot(ar_rev, x_dm.subvec(i - p, im1)));
     }
     if (use_ma) {
-      ma_term = arma::as_scalar(ma_rev * et.subvec(i - q, im1));
+      ma_term = arma::as_scalar(arma::dot(ma_rev, et.subvec(i - q, im1)));
     }
 
     x_dm(i) = ar_term + ma_term + et(i);
@@ -58,7 +58,7 @@ Rcpp::List arma_sim_Cpp(const arma::vec& innov, const double mu,
 
 // [[Rcpp::export]]
 Rcpp::List farima_sim_Cpp(const arma::vec& innov, const double mu,
-                            const arma::rowvec& coef_inf,
+                            const arma::vec& coef_inf,
                             const int nout) {
 
   const int pre = 1;
@@ -66,7 +66,7 @@ Rcpp::List farima_sim_Cpp(const arma::vec& innov, const double mu,
   const int n_pre = N + pre;
 
   arma::vec x_dm = arma::zeros<arma::vec>(n_pre);
-  const arma::rowvec coef_rev = arma::reverse(coef_inf);
+  const arma::vec coef_rev = arma::reverse(coef_inf);
 
   const int nm1 = N - 1;
 
@@ -75,7 +75,7 @@ Rcpp::List farima_sim_Cpp(const arma::vec& innov, const double mu,
 
   for (int i = pre; i < n_pre; ++i) {
 
-    x_dm(i) = arma::as_scalar(coef_rev.subvec(N - i, nm1) * x_dm.subvec(0, i - 1)) + et(i);
+    x_dm(i) = arma::as_scalar(arma::dot(coef_rev.subvec(N - i, nm1), x_dm.subvec(0, i - 1))) + et(i);
 
   }
 

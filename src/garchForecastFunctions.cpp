@@ -7,8 +7,8 @@ arma::vec sigt_garch_forecast_short(
                                const arma::vec& et,
                                const arma::vec& sigt,
                                const double omega,
-                               const arma::rowvec& phi,
-                               const arma::rowvec& beta,
+                               const arma::vec& phi,
+                               const arma::vec& beta,
                                const int horizon) {
 
   const int n = sigt.size();
@@ -25,8 +25,8 @@ arma::vec sigt_garch_forecast_short(
   arma::vec sig2(Hl);
   sig2.subvec(0, l - 1) = arma::pow(sigt.subvec(n - l, n - 1), 2.0);
 
-  const arma::rowvec phi_r = arma::reverse(phi);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec phi_r = arma::reverse(phi);
+  const arma::vec beta_r = arma::reverse(beta);
 
   for (int i = 0; i < horizon; ++i) {
     il = i + l;
@@ -35,8 +35,8 @@ arma::vec sigt_garch_forecast_short(
     ilq = il - q;
 
     sig2(il) = omega +
-      arma::as_scalar(phi_r * (sig2.subvec(ilp, il1) % et2.subvec(ilp, il1))) +
-      arma::as_scalar(beta_r * sig2.subvec(ilq, il1));
+      arma::as_scalar(arma::dot(phi_r, (sig2.subvec(ilp, il1) % et2.subvec(ilp, il1)))) +
+      arma::as_scalar(arma::dot(beta_r, sig2.subvec(ilq, il1)));
 
   }
 

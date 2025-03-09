@@ -5,7 +5,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
-                       const arma::rowvec& phi, const arma::rowvec& beta,
+                       const arma::vec& phi, const arma::vec& beta,
                        const arma::vec& gamma,
                        const double delta,
                        const double omega,
@@ -23,9 +23,9 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
   arma::vec r_transf = arma::vec(p).fill(etransf_init);
   arma::vec sig_delta = arma::vec(nl).fill(sigd_init);
 
-  const arma::rowvec phi_r = arma::reverse(phi);
+  const arma::vec phi_r = arma::reverse(phi);
   const arma::vec gamma_r = arma::reverse(gamma);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec beta_r = arma::reverse(beta);
 
   const int pm1 = p - 1;
 
@@ -36,8 +36,8 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
     }
 
     sig_delta(j) = omega +
-      arma::as_scalar(phi_r * r_transf) +
-      arma::as_scalar(beta_r * sig_delta.subvec(j - q, j - 1));
+      arma::as_scalar(arma::dot(phi_r, r_transf)) +
+      arma::as_scalar(arma::dot(beta_r, sig_delta.subvec(j - q, j - 1)));
 
   }
 
@@ -46,8 +46,8 @@ arma::vec sigt_aparch_Cpp(const arma::vec& x, const double mu,
   for (int i = lp; i < nl; ++i) {
 
     sig_delta(i) = omega +
-      arma::as_scalar(phi_r * arma::pow(arma::abs(x_dm.subvec(i - lp, i - lp + pm1)) - gamma_r % x_dm.subvec(i - lp, i - lp + pm1), delta)) +
-      arma::as_scalar(beta_r * sig_delta.subvec(i - q, i - 1));
+      arma::as_scalar(arma::dot(phi_r, arma::pow(arma::abs(x_dm.subvec(i - lp, i - lp + pm1)) - gamma_r % x_dm.subvec(i - lp, i - lp + pm1), delta))) +
+      arma::as_scalar(arma::dot(beta_r, sig_delta.subvec(i - q, i - 1)));
 
   }
 
@@ -101,8 +101,8 @@ Rcpp::List aparch_sim_Cpp(const arma::vec& innov, const double omega,
     gfun = arma::pow(arma::abs(innov_sel) - gamma_r % innov_sel, delta);
 
     sig_d(i) = omega +
-      arma::as_scalar(phi_rev * (sig_d.subvec(imp, im1) % gfun)) +
-      arma::as_scalar(beta_rev * sig_d.subvec(imq, im1));
+      arma::as_scalar(arma::dot(phi_rev, (sig_d.subvec(imp, im1) % gfun))) +
+      arma::as_scalar(arma::dot(beta_rev, sig_d.subvec(imq, im1)));
 
   }
 

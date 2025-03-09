@@ -7,8 +7,8 @@ arma::vec sigt_loggarch_forecast_short(
                                const arma::vec& et,
                                const arma::vec& sigt,
                                const double omega,
-                               const arma::rowvec& phi,
-                               const arma::rowvec& psi,
+                               const arma::vec& phi,
+                               const arma::vec& psi,
                                const double Elneta2,
                                const int horizon) {
 
@@ -30,8 +30,8 @@ arma::vec sigt_loggarch_forecast_short(
   arma::vec lnsig2 = arma::zeros<arma::vec>(Hl);
   lnsig2.subvec(0, l - 1) = arma::log(arma::pow(sigt.subvec(n - l, n - 1), 2.0));
 
-  const arma::rowvec psi_r = arma::reverse(psi);
-  const arma::rowvec phi_r = arma::reverse(phi);
+  const arma::vec psi_r = arma::reverse(psi);
+  const arma::vec phi_r = arma::reverse(phi);
 
   for (int i = 0; i < horizon; ++i) {
     il = i + l;
@@ -40,8 +40,8 @@ arma::vec sigt_loggarch_forecast_short(
     ilq = il - q;
 
     lnsig2(il) = omega +
-      arma::as_scalar(psi_r * et_fun.subvec(ilq, il1)) +
-      arma::as_scalar(phi_r * lnsig2.subvec(ilp, il1));
+      arma::as_scalar(arma::dot(psi_r, et_fun.subvec(ilq, il1))) +
+      arma::as_scalar(arma::dot(phi_r, lnsig2.subvec(ilp, il1)));
 
   }
 
@@ -50,7 +50,7 @@ arma::vec sigt_loggarch_forecast_short(
 
 // [[Rcpp::export]]
 arma::vec sigt_loggarch_forecast_long(const arma::vec& et,
-                       const arma::rowvec& coef_inf,
+                       const arma::vec& coef_inf,
                        const double Elneta2,
                        const double Elnsig2,
                        const int horizon) {
@@ -60,7 +60,7 @@ arma::vec sigt_loggarch_forecast_long(const arma::vec& et,
   arma::vec g_fun = arma::zeros<arma::vec>(n + horizon);
   g_fun.subvec(0, n - 1) = arma::log(arma::pow(et, 2.0)) - Elneta2;
 
-  const arma::rowvec coef_inf_r = arma::reverse(coef_inf);
+  const arma::vec coef_inf_r = arma::reverse(coef_inf);
 
   int nm1 = n - 1;
   const int nHm2 = nm1 + horizon - 1;
@@ -70,7 +70,7 @@ arma::vec sigt_loggarch_forecast_long(const arma::vec& et,
   for (int i = 0; i < horizon; ++i) {
 
     lnsig2(i) = Elnsig2 +
-      arma::as_scalar(coef_inf_r.subvec(z - i, nHm2) * g_fun.subvec(0, nm1 + i));
+      arma::as_scalar(arma::dot(coef_inf_r.subvec(z - i, nHm2), g_fun.subvec(0, nm1 + i)));
 
   }
 

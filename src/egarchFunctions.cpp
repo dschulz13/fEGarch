@@ -17,9 +17,9 @@ arma::vec signVecCpp(const arma::vec& vals) {
 // [[Rcpp::export]]
 arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
                                const double omega,
-                               const arma::rowvec& phi,
-                               const arma::rowvec& alpha,
-                               const arma::rowvec& beta,
+                               const arma::vec& phi,
+                               const arma::vec& alpha,
+                               const arma::vec& beta,
                                const double E_asy,
                                const double E_mag,
                                const arma::vec& powers,
@@ -40,9 +40,9 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
   const arma::vec x_cent = x - mu;
   arma::vec sigt = arma::zeros<arma::vec>(n);
 
-  const arma::rowvec alpha_r = arma::reverse(alpha);
-  const arma::rowvec phi_r = arma::reverse(phi);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec alpha_r = arma::reverse(alpha);
+  const arma::vec phi_r = arma::reverse(phi);
+  const arma::vec beta_r = arma::reverse(beta);
 
   int il, il1, ilp, ilq;
 
@@ -93,9 +93,9 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
     ilq = il - q;
 
     lnsig2(il) = omega +
-      arma::as_scalar(alpha_r * series1.subvec(ilq, il1)) +
-      arma::as_scalar(beta_r * series2.subvec(ilq, il1)) +
-      arma::as_scalar(phi_r * lnsig2.subvec(ilp, il1));
+      arma::as_scalar(arma::dot(alpha_r, series1.subvec(ilq, il1))) +
+      arma::as_scalar(arma::dot(beta_r, series2.subvec(ilq, il1))) +
+      arma::as_scalar(arma::dot(phi_r, lnsig2.subvec(ilp, il1)));
 
     sigt(i) = std::exp(lnsig2(il) / 2.0);
     eta_i = x_cent(i) / sigt(i);
@@ -110,7 +110,7 @@ arma::vec sigt_egarch_shortCpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
-                       const arma::rowvec& coef_inf,
+                       const arma::vec& coef_inf,
                        const double kappa,
                        const double gamma,
                        const double E_asy,
@@ -128,7 +128,7 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
   const arma::vec x_cent = x - mu;
   arma::vec sigt = arma::zeros<arma::vec>(n);
 
-  const arma::rowvec coef_r = arma::reverse(coef_inf);
+  const arma::vec coef_r = arma::reverse(coef_inf);
   double eta_i;
 
   int il;
@@ -173,19 +173,42 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
     Rcpp::stop("Invalid mode specified");
   }
 
-  for (int i = 0; i < n; ++i) {
+  const int coef_len = coef_inf.size();   // gives truncation length
+  const int m = std::min(coef_len, n);
+  const int cm1 = coef_len - 1;
 
-    il = i + 1;
+  for (int j = 0; j < m; ++j) {
+
+    il = j + 1;
 
     lnsig2 = Elnsig2 +
-      arma::as_scalar(coef_r.subvec(nm1 - i, nm1) * series_g.subvec(0, i));
+      arma::as_scalar(arma::dot(coef_r.subvec(cm1 - j, cm1), series_g.subvec(0, j)));
 
-    sigt(i) = std::exp(lnsig2 / 2.0);
-    eta_i = x_cent(i) / sigt(i);
+    sigt(j) = std::exp(lnsig2 / 2.0);
+    eta_i = x_cent(j) / sigt(j);
 
     series_g(il) = kappa * compute_abs_eta_pow1(eta_i) + gamma * compute_abs_eta_pow2(eta_i);
 
   }
+
+  if (n > coef_len) {
+
+    for (int i = m; i < n; ++i) {
+
+      il = i + 1;
+
+      lnsig2 = Elnsig2 +
+        arma::as_scalar(arma::dot(coef_r, series_g.subvec(i - m + 1, i)));
+
+      sigt(i) = std::exp(lnsig2 / 2.0);
+      eta_i = x_cent(i) / sigt(i);
+
+      series_g(il) = kappa * compute_abs_eta_pow1(eta_i) + gamma * compute_abs_eta_pow2(eta_i);
+
+    }
+
+  }
+
 
   return sigt;
 
@@ -194,7 +217,7 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig,
-                          const arma::rowvec& coef_inf,
+                          const arma::vec& coef_inf,
                           const double kappa,
                           const double gamma, const int n_out,
                           const double mu, const double E_mag,
@@ -210,7 +233,7 @@ Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_s
   const int n_coef_m1 = n_coef - 1;
   arma::vec lnsig2(n);
 
-  const arma::rowvec coef_rev = arma::reverse(coef_inf);
+  const arma::vec coef_rev = arma::reverse(coef_inf);
 
   const double mod1 = modulus(0);
   const double mod2 = modulus(1);
@@ -241,7 +264,7 @@ Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_s
 
   for (int i = 0; i < n; ++i) {
 
-    lnsig2(i) = omega_sig + arma::as_scalar(coef_rev.subvec(n_coef_m1 - i, n_coef_m1) * gfun.subvec(0, i));
+    lnsig2(i) = omega_sig + arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - i, n_coef_m1), gfun.subvec(0, i)));
 
   }
 
@@ -255,7 +278,7 @@ Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_s
 
 // [[Rcpp::export]]
 Rcpp::List egarch_shortmemo_type_sim(const arma::vec& innov, const double omega_sig,
-                          const arma::rowvec& ar_coef, const arma::rowvec& ma_coef,
+                          const arma::vec& ar_coef, const arma::vec& ma_coef,
                           const double kappa,
                           const double gamma, const int n_out,
                           const double mu, const double E_mag,
@@ -276,8 +299,8 @@ Rcpp::List egarch_shortmemo_type_sim(const arma::vec& innov, const double omega_
   arma::vec lnsig2(n_all);
   lnsig2.fill(omega_sig);
 
-  const arma::rowvec ar_rev = arma::reverse(ar_coef);
-  const arma::rowvec ma_rev = arma::reverse(ma_coef);
+  const arma::vec ar_rev = arma::reverse(ar_coef);
+  const arma::vec ma_rev = arma::reverse(ma_coef);
 
   const double mod1 = modulus(0);
   const double mod2 = modulus(1);
@@ -316,8 +339,8 @@ Rcpp::List egarch_shortmemo_type_sim(const arma::vec& innov, const double omega_
     li = lm1 + i;
 
     lnsig2(l + i) = omega +
-      arma::as_scalar(ar_rev * lnsig2.subvec(lar + i, li)) +
-      arma::as_scalar(ma_rev * gfun.subvec(lma + i, li));
+      arma::as_scalar(arma::dot(ar_rev, lnsig2.subvec(lar + i, li))) +
+      arma::as_scalar(arma::dot(ma_rev, gfun.subvec(lma + i, li)));
 
   }
 

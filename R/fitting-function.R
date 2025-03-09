@@ -296,7 +296,8 @@ fEGarch <- function(spec = egarch_spec(),
     n_test = 0,
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     control_nonpar = list(),
-    parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+    parallel = TRUE, ncores = max(1, future::availableCores() - 1),
+    trunc = 1000) {
 
   if (use_nonpar) {
 
@@ -320,7 +321,7 @@ fEGarch <- function(spec = egarch_spec(),
 
   out <- fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
               n_test = n_test, start_pars, LB, UB, control,
-              parallel, ncores)
+              parallel, ncores, trunc)
 
   if (use_nonpar) {
     mu <- rep(nonpar_result$mu, length(rt))

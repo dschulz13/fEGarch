@@ -9,9 +9,9 @@ arma::vec sigt_egarch_forecast_shortCpp(
                                const arma::vec& et,
                                const arma::vec& sigt,
                                const double omega,
-                               const arma::rowvec& phi,
-                               const arma::rowvec& alpha,
-                               const arma::rowvec& beta,
+                               const arma::vec& phi,
+                               const arma::vec& alpha,
+                               const arma::vec& beta,
                                const double E_asy,
                                const double E_mag,
                                const arma::vec& powers,
@@ -61,9 +61,9 @@ arma::vec sigt_egarch_forecast_shortCpp(
   arma::vec lnsig2 = arma::zeros<arma::vec>(Hl);
   lnsig2.subvec(0, l - 1) = arma::log(arma::pow(sigt.subvec(n - l, n - 1), 2.0));
 
-  const arma::rowvec alpha_r = arma::reverse(alpha);
-  const arma::rowvec phi_r = arma::reverse(phi);
-  const arma::rowvec beta_r = arma::reverse(beta);
+  const arma::vec alpha_r = arma::reverse(alpha);
+  const arma::vec phi_r = arma::reverse(phi);
+  const arma::vec beta_r = arma::reverse(beta);
 
   for (int i = 0; i < horizon; ++i) {
     il = i + l;
@@ -72,9 +72,9 @@ arma::vec sigt_egarch_forecast_shortCpp(
     ilq = il - q;
 
     lnsig2(il) = omega +
-      arma::as_scalar(alpha_r * et_asy.subvec(ilq, il1)) +
-      arma::as_scalar(beta_r * et_mag.subvec(ilq, il1)) +
-      arma::as_scalar(phi_r * lnsig2.subvec(ilp, il1));
+      arma::as_scalar(arma::dot(alpha_r, et_asy.subvec(ilq, il1))) +
+      arma::as_scalar(arma::dot(beta_r, et_mag.subvec(ilq, il1))) +
+      arma::as_scalar(arma::dot(phi_r, lnsig2.subvec(ilp, il1)));
 
   }
 
@@ -84,7 +84,7 @@ arma::vec sigt_egarch_forecast_shortCpp(
 
 // [[Rcpp::export]]
 arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
-                       const arma::rowvec& coef_inf,
+                       const arma::vec& coef_inf,
                        const double kappa,
                        const double gamma,
                        const double E_asy,
@@ -98,7 +98,7 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
   const int n = et.size();
   arma::vec lnsig2 = arma::zeros<arma::vec>(horizon);
 
-  const arma::rowvec coef_r = arma::reverse(coef_inf);
+  const arma::vec coef_r = arma::reverse(coef_inf);
 
   const double mod1 = modulus(0);
   const double mod2 = modulus(1);
@@ -135,7 +135,7 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
   for (int i = 0; i < horizon; ++i) {
 
     lnsig2(i) = Elnsig2 +
-      arma::as_scalar(coef_r.subvec(z - i, nHm2) * series_g.subvec(0, nm1 + i));
+      arma::as_scalar(arma::dot(coef_r.subvec(z - i, nHm2), series_g.subvec(0, nm1 + i)));
 
   }
 

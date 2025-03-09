@@ -25,7 +25,7 @@ lmgarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, e2_init) {
+              incl_mean, extra_par, skew_par, e2_init, trunc) {
 
   all_pars <- lmgarch_grab_pars(
     theta = theta,
@@ -45,7 +45,7 @@ sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
 
   n <- length(x)
   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-                                     max_i = n + 1000)[-1]
+                                     max_i = trunc)[-1]
 
   sigt <- c(sigt_lmgarch_Cpp(
     x = x,
@@ -71,11 +71,12 @@ goal_fun_creator_lmgarch <- function(
     extra_par,
     skew_par,
     sig_fun,
-    e2_init
+    e2_init,
+    trunc
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, e2_init)
+              incl_mean, extra_par, skew_par, e2_init, trunc)
 
   sigt <- res_list$sigt
   cmeans <- res_list$cmeans
@@ -339,7 +340,8 @@ lmgarch <- function(rt, orders = c(1, 1),
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
-                        parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+                        parallel = TRUE, ncores = max(1, future::availableCores() - 1),
+                        trunc = 1000) {
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -415,7 +417,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, e2_init) {
+         incl_mean, extra_par, skew_par, e2_init, trunc) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -431,7 +433,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -446,7 +448,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, e2_init)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, e2_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -471,7 +473,8 @@ lmgarch <- function(rt, orders = c(1, 1),
      extra_par,
      skew_par,
      sig_fun = sigt_fun_adj,
-     e2_init = e2_init
+     e2_init = e2_init,
+     trunc = trunc
     )
 
   }
@@ -732,7 +735,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, e2_init)
+              incl_mean, extra_par, skew_par, e2_init, trunc)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {

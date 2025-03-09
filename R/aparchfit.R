@@ -28,7 +28,8 @@ aparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init) {
+              incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init,
+              trunc) {
 
   all_pars <- aparch_grab_pars(
     theta = theta,
@@ -81,12 +82,13 @@ goal_fun_creator_aparch <- function(
     skew_par,
     sig_fun,
     sigd_init,
-    etransf_init
+    etransf_init,
+    trunc
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par, pdf_fun1,
-              sigd_init, etransf_init)
+              sigd_init, etransf_init, trunc)
 
   sigt <- res_list$sigt
 
@@ -348,7 +350,8 @@ aparch <- function(rt, orders = c(1, 1),
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
-                        parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+                        parallel = TRUE, ncores = max(1, future::availableCores() - 1),
+                        trunc = 1000) {
 
   if (use_nonpar) {
 
@@ -426,7 +429,7 @@ aparch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init) {
+         incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -442,7 +445,7 @@ aparch <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -457,7 +460,7 @@ aparch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun, sigd_init, etransf_init)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -488,7 +491,8 @@ aparch <- function(rt, orders = c(1, 1),
      skew_par = skew_par,
      sig_fun = sigt_fun_adj,
      sigd_init = sigd_init,
-     etransf_init = etransf_init
+     etransf_init = etransf_init,
+     trunc = trunc
     )
 
   }
@@ -758,7 +762,7 @@ aparch <- function(rt, orders = c(1, 1),
 
   res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par, dfun = pdf_fun1,
-              sigd_init, etransf_init)
+              sigd_init, etransf_init, trunc)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
@@ -826,7 +830,7 @@ aparch <- function(rt, orders = c(1, 1),
     inf_criteria = c("aic" = aic, "bic" = bic),
     cond_dist = cond_d,
     orders = orders,
-    long_memo = TRUE,
+    long_memo = FALSE,
     meanspec = meanspec,
     test_obs = split_rt$test,
     nonpar_model = NULL
@@ -929,7 +933,8 @@ aparch_pre <- function(rt, orders = c(1, 1),
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
-                        parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+                        parallel = TRUE, ncores = max(1, future::availableCores() - 1),
+                        trunc = 1000) {
 
   if (use_nonpar) {
 
@@ -1007,7 +1012,7 @@ aparch_pre <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init) {
+         incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -1023,7 +1028,7 @@ aparch_pre <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -1038,7 +1043,7 @@ aparch_pre <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun, sigd_init, etransf_init)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -1069,7 +1074,8 @@ aparch_pre <- function(rt, orders = c(1, 1),
      skew_par = skew_par,
      sig_fun = sigt_fun_adj,
      sigd_init = sigd_init,
-     etransf_init = etransf_init
+     etransf_init = etransf_init,
+     trunc = trunc
     )
 
   }

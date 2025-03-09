@@ -4,8 +4,8 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
-                            const arma::rowvec& ma,
-                            const arma::rowvec& ar) {
+                            const arma::vec& ma,
+                            const arma::vec& ar) {
 
   const int p = ar.size();
   const int q = ma.size();
@@ -17,8 +17,8 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
   arma::vec fitted = arma::zeros<arma::vec>(nl);
   x_dm.subvec(l, nl - 1) = x - mu;
 
-  const arma::rowvec ar_rev = (p > 0) ? arma::reverse(ar) : arma::rowvec();
-  const arma::rowvec ma_rev = (q > 0) ? arma::reverse(ma) : arma::rowvec();
+  const arma::vec ar_rev = (p > 0) ? arma::reverse(ar) : arma::vec();
+  const arma::vec ma_rev = (q > 0) ? arma::reverse(ma) : arma::vec();
 
   const bool use_ar = (p > 0);
   const bool use_ma = (q > 0);
@@ -35,10 +35,10 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
     im1 = i - 1;
 
     if (use_ar) {
-      ar_term = arma::as_scalar(ar_rev * x_dm.subvec(i - p, im1));
+      ar_term = arma::as_scalar(arma::dot(ar_rev, x_dm.subvec(i - p, im1)));
     }
     if (use_ma) {
-      ma_term = arma::as_scalar(ma_rev * et.subvec(i - q, im1));
+      ma_term = arma::as_scalar(arma::dot(ma_rev, et.subvec(i - q, im1)));
     }
 
     fitted(i) = ar_term + ma_term;
@@ -53,8 +53,9 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
 
 // [[Rcpp::export]]
 arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu,
-                            const arma::rowvec& coef_inf) {
+                            const arma::vec& coef_inf) {
 
+  const int coef_len = coef_inf.size();
   const int pre = 1;
   const int n = x.size();
   const int n_pre = n + pre;
@@ -62,14 +63,21 @@ arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu,
   arma::vec x_dm = arma::zeros<arma::vec>(n_pre);
   arma::vec fitted = arma::zeros<arma::vec>(n_pre);
   x_dm.subvec(pre, n_pre - 1) = x - mu;
-  const arma::rowvec coef_rev = arma::reverse(coef_inf);
+  const arma::vec coef_rev = arma::reverse(coef_inf);
 
-  const int nm1 = n - 1;
+  const int m = std::min(n, coef_len);
+  const int cm1 = coef_len - 1;
+  const int cm1pre = cm1 + pre;
+  const int m_pre = m + pre;
 
-  for (int i = pre; i < n_pre; ++i) {
+  for (int i = pre; i < m_pre; ++i) {
+    fitted(i) = arma::as_scalar(arma::dot(coef_rev.subvec(cm1pre - i, cm1), x_dm.subvec(0, i - 1)));
+  }
 
-    fitted(i) = arma::as_scalar(coef_rev.subvec(n - i, nm1) * x_dm.subvec(0, i - 1));
-
+  if (n > coef_len) {
+    for (int j = m_pre; j < n_pre; ++j) {
+      fitted(j) = arma::as_scalar(arma::dot(coef_rev, x_dm.subvec(j - coef_len, j - 1)));
+    }
   }
 
   return fitted.subvec(pre, n_pre - 1) + mu;

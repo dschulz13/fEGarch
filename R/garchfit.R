@@ -23,7 +23,7 @@ garch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_garch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, sig2_init) {
+              incl_mean, extra_par, skew_par, sig2_init, trunc) {
 
   all_pars <- garch_grab_pars(
     theta = theta,
@@ -65,11 +65,12 @@ goal_fun_creator_garch <- function(
     extra_par,
     skew_par,
     sig_fun,
-    sig2_init
+    sig2_init,
+    trunc
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, sig2_init)
+              incl_mean, extra_par, skew_par, sig2_init, trunc)
 
   sigt <- res_list$sigt
 
@@ -331,7 +332,8 @@ garch <- function(rt, orders = c(1, 1),
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
-                        parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+                        parallel = TRUE, ncores = max(1, future::availableCores() - 1),
+                        trunc = 1000) {
 
   if (use_nonpar) {
 
@@ -408,7 +410,7 @@ garch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, sig2_init) {
+         incl_mean, extra_par, skew_par, sig2_init, trunc) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -424,7 +426,7 @@ garch <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
+        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -439,7 +441,7 @@ garch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, sig2_init)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, sig2_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -464,7 +466,8 @@ garch <- function(rt, orders = c(1, 1),
      extra_par = extra_par,
      skew_par = skew_par,
      sig_fun = sigt_fun_adj,
-     sig2_init = sig2_init
+     sig2_init = sig2_init,
+     trunc = trunc
     )
 
   }
@@ -695,7 +698,7 @@ garch <- function(rt, orders = c(1, 1),
 
 
   res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, sig2_init)
+              incl_mean, extra_par, skew_par, sig2_init, trunc)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
