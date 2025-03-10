@@ -23,6 +23,8 @@
 
 \S4method{show}{fEGarch_fit_aparch}(object)
 
+\S4method{show}{fEGarch_fit_aparch}(object)
+
 \S4method{show}{fEGarch_fit_garch}(object)
 
 \S4method{show}{fEGarch_fit_fiaparch}(object)

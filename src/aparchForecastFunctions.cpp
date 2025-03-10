@@ -14,6 +14,7 @@ arma::vec sigt_aparch_forecast_short(
                                const arma::vec& E_e,
                                const int horizon) {
 
+
   const int n = sigt.size();
   const int p = phi.size();
   const int q = beta.size();

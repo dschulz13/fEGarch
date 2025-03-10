@@ -132,7 +132,6 @@ arma::vec sigt_egarch_longCpp(const arma::vec& x, const double mu,
   double eta_i;
 
   int il;
-  int nm1 = n - 1;
   const double mod1 = modulus(0);
   const double mod2 = modulus(1);
   const double pow1 = powers.size() > 0 ? powers(0) : 1.0; // Default to 1.0 for safety

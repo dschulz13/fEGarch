@@ -19,7 +19,8 @@ fEGarch(
   control = list(),
   control_nonpar = list(),
   parallel = TRUE,
-  ncores = max(1, future::availableCores() - 1)
+  ncores = max(1, future::availableCores() - 1),
+  trunc = 1000
 )
 }
 \arguments{

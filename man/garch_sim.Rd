@@ -40,16 +40,16 @@ conditional means. These four elements are formatted as
 }
 \description{
 A streamlined simulation function to simulate from
-fractionally integrated asymmetric power autoregressive
-conditional heteroskedasticity (FIAPARCH) models.
+generalized autoregressive conditional heteroskedasticity
+(GARCH) models.
 }
 \details{
-See the documentation on \code{\link{fiaparch}} for information
-on the FIAPARCH model. This function provides
+See the documentation on \code{\link{garch}} for information
+on the GARCH model. This function provides
 an easy way to simulate from these models.
 }
 \examples{
-sim <- fiaparch_sim(n = 1000)
+sim <- garch_sim(n = 1000)
 mat <- do.call(cbind, sim)
 plot(mat, main = "")
 

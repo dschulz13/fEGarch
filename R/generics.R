@@ -68,15 +68,15 @@ setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 0.5 - 1e-6), meanspec
 
 #====================================================#
 
-setGeneric("fEGarch_predict", function(object, n.ahead, ...) {standardGeneric("fEGarch_predict")})
+setGeneric("fEGarch_predict", function(object, n.ahead, trunc = 1000, ...) {standardGeneric("fEGarch_predict")})
 
 #====================================================#
 
-setGeneric("predict_internal", function(object, n.ahead, ...) {standardGeneric("predict_internal")})
+setGeneric("predict_internal", function(object, n.ahead, trunc = 1000, ...) {standardGeneric("predict_internal")})
 
 #====================================================#
 
-setGeneric("predict_roll", function(object, step_size = 1, ...) {standardGeneric("predict_roll")})
+setGeneric("predict_roll", function(object, step_size = 1, trunc = 1000, ...) {standardGeneric("predict_roll")})
 
 #====================================================#
 #'Generics for Accessing Model Estimation Output Elements

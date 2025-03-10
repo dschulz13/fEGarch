@@ -21,7 +21,6 @@ arma::vec sigt_loggarch_long(const arma::vec& x, const double mu,
   double eta_i;
 
   int il;
-  int nm1 = n - 1;
 
   const int coef_len = coef_inf.size();
   const int cm1 = coef_len - 1;

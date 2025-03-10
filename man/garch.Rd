@@ -19,7 +19,8 @@ garch(
   control = list(),
   control_nonpar = list(),
   parallel = TRUE,
-  ncores = max(1, future::availableCores() - 1)
+  ncores = max(1, future::availableCores() - 1),
+  trunc = 1000
 )
 }
 \arguments{
@@ -103,7 +104,7 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 use for parallel computations.}
 }
 \value{
-An object of S4-class \code{"fEGarch_fit_aparch"}
+An object of S4-class \code{"fEGarch_fit_garch"}
 is returned. It contains the following elements.
 \describe{
 \item{\code{pars}:}{a named numeric vector with the parameter estimates.}
@@ -133,55 +134,24 @@ testing following \code{n_test}.}
 }
 \description{
 Fit a standard GARCH model under the six
-most common conditional distributions to observed data
+most common conditional distributions (and more) to observed data
 using quasi maximum-likelihood estimation.
 }
 \details{
 Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-\deqn{\sigma_t^{\delta}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}.}
+\deqn{\sigma_t^{2}=\omega+\sum_{i=1}^{p}\phi_i \varepsilon_{t-i}^2 + \sum_{j=1}^{q}\beta_j \sigma_{t-j}^2.}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 \eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 deviations in \eqn{r_t}.
-Moreover, \eqn{B} is the backshift operator and
-\eqn{\beta(B) = 1 - \sum_{j=1}^{q}\beta_j B^{j}}, where
-\eqn{\beta_j}, \eqn{j=1,2,\dots, q}, are real-valued coefficients. Furthermore,
-\eqn{\phi(B) = 1 - \sum_{i=1}^{p}\phi_i B^{i}}, where
-\eqn{\phi_i}, \eqn{i=1,2,\dots, p}, are real-valued coefficients. \eqn{p}
+\eqn{\phi_i}, \eqn{i=1,2,\dots, p}, and \eqn{\beta_j}, \eqn{j = 1, \dots, q},
+are non-negative coefficients. \eqn{p}
 and \eqn{q} are the model orders definable through the argument \code{orders},
 where \eqn{p} is the first element and \eqn{q} is the second element in the
 argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,0.5)} as the
-long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
-all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
-
-The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}}
-are replaced by the in-sample arithmetic mean of
-\eqn{\left(\left|r_t^{*} - \mu\right|-\gamma\left(r_t^{*}-\mu\right)\right)^{\delta}}, where
-\eqn{r_t^{*}} are considered as the observations and \eqn{\mu}, \eqn{\gamma} and
-\eqn{\delta} are not fixed values but also to be optimized over simultaneously
-in the optimization
-problem. The pre-sample is set to length 1000, and the infinite coefficient series
-\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]} is, at each time point, always considered
-as far back as to the first pre-sample value. Therefore, at observation time point
-\eqn{t=1,\dots,n}, a truncation of 1000 + t - 1 coefficients is considered.
-
-Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
-to ensure the non-negativity of all of the infinite-order coefficient series
-\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
-with \eqn{\omega>0} ensures that all the conditional volatilities
-are greater than zero, we employ the sufficient conditions mentioned
-in Footnote 6 in Tse (1998) in the optimization problem, which are
-taken from Bollerslev and Mikkelsen (1996). Conrad and Haag (2006) provide
-necessary and sufficient conditions for cases with simple model orders and
-sufficient conditions for general model orders, however, due to
-time efficiency, this function uses the set of sufficient conditions
-by Bollerslev and Mikkelsen (1996) only.
-
-See also the reference section for sources on the APARCH (Ding et al., 1993)
-and the FIAPARCH (Tse, 1998) models.
+real-valued parameter. \eqn{\omega > 0} is the intercept.
 
 For a conditional average Laplace distribution, an optimal model for each
 distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
@@ -197,7 +167,7 @@ estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is th
 not obtained and the ones obtained for the remaining estimates do not account
 for \eqn{\hat{P}}.
 
-An ARMA-FIAPARCH or a FARIMA-FIAPARCH can be fitted by adjusting the
+An ARMA-GARCH or a FARIMA-GARCH can be fitted by adjusting the
 argument \code{meanspec} correspondingly.
 
 As an alternative, a semiparametric extension of the pure models
@@ -212,7 +182,7 @@ are being estimated and removed before the parametric step using
 \code{\link[esemifar]{tsmoothlm}}. \code{control_nonpar} can be adjusted following
 to make changes to the arguments of \code{\link[esemifar]{tsmoothlm}}
 for long-memory specifications. These arguments specify settings
-for the automated bandwidth selection algorithms implemented by thís
+for the automated bandwidth selection algorithms implemented by this
 function. By default, we use the settings
 \code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
 \code{qmax = 1}, \code{InfR = "Nai"},
@@ -249,7 +219,7 @@ of volatility models.
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
-model <- aparch(rt)
+model <- garch(rt)
 model
 
 }
@@ -258,20 +228,5 @@ model
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
 memory in stock market volatility. Journal of Econometrics, 73(1):
 151-184. DOI: 10.1016/0304-4076(95)01736-4.}
-\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-integrated GARCH model. Journal of Financial Econometrics, 4(3):
-413-449. DOI: 10.1093/jjfinec/nbj015.}
-\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-and a new model. Journal of Empirical Finance, 1(1):
-83-106. DOI: 10.1016/0927-5398(93)90006-D.}
-\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
-Trend Stationary Time Series. The R Journal,
-14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
-\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-in R. Comunications in Statistics - Theory and Methods,
-53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
-\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
-49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
 }
 }

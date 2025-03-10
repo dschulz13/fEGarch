@@ -8,22 +8,27 @@ arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
                        const arma::vec& coef_inf,
                        const double e2_init) {
 
+  const int coef_len = coef_inf.size();
   const int n = x.size();
-  const int l = n + 1000;
+  const int l = n + coef_len;
   arma::vec sig2 = arma::vec(n).fill(0);
 
   const arma::vec x_cent = x - mu;
 
+  const int lm1 = l - 1;
+
+
   //Initialization based on sample
   arma::vec e2 = arma::vec(l).fill(e2_init);
-  e2.subvec(1000, l - 1) = arma::pow(x_cent, 2.0);
+  e2.subvec(coef_len, lm1) = arma::pow(x_cent, 2.0);
 
   const arma::vec coef_r = arma::reverse(coef_inf);
+  const int cm1 = coef_len - 1;
 
   for (int i = 0; i < n; ++i) {
 
     sig2(i) = omega +
-      arma::as_scalar(arma::dot(coef_r.subvec(l - 1000 - i, l - 1), e2.subvec(0, 999 + i)));
+      arma::as_scalar(arma::dot(coef_r, e2.subvec(i, cm1 + i)));
 
   }
 
