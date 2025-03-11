@@ -341,7 +341,7 @@ lmgarch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000) {
+                        trunc = 3000) {
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -598,17 +598,23 @@ lmgarch <- function(rt, orders = c(1, 1),
           goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
         }
 
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          ineqfun = ineq_fun,
-          ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-          ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-          control = control,
-          rt = rt_core
-        ))
+        est <- tryCatch(
+          expr = {suppressWarnings(Rsolnp::solnp(
+            pars = start_pars,
+            fun = goal_fun,
+            LB = LB,
+            UB = UB,
+            ineqfun = ineq_fun,
+            ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
+            ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
+            control = control,
+            rt = rt_core
+          ))},
+          error = function(e1) {
+            stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+          }
+        )
+
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       ineq_fun = ineq_fun, control = control, rt_core = rt_core, p_ar = p_ar,
@@ -636,26 +642,9 @@ lmgarch <- function(rt, orders = c(1, 1),
       goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
     }
 
-    # result <- tryCatch(
-    #   expr = {
-    #     suppressWarnings(Rsolnp::solnp(
-    #       pars = start_pars,
-    #       fun = goal_fun,
-    #       LB = LB,
-    #       UB = UB,
-    #       control = control,
-    #       ineqfun = ineq_fun,
-    #       ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-    #       ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-    #       rt = rt_core
-    #     ))
-    #   },
-    #   error = function(e1) {
-    #     stop("Convergence failed.", call. = FALSE)
-    #   }
-    # )
-
-    result <- suppressWarnings(Rsolnp::solnp(
+    result <- tryCatch(
+      expr = {
+        suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -666,7 +655,16 @@ lmgarch <- function(rt, orders = c(1, 1),
           ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           rt = rt_core
         ))
+      },
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
+  }
+
+  if (result$convergence %in% c(1, 2)) {
+    warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }
 
   pars <- result$pars

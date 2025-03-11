@@ -287,7 +287,7 @@ garch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000) {
+                        trunc = 3000) {
 
   if (use_nonpar) {
 
@@ -524,17 +524,22 @@ garch <- function(rt, orders = c(1, 1),
           goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
         }
 
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          ineqfun = ineq_fun,
-          ineqLB = 0,
-          ineqUB = 1 - 1e-8,
-          control = control,
-          rt = rt_core
-        ))
+        est <- tryCatch(
+            expr = {suppressWarnings(Rsolnp::solnp(
+            pars = start_pars,
+            fun = goal_fun,
+            LB = LB,
+            UB = UB,
+            ineqfun = ineq_fun,
+            ineqLB = 0,
+            ineqUB = 1 - 1e-8,
+            control = control,
+            rt = rt_core
+          ))},
+          error = function(e1) {
+            stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+          }
+        )
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       control = control, rt_core = rt_core, ineq_fun = ineq_fun,
@@ -577,13 +582,16 @@ garch <- function(rt, orders = c(1, 1),
         ))
       },
       error = function(e1) {
-        stop("Convergence failed.", call. = FALSE)
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
       }
     )
 
 
   }
 
+  if (result$convergence %in% c(1, 2)) {
+    warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+  }
 
   pars <- result$pars
 

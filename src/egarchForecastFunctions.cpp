@@ -143,8 +143,6 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
 
     } else {
 
-      Rcout << i + 1 << "\n";
-
       lnsig2(i) = Elnsig2 +
         arma::as_scalar(arma::dot(coef_r, series_g.subvec(npi - nc, npi - 1)));
 

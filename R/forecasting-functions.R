@@ -77,7 +77,7 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
 
 # For EGARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -195,9 +195,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
     ))
   } else {
     # Use AR-representation
-    coef_inf_garch <- esemifar::farima_to_ar(
+    coef_inf_garch <- esemifar::farima_to_ma(
       ar = phi, ma = psi_2, d = d, max_i = trunc
-    )[-1]
+    )
     c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
@@ -223,7 +223,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
 
 # For Log-GARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -338,7 +338,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
 
 # For APARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -451,7 +451,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
 
 # For FIAPARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
   garch_orders <- object@orders
   p <- garch_orders[[1]]
@@ -555,7 +555,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
 # For GARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -639,7 +639,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
 
 # For LMGARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
   garch_orders <- object@orders
   p <- garch_orders[[1]]
@@ -705,7 +705,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
 # Returns a simple list and not the entire input object
 methods::setMethod("predict_internal", "fEGarch_fit",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
     fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, trunc = trunc, ...)
 
@@ -800,7 +800,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'fcast2
 #'
 methods::setMethod("predict", "fEGarch_fit",
-  function(object, n.ahead = 1, trunc = 1000, ...) {
+  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
 
     np_check <- !is.null(object@nonpar_model)
     object_orig <- object
@@ -836,7 +836,7 @@ methods::setMethod("predict", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, trunc = 1000, ...) {
+  function(object, step_size = 1, trunc = 3000, ...) {
 
     n_test <- length(object@test_obs)
     object2 <- object

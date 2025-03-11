@@ -952,7 +952,7 @@ goal_fun_creator_egarch <- function(
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1), trunc = 1000) {
+    ncores = max(1, future::availableCores() - 1), trunc = 3000) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1260,17 +1260,22 @@ setMethod("fEGarch_fit", "egarch_type_spec",
           goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
         }
 
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          ineqfun = ineq_fun,
-          ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
-          ineqUB = rep(Inf, p_all),
-          control = control,
-          rt = rt_core
-        ))
+        est <- tryCatch(
+            expr = {suppressWarnings(Rsolnp::solnp(
+            pars = start_pars,
+            fun = goal_fun,
+            LB = LB,
+            UB = UB,
+            ineqfun = ineq_fun,
+            ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
+            ineqUB = rep(Inf, p_all),
+            control = control,
+            rt = rt_core
+          ))},
+          error = function(e1) {
+            stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+          }
+        )
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       ineq_fun = constr_fun, control = control, rt_core = rt_core,
@@ -1299,18 +1304,27 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- suppressWarnings(Rsolnp::solnp(
-      pars = start_pars,
-      fun = goal_fun,
-      LB = LB,
-      UB = UB,
-      ineqfun = constr_fun,
-      ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
-      ineqUB = rep(Inf, p_all),
-      control = control,
-      rt = rt_core
-    ))
+    result <- tryCatch(
+      expr = {suppressWarnings(Rsolnp::solnp(
+        pars = start_pars,
+        fun = goal_fun,
+        LB = LB,
+        UB = UB,
+        ineqfun = constr_fun,
+        ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
+        ineqUB = rep(Inf, p_all),
+        control = control,
+        rt = rt_core
+      ))},
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
+  }
+
+  if (result$convergence %in% c(1, 2)) {
+    warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }
 
   pars <- result$pars
@@ -1408,6 +1422,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     }
 
   }
+
+  print(vcov_mat)
 
   serrors <- sqrt(diag_vcov)
   names(pars) <- par_names
@@ -1614,7 +1630,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 3000) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1865,17 +1881,21 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
           goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
         }
 
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          ineqfun = ineq_fun,
-          ineqLB = rep(1e-6, p_all),
-          ineqUB = rep(Inf, p_all),
-          control = control,
-          rt = rt_core
-        ))
+        est <- tryCatch(
+          expr = {suppressWarnings(Rsolnp::solnp(
+            pars = start_pars,
+            fun = goal_fun,
+            LB = LB,
+            UB = UB,
+            ineqfun = ineq_fun,
+            ineqLB = rep(1e-6, p_all),
+            ineqUB = rep(Inf, p_all),
+            control = control,
+            rt = rt_core
+          ))}, error = function(e1) {
+            stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+          }
+        )
         est
       }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
       control = control, rt_core = rt_core, ineq_fun = constr_fun,
@@ -1903,18 +1923,26 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- suppressWarnings(Rsolnp::solnp(
-      pars = start_pars,
-      fun = goal_fun,
-      LB = LB,
-      UB = UB,
-      ineqfun = constr_fun,
-      ineqLB = rep(1e-6, p_all),
-      ineqUB = rep(Inf, p_all),
-      control = control,
-      rt = rt_core
-    ))
+    result <- tryCatch(
+      expr = {suppressWarnings(Rsolnp::solnp(
+        pars = start_pars,
+        fun = goal_fun,
+        LB = LB,
+        UB = UB,
+        ineqfun = constr_fun,
+        ineqLB = rep(1e-6, p_all),
+        ineqUB = rep(Inf, p_all),
+        control = control,
+        rt = rt_core
+      ))}, error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
+  }
+
+  if (result$convergence %in% c(1, 2)) {
+    warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }
 
 

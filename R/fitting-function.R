@@ -297,7 +297,7 @@ fEGarch <- function(spec = egarch_spec(),
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     control_nonpar = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-    trunc = 1000) {
+    trunc = 3000) {
 
   if (use_nonpar) {
 
