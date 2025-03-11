@@ -54,8 +54,8 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
         horizon = n.ahead
       ))
     } else {
-      w <- min(length(x) + n.ahead - 1, trunc)
-      coef_inf_arma <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = w)[-1]
+      # Possibly truncate infinite coefficient series
+      coef_inf_arma <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = trunc)[-1]
       c(forecast_farima_Cpp(
         x = x,
         mu = mu,
@@ -194,9 +194,10 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
       horizon = n.ahead
     ))
   } else {
-    coef_inf_garch <- esemifar::farima_to_ma(
-      ar = phi, ma = psi_2, d = d, max_i = length(object@rt) + n.ahead - 2
-    )
+    # Use AR-representation
+    coef_inf_garch <- esemifar::farima_to_ar(
+      ar = phi, ma = psi_2, d = d, max_i = trunc
+    )[-1]
     c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
@@ -317,7 +318,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
     ))
   } else {
     coef_inf_garch <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
-                                     max_i = n + n.ahead - 1)[-1]
+                                     max_i = trunc)[-1]
     c(sigt_loggarch_forecast_long(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
@@ -534,7 +535,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   # FIAPARCH point forecasts of cond. volatility
 
   coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-                                     max_i = n + n.ahead - 1)[-1]
+                                     max_i = trunc)[-1]
   sigt_fc <- c(sigt_fiaparch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
       coef_inf = coef_inf_garch,
@@ -687,7 +688,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
   # LMGARCH point forecasts of cond. volatility
 
   coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-                                     max_i = n + n.ahead - 1)[-1]
+                                     max_i = trunc)[-1]
   sigt_fc <- c(sigt_lmgarch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
       coef_inf = coef_inf_garch,
@@ -704,9 +705,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
 # Returns a simple list and not the entire input object
 methods::setMethod("predict_internal", "fEGarch_fit",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 1, trunc = 1000, ...) {
 
-    fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, ...)
+    fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, trunc = trunc, ...)
 
     rt <- object@rt
     if (inherits(rt, "zoo")) {
@@ -799,7 +800,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'fcast2
 #'
 methods::setMethod("predict", "fEGarch_fit",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 1, trunc = 1000, ...) {
 
     np_check <- !is.null(object@nonpar_model)
     object_orig <- object
@@ -814,7 +815,7 @@ methods::setMethod("predict", "fEGarch_fit",
 
     }
 
-    fcasts <- predict_internal(object = object, n.ahead = n.ahead, ...)
+    fcasts <- predict_internal(object = object, n.ahead = n.ahead, trunc = trunc, ...)
 
     if (np_check) {
       fcasts$cmeans <- fcasts$cmeans + mu_h
@@ -835,7 +836,7 @@ methods::setMethod("predict", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, ...) {
+  function(object, step_size = 1, trunc = 1000, ...) {
 
     n_test <- length(object@test_obs)
     object2 <- object
@@ -881,7 +882,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     object2@etat <- zoo::coredata(object2@etat)
 
     for (i in seq_len(n_test)) {
-      pred <- predict_internal(object2, n.ahead = 1)
+      pred <- predict_internal(object2, n.ahead = 1, trunc = trunc)
       sigt_out[[i]] <- pred[["sigt"]]
       cmeans_out[[i]] <- pred[["cmeans"]]
       object2@rt <- c(object2@rt, test_obs[[i]])
@@ -895,7 +896,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       object3@etat <- zoo::coredata(object3@etat)
       sigt_out_s <- cmeans_out_s <- rep(NA, n_test)
       for (i in step_size:n_test) {
-        pred <- predict_internal(object3, n.ahead = step_size)
+        pred <- predict_internal(object3, n.ahead = step_size, trunc = trunc)
         sigt_out_s[[i]] <- utils::tail(pred[["sigt"]], 1)
         cmeans_out_s[[i]] <- utils::tail(pred[["cmeans"]], 1)
         imss <- i - step_size + 1

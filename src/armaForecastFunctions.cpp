@@ -71,9 +71,22 @@ arma::vec forecast_farima_Cpp(const arma::vec& x, const double mu,
   const int ncm1 = nc - 1;
   const int ncmn = nc - n;
 
+  int ipn;
+
   for (int i = 0; i < horizon; ++i) {
 
-    x_dm_fc(i + n) = arma::as_scalar(arma::dot(coef_rev.subvec(ncmn - i, ncm1), x_dm_fc.subvec(0, n - 1 + i)));
+  ipn = i + n;
+
+    // Depending on coef. truncation length and series length, make a  distinction
+    if (ipn < nc) {
+
+      x_dm_fc(ipn) = arma::as_scalar(arma::dot(coef_rev.subvec(ncmn - i, ncm1), x_dm_fc.subvec(0, ipn - 1)));
+
+    } else {
+
+      x_dm_fc(ipn) = arma::as_scalar(arma::dot(coef_rev, x_dm_fc.subvec(ipn - nc, ipn - 1)));
+
+    }
 
   }
 

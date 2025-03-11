@@ -20,14 +20,25 @@ arma::vec sigt_fiaparch_forecast(const arma::vec& rt,
   const arma::vec coef_inf_r = arma::reverse(coef_inf);
 
   const int nm1 = n - 1;
-  const int nHm2 = nm1 + horizon - 1;
-  const int np1 = - n + 1;
-  const int z = nHm2 + np1;
+  const int nc = coef_inf_r.size();
+  const int ncm1 = nc - 1;
+  int npi;
 
   for (int i = 0; i < horizon; ++i) {
 
-    sig_delta(i) = omega +
-      arma::as_scalar(arma::dot(coef_inf_r.subvec(z - i, nHm2), g_fun.subvec(0, nm1 + i)));
+    npi = n + i;
+
+    if (npi < nc) {
+
+      sig_delta(i) = omega +
+        arma::as_scalar(arma::dot(coef_inf_r.subvec(nc - npi, ncm1), g_fun.subvec(0, nm1 + i)));
+
+    } else {
+
+      sig_delta(i) = omega +
+        arma::as_scalar(arma::dot(coef_inf_r, g_fun.subvec(npi - nc, npi - 1)));
+
+    }
 
     g_fun(n + i) = sig_delta(i) * E_const;
 

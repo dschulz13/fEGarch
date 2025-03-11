@@ -128,14 +128,27 @@ arma::vec sigt_egarch_forecast_longCpp(const arma::vec& et,
   series_g.subvec(0, n - 1) = kappa * et_asy + gamma * et_mag;
 
   const int nm1 = n - 1;
-  const int nHm2 = nm1 + horizon - 1;
-  const int np1 = -n + 1;
-  const int z = nHm2 + np1;
+  const int nc = coef_r.size();
+  const int ncm1 = nc - 1;
+  int npi;
 
   for (int i = 0; i < horizon; ++i) {
 
-    lnsig2(i) = Elnsig2 +
-      arma::as_scalar(arma::dot(coef_r.subvec(z - i, nHm2), series_g.subvec(0, nm1 + i)));
+    npi = n + i;
+
+    if (npi < nc) {
+
+      lnsig2(i) = Elnsig2 +
+        arma::as_scalar(arma::dot(coef_r.subvec(nc - npi, ncm1), series_g.subvec(0, nm1 + i)));
+
+    } else {
+
+      Rcout << i + 1 << "\n";
+
+      lnsig2(i) = Elnsig2 +
+        arma::as_scalar(arma::dot(coef_r, series_g.subvec(npi - nc, npi - 1)));
+
+    }
 
   }
 
