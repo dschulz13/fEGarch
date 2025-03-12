@@ -731,7 +731,8 @@ garch <- function(rt, orders = c(1, 1),
     long_memo = FALSE,
     meanspec = meanspec,
     test_obs = split_rt$test,
-    nonpar_model = NULL
+    nonpar_model = NULL,
+    trunc = NA
   )
 
   if (use_nonpar) {

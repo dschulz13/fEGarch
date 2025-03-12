@@ -76,7 +76,7 @@ setGeneric("predict_internal", function(object, n.ahead, trunc = length(object@r
 
 #====================================================#
 
-setGeneric("predict_roll", function(object, step_size = 1, trunc = 3000, ...) {standardGeneric("predict_roll")})
+setGeneric("predict_roll", function(object, step_size = 1, trunc = NULL, ...) {standardGeneric("predict_roll")})
 
 #====================================================#
 #'Generics for Accessing Model Estimation Output Elements

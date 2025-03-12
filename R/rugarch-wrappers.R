@@ -99,7 +99,8 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
     model = model,
     meanspec = meanspec,
     test_obs = split_rt$test,
-    nonpar_model = NULL
+    nonpar_model = NULL,
+    trunc = NA
   )
 
   if (use_nonpar) {

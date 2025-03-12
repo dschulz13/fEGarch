@@ -802,7 +802,8 @@ lmgarch <- function(rt, orders = c(1, 1),
     long_memo = TRUE,
     meanspec = meanspec,
     test_obs = split_rt$test,
-    nonpar_model = NULL
+    nonpar_model = NULL,
+    trunc = trunc
   )
 
   if (use_nonpar) {

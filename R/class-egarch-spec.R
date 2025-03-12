@@ -1470,7 +1470,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     long_memo = lm,
     meanspec = meanspec,
     test_obs = split_rt$test,
-    nonpar_model = NULL
+    nonpar_model = NULL,
+    trunc = if (lm || meanspec@long_memo) {trunc} else {NA}
   )
 
   list_out
@@ -2074,7 +2075,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     long_memo = lm,
     meanspec = meanspec,
     test_obs = split_rt$test,
-    nonpar_model = NULL
+    nonpar_model = NULL,
+    trunc = if (lm || meanspec@long_memo) {trunc} else {NA}
   )
 
   list_out

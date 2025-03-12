@@ -16,7 +16,8 @@ setClass("fEGarch_fit",
     long_memo = "logical",
     meanspec = "mean_spec",
     test_obs = "ANY",
-    nonpar_model = "ANY"
+    nonpar_model = "ANY",
+    trunc = "ANY"
   ),
   prototype = list(
     pars = numeric(1),
@@ -34,7 +35,8 @@ setClass("fEGarch_fit",
     long_memo = logical(1),
     meanspec = mean_spec(),
     test_obs = numeric(1),
-    nonpar_model = numeric(1)
+    nonpar_model = numeric(1),
+    trunc = numeric(1)
   )
 )
 
@@ -100,7 +102,8 @@ fEGarch_fit_egarch <- function(
     long_memo,
     meanspec,
     test_obs,
-    nonpar_model = nonpar_model
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_egarch",
@@ -121,7 +124,8 @@ fEGarch_fit_egarch <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -142,7 +146,8 @@ fEGarch_fit_loggarch <- function(
     meanspec,
     test_obs,
     scale_fun,
-    nonpar_model
+    nonpar_model,
+    trunc
 
 ) {
 
@@ -162,7 +167,8 @@ fEGarch_fit_loggarch <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -184,7 +190,8 @@ fEGarch_fit_fiaparch <- function(
     meanspec,
     test_obs,
     scale_fun,
-    nonpar_model
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_fiaparch",
@@ -203,7 +210,8 @@ fEGarch_fit_fiaparch <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -224,7 +232,8 @@ fEGarch_fit_aparch <- function(
     meanspec,
     test_obs,
     scale_fun,
-    nonpar_model
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_aparch",
@@ -243,7 +252,8 @@ fEGarch_fit_aparch <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -264,7 +274,8 @@ fEGarch_fit_garch <- function(
     meanspec,
     test_obs,
     scale_fun,
-    nonpar_model
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_garch",
@@ -283,7 +294,8 @@ fEGarch_fit_garch <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -304,7 +316,8 @@ fEGarch_fit_lmgarch <- function(
     meanspec,
     test_obs,
     scale_fun,
-    nonpar_model
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_lmgarch",
@@ -323,7 +336,8 @@ fEGarch_fit_lmgarch <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -346,7 +360,8 @@ fEGarch_fit_rugarch_wrapper <- function(
     meanspec,
     test_obs,
     scale_fun,
-    nonpar_model
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_rugarch_wrapper",
@@ -367,7 +382,8 @@ fEGarch_fit_rugarch_wrapper <- function(
     meanspec = meanspec,
     test_obs = test_obs,
     scale_fun = scale_fun,
-    nonpar_model = nonpar_model
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }

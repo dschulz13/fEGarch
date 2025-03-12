@@ -836,7 +836,12 @@ methods::setMethod("predict", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, trunc = 3000, ...) {
+  function(object, step_size = 1, trunc = NULL, ...) {
+
+    # Get truncation for long-memory models from fitted object
+    if (is.null(trunc)) {
+      trunc <- object@trunc
+    }
 
     n_test <- length(object@test_obs)
     object2 <- object
