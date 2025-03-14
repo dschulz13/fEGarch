@@ -204,6 +204,8 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models.
 #'
 #'@details
 #'See the documentation on \code{\link{fEGarch_spec}} for information
@@ -242,7 +244,7 @@ fEGarch_sim <- function(spec = egarch_spec(),
                            shape = 2,
                            P = 3,
                            skew = 1
-                         ), n = 1000, nstart = 5e3) {
+                         ), n = 1000, nstart = 1e4, trunc = 1000) {
 
   nn <- n + nstart          # pre-sample plus sample number of observations
   N <- n
@@ -337,7 +339,7 @@ fEGarch_sim <- function(spec = egarch_spec(),
   # and for the sample with the exception of the very last sample time point
 
   coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
-                                     max_i = nn)
+                                     max_i = trunc - 1)
 
   sim <- egarch_longmemo_type_sim(
     innov = innov, omega_sig = omega_sig, coef_inf = coef_inf,
@@ -372,7 +374,7 @@ fEGarch_sim <- function(spec = egarch_spec(),
     if (lm) {
 
       coef_inf <- esemifar::farima_to_ma(
-        ar = phi, ma = psi, d = d, max_i = nn
+        ar = phi, ma = psi, d = d, max_i = trunc
       )[-1]
 
       sim <- loggarch_longmemo_type_sim(

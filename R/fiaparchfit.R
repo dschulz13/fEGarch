@@ -355,7 +355,7 @@ fiaparch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 3000) {
+                        trunc = 1000) {
 
   if (use_nonpar) {
 
@@ -477,6 +477,11 @@ fiaparch <- function(rt, orders = c(1, 1),
   # Get estimates of gamma and delta from short-memory
   # model as guesses for initialization in the
   # long-memory model
+  if (trunc > n) {
+    trunc <- n
+    message(paste0("trunc reduced to ", n))
+  }
+
   est_sm <- suppressMessages(suppressWarnings(
     aparch_pre(rt_core, orders = c(1, 1), cond_dist = cond_dist, trunc = trunc,
                meanspec = meanspec)

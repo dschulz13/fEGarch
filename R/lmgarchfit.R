@@ -341,7 +341,7 @@ lmgarch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 3000) {
+                        trunc = 1000) {
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -458,6 +458,10 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   e2_init <- var(rt_core)
+  if (trunc > n) {
+    trunc <- n
+    message(paste0("trunc reduced to ", n))
+  }
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 

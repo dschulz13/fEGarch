@@ -952,7 +952,7 @@ goal_fun_creator_egarch <- function(
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1), trunc = 3000) {
+    ncores = max(1, future::availableCores() - 1), trunc = 1000) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1094,6 +1094,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Initialize ln(sig_t^2) with some reasonable, fixed value
   lnsig2_init <- log(var(rt_core))
+
+  # Reduce truncation if unnecessarily too large
+  if (trunc >= n) {
+    nm1 <- n - 1
+    trunc <- nm1
+    message(paste0("trunc reduced to ", nm1))
+  }
 
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
@@ -1631,7 +1638,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 3000) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1736,6 +1743,13 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Initialization for ln(sig_t^2); for rt scaled to have sample var = 1,
   # this will be zero always
   lnsig2_init <- log(var(rt_core))
+
+  # Reduce truncation if unnecessarily too large
+  if (trunc >= n) {
+    nm1 <- n - 1
+    trunc <- nm1
+    message(paste0("trunc reduced to ", nm1))
+  }
 
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_loggarch(
