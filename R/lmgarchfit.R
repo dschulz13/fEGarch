@@ -706,6 +706,26 @@ lmgarch <- function(rt, orders = c(1, 1),
     list(NULL, "skew")[[skew_par + 1]]
   )
 
+  if (cond_d %in% c("ald", "sald")) {
+
+    # Fix dfun1
+    dfun1_P <- function(x, shape, skew) {
+      dfun1(x = x, shape = P_sel, skew = skew)
+    }
+
+    # Fix dfun2
+    dfun2_P <- function(x, mu, sigt, shape, skew) {
+      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+    }
+
+    # Fix the final goal function to optimize over
+    # using dfun1_P and dfun2_P
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
+    }
+
+  }
+
   nhessian <- tryCatch(
     expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
     error = function(e1) {
@@ -760,6 +780,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
       vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
     }
+    diag_vcov <- diag(vcov_mat)
   }
 
   serrors <- sqrt(diag_vcov)

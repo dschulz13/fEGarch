@@ -1374,6 +1374,28 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
+  # Adjust goal function one last time for hessian computation
+  if (cond_d %in% c("ald", "sald")) {
+
+    # Fix dfun1
+    dfun1_P <- function(x, shape, skew) {
+      dfun1(x = x, shape = P_sel, skew = skew)
+    }
+
+    # Fix dfun2
+    dfun2_P <- function(x, mu, sigt, shape, skew) {
+      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+    }
+
+    # Fix the final goal function to optimize over
+    # using dfun1_P and dfun2_P
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
+    }
+
+  }
+
+
   # Compute the (negative) hessian at the optimum using a finite-difference
   # approximation via "hessian" from "numDeriv"; is usually more stable
   nhess <- tryCatch(
@@ -1383,6 +1405,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       matrix(NA, nrow = length(pars), ncol = length(pars))
     }
   )
+
   # Obtain the variance-covariance matrix as the inverse of the
   # negative hessian
   I_mat <- diag(length(pars))    # Transformation matrix to rescale variance-covariance-matrix
@@ -1427,10 +1450,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
       vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
     }
-
+    diag_vcov <- diag(vcov_mat)
   }
-
-  print(vcov_mat)
 
   serrors <- sqrt(diag_vcov)
   names(pars) <- par_names
@@ -1997,6 +2018,26 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
+  if (cond_d %in% c("ald", "sald")) {
+
+    # Fix dfun1
+    dfun1_P <- function(x, shape, skew) {
+      dfun1(x = x, shape = P_sel, skew = skew)
+    }
+
+    # Fix dfun2
+    dfun2_P <- function(x, mu, sigt, shape, skew) {
+      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+    }
+
+    # Fix the final goal function to optimize over
+    # using dfun1_P and dfun2_P
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
+    }
+
+  }
+
   nhess <- tryCatch(
     expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
     error = function(e1) {
@@ -2043,7 +2084,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
       vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
     }
-
+    diag_vcov <- diag(vcov_mat)
   }
 
   serrors <- sqrt(diag_vcov)
