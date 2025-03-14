@@ -20,7 +20,7 @@ aparch(
   control_nonpar = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = 1000
+  Prange = c(1, 5)
 )
 }
 \arguments{
@@ -102,6 +102,9 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 \code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 \code{ncores} is a single numeric value indicating the number of cores to
 use for parallel computations.}
+
+\item{Prange}{a two-element vector that indicates the search boundaries for
+the parameter \eqn{P} in a (skewed) average Laplace distribution.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_aparch"}
@@ -130,6 +133,7 @@ testing following \code{n_test}.}
 \code{NULL}; formatting of \code{rt} is reused.}
 \item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 \code{use_nonpar = TRUE}.}
+\item{\code{trunc}:}{the input argument \code{trunc}.}
 }
 }
 \description{

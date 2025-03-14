@@ -20,7 +20,8 @@ fEGarch(
   control_nonpar = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = 1000
+  trunc = 3000,
+  Prange = c(1, 5)
 )
 }
 \arguments{
@@ -103,6 +104,13 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 \code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 \code{ncores} is a single numeric value indicating the number of cores to
 use for parallel computations.}
+
+\item{trunc}{a positive integer indicating the finite truncation length of the
+infinite-order polynomial of the infinite-order ARCH-representation of the
+FIAPARCH.}
+
+\item{Prange}{a two-element vector that indicates the search boundaries for
+the parameter \eqn{P} in a (skewed) average Laplace distribution.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_egarch"} \code{"fEGarch_fit_loggarch"}
@@ -135,6 +143,7 @@ testing following \code{n_test}.}
 \item{\code{nonpar_model}:}{the estimation object returned by either
 \code{\link[smoots]{tsmooth}} or \code{\link[esemifar]{tsmoothlm}} for
 \code{use_nonpar = TRUE}.}
+\item{\code{trunc}:}{the input argument \code{trunc}.}
 }
 }
 \description{
@@ -152,14 +161,11 @@ therein being governed by a model from the EGARCH family as described in
 to zero.
 
 The specified model is then fitted using quasi maximum likelihood estimation,
-where initial values are obtained from their theoretical expectations.
-
-The initialization of pre-sample values is always done according to the
-theoretical expectations of the corresponding quantities; in the pre-sample
-values of \eqn{g(\cdot)} are set to its expectation zero. All other possibly
-required pre-sample values are set to their expectation using their formal
-definition including unknown model parameters. These definitions are included
-in the log-likelihood functions and are thus optimized over simultaneously.
+where pre-sample values of \eqn{g\left(\eta_{t-1}\right)} are
+filled in through its theoretical expectation of zero. In addition, in
+short-memory models, pre-sample values of \eqn{ln(\sigma_t^2)} are roughly
+approximated through \eqn{\ln\left(\hat{\sigma}_{t}^{2}\right)}, where
+\eqn{\hat{\sigma}_{t}^{2}} is the sample variance of the observations.
 
 See the references section for sources on the EGARCH (Nelson, 1991),
 FIEGARCH (Bollerslev and Mikkelsen, 1996),

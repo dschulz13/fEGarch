@@ -163,6 +163,11 @@ goal_fun_creator_lmgarch <- function(
 #'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
+#'@param trunc a positive integer indicating the finite truncation length of the
+#'infinite-order polynomial of the infinite-order ARCH-representation of the
+#'FIGARCH.
+#'@param Prange a two-element vector that indicates the search boundaries for
+#'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
 #'@details
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
@@ -188,10 +193,7 @@ goal_fun_creator_lmgarch <- function(
 #'\deqn{\psi(B) = \left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right].}
 #'
 #'The pre-sample values of \eqn{\varepsilon_t^2} are implemented by repeating the sample
-#'variance of the observed series. The pre-sample is set to length 1000, and the infinite coefficient series
-#'\eqn{\psi(B)} is, at each time point, always considered
-#'as far back as to the first pre-sample value. Therefore, at observation time point
-#'\eqn{t=1,\dots,n}, a truncation of 1000 + t - 1 coefficients is considered.
+#'variance of the observed series.
 #'
 #'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 #'to ensure the non-negativity of all of the infinite-order coefficient series
@@ -300,6 +302,7 @@ goal_fun_creator_lmgarch <- function(
 #'\code{NULL}; formatting of \code{rt} is reused.}
 #'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 #'\code{use_nonpar = TRUE}.}
+#'\item{\code{trunc}:}{the input argument \code{trunc}.}
 #'}
 #'
 #'@examples
@@ -341,7 +344,7 @@ lmgarch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000) {
+                        trunc = 1000, Prange = c(1, 5)) {
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -378,6 +381,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   q <- orders[[2]]
 
   cond_d <- match.arg(cond_dist)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
 
   # ARMA orders
   order_arma <- orders(meanspec)

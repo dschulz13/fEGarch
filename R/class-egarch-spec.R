@@ -950,9 +950,9 @@ goal_fun_creator_egarch <- function(
 
 
 setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+  function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1), trunc = 1000) {
+    ncores = max(1, future::availableCores() - 1), trunc = 1000, Prange = c(1, 5)) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -971,6 +971,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   rt_core <- rt_core_o / scale_const   # now has sample variance 1
 
   n <- length(rt_core)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
 
   # Obtain model orders
   order <- orders(spec)
@@ -1237,7 +1238,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)   # P-values to consider
+    P_range <- Prange   # P-values to consider
     oldplan <- future::plan()    # Save old plan settings
     if (parallel) {
       future::plan(future::multisession, workers = ncores)   # Plan multisession, i.e. parallel, programming
@@ -1659,7 +1660,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000, Prange = c(1, 5)) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1668,6 +1669,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   rt_core <- rt_core_o / scale_const   # now has sample variance 1
 
   n <- length(rt_core)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
 
   order <- orders(spec)
   p <- order[[1]]
@@ -1892,7 +1894,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)
+    P_range <- Prange
     oldplan <- future::plan()
     if (parallel) {
       future::plan(future::multisession, workers = ncores)

@@ -21,7 +21,8 @@ fiaparch(
   control_nonpar = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = 1000
+  trunc = 1000,
+  Prange = c(1, 5)
 )
 }
 \arguments{
@@ -108,6 +109,13 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 \code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 \code{ncores} is a single numeric value indicating the number of cores to
 use for parallel computations.}
+
+\item{trunc}{a positive integer indicating the finite truncation length of the
+infinite-order polynomial of the infinite-order ARCH-representation of the
+FIAPARCH.}
+
+\item{Prange}{a two-element vector that indicates the search boundaries for
+the parameter \eqn{P} in a (skewed) average Laplace distribution.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_fiaparch"}
@@ -136,6 +144,7 @@ testing following \code{n_test}.}
 \code{NULL}; formatting of \code{rt} is reused.}
 \item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 \code{use_nonpar = TRUE}.}
+\item{\code{trunc}:}{the input argument \code{trunc}.}
 }
 }
 \description{
@@ -167,13 +176,9 @@ all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}}
 are replaced by the in-sample arithmetic mean of
 \eqn{\left(\left|r_t^{*} - \mu\right|-\gamma\left(r_t^{*}-\mu\right)\right)^{\delta}}, where
-\eqn{r_t^{*}} are considered as the observations and \eqn{\mu}, \eqn{\gamma} and
-\eqn{\delta} are not fixed values but also to be optimized over simultaneously
-in the optimization
-problem. The pre-sample is set to length 1000, and the infinite coefficient series
-\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]} is, at each time point, always considered
-as far back as to the first pre-sample value. Therefore, at observation time point
-\eqn{t=1,\dots,n}, a truncation of 1000 + t - 1 coefficients is considered.
+\eqn{r_t^{*}} are considered as the observations and \eqn{\mu}, initial values
+for \eqn{\gamma} and
+\eqn{\delta} are obtained from a previous fitting of a short-memory APARCH.
 
 Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 to ensure the non-negativity of all of the infinite-order coefficient series

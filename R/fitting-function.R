@@ -113,6 +113,11 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
+#'@param trunc a positive integer indicating the finite truncation length of the
+#'infinite-order polynomial of the infinite-order ARCH-representation of the
+#'FIAPARCH.
+#'@param Prange a two-element vector that indicates the search boundaries for
+#'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
 #'@export
 #'
@@ -150,6 +155,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'\item{\code{nonpar_model}:}{the estimation object returned by either
 #'\code{\link[smoots]{tsmooth}} or \code{\link[esemifar]{tsmoothlm}} for
 #'\code{use_nonpar = TRUE}.}
+#'\item{\code{trunc}:}{the input argument \code{trunc}.}
 #'}
 #'
 #'@details
@@ -163,14 +169,11 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'to zero.
 #'
 #'The specified model is then fitted using quasi maximum likelihood estimation,
-#'where initial values are obtained from their theoretical expectations.
-#'
-#'The initialization of pre-sample values is always done according to the
-#'theoretical expectations of the corresponding quantities; in the pre-sample
-#'values of \eqn{g(\cdot)} are set to its expectation zero. All other possibly
-#'required pre-sample values are set to their expectation using their formal
-#'definition including unknown model parameters. These definitions are included
-#'in the log-likelihood functions and are thus optimized over simultaneously.
+#'where pre-sample values of \eqn{g\left(\eta_{t-1}\right)} are
+#'filled in through its theoretical expectation of zero. In addition, in
+#'short-memory models, pre-sample values of \eqn{ln(\sigma_t^2)} are roughly
+#'approximated through \eqn{\ln\left(\hat{\sigma}_{t}^{2}\right)}, where
+#'\eqn{\hat{\sigma}_{t}^{2}} is the sample variance of the observations.
 #'
 #'See the references section for sources on the EGARCH (Nelson, 1991),
 #'FIEGARCH (Bollerslev and Mikkelsen, 1996),
@@ -297,7 +300,7 @@ fEGarch <- function(spec = egarch_spec(),
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     control_nonpar = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-    trunc = 3000) {
+    trunc = 3000, Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
@@ -321,7 +324,7 @@ fEGarch <- function(spec = egarch_spec(),
 
   out <- fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
               n_test = n_test, start_pars, LB, UB, control,
-              parallel, ncores, trunc)
+              parallel, ncores, trunc, Prange)
 
   if (use_nonpar) {
     mu <- rep(nonpar_result$mu, length(rt))

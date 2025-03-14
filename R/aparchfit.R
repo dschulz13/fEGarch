@@ -173,21 +173,20 @@ goal_fun_creator_aparch <- function(
 #'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
+#'@param Prange a two-element vector that indicates the search boundaries for
+#'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
 #'@details
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t^{\delta}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}.}
+#'\deqn{\sigma_t^{\delta}=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right)^{\delta} + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}^{\delta}.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 #'deviations in \eqn{r_t}.
-#'Moreover, \eqn{B} is the backshift operator and
-#'\eqn{\beta(B) = 1 - \sum_{j=1}^{q}\beta_j B^{j}}, where
-#'\eqn{\beta_j}, \eqn{j=1,2,\dots, q}, are real-valued coefficients. Furthermore,
-#'\eqn{\phi(B) = 1 - \sum_{i=1}^{p}\phi_i B^{i}}, where
-#'\eqn{\phi_i}, \eqn{i=1,2,\dots, p}, are real-valued coefficients. \eqn{p}
+#'Moreover, \eqn{\beta_j}, \eqn{j=1,2,\dots, q}, \eqn{\phi_i}, \eqn{i=1,2,\dots, p},
+#'are real-valued coefficients. \eqn{p}
 #'and \eqn{q} are the model orders definable through the argument \code{orders},
 #'where \eqn{p} is the first element and \eqn{q} is the second element in the
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
@@ -195,34 +194,11 @@ goal_fun_creator_aparch <- function(
 #'long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 #'
-#'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}}
-#'are replaced by the in-sample arithmetic mean of
-#'\eqn{\left(\left|r_t^{*} - \mu\right|-\gamma\left(r_t^{*}-\mu\right)\right)^{\delta}}, where
-#'\eqn{r_t^{*}} are considered as the observations and \eqn{\mu}, \eqn{\gamma} and
-#'\eqn{\delta} are not fixed values but also to be optimized over simultaneously
-#'in the optimization
-#'problem. The pre-sample is set to length 1000, and the infinite coefficient series
-#'\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]} is, at each time point, always considered
-#'as far back as to the first pre-sample value. Therefore, at observation time point
-#'\eqn{t=1,\dots,n}, a truncation of 1000 + t - 1 coefficients is considered.
-#'
-#'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
-#'to ensure the non-negativity of all of the infinite-order coefficient series
-#'\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
-#'with \eqn{\omega>0} ensures that all the conditional volatilities
-#'are greater than zero, we employ the sufficient conditions mentioned
-#'in Footnote 6 in Tse (1998) in the optimization problem, which are
-#'taken from Bollerslev and Mikkelsen (1996). Conrad and Haag (2006) provide
-#'necessary and sufficient conditions for cases with simple model orders and
-#'sufficient conditions for general model orders, however, due to
-#'time efficiency, this function uses the set of sufficient conditions
-#'by Bollerslev and Mikkelsen (1996) only.
-#'
 #'See also the reference section for sources on the APARCH (Ding et al., 1993)
 #'and the FIAPARCH (Tse, 1998) models.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
-#'distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+#'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
 #'\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
 #'estimated by selecting the estimated model among the eight fitted models that
 #'has the largest log-likelihood. The eight models are, by default, fitted
@@ -235,7 +211,7 @@ goal_fun_creator_aparch <- function(
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
 #'
-#'An ARMA-FIAPARCH or a FARIMA-FIAPARCH can be fitted by adjusting the
+#'An ARMA-APARCH or a FARIMA-APARCH can be fitted by adjusting the
 #'argument \code{meanspec} correspondingly.
 #'
 #'As an alternative, a semiparametric extension of the pure models
@@ -313,6 +289,7 @@ goal_fun_creator_aparch <- function(
 #'\code{NULL}; formatting of \code{rt} is reused.}
 #'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 #'\code{use_nonpar = TRUE}.}
+#'\item{\code{trunc}:}{the input argument \code{trunc}.}
 #'}
 #'
 #'@examples
@@ -351,7 +328,7 @@ aparch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 3000) {
+                        Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
@@ -590,7 +567,7 @@ aparch <- function(rt, orders = c(1, 1),
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)
+    P_range <- Prange
     oldplan <- future::plan()
     if (parallel) {
       future::plan(future::multisession, workers = ncores)

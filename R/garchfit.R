@@ -155,6 +155,8 @@ goal_fun_creator_garch <- function(
 #'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
+#'@param Prange a two-element vector that indicates the search boundaries for
+#'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
 #'@details
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
@@ -264,6 +266,7 @@ goal_fun_creator_garch <- function(
 #'\code{NULL}; formatting of \code{rt} is reused.}
 #'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 #'\code{use_nonpar = TRUE}.}
+#'\item{\code{trunc}:}{the input argument \code{trunc}.}
 #'}
 #'
 #'@examples
@@ -287,7 +290,7 @@ garch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 3000) {
+                        Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
@@ -503,7 +506,7 @@ garch <- function(rt, orders = c(1, 1),
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)
+    P_range <- Prange
     oldplan <- future::plan()
     if (parallel) {
       future::plan(future::multisession, workers = ncores)
