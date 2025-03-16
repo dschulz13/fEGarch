@@ -51,7 +51,7 @@ sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
   skew <- all_pars$skew
 
   n <- length(x)
-  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+  coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)[-1]
 
   sigt <- c(sigt_fiaparch_Cpp(
@@ -453,7 +453,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }

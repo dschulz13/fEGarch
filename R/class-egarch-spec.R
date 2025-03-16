@@ -877,7 +877,7 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
   psi_2 <- if (q > 1) psi[-1] else numeric(0)
   n <- length(x)
-  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
+  coef_inf <- ma_infty(ar = phi, ma = psi_2, d = d,
                                      max_i = trunc - 1)
 
   E_vals <- expect_calc_egarch(
@@ -1043,7 +1043,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }
@@ -1609,7 +1609,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
                   stop.on.error = FALSE)[[1]]
 
   n <- length(x)
-  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
+  coef_inf <- ma_infty(ar = phi, ma = psi, d = d,
                                      max_i = trunc)[-1]
 
   Elnsig2 <- omega_sig
@@ -1732,7 +1732,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
       } else {
         0
       }

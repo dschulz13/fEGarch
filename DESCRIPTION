@@ -42,6 +42,7 @@ RoxygenNote: 7.3.2
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
+  'lin_filters.R'
   'hessCalc.R'
   'arma-farima-wrappers.R'
   'format_applier_ts.R'

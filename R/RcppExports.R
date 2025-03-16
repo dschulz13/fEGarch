@@ -125,6 +125,18 @@ pdf_skew_sged <- function(x, shape, skew) {
     .Call('_fEGarch_pdf_skew_sged', PACKAGE = 'fEGarch', x, shape, skew)
 }
 
+d_coefs_inv <- function(d, max_i) {
+    .Call('_fEGarch_d_coefs_inv', PACKAGE = 'fEGarch', d, max_i)
+}
+
+d_coefs <- function(d, max_i) {
+    .Call('_fEGarch_d_coefs', PACKAGE = 'fEGarch', d, max_i)
+}
+
+poly_inv <- function(ar, max_i) {
+    .Call('_fEGarch_poly_inv', PACKAGE = 'fEGarch', ar, max_i)
+}
+
 sigt_lmgarch_forecast <- function(rt, coef_inf, omega, horizon) {
     .Call('_fEGarch_sigt_lmgarch_forecast', PACKAGE = 'fEGarch', rt, coef_inf, omega, horizon)
 }

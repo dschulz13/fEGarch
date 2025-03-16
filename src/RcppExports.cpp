@@ -509,6 +509,42 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// d_coefs_inv
+arma::vec d_coefs_inv(const double d, const int max_i);
+RcppExport SEXP _fEGarch_d_coefs_inv(SEXP dSEXP, SEXP max_iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double >::type d(dSEXP);
+    Rcpp::traits::input_parameter< const int >::type max_i(max_iSEXP);
+    rcpp_result_gen = Rcpp::wrap(d_coefs_inv(d, max_i));
+    return rcpp_result_gen;
+END_RCPP
+}
+// d_coefs
+arma::vec d_coefs(const double d, const int max_i);
+RcppExport SEXP _fEGarch_d_coefs(SEXP dSEXP, SEXP max_iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double >::type d(dSEXP);
+    Rcpp::traits::input_parameter< const int >::type max_i(max_iSEXP);
+    rcpp_result_gen = Rcpp::wrap(d_coefs(d, max_i));
+    return rcpp_result_gen;
+END_RCPP
+}
+// poly_inv
+arma::vec poly_inv(const arma::vec& ar, const int max_i);
+RcppExport SEXP _fEGarch_poly_inv(SEXP arSEXP, SEXP max_iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type ar(arSEXP);
+    Rcpp::traits::input_parameter< const int >::type max_i(max_iSEXP);
+    rcpp_result_gen = Rcpp::wrap(poly_inv(ar, max_i));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sigt_lmgarch_forecast
 arma::vec sigt_lmgarch_forecast(const arma::vec& rt, const arma::vec& coef_inf, const double omega, const int horizon);
 RcppExport SEXP _fEGarch_sigt_lmgarch_forecast(SEXP rtSEXP, SEXP coef_infSEXP, SEXP omegaSEXP, SEXP horizonSEXP) {
@@ -758,6 +794,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_pdf_ged", (DL_FUNC) &_fEGarch_pdf_ged, 4},
     {"_fEGarch_pdf_ged_v1", (DL_FUNC) &_fEGarch_pdf_ged_v1, 2},
     {"_fEGarch_pdf_skew_sged", (DL_FUNC) &_fEGarch_pdf_skew_sged, 3},
+    {"_fEGarch_d_coefs_inv", (DL_FUNC) &_fEGarch_d_coefs_inv, 2},
+    {"_fEGarch_d_coefs", (DL_FUNC) &_fEGarch_d_coefs, 2},
+    {"_fEGarch_poly_inv", (DL_FUNC) &_fEGarch_poly_inv, 2},
     {"_fEGarch_sigt_lmgarch_forecast", (DL_FUNC) &_fEGarch_sigt_lmgarch_forecast, 4},
     {"_fEGarch_sigt_lmgarch_Cpp", (DL_FUNC) &_fEGarch_sigt_lmgarch_Cpp, 5},
     {"_fEGarch_lmgarch_sim_Cpp", (DL_FUNC) &_fEGarch_lmgarch_sim_Cpp, 5},
