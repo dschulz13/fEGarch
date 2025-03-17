@@ -41,10 +41,6 @@ fitted_arma_Cpp <- function(x, mu, ma, ar) {
     .Call('_fEGarch_fitted_arma_Cpp', PACKAGE = 'fEGarch', x, mu, ma, ar)
 }
 
-fitted_farima_Cpp <- function(x, mu, coef_inf) {
-    .Call('_fEGarch_fitted_farima_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf)
-}
-
 arma_sim_Cpp <- function(innov, mu, ma, ar, nout) {
     .Call('_fEGarch_arma_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, ma, ar, nout)
 }
@@ -91,10 +87,6 @@ egarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, kappa,
 
 sigt_fiaparch_forecast <- function(rt, coef_inf, omega, gamma, delta, E_const, horizon) {
     .Call('_fEGarch_sigt_fiaparch_forecast', PACKAGE = 'fEGarch', rt, coef_inf, omega, gamma, delta, E_const, horizon)
-}
-
-sigt_fiaparch_Cpp <- function(x, mu, coef_inf, gamma, delta, omega_sig, etransf_init) {
-    .Call('_fEGarch_sigt_fiaparch_Cpp', PACKAGE = 'fEGarch', x, mu, coef_inf, gamma, delta, omega_sig, etransf_init)
 }
 
 fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu) {

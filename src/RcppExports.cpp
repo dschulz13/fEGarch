@@ -163,19 +163,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// fitted_farima_Cpp
-arma::vec fitted_farima_Cpp(const arma::vec& x, const double mu, const arma::vec& coef_inf);
-RcppExport SEXP _fEGarch_fitted_farima_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type coef_inf(coef_infSEXP);
-    rcpp_result_gen = Rcpp::wrap(fitted_farima_Cpp(x, mu, coef_inf));
-    return rcpp_result_gen;
-END_RCPP
-}
 // arma_sim_Cpp
 Rcpp::List arma_sim_Cpp(const arma::vec& innov, const double mu, const arma::vec& ma, const arma::vec& ar, const int nout);
 RcppExport SEXP _fEGarch_arma_sim_Cpp(SEXP innovSEXP, SEXP muSEXP, SEXP maSEXP, SEXP arSEXP, SEXP noutSEXP) {
@@ -384,23 +371,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type E_const(E_constSEXP);
     Rcpp::traits::input_parameter< const int >::type horizon(horizonSEXP);
     rcpp_result_gen = Rcpp::wrap(sigt_fiaparch_forecast(rt, coef_inf, omega, gamma, delta, E_const, horizon));
-    return rcpp_result_gen;
-END_RCPP
-}
-// sigt_fiaparch_Cpp
-arma::vec sigt_fiaparch_Cpp(const arma::vec& x, const double mu, const arma::vec& coef_inf, const double gamma, const double delta, const double omega_sig, const double etransf_init);
-RcppExport SEXP _fEGarch_sigt_fiaparch_Cpp(SEXP xSEXP, SEXP muSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP omega_sigSEXP, SEXP etransf_initSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type coef_inf(coef_infSEXP);
-    Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
-    Rcpp::traits::input_parameter< const double >::type omega_sig(omega_sigSEXP);
-    Rcpp::traits::input_parameter< const double >::type etransf_init(etransf_initSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_fiaparch_Cpp(x, mu, coef_inf, gamma, delta, omega_sig, etransf_init));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -773,7 +743,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_forecast_arma_Cpp", (DL_FUNC) &_fEGarch_forecast_arma_Cpp, 6},
     {"_fEGarch_forecast_farima_Cpp", (DL_FUNC) &_fEGarch_forecast_farima_Cpp, 4},
     {"_fEGarch_fitted_arma_Cpp", (DL_FUNC) &_fEGarch_fitted_arma_Cpp, 4},
-    {"_fEGarch_fitted_farima_Cpp", (DL_FUNC) &_fEGarch_fitted_farima_Cpp, 3},
     {"_fEGarch_arma_sim_Cpp", (DL_FUNC) &_fEGarch_arma_sim_Cpp, 5},
     {"_fEGarch_farima_sim_Cpp", (DL_FUNC) &_fEGarch_farima_sim_Cpp, 4},
     {"_fEGarch_autocorCpp", (DL_FUNC) &_fEGarch_autocorCpp, 2},
@@ -786,7 +755,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_egarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_longmemo_type_sim, 12},
     {"_fEGarch_egarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_shortmemo_type_sim, 13},
     {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 7},
-    {"_fEGarch_sigt_fiaparch_Cpp", (DL_FUNC) &_fEGarch_sigt_fiaparch_Cpp, 7},
     {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 7},
     {"_fEGarch_sigt_garch_forecast_short", (DL_FUNC) &_fEGarch_sigt_garch_forecast_short, 6},
     {"_fEGarch_sigt_garch_Cpp", (DL_FUNC) &_fEGarch_sigt_garch_Cpp, 6},

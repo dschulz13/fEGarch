@@ -1104,13 +1104,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Initialize ln(sig_t^2) with some reasonable, fixed value
   lnsig2_init <- log(var(rt_core))
 
-  # Reduce truncation if unnecessarily too large
-  if (trunc >= n) {
-    nm1 <- n - 1
-    trunc <- nm1
-    message(paste0("trunc reduced to ", nm1))
-  }
-
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
   # must be kept flexible for (skewed) average Laplace distribution
@@ -1782,13 +1775,6 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Initialization for ln(sig_t^2); for rt scaled to have sample var = 1,
   # this will be zero always
   lnsig2_init <- log(var(rt_core))
-
-  # Reduce truncation if unnecessarily too large
-  if (trunc >= n) {
-    nm1 <- n - 1
-    trunc <- nm1
-    message(paste0("trunc reduced to ", nm1))
-  }
 
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_loggarch(

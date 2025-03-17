@@ -25,7 +25,7 @@ lmgarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, e2_init, trunc) {
+              incl_mean, extra_par, skew_par, trunc) {
 
   all_pars <- lmgarch_grab_pars(
     theta = theta,
@@ -45,15 +45,20 @@ sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
 
   n <- length(x)
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
-                                     max_i = trunc)[-1]
+                                     max_i = trunc)
+  coef_inf[[1]] <- 0
+  lc <- length(coef_inf)
 
-  sigt <- c(sigt_lmgarch_Cpp(
-    x = x,
-    mu = mu,
-    omega = omega,
-    coef_inf = coef_inf,
-    e2_init = e2_init
-  ))
+  x_dm <- x - mu
+
+  np2 <- nextpow2(2 * n - 1)
+
+  c_adj <- c(coef_inf, rep(0, np2 - lc))
+  x_adj <- c(x_dm^2, rep(0, np2 - n))
+
+  sigt <- sqrt(
+    omega + Re(utils::head(stats::fft(stats::fft(c_adj) * stats::fft(x_adj), inverse = TRUE), n)) / np2
+  )
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
@@ -71,12 +76,11 @@ goal_fun_creator_lmgarch <- function(
     extra_par,
     skew_par,
     sig_fun,
-    e2_init,
     trunc
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, e2_init, trunc)
+              incl_mean, extra_par, skew_par, trunc)
 
   sigt <- res_list$sigt
   cmeans <- res_list$cmeans
@@ -344,7 +348,7 @@ lmgarch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000, Prange = c(1, 5)) {
+                        trunc = "none", Prange = c(1, 5)) {
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -413,6 +417,14 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   n <- length(rt_core)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n - 1
+  } else if (is.numeric(trunc) && trunc >= n) {
+    trunc <- n - 1
+    message("trunc reduced to n - 1")
+  }
+
   sigt_fun <- sigt_lmgarch_R
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
@@ -421,7 +433,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, e2_init, trunc) {
+         incl_mean, extra_par, skew_par, trunc) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -454,7 +466,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, e2_init, trunc)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -463,11 +475,7 @@ lmgarch <- function(rt, orders = c(1, 1),
     sigt_fun             # ...else keep function for EGARCH-type
   }
 
-  e2_init <- var(rt_core)
-  if (trunc > n) {
-    trunc <- n
-    message(paste0("trunc reduced to ", n))
-  }
+  # e2_init <- var(rt_core)
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -483,7 +491,6 @@ lmgarch <- function(rt, orders = c(1, 1),
      extra_par,
      skew_par,
      sig_fun = sigt_fun_adj,
-     e2_init = e2_init,
      trunc = trunc
     )
 
@@ -763,7 +770,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   }
 
   res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, e2_init, trunc)
+              incl_mean, extra_par, skew_par, trunc)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
