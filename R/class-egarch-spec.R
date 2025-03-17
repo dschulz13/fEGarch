@@ -952,7 +952,7 @@ goal_fun_creator_egarch <- function(
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1), trunc = 1000, Prange = c(1, 5)) {
+    ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -972,6 +972,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n - 1
+  } else if (is.numeric(trunc) && trunc >= n) {
+    trunc <- n - 1
+    message("trunc reduced to n - 1")
+  }
 
   # Obtain model orders
   order <- orders(spec)
@@ -1021,7 +1027,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
-  check <- pg0 || qg0
+  check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, dfun1, p, q, p_ar, q_ma,
@@ -1043,7 +1049,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
+        coefs[[1]] <- 0
+        coefs
       } else {
         0
       }
@@ -1660,7 +1668,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000, Prange = c(1, 5)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
 
   split_rt <- split_ts(rt, n_test)
   rt_core_o <- zoo::coredata(split_rt$train)
@@ -1670,6 +1678,12 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n - 1
+  } else if (is.numeric(trunc) && trunc >= n) {
+    trunc <- n - 1
+    message("trunc reduced to n - 1")
+  }
 
   order <- orders(spec)
   p <- order[[1]]
@@ -1711,7 +1725,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Adjust (if ARMA-part relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
-  check <- pg0 || qg0
+  check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, dfun1, p, q, p_ar, q_ma,
@@ -1732,7 +1746,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
+        coefs[[1]] <- 0
+        coefs
       } else {
         0
       }

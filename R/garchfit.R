@@ -290,7 +290,7 @@ garch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        Prange = c(1, 5)) {
+                        trunc = "none", Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
@@ -359,11 +359,18 @@ garch <- function(rt, orders = c(1, 1),
 
 
   n <- length(rt_core)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n - 1
+  } else if (is.numeric(trunc) && trunc >= n) {
+    trunc <- n - 1
+    message("trunc reduced to n - 1")
+  }
   sigt_fun <- sigt_garch_R
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
-  check <- pg0 || qg0
+  check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
@@ -382,8 +389,11 @@ garch <- function(rt, orders = c(1, 1),
       ar <- arma_pars$ar
       ma <- arma_pars$ma
 
+
       coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
+        coefs[[1]] <- 0
+        coefs
       } else {
         0
       }
@@ -570,9 +580,7 @@ garch <- function(rt, orders = c(1, 1),
       goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
     }
 
-    result <- tryCatch(
-      expr = {
-        suppressWarnings(Rsolnp::solnp(
+    result <- suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -583,12 +591,25 @@ garch <- function(rt, orders = c(1, 1),
           ineqUB = 1 - 1e-10,
           rt = rt_core
         ))
-      },
-      error = function(e1) {
-        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-      }
-    )
 
+    # result <- tryCatch(
+    #   expr = {
+    #     suppressWarnings(Rsolnp::solnp(
+    #       pars = start_pars,
+    #       fun = goal_fun,
+    #       LB = LB,
+    #       UB = UB,
+    #       control = control,
+    #       ineqfun = ineq_fun,
+    #       ineqLB = 0,
+    #       ineqUB = 1 - 1e-10,
+    #       rt = rt_core
+    #     ))
+    #   },
+    #   error = function(e1) {
+    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+    #   }
+    # )
 
   }
 

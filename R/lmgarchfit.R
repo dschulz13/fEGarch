@@ -417,7 +417,7 @@ lmgarch <- function(rt, orders = c(1, 1),
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
-  check <- pg0 || qg0
+  check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
@@ -437,7 +437,9 @@ lmgarch <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
+        coefs[[1]] <- 0
+        coefs
       } else {
         0
       }

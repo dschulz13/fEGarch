@@ -357,7 +357,7 @@ fiaparch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000, Prange = c(1, 5)) {
+                        trunc = "none", Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
@@ -387,6 +387,12 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n - 1
+  } else if (is.numeric(trunc) && trunc >= n) {
+    trunc <- n - 1
+    message("trunc reduced to n - 1")
+  }
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
@@ -433,7 +439,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
-  check <- pg0 || qg0
+  check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
@@ -453,7 +459,9 @@ fiaparch <- function(rt, orders = c(1, 1),
       ma <- arma_pars$ma
 
       coef_inf <- if (lm_arma) {
-        ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
+        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
+        coefs[[1]] <- 0
+        coefs
       } else {
         0
       }
