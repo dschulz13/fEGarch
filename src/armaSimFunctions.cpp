@@ -67,22 +67,31 @@ Rcpp::List farima_sim_Cpp(const arma::vec& innov, const double mu,
 
   arma::vec x_dm = arma::zeros<arma::vec>(n_pre);
   const arma::vec coef_rev = arma::reverse(coef_inf);
+  const int lc = coef_inf.size();
+  const int lc_pre = lc + pre;
 
-  const int nm1 = N - 1;
+  int jm1;
+  const int lm1 = lc - 1;
 
-  arma::vec et = arma::zeros<arma::vec>(n_pre);
-  et.subvec(pre, n_pre - 1) = innov;
+  for (int j = pre; j < lc_pre; ++j) {
 
-  for (int i = pre; i < n_pre; ++i) {
+    jm1 = j - 1;
 
-    x_dm(i) = arma::as_scalar(arma::dot(coef_rev.subvec(N - i, nm1), x_dm.subvec(0, i - 1))) + et(i);
+    x_dm(j) = arma::as_scalar(arma::dot(coef_rev.subvec(lc - j, lm1), x_dm.subvec(0, jm1))) + innov(jm1);
+
+  }
+
+  for (int i = lc_pre; i < n_pre; ++i) {
+
+    jm1 = i - 1;
+    x_dm(i) = arma::as_scalar(arma::dot(coef_rev, x_dm.subvec(i - lc, jm1))) + innov(jm1);
 
   }
 
   const arma::vec rt_mu = x_dm.subvec(n_pre - nout, n_pre - 1) + mu;
   Rcpp::List out = Rcpp::List::create(
     _["rt"] = rt_mu,
-    _["cmeans"] = rt_mu - et.subvec(n_pre - nout, n_pre - 1)
+    _["cmeans"] = rt_mu - innov.subvec(N - nout, N - 1)
   );
 
   return out;

@@ -164,30 +164,23 @@ Rcpp::List loggarch_longmemo_type_sim(const arma::vec& innov, const double omega
                           const arma::vec& coef_inf,
                           const int n_out,
                           const double mu,
-                          const double Econst) {
+                          const double Econst,
+                          const int np2) {
 
   const int n = innov.size();
+  const int l = coef_inf.size();
 
-  const int n_pre = 1;
-  const int n_all = n + n_pre;
+  const arma::vec i_transf = arma::log(arma::pow(innov, 2.0)) - Econst;
 
-  arma::vec lnsig2(n);
+  arma::vec e_adj = arma::zeros<arma::vec>(np2);
+  arma::vec c_adj = arma::zeros<arma::vec>(np2);
 
-  const arma::vec coef_rev = arma::reverse(coef_inf);
+  e_adj.subvec(0, n - 1) = i_transf;
+  c_adj.subvec(0, l - 1) = coef_inf;
 
-  arma::vec xi = arma::zeros<arma::vec>(n_all);
-  xi.subvec(1, n_all - 1) = arma::log(arma::pow(innov, 2.0)) - Econst;
+  const arma::vec interm = arma::real(arma::ifft(arma::fft(e_adj) % arma::fft(c_adj)));
+  const arma::vec sigt = arma::exp((omega_sig + interm.subvec(n - n_out, n - 1)) / 2.0); // no division by np2 required in C++; is implemented by ifft automatically
 
-  const int n_coef_m1 = coef_inf.size() - 1;
-
-  for (int i = 0; i < n; ++i) {
-
-    lnsig2(i) = omega_sig +
-      arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - i, n_coef_m1), xi.subvec(0, i)));
-
-  }
-
-  const arma::vec sigt = arma::exp(lnsig2.subvec(n - n_out, n - 1) / 2.0);
   const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
   const arma::vec rt = mu + sigt % innov_out;

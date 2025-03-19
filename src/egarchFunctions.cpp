@@ -223,23 +223,18 @@ Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_s
                           const double E_asy,
                           const arma::vec& powers,
                           const arma::vec& modulus,
-                          const std::string& mode) {
+                          const std::string& mode,
+                          const int np2) {
 
   const int n = innov.size();
-  const int n_pre = 1;
-  const int n_all = n + n_pre;
   const int n_coef = coef_inf.size();
-  const int n_coef_m1 = n_coef - 1;
-  arma::vec lnsig2(n);
-
-  const arma::vec coef_rev = arma::reverse(coef_inf);
 
   const double mod1 = modulus(0);
   const double mod2 = modulus(1);
   const double pow1 = powers.size() > 0 ? powers(0) : 1.0; // Default to 1.0 for safety
   const double pow2 = powers.size() > 1 ? powers(1) : 1.0;
 
-  arma::vec gfun = arma::zeros<arma::vec>(n_all);
+  arma::vec gfun = arma::zeros<arma::vec>(np2);
   arma::vec asy_term = arma::vec(n);
   arma::vec mag_term = arma::vec(n);
 
@@ -259,15 +254,11 @@ Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_s
     Rcpp::stop("Invalid mode specified");
   }
 
-  gfun.subvec(1, n_all - 1) = kappa * asy_term + gamma * mag_term;
-
-  for (int i = 0; i < n; ++i) {
-
-    lnsig2(i) = omega_sig + arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - i, n_coef_m1), gfun.subvec(0, i)));
-
-  }
-
-  const arma::vec sigt = arma::exp(lnsig2.subvec(n - n_out, n - 1) / 2.0);
+  gfun.subvec(0, n - 1) = kappa * asy_term + gamma * mag_term;
+  arma::vec coef_adj = arma::zeros<arma::vec>(np2);
+  coef_adj.subvec(0, n_coef - 1) = coef_inf;
+  const arma::vec out = arma::real(arma::ifft(arma::fft(coef_adj) % arma::fft(gfun)));
+  const arma::vec sigt = arma::exp((omega_sig + out.subvec(n - n_out, n - 1)) / 2.0); // no division by np2 required in C++; is implemented by ifft automatically
   const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
   const arma::vec rt = mu + sigt % innov_out;

@@ -77,8 +77,8 @@ sigt_egarch_longCpp <- function(x, mu, coef_inf, kappa, gamma, E_asy, E_mag, Eln
     .Call('_fEGarch_sigt_egarch_longCpp', PACKAGE = 'fEGarch', x, mu, coef_inf, kappa, gamma, E_asy, E_mag, Elnsig2, powers, modulus, mode)
 }
 
-egarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode) {
-    .Call('_fEGarch_egarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode)
+egarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode, np2) {
+    .Call('_fEGarch_egarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode, np2)
 }
 
 egarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode) {
@@ -161,8 +161,8 @@ loggarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, n_ou
     .Call('_fEGarch_loggarch_shortmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, ar_coef, ma_coef, n_out, mu, Econst)
 }
 
-loggarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, n_out, mu, Econst) {
-    .Call('_fEGarch_loggarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, n_out, mu, Econst)
+loggarch_longmemo_type_sim <- function(innov, omega_sig, coef_inf, n_out, mu, Econst, np2) {
+    .Call('_fEGarch_loggarch_longmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, coef_inf, n_out, mu, Econst, np2)
 }
 
 pdf_norm <- function(rt, mu, sigt) {

@@ -244,10 +244,13 @@ fEGarch_sim <- function(spec = egarch_spec(),
                            shape = 2,
                            P = 3,
                            skew = 1
-                         ), n = 1000, nstart = 1e4, trunc = 1000) {
+                         ), n = 1000, nstart = 5e3, trunc = "none") {
 
   nn <- n + nstart          # pre-sample plus sample number of observations
   N <- n
+
+  trunc_vol <- trunc
+  trunc_mean <- trunc
 
   # Parameter defaults (relevant if a truncated parameter list is provided)
   pars_default <- lookup_table$sim_pars_default
@@ -284,6 +287,11 @@ fEGarch_sim <- function(spec = egarch_spec(),
     nn + nstart
   } else {
     nn
+  }
+
+  if ((lm || lm_arma) && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
+    trunc_vol <- nn - 1
+    trunc_mean <- N - 1
   }
 
   if (cond_dist %in% c("std", "sstd")) {
@@ -338,14 +346,16 @@ fEGarch_sim <- function(spec = egarch_spec(),
   # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
   # and for the sample with the exception of the very last sample time point
 
-  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
-                                     max_i = trunc - 1)
+  coef_inf <- c(0, ma_infty(ar = phi, ma = psi, d = d,
+                       max_i = trunc_vol - 1))
 
+  np2 <- nextpow2(2 * nn - 1)
+  # Compute the function g for the simulated innovations
   sim <- egarch_longmemo_type_sim(
     innov = innov, omega_sig = omega_sig, coef_inf = coef_inf,
     kappa = kappa, gamma = gamma, n_out = N, mu = mu,
     E_mag = E_mag, E_asy = E_asy, powers = powers,
-    modulus = modulus, mode = mode)
+    modulus = modulus, mode = mode, np2)
 
   } else {
 
@@ -373,16 +383,19 @@ fEGarch_sim <- function(spec = egarch_spec(),
 
     if (lm) {
 
-      coef_inf <- esemifar::farima_to_ma(
-        ar = phi, ma = psi, d = d, max_i = trunc
-      )[-1]
+      np2 <- nextpow2(2 * nn - 1)
+
+      coef_inf <- ma_infty(
+        ar = phi, ma = psi, d = d, max_i = trunc_vol
+      )
+      coef_inf[[1]] <- 0
 
       sim <- loggarch_longmemo_type_sim(
         innov, omega_sig,
         coef_inf = coef_inf,
         n_out = N,
         mu = mu,
-        Econst = E_const)
+        Econst = E_const, np2 = np2)
 
     } else {
 
@@ -421,7 +434,7 @@ fEGarch_sim <- function(spec = egarch_spec(),
 
     } else {
 
-      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
@@ -492,7 +505,7 @@ fiaparch_sim <- function(pars = list(
                            P = 3,
                            skew = 1
                          ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                         n = 1000, nstart = 5e3) {
+                         n = 1000, nstart = 5e3, trunc = "none") {
 
   cond_dist <- match.arg(cond_dist)
 
@@ -547,7 +560,7 @@ fiaparch_sim <- function(pars = list(
   # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
   # and for the sample with the exception of the very last sample time point
 
-  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+  coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = nn)[-1]
 
   sim <- fiaparch_sim_Cpp(
@@ -570,7 +583,7 @@ fiaparch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
@@ -692,7 +705,7 @@ lmgarch_sim <- function(pars = list(
   # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
   # and for the sample with the exception of the very last sample time point
 
-  coef_inf <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+  coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = nn)[-1]
 
   sim <- lmgarch_sim_Cpp(
@@ -715,7 +728,7 @@ lmgarch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
@@ -877,7 +890,7 @@ aparch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
@@ -1017,7 +1030,7 @@ garch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }

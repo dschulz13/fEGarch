@@ -313,8 +313,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // egarch_longmemo_type_sim
-Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig, const arma::vec& coef_inf, const double kappa, const double gamma, const int n_out, const double mu, const double E_mag, const double E_asy, const arma::vec& powers, const arma::vec& modulus, const std::string& mode);
-RcppExport SEXP _fEGarch_egarch_longmemo_type_sim(SEXP innovSEXP, SEXP omega_sigSEXP, SEXP coef_infSEXP, SEXP kappaSEXP, SEXP gammaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP E_magSEXP, SEXP E_asySEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP) {
+Rcpp::List egarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig, const arma::vec& coef_inf, const double kappa, const double gamma, const int n_out, const double mu, const double E_mag, const double E_asy, const arma::vec& powers, const arma::vec& modulus, const std::string& mode, const int np2);
+RcppExport SEXP _fEGarch_egarch_longmemo_type_sim(SEXP innovSEXP, SEXP omega_sigSEXP, SEXP coef_infSEXP, SEXP kappaSEXP, SEXP gammaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP E_magSEXP, SEXP E_asySEXP, SEXP powersSEXP, SEXP modulusSEXP, SEXP modeSEXP, SEXP np2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -330,7 +330,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type powers(powersSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type modulus(modulusSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type mode(modeSEXP);
-    rcpp_result_gen = Rcpp::wrap(egarch_longmemo_type_sim(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode));
+    Rcpp::traits::input_parameter< const int >::type np2(np2SEXP);
+    rcpp_result_gen = Rcpp::wrap(egarch_longmemo_type_sim(innov, omega_sig, coef_inf, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode, np2));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -641,8 +642,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // loggarch_longmemo_type_sim
-Rcpp::List loggarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig, const arma::vec& coef_inf, const int n_out, const double mu, const double Econst);
-RcppExport SEXP _fEGarch_loggarch_longmemo_type_sim(SEXP innovSEXP, SEXP omega_sigSEXP, SEXP coef_infSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP EconstSEXP) {
+Rcpp::List loggarch_longmemo_type_sim(const arma::vec& innov, const double omega_sig, const arma::vec& coef_inf, const int n_out, const double mu, const double Econst, const int np2);
+RcppExport SEXP _fEGarch_loggarch_longmemo_type_sim(SEXP innovSEXP, SEXP omega_sigSEXP, SEXP coef_infSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP EconstSEXP, SEXP np2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -652,7 +653,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type n_out(n_outSEXP);
     Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const double >::type Econst(EconstSEXP);
-    rcpp_result_gen = Rcpp::wrap(loggarch_longmemo_type_sim(innov, omega_sig, coef_inf, n_out, mu, Econst));
+    Rcpp::traits::input_parameter< const int >::type np2(np2SEXP);
+    rcpp_result_gen = Rcpp::wrap(loggarch_longmemo_type_sim(innov, omega_sig, coef_inf, n_out, mu, Econst, np2));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -752,7 +754,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_signVecCpp", (DL_FUNC) &_fEGarch_signVecCpp, 1},
     {"_fEGarch_sigt_egarch_shortCpp", (DL_FUNC) &_fEGarch_sigt_egarch_shortCpp, 12},
     {"_fEGarch_sigt_egarch_longCpp", (DL_FUNC) &_fEGarch_sigt_egarch_longCpp, 11},
-    {"_fEGarch_egarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_longmemo_type_sim, 12},
+    {"_fEGarch_egarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_longmemo_type_sim, 13},
     {"_fEGarch_egarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_shortmemo_type_sim, 13},
     {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 7},
     {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 7},
@@ -773,7 +775,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_loggarch_long", (DL_FUNC) &_fEGarch_sigt_loggarch_long, 5},
     {"_fEGarch_sigt_loggarch_short", (DL_FUNC) &_fEGarch_sigt_loggarch_short, 7},
     {"_fEGarch_loggarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_loggarch_shortmemo_type_sim, 7},
-    {"_fEGarch_loggarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_loggarch_longmemo_type_sim, 6},
+    {"_fEGarch_loggarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_loggarch_longmemo_type_sim, 7},
     {"_fEGarch_pdf_norm", (DL_FUNC) &_fEGarch_pdf_norm, 3},
     {"_fEGarch_pdf_norm_v1", (DL_FUNC) &_fEGarch_pdf_norm_v1, 1},
     {"_fEGarch_pdf_skew_snorm", (DL_FUNC) &_fEGarch_pdf_skew_snorm, 2},
