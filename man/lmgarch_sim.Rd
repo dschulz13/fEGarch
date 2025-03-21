@@ -5,11 +5,12 @@
 \title{Simulate From LMGARCH Models}
 \usage{
 lmgarch_sim(
-  pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, omega = 4e-04, phi = 0.2,
+  pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, omega = 0.004, phi = 0.2,
     beta = 0.4, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   n = 1000,
-  nstart = 5000
+  nstart = 5000,
+  trunc = "none"
 )
 }
 \arguments{
@@ -29,6 +30,12 @@ mean and in the conditional variance, is considered, two times \code{nstart}
 is considered in the first simulation step in the conditional variance,
 so that \code{n + nstart} values can be fed into the second simulation
 step for the conditional mean.}
+
+\item{trunc}{a truncation for the finite-order coefficient series
+in long-memory models; can either be the character \code{"none"} for truncation
+back to the very first observation at each time point, or to any positive integer
+for setting the corresponding truncation length of the infinite-order representation
+polynomial.}
 }
 \value{
 A list with four elements is returned: \code{rt} are the simulated

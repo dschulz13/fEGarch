@@ -205,7 +205,10 @@ rsald_s <- function(n, P = 8, skew = 1) {
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
 #'@param trunc a truncation for the finite-order coefficient series
-#'in long-memory models.
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{fEGarch_spec}} for information
@@ -512,6 +515,9 @@ fiaparch_sim <- function(pars = list(
   nn <- n + nstart          # pre-sample plus sample number of observations
   N <- n
 
+  trunc_vol <- trunc
+  trunc_mean <- trunc
+
   # Parameter defaults (relevant if a truncated parameter list is provided)
   pars_default <- lookup_table$sim_pars_default_fiaparch
   names_pars <- names(pars)
@@ -547,6 +553,13 @@ fiaparch_sim <- function(pars = list(
     nn
   }
 
+  lm <- TRUE
+
+  if ((lm || lm_arma) && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
+    trunc_vol <- nn - 1
+    trunc_mean <- N - 1
+  }
+
   if (cond_dist %in% c("std", "sstd")) {
     shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
   } else if (cond_dist %in% c("ald", "sald")) {
@@ -561,7 +574,7 @@ fiaparch_sim <- function(pars = list(
   # and for the sample with the exception of the very last sample time point
 
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
-                                     max_i = nn)[-1]
+                                     max_i = trunc_vol)[-1]
 
   sim <- fiaparch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,
@@ -583,7 +596,168 @@ fiaparch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
+      yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
+
+    }
+    out[["rt"]] <- ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- ts(tail(out[["etat"]], n))
+    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+  }
+
+  out
+
+}
+
+#'Simulate From FIGARCH Models
+#'
+#'A streamlined simulation function to simulate from
+#'fractionally integrated generalized autoregressive conditional
+#'heteroskedasticity (FIGARCH) models.
+#'
+#'@param pars a named list with the parameter specifications; the user
+#'can provide a named list with only the settings they would like to adjust
+#'relative to the default settings.
+#'@param cond_dist a one-element character vector specifying
+#'the conditional distribution to consider.
+#'@param n the number of observations to return.
+#'@param nstart the number of burn-in observations to simulate before
+#'the final \code{n} values to keep; the first \code{nstart} values
+#'are not returned; if a dual model, i.e. with model in the conditional
+#'mean and in the conditional variance, is considered, two times \code{nstart}
+#'is considered in the first simulation step in the conditional variance,
+#'so that \code{n + nstart} values can be fed into the second simulation
+#'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
+#'
+#'@details
+#'See the documentation on \code{\link{figarch}} for information
+#'on the LMGARCH model. This function provides
+#'an easy way to simulate from these models.
+#'
+#'@return
+#'A list with four elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations,
+#'\code{sigt} are the correspondingly simulated conditional
+#'standard deviations, and \code{cmeans} are the simulated
+#'conditional means. These four elements are formatted as
+#'\code{"ts"} class time series objects.
+#'
+#'@export
+#'
+#'@examples
+#'sim <- figarch_sim(n = 1000)
+#'mat <- do.call(cbind, sim)
+#'plot(mat, main = "")
+#'
+
+figarch_sim <- function(pars = list(
+                           mu = 0,
+                           ar = numeric(0),
+                           ma = numeric(0),
+                           D = 0,
+                           omega = 0.0004,
+                           phi = 0.2,
+                           beta = 0.4,
+                           d = 0.25,
+                           df = 10,
+                           shape = 2,
+                           P = 3,
+                           skew = 1
+                         ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
+                         n = 1000, nstart = 5e3, trunc = "none") {
+
+  cond_dist <- match.arg(cond_dist)
+
+  nn <- n + nstart          # pre-sample plus sample number of observations
+  N <- n
+
+  trunc_vol <- trunc
+  trunc_mean <- trunc
+
+  # Parameter defaults (relevant if a truncated parameter list is provided)
+  pars_default <- lookup_table$sim_pars_default_figarch
+  names_pars <- names(pars)
+  for (nam in names_pars) {
+    pars_default[[nam]] <- pars[[nam]]
+  }
+
+  # Extract parameter settings
+  mu <- pars_default$mu
+  omega <- pars_default$omega
+  phi <- pars_default$phi
+  beta <- -pars_default$beta      # "-" required to create a polynomial with positive signs
+  d <- pars_default$d
+  df <- pars_default$df
+  P <- pars_default$P
+  shape <- pars_default$shape
+  skew <- pars_default$skew
+
+  # ARMA / FARIMA parameters
+  ar <- pars_default$ar
+  ma <- pars_default$ma
+  D <- pars_default$D
+  lm_arma <- D != 0
+
+  # Simulate even more observations if ARMA / FARIMA required
+  check <- length(ar) + length(ma) > 0 || lm_arma
+  nn <- if (check) {
+    N <- N + nstart
+    nn + nstart
+  } else {
+    nn
+  }
+
+  lm <- TRUE
+
+  if ((lm || lm_arma) && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
+    trunc_vol <- nn - 1
+    trunc_mean <- N - 1
+  }
+
+  if (cond_dist %in% c("std", "sstd")) {
+    shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
+  } else if (cond_dist %in% c("ald", "sald")) {
+    shape <- P
+  }
+
+  # Simulate innovations following selected distribution
+  sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
+  innov <- sim_fun(nn, shape = shape, skew = skew)
+
+  # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
+  # and for the sample with the exception of the very last sample time point
+
+  coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
+                                     max_i = trunc_vol)
+  coef_inf[[1]] <- 0
+
+  sim <- figarch_sim_Cpp(
+    innov = innov, omega = omega, coef_inf = coef_inf,
+    n_out = N, mu = mu)
+
+  out <- list(
+    "rt" = ts(c(sim[["rt"]])),
+    "sigt" = ts(c(sim[["sigt"]])),
+    "etat" = ts(c(sim[["etat"]])),
+    "cmeans" = ts(rep(mu, n))
+  )
+
+  if (check) {
+    rt <- out$rt - mu        # subtract mean again and then feed these as
+                             # the errors into an ARMA / FARIMA model
+    if (!lm_arma) {
+
+      yt_data <- arma_sim_Cpp(innov = rt, ar = ar, ma = ma, nout = n, mu = mu)
+
+    } else {
+
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
@@ -616,6 +790,11 @@ fiaparch_sim <- function(pars = list(
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{lmgarch}} for information
@@ -643,7 +822,7 @@ lmgarch_sim <- function(pars = list(
                            ar = numeric(0),
                            ma = numeric(0),
                            D = 0,
-                           omega = 0.0004,
+                           omega = 0.004,
                            phi = 0.2,
                            beta = 0.4,
                            d = 0.25,
@@ -652,15 +831,18 @@ lmgarch_sim <- function(pars = list(
                            P = 3,
                            skew = 1
                          ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                         n = 1000, nstart = 5e3) {
+                         n = 1000, nstart = 5e3, trunc = "none") {
 
   cond_dist <- match.arg(cond_dist)
 
   nn <- n + nstart          # pre-sample plus sample number of observations
   N <- n
 
+  trunc_vol <- trunc
+  trunc_mean <- trunc
+
   # Parameter defaults (relevant if a truncated parameter list is provided)
-  pars_default <- lookup_table$sim_pars_default_fiaparch
+  pars_default <- lookup_table$sim_pars_default_lmgarch
   names_pars <- names(pars)
   for (nam in names_pars) {
     pars_default[[nam]] <- pars[[nam]]
@@ -683,6 +865,8 @@ lmgarch_sim <- function(pars = list(
   D <- pars_default$D
   lm_arma <- D != 0
 
+  lm <- TRUE
+
   # Simulate even more observations if ARMA / FARIMA required
   check <- length(ar) + length(ma) > 0 || lm_arma
   nn <- if (check) {
@@ -690,6 +874,11 @@ lmgarch_sim <- function(pars = list(
     nn + nstart
   } else {
     nn
+  }
+
+  if ((lm || lm_arma) && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
+    trunc_vol <- nn - 1
+    trunc_mean <- N - 1
   }
 
   if (cond_dist %in% c("std", "sstd")) {
@@ -706,7 +895,8 @@ lmgarch_sim <- function(pars = list(
   # and for the sample with the exception of the very last sample time point
 
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
-                                     max_i = nn)[-1]
+                                     max_i = trunc_vol)
+  coef_inf[[1]] <- 0
 
   sim <- lmgarch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,
@@ -728,7 +918,7 @@ lmgarch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
@@ -761,6 +951,11 @@ lmgarch_sim <- function(pars = list(
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{fiaparch}} for information
@@ -798,12 +993,14 @@ aparch_sim <- function(pars = list(
                            P = 3,
                            skew = 1
                          ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                         n = 1000, nstart = 5e3) {
+                         n = 1000, nstart = 5e3, trunc = "none") {
 
   cond_dist <- match.arg(cond_dist)
 
   nn <- n + nstart          # pre-sample plus sample number of observations
   N <- n
+
+  trunc_mean <- trunc
 
   # Parameter defaults (relevant if a truncated parameter list is provided)
   pars_default <- lookup_table$sim_pars_default_aparch
@@ -842,6 +1039,10 @@ aparch_sim <- function(pars = list(
     nn + nstart
   } else {
     nn
+  }
+
+  if (lm_arma && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
+    trunc_mean <- N - 1
   }
 
   if (cond_dist %in% c("std", "sstd")) {
@@ -924,6 +1125,11 @@ aparch_sim <- function(pars = list(
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{garch}} for information
@@ -959,12 +1165,14 @@ garch_sim <- function(pars = list(
                            P = 3,
                            skew = 1
                          ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                         n = 1000, nstart = 5e3) {
+                         n = 1000, nstart = 5e3, trunc = "none") {
 
   cond_dist <- match.arg(cond_dist)
 
   nn <- n + nstart          # pre-sample plus sample number of observations
   N <- n
+
+  trunc_mean <- trunc
 
   # Parameter defaults (relevant if a truncated parameter list is provided)
   pars_default <- lookup_table$sim_pars_default_aparch
@@ -996,6 +1204,10 @@ garch_sim <- function(pars = list(
     nn + nstart
   } else {
     nn
+  }
+
+  if (lm_arma && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
+    trunc_mean <- N - 1
   }
 
   if (cond_dist %in% c("std", "sstd")) {
@@ -1030,7 +1242,7 @@ garch_sim <- function(pars = list(
 
     } else {
 
-      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = N)[-1]
+      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }

@@ -9,7 +9,8 @@ fiaparch_sim(
     beta = 0.4, gamma = 0.1, delta = 2, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   n = 1000,
-  nstart = 5000
+  nstart = 5000,
+  trunc = "none"
 )
 }
 \arguments{

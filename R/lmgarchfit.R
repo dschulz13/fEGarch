@@ -54,7 +54,7 @@ sigt_lmgarch_R <- function(theta, x, p, q, p_ar, q_ma,
   np2 <- nextpow2(2 * n - 1)
 
   c_adj <- c(coef_inf, rep(0, np2 - lc))
-  x_adj <- c(x_dm^2, rep(0, np2 - n))
+  x_adj <- c(x_dm^2 - omega, rep(0, np2 - n))      # Deviation from omega
 
   sigt <- sqrt(
     omega + Re(utils::head(stats::fft(stats::fft(c_adj) * stats::fft(x_adj), inverse = TRUE), n)) / np2
@@ -167,9 +167,11 @@ goal_fun_creator_lmgarch <- function(
 #'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
-#'@param trunc a positive integer indicating the finite truncation length of the
-#'infinite-order polynomial of the infinite-order ARCH-representation of the
-#'FIGARCH.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
@@ -177,7 +179,7 @@ goal_fun_creator_lmgarch <- function(
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\varepsilon_t^2.}
+#'\deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\varepsilon_t^2 - \omega \right).}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -193,11 +195,7 @@ goal_fun_creator_lmgarch <- function(
 #'real-valued parameter and \eqn{d \in [0,0.5)} as the
 #'long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative. Furthermore, we have
-#'\eqn{E(\varepsilon_t^2)= \omega / \left(1-\psi(1)\right)}, where
-#'\deqn{\psi(B) = \left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right].}
-#'
-#'The pre-sample values of \eqn{\varepsilon_t^2} are implemented by repeating the sample
-#'variance of the observed series.
+#'\eqn{\omega = E(\varepsilon_t^2)} as the intercept.
 #'
 #'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 #'to ensure the non-negativity of all of the infinite-order coefficient series
@@ -209,6 +207,12 @@ goal_fun_creator_lmgarch <- function(
 #'sufficient conditions for general model orders, however, due to
 #'time efficiency, this function uses the set of sufficient conditions
 #'by Bollerslev and Mikkelsen (1996) only.
+#'
+#'The truncated infinite order polynomial is computed following the idea
+#'by Nielsen
+#'and Noel (2021) as is the series of conditional variances for most
+#'computational efficiency. This also implies that no pre-sample values are
+#'set.
 #'
 #'See also the reference section for sources on the LMGARCH model
 #'(Karanasos et al., 2004; Conrad and Karanasos, 2006; Conrad and
@@ -352,7 +356,7 @@ lmgarch <- function(rt, orders = c(1, 1),
 
   if (!all(orders == c(1, 1))) {
     orders <- c(1, 1)
-    message("Only orders p=1 with q=1 are currently supported for FIAPARCH models.")
+    message("Only orders p=1 with q=1 are currently supported for LMGARCH models.")
   }
 
   if (use_nonpar) {
@@ -514,9 +518,9 @@ lmgarch <- function(rt, orders = c(1, 1),
       rep(0.05 / p_ar, p_ar),
       rep(0.05 / q_ma, q_ma),
       D_start,
-      8.43, #check; calculation must be off somewhere
-      rep(0.05 / p, p),
-      rep(0.4 / q, q),
+      1.2,
+      rep(0.2 / p, p),
+      rep(0.5 / q, q),
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -548,7 +552,7 @@ lmgarch <- function(rt, orders = c(1, 1),
       rep(2, p_ar),
       rep(2, q_ma),
       D_up,
-      20,
+      1.5,
       rep(2, p),
       rep(2, q),
       d_up,

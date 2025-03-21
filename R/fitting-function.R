@@ -115,7 +115,9 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'use for parallel computations.
 #'@param trunc a positive integer indicating the finite truncation length of the
 #'infinite-order polynomial of the infinite-order ARCH-representation of the
-#'FIAPARCH.
+#'model, if it is a long-memory model; by default the character \code{"none"}
+#'specifies that truncation should always be applied back to the first observation
+#'time point;
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
@@ -170,7 +172,8 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'
 #'The specified model is then fitted using quasi maximum likelihood estimation,
 #'where pre-sample values of \eqn{g\left(\eta_{t-1}\right)} are
-#'filled in through its theoretical expectation of zero. In addition, in
+#'filled in through its theoretical expectation of zero, which is analogous to not
+#'setting pre-sample values in the long-memory case. In addition, in
 #'short-memory models, pre-sample values of \eqn{ln(\sigma_t^2)} are roughly
 #'approximated through \eqn{\ln\left(\hat{\sigma}_{t}^{2}\right)}, where
 #'\eqn{\hat{\sigma}_{t}^{2}} is the sample variance of the observations.

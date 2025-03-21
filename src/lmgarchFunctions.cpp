@@ -3,40 +3,6 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-arma::vec sigt_lmgarch_Cpp(const arma::vec& x, const double mu,
-                       const double omega,
-                       const arma::vec& coef_inf,
-                       const double e2_init) {
-
-  const int coef_len = coef_inf.size();
-  const int n = x.size();
-  const int l = n + coef_len;
-  arma::vec sig2 = arma::vec(n).fill(0);
-
-  const arma::vec x_cent = x - mu;
-
-  const int lm1 = l - 1;
-
-
-  //Initialization based on sample
-  arma::vec e2 = arma::vec(l).fill(e2_init);
-  e2.subvec(coef_len, lm1) = arma::pow(x_cent, 2.0);
-
-  const arma::vec coef_r = arma::reverse(coef_inf);
-  const int cm1 = coef_len - 1;
-
-  for (int i = 0; i < n; ++i) {
-
-    sig2(i) = omega +
-      arma::as_scalar(arma::dot(coef_r, e2.subvec(i, cm1 + i)));
-
-  }
-
-  return arma::sqrt(sig2);
-
-}
-
-// [[Rcpp::export]]
 Rcpp::List lmgarch_sim_Cpp(const arma::vec& innov, const double omega,
                           const arma::vec& coef_inf,
                           const int n_out,
@@ -44,38 +10,46 @@ Rcpp::List lmgarch_sim_Cpp(const arma::vec& innov, const double omega,
 
   const int n = innov.size();
 
-  const int n_pre = 1;
-  const int n_all = n + n_pre;
-
   double sig2;
   arma::vec sigt = arma::vec(n);
 
   const arma::vec coef_rev = arma::reverse(coef_inf);
 
-  arma::vec rt = arma::zeros<arma::vec>(n_all);
-  arma::vec eps2 = arma::zeros<arma::vec>(n_all);
+  arma::vec rt = arma::zeros<arma::vec>(n);
+  arma::vec eps2_m_omega = arma::zeros<arma::vec>(n);
 
-  const int n_coef_m1 = coef_inf.size() - 1;
-  int npp1;
+  const int lc = coef_inf.size();
 
-  for (int i = 0; i < n; ++i) {
+  const int n_coef_m1 = lc - 1;
 
-    npp1 = 1 + i;
+  for (int j = 0; j < n_coef_m1; ++j) {
 
     sig2 = omega +
-      arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - i, n_coef_m1), eps2.subvec(0, i)));
+      arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - j, n_coef_m1), eps2_m_omega.subvec(0, j)));
+
+    sigt(j) = std::sqrt(sig2);
+
+    rt(j) = innov(j) * sigt(j);
+    eps2_m_omega(j) = std::pow(rt(j), 2.0) - omega;
+
+  }
+
+  for (int i = lc; i < n; ++i) {
+
+    sig2 = omega +
+      arma::as_scalar(arma::dot(coef_rev, eps2_m_omega.subvec(0, i)));
 
     sigt(i) = std::sqrt(sig2);
 
-    rt(npp1) = innov(i) * sigt(i);
-    eps2(npp1) = std::pow(rt(npp1), 2.0);
+    rt(i) = innov(i) * sigt(i);
+    eps2_m_omega(i) = std::pow(rt(i), 2.0) - omega;
 
   }
 
   const arma::vec sigt_out = sigt.subvec(n - n_out, n - 1);
   const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
-  const arma::vec rt_out = rt.subvec(n_all - n_out, n_all - 1) + mu;
+  const arma::vec rt_out = rt.subvec(n - n_out, n - 1) + mu;
 
   return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
 }

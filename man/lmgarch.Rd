@@ -21,7 +21,7 @@ lmgarch(
   control_nonpar = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = 1000,
+  trunc = "none",
   Prange = c(1, 5)
 )
 }
@@ -109,9 +109,11 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 \code{ncores} is a single numeric value indicating the number of cores to
 use for parallel computations.}
 
-\item{trunc}{a positive integer indicating the finite truncation length of the
-infinite-order polynomial of the infinite-order ARCH-representation of the
-FIGARCH.}
+\item{trunc}{a truncation for the finite-order coefficient series
+in long-memory models; can either be the character \code{"none"} for truncation
+back to the very first observation at each time point, or to any positive integer
+for setting the corresponding truncation length of the infinite-order representation
+polynomial.}
 
 \item{Prange}{a two-element vector that indicates the search boundaries for
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}
@@ -155,7 +157,7 @@ using quasi maximum-likelihood estimation.
 Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-\deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\varepsilon_t^2.}
+\deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\varepsilon_t^2 - \omega \right).}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 \eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -171,11 +173,7 @@ argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
 real-valued parameter and \eqn{d \in [0,0.5)} as the
 long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
 all \eqn{\beta_j} and \eqn{\phi_i} are non-negative. Furthermore, we have
-\eqn{E(\varepsilon_t^2)= \omega / \left(1-\psi(1)\right)}, where
-\deqn{\psi(B) = \left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right].}
-
-The pre-sample values of \eqn{\varepsilon_t^2} are implemented by repeating the sample
-variance of the observed series.
+\eqn{\omega = E(\varepsilon_t^2)} as the intercept.
 
 Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 to ensure the non-negativity of all of the infinite-order coefficient series
@@ -187,6 +185,12 @@ necessary and sufficient conditions for cases with simple model orders and
 sufficient conditions for general model orders, however, due to
 time efficiency, this function uses the set of sufficient conditions
 by Bollerslev and Mikkelsen (1996) only.
+
+The truncated infinite order polynomial is computed following the idea
+by Nielsen
+and Noel (2021) as is the series of conditional variances for most
+computational efficiency. This also implies that no pre-sample values are
+set.
 
 See also the reference section for sources on the LMGARCH model
 (Karanasos et al., 2004; Conrad and Karanasos, 2006; Conrad and

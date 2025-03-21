@@ -65,6 +65,7 @@ Collate:
   'garchfit.R'
   'fiaparchfit.R'
   'lmgarchfit.R'
+  'figarchfit.R'
   'varescalc.R'
   'datasets.R'
   'fEGarch-package.R'

@@ -20,6 +20,7 @@ garch(
   control_nonpar = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
+  trunc = "none",
   Prange = c(1, 5)
 )
 }
