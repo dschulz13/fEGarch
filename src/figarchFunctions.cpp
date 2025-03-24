@@ -22,7 +22,9 @@ Rcpp::List figarch_sim_Cpp(const arma::vec& innov, const double omega,
 
   const int n_coef_m1 = lc - 1;
 
+
   for (int j = 0; j < n_coef_m1; ++j) {
+
 
     sig2 = omega +
       arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - j, n_coef_m1), eps2.subvec(0, j)));
@@ -34,7 +36,7 @@ Rcpp::List figarch_sim_Cpp(const arma::vec& innov, const double omega,
 
   }
 
-  for (int i = lc; i < n; ++i) {
+  for (int i = n_coef_m1; i < n; ++i) {
 
     sig2 = omega +
       arma::as_scalar(arma::dot(coef_rev, eps2.subvec(0, i)));

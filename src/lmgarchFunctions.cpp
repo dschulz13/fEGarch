@@ -34,7 +34,7 @@ Rcpp::List lmgarch_sim_Cpp(const arma::vec& innov, const double omega,
 
   }
 
-  for (int i = lc; i < n; ++i) {
+  for (int i = n_coef_m1; i < n; ++i) {
 
     sig2 = omega +
       arma::as_scalar(arma::dot(coef_rev, eps2_m_omega.subvec(0, i)));
