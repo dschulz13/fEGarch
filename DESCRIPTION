@@ -32,8 +32,10 @@ Authors@R:
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
   such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), FIMLog-GARCH (fractionally integrated
-  modulus Log-GARCH), and more. For convenience and the purpose of comparison, also a fractionally integrated asymmetric
-  power ARCH (FIAPARCH) and a long-memory GARCH (LMGARCH) can be implemented.
+  modulus Log-GARCH), and more. For convenience and the purpose of comparison, a variety of
+  other popular GARCH-type models, like an APARCH model, a fractionally integrated
+  APARCH (FIAPARCH) model, and even standard GARCH and fractionally integrated GARCH
+  (FIGARCH) models, are implemented.
 License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
@@ -62,8 +64,10 @@ Collate:
   'fitting-function.R'
   'sim-functions.R'
   'aparchfit.R'
+  'gjrgarchfit.R'
   'garchfit.R'
   'fiaparchfit.R'
+  'figjrgarchfit.R'
   'lmgarchfit.R'
   'figarchfit.R'
   'varescalc.R'

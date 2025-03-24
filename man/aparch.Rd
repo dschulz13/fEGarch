@@ -9,7 +9,7 @@ aparch(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   meanspec = mean_spec(),
-  Drange = c(0, 0.5 - 1e-06),
+  Drange = c(0, 1),
   nonparspec = locpol_spec(),
   use_nonpar = FALSE,
   n_test = 0,
@@ -156,8 +156,7 @@ are real-valued coefficients. \eqn{p}
 and \eqn{q} are the model orders definable through the argument \code{orders},
 where \eqn{p} is the first element and \eqn{q} is the second element in the
 argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,0.5)} as the
-long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
+real-valued parameter, and \eqn{\gamma \in (-1,1)}. \eqn{\omega > 0} is the intercept. It is assumed that
 all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 
 See also the reference section for sources on the APARCH (Ding et al., 1993)
@@ -189,15 +188,14 @@ is being estimated following the specifications in \code{nonparspec} and
 \code{control_nonpar}. This preliminary step stabilizes the input
 series \code{rt}, as long-term changes in the unconditional variance
 are being estimated and removed before the parametric step using
-\code{\link[esemifar]{tsmoothlm}}. \code{control_nonpar} can be adjusted following
-to make changes to the arguments of \code{\link[esemifar]{tsmoothlm}}
+\code{\link[smoots]{tsmooth}}. \code{control_nonpar} can be adjusted following
+to make changes to the arguments of \code{\link[smoots]{tsmooth}}
 for long-memory specifications. These arguments specify settings
 for the automated bandwidth selection algorithms implemented by thís
 function. By default, we use the settings
-\code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
-\code{qmax = 1}, \code{InfR = "Nai"},
+\code{InfR = "Nai"},
 \code{bStart = 0.15}, \code{cb = 0.05}, and
-\code{method = "lpr"} for \code{\link[esemifar]{tsmoothlm}}.
+\code{method = "lpr"} for \code{\link[smoots]{tsmooth}}.
 \code{\link{locpol_spec}} passed to \code{nonparspec} handles
 more direct settings of the local polynomial smoother itself. See
 the documentation for these functions to get a detailed overview

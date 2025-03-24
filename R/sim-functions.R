@@ -610,6 +610,68 @@ fiaparch_sim <- function(pars = list(
 
 }
 
+#'Simulate From FIGJRGARCH Models
+#'
+#'A streamlined simulation function to simulate from
+#'FIGJR-GARCH models.
+#'
+#'@param pars a named list with the parameter specifications; the user
+#'can provide a named list with only the settings they would like to adjust
+#'relative to the default settings.
+#'@param cond_dist a one-element character vector specifying
+#'the conditional distribution to consider.
+#'@param n the number of observations to return.
+#'@param nstart the number of burn-in observations to simulate before
+#'the final \code{n} values to keep; the first \code{nstart} values
+#'are not returned; if a dual model, i.e. with model in the conditional
+#'mean and in the conditional variance, is considered, two times \code{nstart}
+#'is considered in the first simulation step in the conditional variance,
+#'so that \code{n + nstart} values can be fed into the second simulation
+#'step for the conditional mean.
+#'
+#'@details
+#'See the documentation on \code{\link{figjrgarch}} for information
+#'on the FIGJRGARCH model. This function provides
+#'an easy way to simulate from these models.
+#'
+#'@return
+#'A list with four elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations,
+#'\code{sigt} are the correspondingly simulated conditional
+#'standard deviations, and \code{cmeans} are the simulated
+#'conditional means. These four elements are formatted as
+#'\code{"ts"} class time series objects.
+#'
+#'@export
+#'
+#'@examples
+#'sim <- figjrgarch_sim(n = 1000)
+#'mat <- do.call(cbind, sim)
+#'plot(mat, main = "")
+#'
+
+figjrgarch_sim <- function(pars = list(
+                           mu = 0,
+                           ar = numeric(0),
+                           ma = numeric(0),
+                           D = 0,
+                           omega = 0.0004,
+                           phi = 0.2,
+                           beta = 0.4,
+                           gamma = 0.1,
+                           d = 0.25,
+                           df = 10,
+                           shape = 2,
+                           P = 3,
+                           skew = 1
+                         ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
+                         n = 1000, nstart = 5e3, trunc = "none") {
+
+  pars[["delta"]] <- 2
+  fiaparch_sim(pars = pars, cond_dist = cond_dist, n = n, nstart = nstart, trunc = trunc)
+
+}
+
 #'Simulate From FIGARCH Models
 #'
 #'A streamlined simulation function to simulate from
@@ -637,7 +699,7 @@ fiaparch_sim <- function(pars = list(
 #'
 #'@details
 #'See the documentation on \code{\link{figarch}} for information
-#'on the LMGARCH model. This function provides
+#'on the FIGARCH model. This function provides
 #'an easy way to simulate from these models.
 #'
 #'@return
@@ -935,8 +997,8 @@ lmgarch_sim <- function(pars = list(
 #'Simulate From APARCH Models
 #'
 #'A streamlined simulation function to simulate from
-#'fractionally integrated asymmetric power autoregressive
-#'conditional heteroskedasticity (FIAPARCH) models.
+#'asymmetric power autoregressive
+#'conditional heteroskedasticity (APARCH) models.
 #'
 #'@param pars a named list with the parameter specifications; the user
 #'can provide a named list with only the settings they would like to adjust
@@ -958,8 +1020,8 @@ lmgarch_sim <- function(pars = list(
 #'polynomial.
 #'
 #'@details
-#'See the documentation on \code{\link{fiaparch}} for information
-#'on the FIAPARCH model. This function provides
+#'See the documentation on \code{\link{aparch}} for information
+#'on the APARCH model. This function provides
 #'an easy way to simulate from these models.
 #'
 #'@return
@@ -1024,7 +1086,7 @@ aparch_sim <- function(pars = list(
   l_phi <- length(phi)
   l_gamma <- length(gamma)
 
-  stopfinot("Input parameter vectors phi and gamma must be of the same length." = l_phi == l_gamma)
+  stopifnot("Input parameter vectors phi and gamma must be of the same length." = l_phi == l_gamma)
 
   # ARMA / FARIMA parameters
   ar <- pars_default$ar
@@ -1102,6 +1164,78 @@ aparch_sim <- function(pars = list(
   }
 
   out
+
+}
+
+#'Simulate From GJR-GARCH Models
+#'
+#'A streamlined simulation function to simulate from
+#'GJR-GARCH models.
+#'
+#'@param pars a named list with the parameter specifications; the user
+#'can provide a named list with only the settings they would like to adjust
+#'relative to the default settings.
+#'@param cond_dist a one-element character vector specifying
+#'the conditional distribution to consider.
+#'@param n the number of observations to return.
+#'@param nstart the number of burn-in observations to simulate before
+#'the final \code{n} values to keep; the first \code{nstart} values
+#'are not returned; if a dual model, i.e. with model in the conditional
+#'mean and in the conditional variance, is considered, two times \code{nstart}
+#'is considered in the first simulation step in the conditional variance,
+#'so that \code{n + nstart} values can be fed into the second simulation
+#'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
+#'
+#'@details
+#'See the documentation on \code{\link{gjrgarch}} for information
+#'on the GJR-GARCH model. This function provides
+#'an easy way to simulate from these models.
+#'
+#'@return
+#'A list with four elements is returned: \code{rt} are the simulated
+#'observations, \code{etat} are the underlying innovations,
+#'\code{sigt} are the correspondingly simulated conditional
+#'standard deviations, and \code{cmeans} are the simulated
+#'conditional means. These four elements are formatted as
+#'\code{"ts"} class time series objects.
+#'
+#'@export
+#'
+#'@examples
+#'sim <- gjrgarch_sim(n = 1000)
+#'mat <- do.call(cbind, sim)
+#'plot(mat, main = "")
+#'
+
+gjrgarch_sim <- function(pars = list(
+                           mu = 0,
+                           ar = numeric(0),
+                           ma = numeric(0),
+                           D = 0,
+                           omega = 0.0004,
+                           phi = 0.05,
+                           beta = 0.8,
+                           gamma = 0.1,
+                           df = 10,
+                           shape = 2,
+                           P = 3,
+                           skew = 1
+                         ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
+                         n = 1000, nstart = 5e3, trunc = "none") {
+
+
+  pars[["delta"]] <- 2   # Fix delta at 2 and use APARCH functions
+  aparch_sim(
+    pars = pars,
+    cond_dist = cond_dist,
+    n = n, nstart = nstart, trunc = trunc
+  )
+
 
 }
 

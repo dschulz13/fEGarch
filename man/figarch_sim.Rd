@@ -52,7 +52,7 @@ heteroskedasticity (FIGARCH) models.
 }
 \details{
 See the documentation on \code{\link{figarch}} for information
-on the LMGARCH model. This function provides
+on the FIGARCH model. This function provides
 an easy way to simulate from these models.
 }
 \examples{

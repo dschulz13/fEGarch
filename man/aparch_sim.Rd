@@ -47,12 +47,12 @@ conditional means. These four elements are formatted as
 }
 \description{
 A streamlined simulation function to simulate from
-fractionally integrated asymmetric power autoregressive
-conditional heteroskedasticity (FIAPARCH) models.
+asymmetric power autoregressive
+conditional heteroskedasticity (APARCH) models.
 }
 \details{
-See the documentation on \code{\link{fiaparch}} for information
-on the FIAPARCH model. This function provides
+See the documentation on \code{\link{aparch}} for information
+on the APARCH model. This function provides
 an easy way to simulate from these models.
 }
 \examples{

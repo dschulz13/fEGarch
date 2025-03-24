@@ -28,7 +28,7 @@ aparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init,
+              incl_mean, extra_par, skew_par, sigd_init, etransf_init,
               trunc) {
 
   all_pars <- aparch_grab_pars(
@@ -47,10 +47,6 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
   delta <- all_pars$delta
   shape <- all_pars$shape
   skew <- all_pars$skew
-
-  # Initialization
-  Esigd <- sd(x)^delta
-  E_e <- 0
 
   sigt <- c(sigt_aparch_Cpp(
     x = x,
@@ -71,7 +67,6 @@ sigt_aparch_R <- function(theta, x, p, q, p_ar, q_ma,
 goal_fun_creator_aparch <- function(
     theta,
     x,
-    pdf_fun1,
     pdf_fun2,
     p,
     q,
@@ -87,7 +82,7 @@ goal_fun_creator_aparch <- function(
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, pdf_fun1,
+              incl_mean, extra_par, skew_par,
               sigd_init, etransf_init, trunc)
 
   sigt <- res_list$sigt
@@ -190,8 +185,7 @@ goal_fun_creator_aparch <- function(
 #'and \eqn{q} are the model orders definable through the argument \code{orders},
 #'where \eqn{p} is the first element and \eqn{q} is the second element in the
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-#'real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,0.5)} as the
-#'long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
+#'real-valued parameter, and \eqn{\gamma \in (-1,1)}. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 #'
 #'See also the reference section for sources on the APARCH (Ding et al., 1993)
@@ -223,15 +217,14 @@ goal_fun_creator_aparch <- function(
 #'\code{control_nonpar}. This preliminary step stabilizes the input
 #'series \code{rt}, as long-term changes in the unconditional variance
 #'are being estimated and removed before the parametric step using
-#'\code{\link[esemifar]{tsmoothlm}}. \code{control_nonpar} can be adjusted following
-#'to make changes to the arguments of \code{\link[esemifar]{tsmoothlm}}
+#'\code{\link[smoots]{tsmooth}}. \code{control_nonpar} can be adjusted following
+#'to make changes to the arguments of \code{\link[smoots]{tsmooth}}
 #'for long-memory specifications. These arguments specify settings
 #'for the automated bandwidth selection algorithms implemented by thís
 #'function. By default, we use the settings
-#'\code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
-#'\code{qmax = 1}, \code{InfR = "Nai"},
+#'\code{InfR = "Nai"},
 #'\code{bStart = 0.15}, \code{cb = 0.05}, and
-#'\code{method = "lpr"} for \code{\link[esemifar]{tsmoothlm}}.
+#'\code{method = "lpr"} for \code{\link[smoots]{tsmooth}}.
 #'\code{\link{locpol_spec}} passed to \code{nonparspec} handles
 #'more direct settings of the local polynomial smoother itself. See
 #'the documentation for these functions to get a detailed overview
@@ -322,7 +315,7 @@ goal_fun_creator_aparch <- function(
 #'
 aparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+                        meanspec = mean_spec(), Drange = c(0, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
@@ -446,7 +439,7 @@ aparch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, sigd_init, etransf_init, trunc)
       out$cmeans <- fitted_vs
       out
     }
@@ -466,7 +459,6 @@ aparch <- function(rt, orders = c(1, 1),
     goal_fun_creator_aparch(
      theta = theta,
      x = rt,
-     pdf_fun1 = pdf_fun1,
      pdf_fun2 = pdf_fun2,
      p = p,
      q = q,
@@ -705,20 +697,15 @@ aparch <- function(rt, orders = c(1, 1),
 
   if (cond_d %in% c("ald", "sald")) {
 
-    # Fix dfun1
-    dfun1_P <- function(x, shape, skew) {
-      dfun1(x = x, shape = P_sel, skew = skew)
-    }
-
     # Fix dfun2
     dfun2_P <- function(x, mu, sigt, shape, skew) {
-      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+      pdf_fun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
     }
 
     # Fix the final goal function to optimize over
     # using dfun1_P and dfun2_P
     goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
+      goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
     }
 
   }
@@ -727,7 +714,7 @@ aparch <- function(rt, orders = c(1, 1),
     expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core,
                      control.args = list(
 				eps = 1e-4,
-				d = 1e-5,
+				d = 1e-3,
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,
 				v = 2,
@@ -763,7 +750,7 @@ aparch <- function(rt, orders = c(1, 1),
   }
 
   res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, dfun = pdf_fun1,
+              incl_mean, extra_par, skew_par,
               sigd_init, etransf_init, trunc)
 
   # Adjust parameters according to scaling where necessary
@@ -929,418 +916,3 @@ setMethod(
   cat(part2, fill = TRUE)
   }
 )
-
-aparch_pre <- function(rt, orders = c(1, 1),
-                        cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
-                        nonparspec = locpol_spec(), use_nonpar = FALSE,
-                        n_test = 0,
-                        start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-                        control_nonpar = list(),
-                        parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000) {
-
-  if (use_nonpar) {
-
-    nonpar_result <- nonpar_est(
-      rt = rt,
-      lm = FALSE,
-      nonparspec = nonparspec,
-      n_test = n_test,
-      control_nonpar = control_nonpar
-    )
-
-    meanspec <- mean_spec(
-      orders = c(0, 0),
-      long_memo = FALSE,
-      include_mean = FALSE
-    )    # Force to not estimate the mean in parametric part
-    n_test <- 0
-    rt <- nonpar_result$et
-
-  }
-
-  split_rt <- split_ts(rt, n_test)
-  rt_core_o <- zoo::coredata(split_rt$train)
-
-  scale_const <- sd(rt_core_o)         # for rescaling later
-  rt_core <- rt_core_o / scale_const   # now has sample variance 1
-
-  # if (!all(orders == c(1, 1))) {
-  #   orders <- c(1, 1)
-  #   message("Only orders p=1 with q=1 are currently supported for APARCH models.")
-  # }
-
-  p <- orders[[1]]
-  q <- orders[[2]]
-
-  cond_d <- match.arg(cond_dist)
-
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
-
-  pdf_fun1 <- lookup_table$fun1[[cond_d]]
-  pdf_fun2 <- lookup_table$fun2[[cond_d]]
-
-  incl_mean <- meanspec@include_mean
-
-  skew_par <- lookup_table[["skew_par"]][[cond_d]]
-  extra_par <- lookup_table[["extra_par"]][[cond_d]]
-
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
-  # Assign ARMA / FARIMA function
-  arma_fun <- if (lm_arma) {
-    grab_fun <- farima_grab_pars
-    D_par_name <- "D"
-    D_start <- 0.25 #mean(Drange)
-    D_low <- Drange[[1]]
-    D_up <- Drange[[2]]
-    farima_fit
-  } else {
-    grab_fun <- arma_grab_pars
-    D_par_name <- character(0)
-    D_start <- D_low <- D_up <- numeric(0)
-    arma_fit
-  }
-
-
-  n <- length(rt_core)
-  sigt_fun <- sigt_aparch_R
-  # Adjust (if ARMA relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-  sigt_fun_adj <- if (check) {
-    function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc) {
-
-      # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- grab_fun(
-        theta = theta,
-        incl_mean = incl_mean,
-        pg0 = pg0,
-        qg0 = qg0,
-        p = p_ar,
-        q = q_ma
-      )
-      mu <- arma_pars$mu
-      ar <- arma_pars$ar
-      ma <- arma_pars$ma
-
-      coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)[-1]
-      } else {
-        0
-      }
-
-      # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
-
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
-      #... and calculate conditional standard deviations from the residuals
-      # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc)
-      out$cmeans <- fitted_vs
-      out
-    }
-
-  } else {
-    sigt_fun             # ...else keep function for EGARCH-type
-  }
-
-  delta0 <- 2    # use delta0 = 2
-  gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-  sigd_init <- sd(rt_core)^delta0
-  rt_dm <- rt_core - mean(rt_core)
-  etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
-
-  goal_fun_s <- function(theta, rt, pdf_fun2) {
-
-    goal_fun_creator_aparch(
-     theta = theta,
-     x = rt,
-     pdf_fun1 = pdf_fun1,
-     pdf_fun2 = pdf_fun2,
-     p = p,
-     q = q,
-     p_ar = p_ar,
-     q_ma = q_ma,
-     incl_mean = incl_mean,
-     extra_par = extra_par,
-     skew_par = skew_par,
-     sig_fun = sigt_fun_adj,
-     sigd_init = sigd_init,
-     etransf_init = etransf_init,
-     trunc = trunc
-    )
-
-  }
-
-  vals <- lookup_table[["vals"]][[cond_d]]
-
-  sval <- vals[[1]]
-  lval <- vals[[2]]
-  uval <- vals[[3]]
-
-  if (is.null(start_pars)) {
-
-    start_pars <- c(
-      list(NULL, mean(rt_core))[[incl_mean + 1]],
-      rep(0.05 / p_ar, p_ar),
-      rep(0.05 / q_ma, q_ma),
-      D_start,
-      var(rt_core),
-      rep(0.05 / p, p),
-      rep(0.9 / q, q),
-      rep(0.3, p), 2,
-      sval,
-      list(NULL, 1)[[skew_par + 1]]
-    )
-
-  }
-
-  if (is.null(LB)) {
-
-    LB <- c(
-      list(NULL, min(rt_core))[[incl_mean + 1]],
-      rep(-2, p_ar),
-      rep(-2, q_ma),
-      D_low,
-      1e-10,
-      rep(1e-6, p),
-      rep(1e-6, q),
-      rep(-1 + 1e-4, p), 0.3,
-      lval,
-      list(NULL, 1e-15)[[skew_par + 1]]
-    )
-
-  }
-
-  if (is.null(UB)) {
-
-    UB <- c(
-      list(NULL, max(rt_core))[[incl_mean + 1]],
-      rep(2, p_ar),
-      rep(2, q_ma),
-      D_up,
-      10,
-      rep(1 - 1e-6, p),
-      rep(1 - 1e-6, q),
-      rep(1 - 1e-4, p), 3,
-      uval,
-      list(NULL, Inf)[[skew_par + 1]]
-    )
-
-  }
-
-  n_arma <- p_ar + q_ma
-  n_arma_im <- n_arma + incl_mean + lm_arma
-  low_ar <- 1 + incl_mean
-  up_ar <- low_ar + p_ar - 1
-  low_phi <- 2 + n_arma_im
-  up_phi <- low_phi
-  low_beta <- low_phi + 1
-  up_beta <- low_beta
-  #d_idx <- low_beta + 3
-
-  # ineq_fun <- function(theta, rt) {
-  #
-  #   phi <- theta[low_phi:up_phi]
-  #   beta <- theta[low_beta:up_beta]
-  #   d <- theta[[d_idx]]
-  #
-  #   r1 <- phi - beta + d
-  #   r2 <- (2 - d) / 3 - phi
-  #   r3 <- beta * r1 - d * (phi - (1 - d) / 2)
-  #
-  #   if (pg0) {
-  #     ar <- c(1, -theta[low_ar:up_ar])
-  #     c2 <- abs(polyroot(ar)) - 1
-  #   } else {
-  #     c2 <- numeric(0)
-  #   }
-  #
-  #   c(r1, r2, r3, c2)
-  #
-  # }
-
-  if (is.null(control$trace)) {control$trace <- FALSE}
-  #if (is.null(control$delta)) {control$delta <- 1e-10}
-
-  if (cond_d %in% c("ald", "sald")) {
-
-    P_range <- c(1, 8)
-    oldplan <- future::plan()
-    if (parallel) {
-      future::plan(future::multisession, workers = ncores)
-      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
-    }
-
-    P_seq <- P_range[[1]]:P_range[[2]]
-
-    fitted_models <- furrr::future_map(
-      .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, control, rt_core, dfun2, p_ar) {
-
-        dfun2_P <- function(x, mu, sigt, shape, skew) {
-          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
-        }
-
-        goal_fun <- function(theta, rt) {
-          goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
-        }
-
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          # ineqfun = ineq_fun,
-          # ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-          # ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-          control = control,
-          rt = rt_core
-        ))
-        est
-      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      control = control, rt_core = rt_core,#ineq_fun = ineq_fun,
-      dfun2 = pdf_fun2, p_ar = p_ar,
-      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
-    )
-
-    future::plan(oldplan)
-
-    coll_nllh <- vapply(
-      X = fitted_models,
-      FUN = function(.x) {
-        tail(.x$values, 1)
-      },
-      FUN.VALUE = numeric(1)
-    )
-
-    P_sel <- P_seq[[which.min(coll_nllh)]]
-
-    result <- fitted_models[[which.min(coll_nllh)]]
-
-  } else {
-
-    goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
-    }
-
-    # result <- tryCatch(
-    #   expr = {
-    #     suppressWarnings(Rsolnp::solnp(
-    #       pars = start_pars,
-    #       fun = goal_fun,
-    #       LB = LB,
-    #       UB = UB,
-    #       control = control,
-    #       # ineqfun = ineq_fun,
-    #       # ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-    #       # ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-    #       rt = rt_core
-    #     ))
-    #   },
-    #   error = function(e1) {
-    #     stop("Convergence failed.", call. = FALSE)
-    #   }
-    # )
-
-    result <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          control = control,
-          # ineqfun = ineq_fun,
-          # ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-          # ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-          rt = rt_core
-        ))
-
-  }
-
-  pars <- result$pars
-
-  c("gamma" = pars[[5]], "delta" = pars[[6]])
-
-}
-
-#'@export
-#'@rdname show-methods
-#'@aliases show,fEgarch_fit_aparch-method
-setMethod(
-  "show",
-  "fEGarch_fit_aparch",
-  function(object) {
-  x <- object
-  par_names <- names(x@pars)
-  se <- unname(x@se)
-  pars <- unname(x@pars)
-
-  tvals <- pars / se
-  atvals <- abs(tvals)
-  pvals <- 2 * (1 - pnorm(atvals))
-
-  df <- data.frame(
-    par = sprintf("%.4f", pars),
-    se = sprintf("%.4f", se),
-    tval = sprintf("%.4f", tvals),
-    pval = sprintf("%.4f", pvals)
-  )
-  row.names(df) <- par_names
-
-  check_nonpar <- !is.null(x@nonpar_model)
-  b <- if (is.null(x@nonpar_model$b0)) {
-    x@nonpar_model$b
-  } else {
-    x@nonpar_model$b0
-  }
-  bwidth <- if (check_nonpar) {
-    paste0(
-      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", b), ")"
-    )
-  } else {
-    ""
-  }
-
-  part1 <- paste0(
-    "*************************************\n",
-    "*        Fitted APARCH Model        *\n",
-    "*************************************\n",
-    " \n",
-    "Type: apARCH\n",
-    "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
-    "Long memory: ", x@long_memo, "\n",
-    "Cond. distribution: ", x@cond_dist, "\n",
-    " \n",
-    "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
-    "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
-    " \n",
-    "Scale estimation: ", paste0(check_nonpar, bwidth), "\n",
-    " \n",
-    "Fitted parameters:\n"
-  )
-
-  part2 <- paste0(
-    " \n",
-    "Information criteria (parametric part):\n",
-    "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
-    ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
-  )
-
-  cat(part1, fill = TRUE)
-  print(df)
-  cat(part2, fill = TRUE)
-  }
-)
-
