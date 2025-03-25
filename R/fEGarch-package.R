@@ -4,8 +4,8 @@
 #'fitting various short- and long-memory models from a broad family of
 #'exponential generalized conditional heteroskedasticity (EGARCH) models.
 #'For the purpose of comparison, a FIAPARCH (fractionally integrated
-#'asymmetric power ARCH) and a long-memory GARCH (LMGARCH)
-#'can be implemented as well.
+#'asymmetric power ARCH) and a FIGARCH (fractionally integrated GARCH)
+#'can be implemented as well among others.
 #'
 #'@details
 #'\code{fEGarch} is an R package for estimating a broad family of
@@ -32,8 +32,10 @@
 #'As a popular alternative for the sake of comparison, a FIAPARCH
 #'model can be fitted as well using \code{\link{fiaparch}}. The
 #'corresponding documentation page also includes further information
-#'on the model. Similarly, \code{\link{lmgarch}} can be utilized for
-#'fitting LMGARCH models.
+#'on the model. Similarly, \code{\link{figarch}} can be utilized for
+#'fitting FIGARCH models. A general function for estimation additional
+#'GARCH-type models, including FIAPARCH and FIGARCH among others, is
+#'\code{\link{garch_estim}}.
 #'
 #'In addition, the package provides functionalities in order to
 #'simultaneously model the conditional mean (using either autoregressive
@@ -53,11 +55,15 @@
 #'the conditional mean,}
 #'\item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 #'models given a model specification and an observation series,}
-#'\item{\code{\link{fiaparch}}:}{fitting a FIAPARCH model,}
-#'\item{\code{\link{lmgarch}}:}{fitting an LMGARCH model,}
+#'\item{\code{\link{garch_estim}}:}{fitting a GARCH-type model selectable from a standard GARCH,
+#'a GJR-GARCH, an APARCH, a FIGARCH, a FIGJR-GARCH and a FIAPARCH,}
 #'\item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model,}
-#'\item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model.}
-#'\item{\code{\link{lmgarch_sim}}:}{simulating from an LMGARCH model,}
+#'\item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model,}
+#'\item{\code{\link{figarch_sim}}:}{simulating from a FIGARCH model,}
+#'\item{\code{\link{figjrgarch_sim}}:}{simulating from a FIGJR-GARCH model,}
+#'\item{\code{\link{aparch_sim}}:}{simulating from an APARCH model,}
+#'\item{\code{\link{garch_sim}}:}{simulating from a GARCH model,}
+#'\item{\code{\link{gjrgarch_sim}}:}{simulating from a GJR-GARCH model,}
 #'\item{\code{\link{predict,fEGarch_fit-method}}:}{multistep point forecasts of
 #'the conditional mean and the conditional standard deviation,}
 #'\item{\code{\link{predict_roll,fEGarch_fit-method}}:}{rolling point forecasts of

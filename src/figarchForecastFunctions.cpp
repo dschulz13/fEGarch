@@ -4,7 +4,7 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-arma::vec sigt_lmgarch_forecast(const arma::vec& rt,
+arma::vec sigt_figarch_forecast(const arma::vec& rt,
                        const arma::vec& coef_inf,
                        const double omega,
                        const int horizon) {

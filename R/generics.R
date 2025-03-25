@@ -68,11 +68,11 @@ setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 1), meanspec = mean_s
 
 #====================================================#
 
-setGeneric("fEGarch_predict", function(object, n.ahead, trunc = length(object@rt) + n.ahead - 1, ...) {standardGeneric("fEGarch_predict")})
+setGeneric("fEGarch_predict", function(object, n.ahead = 10, trunc = NULL, ...) {standardGeneric("fEGarch_predict")})
 
 #====================================================#
 
-setGeneric("predict_internal", function(object, n.ahead, trunc = length(object@rt) + n.ahead - 1, ...) {standardGeneric("predict_internal")})
+setGeneric("predict_internal", function(object, n.ahead = 10, trunc = NULL, ...) {standardGeneric("predict_internal")})
 
 #====================================================#
 
@@ -85,7 +85,7 @@ setGeneric("predict_roll", function(object, step_size = 1, trunc = NULL, ...) {s
 #'the \code{fEGarch} package. The generics themselves are without use.
 #'
 #'@param x an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'\code{\link{fiaparch}} or \code{\link{figarch}}, etc.
 #'
 #'@details
 #'These generics are without direct use. Consider the

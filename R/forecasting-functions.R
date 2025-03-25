@@ -55,7 +55,7 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
       ))
     } else {
       # Possibly truncate infinite coefficient series
-      coef_inf_arma <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = trunc)[-1]
+      coef_inf_arma <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc)[-1]
       c(forecast_farima_Cpp(
         x = x,
         mu = mu,
@@ -77,7 +77,7 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
 
 # For EGARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -195,8 +195,8 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
     ))
   } else {
     # Use AR-representation
-    coef_inf_garch <- esemifar::farima_to_ma(
-      ar = phi, ma = psi_2, d = d, max_i = trunc
+    coef_inf_garch <- ma_infty(
+      ar = phi, ma = psi_2, d = d, max_i = trunc - 1
     )
     c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
@@ -223,7 +223,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
 
 # For Log-GARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -298,7 +298,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
                                    innov = zoo::coredata(object@rt - object@cmeans),
                                    n.ahead = n.ahead, trunc = trunc)
 
-  # EGARCH point forecasts of cond. volatility
+  # Log-GARCH point forecasts of cond. volatility
 
   sigt_fc <- if (!lm_garch) {
     omega <- Elnsig2 * (1 - sum(phi))
@@ -317,7 +317,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
       horizon = n.ahead
     ))
   } else {
-    coef_inf_garch <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
+    coef_inf_garch <- ma_infty(ar = phi, ma = psi, d = d,
                                      max_i = trunc)[-1]
     c(sigt_loggarch_forecast_long(
       et = zoo::coredata(object@etat),
@@ -338,7 +338,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
 
 # For APARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -451,7 +451,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
 
 # For FIAPARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   garch_orders <- object@orders
   p <- garch_orders[[1]]
@@ -534,7 +534,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
   # FIAPARCH point forecasts of cond. volatility
 
-  coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+  coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)[-1]
   sigt_fc <- c(sigt_fiaparch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
@@ -553,9 +553,33 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   }
 )
 
+# For GJR-GARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_gjrgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 2
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For FIGJR-GARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_figjrgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 2
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
 # For GARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -637,9 +661,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
   }
 )
 
-# For LMGARCH-type
-methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+# For FIGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_figarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   garch_orders <- object@orders
   p <- garch_orders[[1]]
@@ -685,11 +709,11 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
                                    innov = zoo::coredata(object@rt - object@cmeans),
                                    n.ahead = n.ahead, trunc = trunc)
 
-  # LMGARCH point forecasts of cond. volatility
+  # FIGARCH point forecasts of cond. volatility
 
-  coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
+  coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)[-1]
-  sigt_fc <- c(sigt_lmgarch_forecast(
+  sigt_fc <- c(sigt_figarch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
       coef_inf = coef_inf_garch,
       omega = omega,
@@ -705,7 +729,17 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
 # Returns a simple list and not the entire input object
 methods::setMethod("predict_internal", "fEGarch_fit",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    # Get truncation for long-memory models from fitted object
+    if (is.null(trunc)) {
+      trunc_obj <- object@trunc
+      if (is.character(trunc_obj) && trunc_obj == "none") {
+        trunc <- length(object@rt) - 1 + n.ahead
+      } else {
+        trunc <- trunc_obj
+      }
+    }
 
     fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, trunc = trunc, ...)
 
@@ -737,7 +771,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'
 #'@param object an object of class \code{"fEGarch_fit"},
 #'i.e. an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}; for
+#'\code{\link{fiaparch}} or \code{\link{figarch}}, etc.; for
 #'\code{predict_roll}, the slot \code{@test_obs} of the
 #'fitted model object should not be \code{NULL}.
 #'@param n.ahead a single numeric value indicating how
@@ -800,7 +834,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'fcast2
 #'
 methods::setMethod("predict", "fEGarch_fit",
-  function(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
     np_check <- !is.null(object@nonpar_model)
     object_orig <- object
@@ -840,7 +874,12 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     # Get truncation for long-memory models from fitted object
     if (is.null(trunc)) {
-      trunc <- object@trunc
+      trunc_obj <- object@trunc
+      if (is.character(trunc_obj) && trunc_obj == "none") {
+        trunc <- length(object@rt) - 1 + length(object@test_obs)
+      } else {
+        trunc <- trunc_obj
+      }
     }
 
     n_test <- length(object@test_obs)

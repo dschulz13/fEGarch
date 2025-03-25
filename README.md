@@ -25,8 +25,8 @@ GARCH-type models and provide new ways to estimate conditional
 volatilities, while making the prominent EGARCH and fractionally
 integrated EGARCH (FIEGARCH) available as special cases. For convenience
 and the purpose of comparison, fractionally integrated asymmetric power
-ARCH (FIAPARCH) and long-memory GARCH (LMGARCH) models are available as
-well for estimation.
+ARCH (FIAPARCH) and fractionally integrated GARCH (FIGARCH) models are
+available as well for estimation among other additional models.
 
 ## Installation
 
@@ -92,12 +92,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0001   3.1645 0.0016
-#> omega_sig -8.6599 0.1331 -65.0661 0.0000
-#> phi1       0.8679 0.0260  33.3308 0.0000
-#> kappa     -0.2363 0.0151 -15.6225 0.0000
-#> gamma      0.3194 0.0211  15.1101 0.0000
-#> d          0.2756 0.0470   5.8612 0.0000
+#> mu         0.0003 0.0000  20.1198 0.0000
+#> omega_sig -8.6600 0.1272 -68.0884 0.0000
+#> phi1       0.8680 0.0228  38.1357 0.0000
+#> kappa     -0.2363 0.0146 -16.1636 0.0000
+#> gamma      0.3194 0.0209  15.2975 0.0000
+#> d          0.2754 0.0378   7.2889 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.4945, BIC: -6.4880
@@ -106,7 +106,7 @@ model1
 Using the model description in the documentation of `fEGarch_spec()`,
 the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6599 + (1-0.8679 B)^{-1}(1-B)^{-0.2756}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
 $$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
@@ -158,16 +158,16 @@ model10
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0004 0.0001   4.5018 0.0000
-#> omega_sig -9.3708 0.1132 -82.7777 0.0000
-#> phi1       0.9734 0.0560  17.3865 0.0000
-#> phi2       0.0026 0.0551   0.0466 0.9628
-#> kappa     -0.2962 0.0239 -12.4089 0.0000
-#> gamma      0.1661 0.0143  11.6164 0.0000
-#> df         7.0237 0.5987  11.7317 0.0000
+#> mu         0.0004 0.0001   6.3085 0.0000
+#> omega_sig -9.4106 0.1013 -92.8804 0.0000
+#> phi1       0.9762 0.0719  13.5787 0.0000
+#> phi2      -0.0000 0.0708  -0.0000 1.0000
+#> kappa     -0.2941 0.0265 -11.0976 0.0000
+#> gamma      0.1652 0.0151  10.9712 0.0000
+#> df         7.0893 0.6038  11.7406 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.5387, BIC: -6.5311
+#> AIC: -6.5391, BIC: -6.5316
 ```
 
 As a further extension, dual-models with autoregressive moving-average
@@ -208,16 +208,16 @@ model11
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> mu         0.0003 0.0001    2.9105 0.0036
-#> ar1        0.2348 0.2474    0.9492 0.3425
-#> ma1       -0.2849 0.2442   -1.1665 0.2434
-#> omega_sig -9.1309 0.0754 -121.1206 0.0000
-#> phi1       0.9719 0.0027  353.4714 0.0000
-#> kappa     -0.1339 0.0082  -16.4203 0.0000
-#> gamma      0.1617 0.0125   12.9198 0.0000
+#> mu         0.0003 0.0001    5.7159 0.0000
+#> ar1        0.2451 0.0103   23.7215 0.0000
+#> ma1       -0.2946 0.0100  -29.3872 0.0000
+#> omega_sig -9.1719 0.0667 -137.5959 0.0000
+#> phi1       0.9719 0.0027  358.9273 0.0000
+#> kappa     -0.1333 0.0078  -17.1031 0.0000
+#> gamma      0.1608 0.0124   12.9568 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.4969, BIC: -6.4894
+#> AIC: -6.4975, BIC: -6.4899
 ```
 
 Yet another alternative is the fitting of semiparametric extensions of
@@ -251,12 +251,12 @@ model12
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> omega_sig -0.5382 0.1813  -2.9682 0.0030
-#> phi1       0.7907 0.0701  11.2767 0.0000
-#> kappa     -0.1519 0.0126 -12.0232 0.0000
-#> gamma      0.1236 0.0121  10.2392 0.0000
-#> d          0.3963 0.0846   4.6846 0.0000
-#> df         7.5374 0.6688  11.2695 0.0000
+#> omega_sig -0.5382 0.1812  -2.9698 0.0030
+#> phi1       0.7907 0.0701  11.2813 0.0000
+#> kappa     -0.1519 0.0126 -12.0240 0.0000
+#> gamma      0.1236 0.0121  10.2398 0.0000
+#> d          0.3963 0.0846   4.6866 0.0000
+#> df         7.5375 0.6688  11.2707 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: 2.4655, BIC: 2.4719
@@ -327,15 +327,18 @@ plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
 ### Alternatives
 
 The `fEGarch` package also allows for the estimation of FIAPARCH and
-LMGARCH models, however, currently only with fixed model orders $p=q=1$.
-For these two models, there are two fitting functions `lmgarch()` and
+FIGARCH models, however, currently only with fixed model orders $p=q=1$.
+For these two models, there are two fitting functions `figarch()` and
 `fiaparch()` available without any preceding model specification steps.
 Model specifications can be made via arguments within these functions
-directly.
+directly. ALternatively, the wrapper `garch_estim()` can be used to
+select and fit a GARCH-type model (not belonging to the EGARCH family).
 
 ``` r
 model_fiaparch <- fiaparch(rt, orders = c(1, 1), cond_dist = "std")
-model_lmgarch <- lmgarch(rt, orders = c(1, 1), cond_dist = "std")
+model_fiaparch2 <- garch_estim(rt, model = "fiaparch", orders = c(1, 1),
+                               cond_dist = "std")
+model_figarch <- figarch(rt, orders = c(1, 1), cond_dist = "std")
 model_fiaparch
 #> *************************************
 #> *       Fitted FIAPARCH Model       *
@@ -354,28 +357,28 @@ model_fiaparch
 #> Fitted parameters:
 #> 
 #>          par     se     tval   pval
-#> mu    0.0004 0.0001   4.7238 0.0000
-#> omega 0.0002 0.0001   2.1185 0.0341
-#> phi1  0.1796 0.0310   5.7862 0.0000
-#> beta1 0.4954 0.0493  10.0543 0.0000
-#> gamma 0.9999 0.0098 101.5153 0.0000
-#> delta 1.2435 0.0453  27.4507 0.0000
-#> d     0.3961 0.0338  11.7136 0.0000
-#> df    7.8301 0.7161  10.9340 0.0000
+#> mu    0.0004 0.0001   4.1531 0.0000
+#> omega 0.0005 0.0001   4.2981 0.0000
+#> phi1  0.1799 0.0255   7.0490 0.0000
+#> beta1 0.5522 0.0432  12.7780 0.0000
+#> gamma 0.9999 0.0086 116.3003 0.0000
+#> delta 1.2034 0.0427  28.2128 0.0000
+#> d     0.4567 0.0354  12.9057 0.0000
+#> df    7.0926 0.5820  12.1873 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.5484, BIC: -6.5398
+#> AIC: -6.5424, BIC: -6.5338
 ```
 
 ``` r
 sigt_fiaparch <- sigt(model_fiaparch)
-sigt_lmgarch <- sigt(model_lmgarch)
+sigt_figarch <- sigt(model_figarch)
 TS2 <- cbind(
   "Log-returns" = rt,
   "FIMLog-GARCH" = sigt1,
   "MEGARCH" = sigt10,
   "FIAPARCH" = sigt_fiaparch,
-  "LMGARCH" = sigt_lmgarch
+  "FIGARCH" = sigt_figarch
 )
 
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
@@ -400,13 +403,22 @@ The main functions of the package are:
 
 - `fEGarch()`: fitting function for models of the broader EGARCH family,
 
-- `fiaparch()`: FIAPARCH model fitting,
-
-- `lmgarch()`: LMGARCH model fitting,
+- `garch_estim()`: GARCH-type model fitting selectable from standard
+  GARCH, GJR-GARCH, APARCH, FIGARCH, FIGJR-GARCH and FIAPARCH.
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
 - `fiaparch_sim()`: FIAPARCH simulation,
+
+- `figarch_sim()`: FIGARCH simulation,
+
+- `figjrgarch_sim()`: FIGJR-GARCH simulation,
+
+- `aparch_sim()`: APARCH simulation,
+
+- `garch_sim()`: GARCH simulation,
+
+- `gjrgarch_sim()`: GJR-GARCH simulation,
 
 - `mean_spec()`: ARMA or FARIMA model specification for simultaneously
   modelling the conditional mean,

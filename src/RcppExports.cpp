@@ -392,6 +392,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigt_figarch_forecast
+arma::vec sigt_figarch_forecast(const arma::vec& rt, const arma::vec& coef_inf, const double omega, const int horizon);
+RcppExport SEXP _fEGarch_sigt_figarch_forecast(SEXP rtSEXP, SEXP coef_infSEXP, SEXP omegaSEXP, SEXP horizonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type coef_inf(coef_infSEXP);
+    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< const int >::type horizon(horizonSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigt_figarch_forecast(rt, coef_inf, omega, horizon));
+    return rcpp_result_gen;
+END_RCPP
+}
 // figarch_sim_Cpp
 Rcpp::List figarch_sim_Cpp(const arma::vec& innov, const double omega, const arma::vec& coef_inf, const int n_out, const double mu);
 RcppExport SEXP _fEGarch_figarch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP coef_infSEXP, SEXP n_outSEXP, SEXP muSEXP) {
@@ -528,35 +542,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type ar(arSEXP);
     Rcpp::traits::input_parameter< const int >::type max_i(max_iSEXP);
     rcpp_result_gen = Rcpp::wrap(poly_inv(ar, max_i));
-    return rcpp_result_gen;
-END_RCPP
-}
-// sigt_lmgarch_forecast
-arma::vec sigt_lmgarch_forecast(const arma::vec& rt, const arma::vec& coef_inf, const double omega, const int horizon);
-RcppExport SEXP _fEGarch_sigt_lmgarch_forecast(SEXP rtSEXP, SEXP coef_infSEXP, SEXP omegaSEXP, SEXP horizonSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type rt(rtSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type coef_inf(coef_infSEXP);
-    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
-    Rcpp::traits::input_parameter< const int >::type horizon(horizonSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_lmgarch_forecast(rt, coef_inf, omega, horizon));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lmgarch_sim_Cpp
-Rcpp::List lmgarch_sim_Cpp(const arma::vec& innov, const double omega, const arma::vec& coef_inf, const int n_out, const double mu);
-RcppExport SEXP _fEGarch_lmgarch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP coef_infSEXP, SEXP n_outSEXP, SEXP muSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type innov(innovSEXP);
-    Rcpp::traits::input_parameter< const double >::type omega(omegaSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type coef_inf(coef_infSEXP);
-    Rcpp::traits::input_parameter< const int >::type n_out(n_outSEXP);
-    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    rcpp_result_gen = Rcpp::wrap(lmgarch_sim_Cpp(innov, omega, coef_inf, n_out, mu));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -758,6 +743,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_egarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_shortmemo_type_sim, 13},
     {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 7},
     {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 7},
+    {"_fEGarch_sigt_figarch_forecast", (DL_FUNC) &_fEGarch_sigt_figarch_forecast, 4},
     {"_fEGarch_figarch_sim_Cpp", (DL_FUNC) &_fEGarch_figarch_sim_Cpp, 5},
     {"_fEGarch_sigt_garch_forecast_short", (DL_FUNC) &_fEGarch_sigt_garch_forecast_short, 6},
     {"_fEGarch_sigt_garch_Cpp", (DL_FUNC) &_fEGarch_sigt_garch_Cpp, 6},
@@ -768,8 +754,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_d_coefs_inv", (DL_FUNC) &_fEGarch_d_coefs_inv, 2},
     {"_fEGarch_d_coefs", (DL_FUNC) &_fEGarch_d_coefs, 2},
     {"_fEGarch_poly_inv", (DL_FUNC) &_fEGarch_poly_inv, 2},
-    {"_fEGarch_sigt_lmgarch_forecast", (DL_FUNC) &_fEGarch_sigt_lmgarch_forecast, 4},
-    {"_fEGarch_lmgarch_sim_Cpp", (DL_FUNC) &_fEGarch_lmgarch_sim_Cpp, 5},
     {"_fEGarch_sigt_loggarch_forecast_short", (DL_FUNC) &_fEGarch_sigt_loggarch_forecast_short, 7},
     {"_fEGarch_sigt_loggarch_forecast_long", (DL_FUNC) &_fEGarch_sigt_loggarch_forecast_long, 5},
     {"_fEGarch_sigt_loggarch_long", (DL_FUNC) &_fEGarch_sigt_loggarch_long, 5},

@@ -972,6 +972,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
     trunc <- n - 1
   } else if (is.numeric(trunc) && trunc >= n) {
@@ -1501,7 +1502,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     meanspec = meanspec,
     test_obs = split_rt$test,
     nonpar_model = NULL,
-    trunc = if (lm || meanspec@long_memo) {trunc} else {NA}
+    trunc = trunc_i
   )
 
   list_out
@@ -1671,6 +1672,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
     trunc <- n - 1
   } else if (is.numeric(trunc) && trunc >= n) {
@@ -2135,7 +2137,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     meanspec = meanspec,
     test_obs = split_rt$test,
     nonpar_model = NULL,
-    trunc = if (lm || meanspec@long_memo) {trunc} else {NA}
+    trunc = trunc_i
   )
 
   list_out

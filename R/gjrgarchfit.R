@@ -391,6 +391,7 @@ gjrgarch <- function(rt, orders = c(1, 1),
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
     trunc <- n - 1
   } else if (is.numeric(trunc) && trunc >= n) {
@@ -822,7 +823,7 @@ gjrgarch <- function(rt, orders = c(1, 1),
     meanspec = meanspec,
     test_obs = split_rt$test,
     nonpar_model = NULL,
-    trunc = NA
+    trunc = trunc_i
   )
 
   if (use_nonpar) {

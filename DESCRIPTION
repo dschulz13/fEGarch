@@ -30,7 +30,7 @@ Authors@R:
         role = "ctb",
         comment = "Paderborn University, Germany"))             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
-Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
+Description: Implement and fit a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
   such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), FIMLog-GARCH (fractionally integrated
   modulus Log-GARCH), and more. For convenience and the purpose of comparison, a variety of
   other popular GARCH-type models, like an APARCH model, a fractionally integrated
@@ -68,8 +68,8 @@ Collate:
   'garchfit.R'
   'fiaparchfit.R'
   'figjrgarchfit.R'
-  'lmgarchfit.R'
   'figarchfit.R'
+  'garch_estim.R'
   'varescalc.R'
   'datasets.R'
   'fEGarch-package.R'

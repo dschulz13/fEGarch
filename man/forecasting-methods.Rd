@@ -5,14 +5,14 @@
 \alias{predict_roll,fEGarch_fit-method}
 \title{Multistep and Rolling Point Forecasts}
 \usage{
-\S4method{predict}{fEGarch_fit}(object, n.ahead = 1, trunc = length(object@rt) + n.ahead - 1, ...)
+\S4method{predict}{fEGarch_fit}(object, n.ahead = 1, trunc = NULL, ...)
 
 \S4method{predict_roll}{fEGarch_fit}(object, step_size = 1, trunc = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class \code{"fEGarch_fit"},
 i.e. an object returned by either \code{\link{fEGarch}},
-\code{\link{fiaparch}} or \code{\link{lmgarch}}; for
+\code{\link{fiaparch}} or \code{\link{figarch}}, etc.; for
 \code{predict_roll}, the slot \code{@test_obs} of the
 fitted model object should not be \code{NULL}.}
 

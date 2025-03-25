@@ -393,6 +393,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
     trunc <- n - 1
   } else if (is.numeric(trunc) && trunc >= n) {
@@ -538,7 +539,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
       rep(0.05 / p_ar, p_ar),
       rep(0.05 / q_ma, q_ma),
       D_start,
-      var(rt_core),
+      5,
       rep(0.1 / p, p),
       rep(0.4 / q, q),
       0.1,
@@ -685,7 +686,10 @@ figjrgarch <- function(rt, orders = c(1, 1),
       goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
     }
 
-    result <- suppressWarnings(Rsolnp::solnp(
+
+    result <- tryCatch(
+      expr = {
+        suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -696,25 +700,11 @@ figjrgarch <- function(rt, orders = c(1, 1),
           ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
           rt = rt_core
         ))
-
-    # result <- tryCatch(
-    #   expr = {
-    #     suppressWarnings(Rsolnp::solnp(
-    #       pars = start_pars,
-    #       fun = goal_fun,
-    #       LB = LB,
-    #       UB = UB,
-    #       control = control,
-    #       ineqfun = ineq_fun,
-    #       ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-    #       ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-    #       rt = rt_core
-    #     ))
-    #   },
-    #   error = function(e1) {
-    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-    #   }
-    # )
+      },
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
   }
 
   if (result$convergence %in% c(1, 2)) {
@@ -886,7 +876,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
     meanspec = meanspec,
     test_obs = split_rt$test,
     nonpar_model = NULL,
-    trunc = trunc
+    trunc = trunc_i
   )
 
   if (use_nonpar) {
