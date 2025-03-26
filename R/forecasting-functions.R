@@ -412,7 +412,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
   E_e_transf <- rep(NA, len_gamma)
 
   for (i in 1:len_gamma) {
-    E_e_transf <- stats::integrate(
+    E_e_transf[[i]] <- stats::integrate(
       f = int_fun, lower = -Inf, upper = Inf,
       subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
       gamma_i = gamma[[i]], delta = delta, shape = shape,

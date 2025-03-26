@@ -121,7 +121,7 @@ setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
     input[["ylab"]] <- "Value"
   }
   if (is.null(input[["main"]])) {
-    input[["main"]] <- "The test series together with risk measures"
+    input[["main"]] <- "The series together with risk measures"
   }
 
   input[["x"]] <- tp
