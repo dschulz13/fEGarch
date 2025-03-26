@@ -1,5 +1,5 @@
 # Generics
-setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
+setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, drop_first = 5, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
 
 
 #'Weighted Ljung-Box Test for Autocorrelation
@@ -20,6 +20,10 @@ setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = 
 #'to the number of estimated parameters.
 #'@param weights a function with argument \code{lag} stating how
 #'weights should be calculated.
+#'@param drop_first a numerical value indicating how many initial
+#'residuals to omit; in cases of some long-memory models, the initial
+#'residuals may deviate strongly due to the initialization of the
+#'recursion in the estimation step.
 #'@param silent a logical value reflecting whether or not test results
 #'should be printed in a well-formatted manner to the console.
 #'@param ... currently without use.
@@ -36,10 +40,10 @@ setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = 
 #'model <- fEGarch(spec, rt)
 #'ljung_box_test(model)
 #'
-setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, silent = FALSE, type = c("simple", "squared"), ...) {
+setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, drop_first = 5, silent = FALSE, type = c("simple", "squared"), ...) {
 
   type <- match.arg(type)
-  et <- object@etat
+  et <- tail(object@etat, -drop_first)
 
   fun <- list(
     "simple" = function(et) {et},
