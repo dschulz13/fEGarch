@@ -101,7 +101,7 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TR
 
 
 # Generics
-setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
+setGeneric("sign_bias_test", function(object, drop_first = 5, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
 
 #'Sign Bias Test
 #'
@@ -115,6 +115,10 @@ setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGene
 #'by \code{\link{fEGarch}}.
 #'@param silent a logical value reflecting whether or not test results
 #'should be printed in a well-formatted manner to the console.
+#'@param drop_first a numerical value indicating how many initial
+#'residuals to omit; in cases of some long-memory models, the initial
+#'residuals may deviate strongly due to the initialization of the
+#'recursion in the estimation step.
 #'@param ... currently without use.
 #'
 #'@export
@@ -129,9 +133,9 @@ setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGene
 #'model <- fEGarch(spec, rt)
 #'sign_bias_test(model)
 #'
-setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...) {
+setMethod("sign_bias_test", "fEGarch_fit", function(object, drop_first = 5, silent = FALSE, ...) {
 
-  et <- zoo::coredata(object@etat)
+  et <- utils::tail(zoo::coredata(object@etat), -drop_first)
   et_h <- head(et, -1)
 
   It <- as.numeric(et_h < 0)
@@ -187,7 +191,7 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...)
 })
 
 # Generics
-setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
+setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, drop_first = 5, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
 
 
 #'Adjusted Pearson Goodness-of-Fit Test for Standardized Model Residuals
@@ -206,6 +210,10 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'model parameters.
 #'@param silent a logical indicating whether or not to print
 #'the test results in a well-formatted manner to the console.
+#'@param drop_first a numerical value indicating how many initial
+#'residuals to omit; in cases of some long-memory models, the initial
+#'residuals may deviate strongly due to the initialization of the
+#'recursion in the estimation step.
 #'@param ... currently without purpose.
 #'
 #'@details
@@ -225,7 +233,7 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'model <- fEGarch(spec, rt)
 #'goodn_of_fit_test(model)
 #'
-setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20, 30, 40, 50, 60), adj = TRUE, silent = FALSE, ...) {
+setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20, 30, 40, 50, 60), adj = TRUE, drop_first = 5, silent = FALSE, ...) {
 
   model <- object
   pars <- model@pars
@@ -269,7 +277,7 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20
   out_mat <- matrix(NA, nrow = lb, ncol = 3)
   rownames(out_mat) <- rep("", lb)
   colnames(out_mat) <- c("n_bins", "df", "pval")
-  et <- zoo::coredata(model@etat)
+  et <- utils::tail(zoo::coredata(model@etat), -drop_first)
   et_a <- abs(et)
   n <- length(et)
   adjust <- n_par * adj

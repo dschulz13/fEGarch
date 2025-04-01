@@ -12,6 +12,7 @@
      m <- max(lag)
      (m + 1 - lag)/m
  },
+  drop_first = 5,
   silent = FALSE,
   type = c("simple", "squared"),
   ...
@@ -31,6 +32,11 @@ to the number of estimated parameters.}
 
 \item{weights}{a function with argument \code{lag} stating how
 weights should be calculated.}
+
+\item{drop_first}{a numerical value indicating how many initial
+residuals to omit; in cases of some long-memory models, the initial
+residuals may deviate strongly due to the initialization of the
+recursion in the estimation step.}
 
 \item{silent}{a logical value reflecting whether or not test results
 should be printed in a well-formatted manner to the console.}

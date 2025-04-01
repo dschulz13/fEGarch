@@ -39,7 +39,7 @@ Rcpp::List figarch_sim_Cpp(const arma::vec& innov, const double omega,
   for (int i = n_coef_m1; i < n; ++i) {
 
     sig2 = omega +
-      arma::as_scalar(arma::dot(coef_rev, eps2.subvec(0, i)));
+      arma::as_scalar(arma::dot(coef_rev, eps2.subvec(0 + i - n_coef_m1, i)));
 
     sigt(i) = std::sqrt(sig2);
 

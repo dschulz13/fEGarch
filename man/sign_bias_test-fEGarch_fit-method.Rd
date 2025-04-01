@@ -4,12 +4,17 @@
 \alias{sign_bias_test,fEGarch_fit-method}
 \title{Sign Bias Test}
 \usage{
-\S4method{sign_bias_test}{fEGarch_fit}(object, silent = FALSE, ...)
+\S4method{sign_bias_test}{fEGarch_fit}(object, drop_first = 5, silent = FALSE, ...)
 }
 \arguments{
 \item{object}{an object \code{"fEGarch_fit"} as returned
 by the fitting functions of this package, for example
 by \code{\link{fEGarch}}.}
+
+\item{drop_first}{a numerical value indicating how many initial
+residuals to omit; in cases of some long-memory models, the initial
+residuals may deviate strongly due to the initialization of the
+recursion in the estimation step.}
 
 \item{silent}{a logical value reflecting whether or not test results
 should be printed in a well-formatted manner to the console.}

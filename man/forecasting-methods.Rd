@@ -5,7 +5,7 @@
 \alias{predict_roll,fEGarch_fit-method}
 \title{Multistep and Rolling Point Forecasts}
 \usage{
-\S4method{predict}{fEGarch_fit}(object, n.ahead = 1, trunc = NULL, ...)
+\S4method{predict}{fEGarch_fit}(object, n.ahead = 10, trunc = NULL, ...)
 
 \S4method{predict_roll}{fEGarch_fit}(object, step_size = 1, trunc = NULL, ...)
 }

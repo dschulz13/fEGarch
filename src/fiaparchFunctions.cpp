@@ -11,38 +11,47 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
 
   const int n = innov.size();
 
-  const int n_pre = 1;
-  const int n_all = n + n_pre;
-
-  double sig_d;
+  double sigd;
   arma::vec sigt = arma::vec(n);
 
   const arma::vec coef_rev = arma::reverse(coef_inf);
 
-  arma::vec rt = arma::zeros<arma::vec>(n_all);
-  arma::vec g_fun = arma::zeros<arma::vec>(n_all);
+  arma::vec rt = arma::zeros<arma::vec>(n);
+  arma::vec eps2_transf = arma::zeros<arma::vec>(n);
 
-  const int n_coef_m1 = coef_inf.size() - 1;
-  int npp1;
+  const int lc = coef_inf.size();
 
-  for (int i = 0; i < n; ++i) {
+  const int n_coef_m1 = lc - 1;
 
-    npp1 = 1 + i;
+  const double onedivdelta = 1.0 / delta;
 
-    sig_d = omega +
-      arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - i, n_coef_m1), g_fun.subvec(0, i)));
+  for (int j = 0; j < n_coef_m1; ++j) {
 
-    sigt(i) = std::pow(sig_d, 1.0 / delta);
+    sigd = omega +
+      arma::as_scalar(arma::dot(coef_rev.subvec(n_coef_m1 - j, n_coef_m1), eps2_transf.subvec(0, j)));
 
-    rt(npp1) = innov(i) * sigt(i);
-    g_fun(npp1) = std::pow(std::abs(rt(npp1)) - gamma * rt(npp1), delta);
+    sigt(j) = std::pow(sigd, onedivdelta);
+
+    rt(j) = innov(j) * sigt(j);
+    eps2_transf(j) = std::pow(std::abs(rt(j)) - gamma * rt(j), delta);
+
+  }
+
+  for (int i = n_coef_m1; i < n; ++i) {
+    sigd = omega +
+      arma::as_scalar(arma::dot(coef_rev, eps2_transf.subvec(0 + i - n_coef_m1, i)));
+
+    sigt(i) = std::pow(sigd, onedivdelta);
+
+    rt(i) = innov(i) * sigt(i);
+    eps2_transf(i) = std::pow(std::abs(rt(i)) - gamma * rt(i), delta);
 
   }
 
   const arma::vec sigt_out = sigt.subvec(n - n_out, n - 1);
   const arma::vec innov_out = innov.subvec(n - n_out, n - 1);
 
-  const arma::vec rt_out = rt.subvec(n_all - n_out, n_all - 1) + mu;
+  const arma::vec rt_out = rt.subvec(n - n_out, n - 1) + mu;
 
   return Rcpp::List::create(_["rt"] = rt_out, _["sigt"] = sigt_out, _["etat"] = innov_out);
 }
