@@ -17,7 +17,8 @@ setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = 
 #'\code{m_max}.
 #'@param adj a logical value indicating whether or not to adjust
 #'the degrees of freedom in the chi-square distribution according
-#'to the number of estimated parameters.
+#'to the number of estimated ARMA and GARCH parameters (without
+#'unconditional mean parameter).
 #'@param weights a function with argument \code{lag} stating how
 #'weights should be calculated.
 #'@param drop_first a numerical value indicating how many initial

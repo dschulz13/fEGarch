@@ -136,20 +136,6 @@ lookup_table <- list(
      shape = 2,
      skew = 1
    ),
-   sim_pars_default_lmgarch = list(
-     mu = 0,
-     ar = numeric(0),
-     ma = numeric(0),
-     D = 0,
-     omega = 0.004,
-     phi = 0.2,
-     beta = 0.4,
-     d = 0.25,
-     df = 10,
-     P = 3,
-     shape = 2,
-     skew = 1
-   ),
    sim_pars_default_figarch = list(
      mu = 0,
      ar = numeric(0),

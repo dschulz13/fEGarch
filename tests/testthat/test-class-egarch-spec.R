@@ -3,8 +3,7 @@ test_that("base_garch_spec is validated correctly", {
     base_garch_spec(
       orders = c(1, 1),
       long_memo = TRUE,
-      cond_dist = "norm",
-      include_mean = TRUE
+      cond_dist = "norm"
     )
   )
   expect_no_error(
@@ -51,11 +50,5 @@ test_that("base_garch_spec is validated correctly", {
   expect_error(base_garch_spec(cond_dist = c("norm", "std")), "\"cond_dist\" must be kept at default or must be of length 1 and one of the defaults")
   expect_error(base_garch_spec(cond_dist = character(0)), "\"cond_dist\" must be kept at default or must be of length 1 and one of the defaults")
   expect_error(base_garch_spec(cond_dist = "smd"), "\"cond_dist\" must be kept at default or must be of length 1 and one of the defaults")
-
-  expect_no_error(base_garch_spec(include_mean = TRUE))
-  expect_no_error(base_garch_spec(include_mean = FALSE))
-  expect_error(base_garch_spec(include_mean = c(TRUE, FALSE)), "@include_mean must be of length one")
-  expect_error(base_garch_spec(include_mean = logical(0)), "@include_mean must be of length one")
-  expect_error(base_garch_spec(include_mean = "a"), "invalid object for slot \"include_mean\" in class \"base_garch_spec\": got class \"character\", should be or extend class \"logical\"")
 
 })
