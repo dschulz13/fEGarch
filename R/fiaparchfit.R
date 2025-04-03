@@ -30,7 +30,7 @@ fiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc) {
+              trunc, presample, presample_vals, tail_fun) {
 
   all_pars <- fiaparch_grab_pars(
     theta = theta,
@@ -50,7 +50,7 @@ sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  n <- length(x)
+  n <- length(x) + presample
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)
   coef_inf[[1]] <- 0
@@ -60,9 +60,9 @@ sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
   lc <- length(coef_inf)
   np2 <- nextpow2(2 * n - 1)
   c_adj <- c(coef_inf, rep(0, np2 - lc))
-  x_adj <- c((abs(x_dm) - gamma * x_dm)^delta, rep(0, np2 - n))
+  x_adj <- c(presample_vals, (abs(x_dm) - gamma * x_dm)^delta, rep(0, np2 - n))
 
-  sigt <- (omega_sig + Re(utils::head(stats::fft(stats::fft(c_adj) * stats::fft(x_adj), inverse = TRUE), n)) / np2)^(1 / delta)
+  sigt <- tail_fun((omega_sig + Re(utils::head(stats::fft(stats::fft(c_adj) * stats::fft(x_adj), inverse = TRUE), n)) / np2)^(1 / delta), -presample)
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
@@ -81,12 +81,15 @@ goal_fun_creator_fiaparch <- function(
     skew_par,
     penalty,
     sig_fun,
-    trunc
+    trunc,
+    presample,
+    presample_vals,
+    tail_fun
 ) {
 
   res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc)
+              trunc, presample, presample_vals, tail_fun)
 
   sigt <- res_list$sigt
 
@@ -94,7 +97,7 @@ goal_fun_creator_fiaparch <- function(
   skew <- res_list$skew
   shape <- res_list$shape
 
-  out <- -sum(log(pdf_fun2(x, cmeans, sigt, shape, skew)))
+  out <- -sum(log(pdf_fun2(tail_fun(x, -presample), cmeans, sigt, shape, skew)))
 
   out
 
@@ -126,6 +129,8 @@ goal_fun_creator_fiaparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used.
+#'@param presample a numeric value indicating the pre-sample length for
+#'initialization.
 #'@param drange a two-element numeric vector that gives the boundaries of the
 #'search interval for the fractional differencing parameter \eqn{d} in the
 #'conditional volatility model part; is
@@ -353,7 +358,8 @@ fiaparch <- function(rt, orders = c(1, 1),
                         meanspec = mean_spec(), Drange = c(0, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
-                        start_pars = NULL, LB = NULL, UB = NULL, control = list(),
+                        start_pars = NULL,
+                        presample = 1000, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", Prange = c(1, 5)) {
@@ -384,11 +390,29 @@ fiaparch <- function(rt, orders = c(1, 1),
   scale_const <- sd(rt_core_o)         # for rescaling later
   rt_core <- rt_core_o / scale_const   # now has sample variance 1
 
+  init_val <- if (presample > 0) {
+
+    est_init <- suppressWarnings(
+      aparch(rt_core, orders = orders, cond_dist = cond_dist, meanspec = meanspec,
+             ncores = ncores, parallel = parallel, Prange = Prange)
+    )
+    delta0 <- est_init@pars[["delta"]]
+    gamma0 <- est_init@pars[["gamma1"]]
+    mean((abs(rt_core) - gamma0 * rt_core)^delta0)
+
+  } else {
+    delta0 <- 2
+    gamma0 <- 0.1
+    numeric(0)
+  }
+
+  presample_vals <- rep(init_val, presample)
+
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
-    trunc <- n - 1
+    trunc <- n - 1 + presample
   } else if (is.numeric(trunc) && trunc >= n) {
     trunc <- n - 1
     message("trunc reduced to n - 1")
@@ -434,7 +458,6 @@ fiaparch <- function(rt, orders = c(1, 1),
   }
 
 
-  n <- length(rt_core)
   sigt_fun <- sigt_fiaparch_R
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
@@ -443,7 +466,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, trunc) {
+         incl_mean, extra_par, skew_par, trunc, presample, presample_vals) {
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -476,7 +499,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       theta2 <- theta[-(1:n_arma_pars)]
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, trunc)
+      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, trunc, presample, presample_vals)
       out$cmeans <- fitted_vs
       out
     }
@@ -485,14 +508,14 @@ fiaparch <- function(rt, orders = c(1, 1),
     sigt_fun             # ...else keep function for EGARCH-type
   }
 
-  # est_sm <- suppressMessages(suppressWarnings(
-  #   aparch_pre(rt_core, orders = c(1, 1), cond_dist = cond_dist, trunc = trunc,
-  #              meanspec = meanspec)
-  # ))
-  # gamma0 <- est_sm[["gamma"]]
-  # delta0 <- est_sm[["delta"]]
-  # rt_dm <- rt_core - mean(rt_core)
-  # etransf_init <- mean((abs(rt_dm) - gamma0 * rt_dm)^delta0)
+  tail_fun <- list(
+    function(x, n) {
+      x
+    },
+    function(x, n) {
+      utils::tail(x, -n)
+    }
+  )[[(presample > 0) + 1]]
 
   goal_fun_s <- function(theta, rt, pdf_fun2) {
 
@@ -509,7 +532,10 @@ fiaparch <- function(rt, orders = c(1, 1),
      skew_par = skew_par,
      penalty = FALSE,
      sig_fun = sigt_fun_adj,
-     trunc = trunc
+     trunc = trunc,
+     presample = presample,
+     presample_vals = presample_vals,
+     tail_fun = tail_fun
     )
 
   }
@@ -535,7 +561,7 @@ fiaparch <- function(rt, orders = c(1, 1),
       var(rt_core),
       rep(0.2 / p, p),
       rep(0.4 / q, q),
-      0.1, 2,
+      gamma0, delta0,
       d_spar,
       sval,
       list(NULL, 1)[[skew_par + 1]]
@@ -721,7 +747,7 @@ fiaparch <- function(rt, orders = c(1, 1),
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
   # log-likelihood at the optimum for the scaled data, which is too large by
   # "n * log(scale_const)" in comparison to original data
-  llhood <- -tail(result$values, 1) - n * log(scale_const)
+  llhood <- -utils::tail(result$values, 1) - n * log(scale_const)
 
   beta_names <- paste0("beta", 1:q)
 
@@ -809,7 +835,8 @@ fiaparch <- function(rt, orders = c(1, 1),
 
   res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc = trunc)
+              trunc = trunc, presample = presample,
+              presample_vals = presample_vals, tail_fun = tail_fun)
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {

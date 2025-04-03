@@ -22,7 +22,6 @@ Rcpp::List figarch_sim_Cpp(const arma::vec& innov, const double omega,
 
   const int n_coef_m1 = lc - 1;
 
-
   for (int j = 0; j < n_coef_m1; ++j) {
 
 

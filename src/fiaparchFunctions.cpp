@@ -38,6 +38,7 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
   }
 
   for (int i = n_coef_m1; i < n; ++i) {
+
     sigd = omega +
       arma::as_scalar(arma::dot(coef_rev, eps2_transf.subvec(0 + i - n_coef_m1, i)));
 

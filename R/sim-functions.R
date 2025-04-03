@@ -574,7 +574,8 @@ fiaparch_sim <- function(pars = list(
   # and for the sample with the exception of the very last sample time point
 
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
-                                     max_i = trunc_vol)[-1]
+                                     max_i = trunc_vol)
+  coef_inf[[1]] <- 0
 
   sim <- fiaparch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,
@@ -875,7 +876,7 @@ figarch_sim <- function(pars = list(
 #'@export
 #'
 #'@examples
-#'sim <- fiaparch_sim(n = 1000)
+#'sim <- aparch_sim(n = 1000)
 #'mat <- do.call(cbind, sim)
 #'plot(mat, main = "")
 #'
