@@ -324,29 +324,19 @@ gjrgarch <- function(rt, orders = c(1, 1),
 
   if (use_nonpar) {
 
-    nonpar_result <- nonpar_est(
-      rt = rt,
-      lm = FALSE,
-      nonparspec = nonparspec,
-      n_test = n_test,
-      control_nonpar = control_nonpar
-    )
-
-    meanspec <- mean_spec(
-      orders = c(0, 0),
-      long_memo = FALSE,
-      include_mean = FALSE
-    )    # Force to not estimate the mean in parametric part
-    n_test <- 0
-    rt <- nonpar_result$et
+    nonpar_out <- run_nonpar(nonparspec = nonparspec,
+               control_nonpar = control_nonpar, rt = rt, n_test = n_test)
+    rt <- nonpar_out$rt
+    meanspec <- nonpar_out$meanspec
+    nonpar_result <- nonpar_out$nonpar_result
+    n_test <- nonpar_out$n_test
 
   }
 
-  split_rt <- split_ts(rt, n_test)
-  rt_core_o <- zoo::coredata(split_rt$train)
-
-  scale_const <- sd(rt_core_o)         # for rescaling later
-  rt_core <- rt_core_o / scale_const   # now has sample variance 1
+  splitting <- initial_split(rt, n_test)
+  scale_const <- splitting$scale_const
+  rt_core <- splitting$rt_core
+  rt_core_o <- splitting$rt_core_o
 
   # if (!all(orders == c(1, 1))) {
   #   orders <- c(1, 1)
@@ -358,11 +348,6 @@ gjrgarch <- function(rt, orders = c(1, 1),
 
   cond_d <- match.arg(cond_dist)
 
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
-
   pdf_fun1 <- lookup_table$fun1[[cond_d]]
   pdf_fun2 <- lookup_table$fun2[[cond_d]]
 
@@ -371,8 +356,7 @@ gjrgarch <- function(rt, orders = c(1, 1),
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
+
   # Assign ARMA / FARIMA function
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
@@ -398,12 +382,12 @@ gjrgarch <- function(rt, orders = c(1, 1),
     trunc <- n - 1
     message("trunc reduced to n - 1")
   }
-  sigt_fun <- sigt_gjrgarch_R
-  # Adjust (if ARMA relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0 || lm_arma
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
+
+
+  # Adjust the function for conditional standard deviations following
+  # the meanspec object
+  sigt_fun_adj <- adj_sigt_fun(meanspec)
+
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
          incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc) {

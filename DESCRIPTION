@@ -63,6 +63,8 @@ Collate:
   'class-egarch-spec.R'
   'fitting-function.R'
   'sim-functions.R'
+  'nonparametric-step.R'
+  'setup-estim.R'
   'aparchfit.R'
   'gjrgarchfit.R'
   'garchfit.R'

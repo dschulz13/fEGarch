@@ -357,21 +357,12 @@ figarch <- function(rt, orders = c(1, 1),
 
   if (use_nonpar) {
 
-    nonpar_result <- nonpar_est(
-      rt = rt,
-      lm = TRUE,
-      nonparspec = nonparspec,
-      n_test = n_test,
-      control_nonpar = control_nonpar
-    )
-
-    meanspec <- mean_spec(
-      orders = c(0, 0),
-      long_memo = FALSE,
-      include_mean = FALSE
-    )    # Force to not estimate the mean in parametric part
-    n_test <- 0
-    rt <- nonpar_result$et
+    nonpar_out <- run_nonpar(nonparspec = nonparspec,
+               control_nonpar = control_nonpar, rt = rt, n_test = n_test)
+    rt <- nonpar_out$rt
+    meanspec <- nonpar_out$meanspec
+    nonpar_result <- nonpar_out$nonpar_result
+    n_test <- nonpar_out$n_test
 
   }
 
