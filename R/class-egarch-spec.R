@@ -1655,11 +1655,10 @@ goal_fun_creator_loggarch <- function(
 setMethod("fEGarch_fit", "loggarch_type_spec",
   function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
 
-  split_rt <- split_ts(rt, n_test)
-  rt_core_o <- zoo::coredata(split_rt$train)
-
-  scale_const <- sd(rt_core_o)         # for rescaling later
-  rt_core <- rt_core_o / scale_const   # now has sample variance 1
+  splitting <- initial_split(rt, n_test)
+  scale_const <- splitting$scale_const
+  rt_core <- splitting$rt_core
+  rt_core_o <- splitting$rt_core_o
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
@@ -1707,59 +1706,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     arma_fit
   }
 
-  sigt_fun <- sigt_funs_loggarch[[lm + 1]]
   # Adjust (if ARMA-part relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
   check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-  sigt_fun_adj <- if (check) {
-    function(theta, x, dfun1, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par,
-         int_fun, lnsig2_init) {
 
-      # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- grab_fun(
-        theta = theta,
-        incl_mean = incl_mean,
-        pg0 = pg0,
-        qg0 = qg0,
-        p = p_ar,
-        q = q_ma
-      )
-      mu <- arma_pars$mu
-      ar <- arma_pars$ar
-      ma <- arma_pars$ma
-
-      coef_inf <- if (lm_arma) {
-        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
-        coefs[[1]] <- 0
-        coefs
-      } else {
-        0
-      }
-
-      # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
-
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
-      #... and calculate conditional standard deviations from the residuals
-      # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
-              FALSE, extra_par, skew_par,
-              int_fun, lnsig2_init, trunc)
-      out$cmeans <- fitted_vs
-      out
-    }
-
-  } else {
-    sigt_fun             # ...else keep function for EGARCH-type
-  }
-
+  model_type <- c("loggarch", "filoggarch")[[lm + 1]]
+  sigt_fun_adj <- adj_sigt_fun(meanspec, model_type)
 
   int_fun <- function(x, shape, skew, dfun) {
     log(x^2) * dfun(x, shape = shape, skew = skew)
@@ -2055,9 +2009,21 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init, trunc)
+  final_series <- sigt_fun_adj(
+    theta = unname(pars),
+    x = rt_core,
+    dfun = dfun1,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    int_fun = int_fun,
+    lnsig2_init = lnsig2_init
+  )
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
@@ -2090,17 +2056,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   rownames(vcov_mat) <- par_names
   colnames(vcov_mat) <- par_names
 
-  k <- length(pars)
-  n <- length(rt_core)
-
-  m2llhood <- -2 * llhood
-  bic <- (m2llhood + k * log(n)) / n
-  aic <- (m2llhood + 2 * k) / n
+  criteria <- crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
+  aic <- criteria$aic
+  bic <- criteria$bic
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = split_rt$train,
+    rt = splitting$train_obs,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -2115,7 +2078,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = split_rt$train,
+    rt = splitting$train_obs,
     cmeans = cmeans,
     scale_fun = NULL,
     sigt = sigt,
@@ -2126,7 +2089,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     orders = order,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = split_rt$test,
+    test_obs = splitting$test_obs,
     nonpar_model = NULL,
     trunc = trunc_i
   )
