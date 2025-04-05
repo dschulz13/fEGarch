@@ -56,7 +56,7 @@ on the APARCH model. This function provides
 an easy way to simulate from these models.
 }
 \examples{
-sim <- fiaparch_sim(n = 1000)
+sim <- aparch_sim(n = 1000)
 mat <- do.call(cbind, sim)
 plot(mat, main = "")
 

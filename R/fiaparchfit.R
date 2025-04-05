@@ -30,7 +30,7 @@ fiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, presample, presample_vals, tail_fun) {
+              trunc, ...) {
 
   all_pars <- fiaparch_grab_pars(
     theta = theta,
@@ -87,19 +87,22 @@ goal_fun_creator_fiaparch <- function(
     tail_fun
 ) {
 
-  res_list <- sig_fun(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              trunc, presample, presample_vals, tail_fun)
+  res_list <- sig_fun(
+    theta = theta,
+    x = x,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    presample = presample,
+    presample_vals = presample_vals,
+    tail_fun = tail_fun)
 
-  sigt <- res_list$sigt
-
-  cmeans <- res_list$cmeans
-  skew <- res_list$skew
-  shape <- res_list$shape
-
-  out <- -sum(log(pdf_fun2(tail_fun(x, -presample), cmeans, sigt, shape, skew)))
-
-  out
+  nllhood_calc(res_list, pdf_fun2)
 
 }
 

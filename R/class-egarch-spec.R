@@ -792,10 +792,11 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
 
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a short-memory EGARCH specification
-sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init, trunc) {
+sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, ...) {
+
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -821,7 +822,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   E_vals <- expect_calc_egarch(
     int_fun_asy = int_fun_asy,
     int_fun_mag = int_fun_mag,
-    dfun = dfun1,
+    dfun = dfun,
     shape = shape,
     skew = skew,
     pows = pows)
@@ -842,7 +843,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     E_asy = E_asy,
     E_mag = E_mag,
     powers = pows, modulus = mods, mode = mode,
-    lnsig2_init
+    lnsig2_init = lnsig2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -851,10 +852,11 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a long-memory EGARCH specification
-sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init, trunc) {
+sigt_egarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, ...) {
+
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -883,7 +885,7 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   E_vals <- expect_calc_egarch(
     int_fun_asy = int_fun_asy,
     int_fun_mag = int_fun_mag,
-    dfun = dfun1,
+    dfun = dfun,
     shape = shape,
     skew = skew,
     pows = pows)
@@ -932,19 +934,27 @@ goal_fun_creator_egarch <- function(
     trunc
 ) {
 
-  res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init, trunc)
+  res_list <- sigt_fun(
+    theta = theta,
+    x = x,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    dfun = dfun1,
+    int_fun_asy = int_fun_asy,
+    int_fun_mag = int_fun_mag,
+    pows = pows,
+    mods = mods,
+    mode = mode,
+    lnsig2_init = lnsig2_init
+  )
 
-  sigt <- res_list$sigt
-  skew <- res_list$skew
-  shape <- res_list$shape
-  cmeans <- res_list$cmeans
-
-  out <- -sum(log(dfun2(x, cmeans, sigt, shape, skew)))
-
-  out
+  nllhood_calc(res_list, x, dfun2)
 
 }
 
@@ -953,9 +963,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
-
-  split_rt <- split_ts(rt, n_test)
-  rt_core_o <- zoo::coredata(split_rt$train)
 
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
@@ -967,8 +974,10 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # entire log-likelihood by a constant and therefore does not affect
   # the shape of the log-likelihood.
 
-  scale_const <- sd(rt_core_o)         # for rescaling later
-  rt_core <- rt_core_o / scale_const   # now has sample variance 1
+  splitting <- initial_split(rt, n_test)
+  scale_const <- splitting$scale_const
+  rt_core <- splitting$rt_core
+  rt_core_o <- splitting$rt_core_o
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
@@ -1022,63 +1031,14 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     D_start <- D_low <- D_up <- numeric(0)
     arma_fit
   }
-  # Look up internally saved calculation function for conditional
-  # standard deviations from "data-raw/lookup.R"
-  sigt_fun <- sigt_funs_egarch[[lm + 1]]
+
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
   check <- pg0 || qg0 || lm_arma
   n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-  sigt_fun_adj <- if (check) {
-    function(theta, x, dfun1, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par,
-         int_fun_asy, int_fun_mag, pows, mods,
-         mode, lnsig2_init, trunc) {
-
-      # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- grab_fun(
-        theta = theta,
-        incl_mean = incl_mean,
-        pg0 = pg0,
-        qg0 = qg0,
-        p = p_ar,
-        q = q_ma
-      )
-      mu <- arma_pars$mu
-      ar <- arma_pars$ar
-      ma <- arma_pars$ma
-
-      coef_inf <- if (lm_arma) {
-        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
-        coefs[[1]] <- 0
-        coefs
-      } else {
-        0
-      }
-
-      # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
-
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
-      #... and calculate conditional standard deviations from the residuals
-      # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
-              FALSE, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode, lnsig2_init, trunc)
-      out$cmeans <- fitted_vs
-      out
-    }
-
-  } else {
-    sigt_fun             # ...else keep function for EGARCH-type
-  }
-
+  model_type <- c("egarch", "fiegarch")[[lm + 1]]
+  sigt_fun_adj <- adj_sigt_fun(meanspec, model_type)
 
   # Modulus settings
   mod <- modulus(spec)
@@ -1314,8 +1274,24 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- tryCatch(
-      expr = {suppressWarnings(Rsolnp::solnp(
+    # result <- tryCatch(
+    #   expr = {suppressWarnings(Rsolnp::solnp(
+    #     pars = start_pars,
+    #     fun = goal_fun,
+    #     LB = LB,
+    #     UB = UB,
+    #     ineqfun = constr_fun,
+    #     ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
+    #     ineqUB = rep(Inf, p_all),
+    #     control = control,
+    #     rt = rt_core
+    #   ))},
+    #   error = function(e1) {
+    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+    #   }
+    # )
+
+    result <- suppressWarnings(Rsolnp::solnp(
         pars = start_pars,
         fun = goal_fun,
         LB = LB,
@@ -1325,11 +1301,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
         ineqUB = rep(Inf, p_all),
         control = control,
         rt = rt_core
-      ))},
-      error = function(e1) {
-        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-      }
-    )
+      ))
 
   }
 
@@ -1425,10 +1397,25 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
 
   # Compute the conditional standard deviations at the optimum
-  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pow, mod,
-              mode, lnsig2_init, trunc)
+  final_series <- sigt_fun_adj(
+    theta = unname(pars),
+    x = rt_core,
+    dfun = dfun1,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    int_fun_asy = int_fun_asy,
+    int_fun_mag = int_fun_mag,
+    pows = pow,
+    mods = mod,
+    mode = mode,
+    lnsig2_init = lnsig2_init
+  )
 
   # Adjust parameters according to scaling where necessary
   if (incl_mean) {
@@ -1462,17 +1449,14 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   rownames(vcov_mat) <- par_names
   colnames(vcov_mat) <- par_names
 
-  k <- length(pars)
-  n <- length(rt_core)
-
-  m2llhood <- -2 * llhood
-  bic <- (m2llhood + k * log(n)) / n
-  aic <- (m2llhood + 2 * k) / n
+  criteria <- crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
+  aic <- criteria$aic
+  bic <- criteria$bic
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = split_rt$train,
+    rt = splitting$train_obs,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1487,7 +1471,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = split_rt$train,
+    rt = splitting$train_obs,
     cmeans = cmeans,
     scale_fun = NULL,
     sigt = sigt,
@@ -1500,7 +1484,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     modulus = mod,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = split_rt$test,
+    test_obs = splitting$test_obs,
     nonpar_model = NULL,
     trunc = trunc_i
   )
@@ -1537,9 +1521,11 @@ loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_pa
 
 }
 
-sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init, trunc) {
+sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, ...) {
+
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1558,7 +1544,7 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   skew <- all_pars$skew
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1,
+                  dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
 
@@ -1583,10 +1569,11 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
 }
 
-sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init, trunc) {
+sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, ...) {
 
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1606,7 +1593,7 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   skew <- all_pars$skew
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1,
+                  dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
 
@@ -1646,18 +1633,22 @@ goal_fun_creator_loggarch <- function(
     trunc
 ) {
 
-  res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun, lnsig2_init, trunc)
+  res_list <- sigt_fun(
+    theta = theta,
+    x = x,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    dfun = dfun1,
+    int_fun = int_fun,
+    lnsig2_init = lnsig2_init)
 
-  sigt <- res_list$sigt
-  cmeans <- res_list$cmeans
-  skew <- res_list$skew
-  shape <- res_list$shape
-
-  out <- -sum(log(dfun2(x, cmeans, sigt, shape, skew)))
-
-  out
+  nllhood_calc(res_list, x, dfun2)
 
 }
 

@@ -15,6 +15,7 @@ fiaparch(
   use_nonpar = FALSE,
   n_test = 0,
   start_pars = NULL,
+  presample = 1000,
   LB = NULL,
   UB = NULL,
   control = list(),
@@ -77,6 +78,9 @@ reserve for backtesting.}
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used.}
+
+\item{presample}{a numeric value indicating the pre-sample length for
+initialization.}
 
 \item{LB}{the lower boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector

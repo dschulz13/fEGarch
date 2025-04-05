@@ -9,59 +9,81 @@ initial_split <- function(rt, n_test) {
   list(
     scale_const = scale_const,
     rt_core = rt_core,
-    rt_core_o = rt_core_o
+    rt_core_o = rt_core_o,
+    test_obs = split_rt$test,
+    train_obs = split_rt$train
   )
 
 }
 
-adj_sigt_fun <- function(meanspec) {
+nllhood_calc <- function(input_list, x, dfun) {
 
-  # p <- orders[[1]]
-  # q <- orders[[2]]
-  #
-  # cond_d <- match.arg(cond_dist)
-  #
+  sigt <- input_list$sigt
+
+  cmeans <- input_list$cmeans
+  skew <- input_list$skew
+  shape <- input_list$shape
+
+  -sum(log(dfun(x, cmeans, sigt, shape, skew)))
+
+}
+
+crit_calc <- function(pars, rt, llhood) {
+
+  n <- length(rt)
+  k <- length(pars)
+  m2llhood <- -2 * llhood
+
+  list(
+    aic = (m2llhood + 2 * k) / n,
+    bic = (m2llhood + k * log(n)) / n
+  )
+
+}
+
+# Function to adjust the calculations for the conditional means and conditional
+# standard deviations for an ARMA or FARIMA extended volatility model;
+# returns the base function for each model, if no additional ARMA / FARIMA
+# settings are given
+adj_sigt_fun <- function(meanspec,
+            model_type = c("garch", "figarch", "aparch", "fiaparch", "gjrgarch",
+                      "figjrgarch", "loggarch", "filoggarch", "egarch", "fiegarch")) {
+
+  model_type <- match.arg(model_type)
+
   # # ARMA orders
   order_arma <- orders(meanspec)
   p_ar <- order_arma[[1]]
   q_ma <- order_arma[[2]]
 
-  # pdf_fun1 <- lookup_table$fun1[[cond_d]]
-  # pdf_fun2 <- lookup_table$fun2[[cond_d]]
-  #
-  # incl_mean <- meanspec@include_mean
-  #
-  # skew_par <- lookup_table[["skew_par"]][[cond_d]]
-  # extra_par <- lookup_table[["extra_par"]][[cond_d]]
+  incl_mean <- meanspec@include_mean
 
   # Long-memory setting (for ARMA-part)
   lm_arma <- long_memo(meanspec)
   # Assign ARMA / FARIMA function
   arma_fun <- if (lm_arma) {
     grab_fun <- farima_grab_pars
-    # D_par_name <- "D"
-    # D_start <- 0.25 #mean(Drange)
-    # D_low <- Drange[[1]]
-    # D_up <- Drange[[2]]
     farima_fit
   } else {
     grab_fun <- arma_grab_pars
-    # D_par_name <- character(0)
-    # D_start <- D_low <- D_up <- numeric(0)
     arma_fit
   }
 
+  # Select the correct base function for the model type
+  sigt_fun <- switch(
+    model_type,
+    "garch" = sigt_garch_R,
+    "figarch" = sigt_figarch_R,
+    "aparch" = sigt_aparch_R,
+    "fiaparch" = sigt_fiaparch_R,
+    "gjrgarch" = sigt_gjrgarch_R,
+    "figjrgarch" = sigt_figjrgarch_R,
+    "loggarch" = sigt_loggarch_short_R,
+    "filoggarch" = sigt_loggarch_long_R,
+    "egarch" = sigt_egarch_short_R,
+    "fiegarch" = sigt_egarch_long_R
+  )
 
-  # n <- length(rt_core)
-  # if (Prange[[1]] < 1) {Prange[[1]] <- 1}
-  # trunc_i <- trunc
-  # if (is.character(trunc) && trunc == "none") {
-  #   trunc <- n - 1
-  # } else if (is.numeric(trunc) && trunc >= n) {
-  #   trunc <- n - 1
-  #   message("trunc reduced to n - 1")
-  # }
-  sigt_fun <- sigt_gjrgarch_R
   # Adjust (if ARMA relevant)
   pg0 <- p_ar > 0
   qg0 <- q_ma > 0
@@ -70,7 +92,16 @@ adj_sigt_fun <- function(meanspec) {
 
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, dfun, sigd_init, etransf_init, trunc) {
+         incl_mean, extra_par, skew_par, trunc, ...) {
+
+      # Collect input arguments (including also the ellipsis ...)
+      # as a named list
+      args <- mget(names(formals()), environment())
+      args[["..."]] <- NULL
+      dot_args <- list(...)
+      all_args <- c(args, dot_args)
+      rm(dot_args)
+      rm(args)
 
       # Obtain ARMA / FARIMA parameters from theta
       arma_pars <- grab_fun(
@@ -95,21 +126,21 @@ adj_sigt_fun <- function(meanspec) {
 
       # Calculate fitted values following these parameters...
       fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
 
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
+      # ... adjust input arguments from intermediate results ...
+      all_args[["theta"]] <- theta[-(1:n_arma_pars)]     # Remove the first few elements from theta (those for the parameters relevant for ARMA / FARIMA)
+      all_args[["x"]] <- x - fitted_vs                   # Compute conditional mean adjusted values
+      all_args[["incl_mean"]] <- FALSE                   # Remove unconditional mean for further steps
+
       #... and calculate conditional standard deviations from the residuals
       # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, sigd_init, etransf_init, trunc)
+      out <- do.call(sigt_fun, args = all_args)
       out$cmeans <- fitted_vs
       out
     }
 
   } else {
-    sigt_fun             # ...else keep function for EGARCH-type
+    sigt_fun             # ...else keep function for volatility only
   }
 
   sigt_fun_adj

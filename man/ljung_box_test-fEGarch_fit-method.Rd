@@ -28,7 +28,8 @@ by \code{\link{fEGarch}}.}
 
 \item{adj}{a logical value indicating whether or not to adjust
 the degrees of freedom in the chi-square distribution according
-to the number of estimated parameters.}
+to the number of estimated ARMA and GARCH parameters (without
+unconditional mean parameter).}
 
 \item{weights}{a function with argument \code{lag} stating how
 weights should be calculated.}
