@@ -1373,18 +1373,19 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     lnsig2_init = lnsig2_init
   )
 
-  # Adjust parameters according to scaling where necessary
-  if (incl_mean) {
-    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
-  }
-  # omega_sig
-  pars[[n_arma_pars + 1]] <- pars[[n_arma_pars + 1]] + 2 * log(scale_const)
-
-  sigt <- final_series$sigt * scale_const   # Readjust for different scale
-  cmeans <- final_series$cmeans * scale_const
-
-  # Standardized residuals
-  etat <- (rt_core_o - cmeans) / sigt
+  # Create rescaled final parameters and results
+  rescaled_results <- rescale_estim(
+    pars = pars,
+    rt_core_o = rt_core_o,
+    sigt = final_series$sigt,
+    cmeans = final_series$cmeans,
+    scale_const = scale_const,
+    n_arma_pars = n_arma_pars,
+    incl_mean = incl_mean,
+    model_type = model_type
+  )
+  list2env(rescaled_results, envir = environment())
+  rm(rescaled_results)
 
   if (cond_d %in% c("ald", "sald")) {
     if (cond_d == "ald") {

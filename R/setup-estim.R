@@ -295,3 +295,30 @@ set_start_LB_UB <- function(
     UB = UB
   )
 }
+
+rescale_estim <- function(pars, rt_core_o, sigt, cmeans, scale_const, n_arma_pars, incl_mean,
+                          model_type) {
+
+  # Adjust parameters according to scaling where necessary
+  if (incl_mean) {
+    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
+  }
+  # omega_sig
+  if (model_type %in% c("egarch", "fiegarch")) {
+    pars[[n_arma_pars + 1]] <- pars[[n_arma_pars + 1]] + 2 * log(scale_const)
+  }
+
+  sigt <- final_series$sigt * scale_const   # Readjust for different scale
+  cmeans <- final_series$cmeans * scale_const
+
+  # Standardized residuals
+  etat <- (rt_core_o - cmeans) / sigt
+
+  list(
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    pars = pars
+  )
+
+}
