@@ -964,6 +964,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
 
+  env <- environment()
+
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
   # and the log-likelihood with regard to the original data
@@ -1000,7 +1002,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Settings for ARMA / FARIMA part in the mean
   arma_settings <- identify_arma_settings(meanspec = meanspec, Drange = Drange)
-  list2env(arma_settings, envir = environment()) # makes list's named elements available in this environment
+  list2env(arma_settings, envir = env) # makes list's named elements available in this environment
   rm(arma_settings)
 
   # Look up internally saved density functions
@@ -1079,12 +1081,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Get cond. distribution restrictions and starting values
   # as objects sval, lval and uval in the environment
   cond_d_vals <- cond_d_par_restr(cond_d)
-  list2env(cond_d_vals, envir = environment())
+  list2env(cond_d_vals, envir = env)
   rm(cond_d_vals)
 
   # Make further starting parameter values and restrictions available
   pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
-  list2env(pars_and_restr, envir = environment())
+  list2env(pars_and_restr, envir = env)
   rm(pars_and_restr)
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
@@ -1129,7 +1131,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     )
 
     # Make available in environment
-    list2env(start_LB_UB, envir = environment())
+    list2env(start_LB_UB, envir = env)
     rm(start_LB_UB)
 
   }
@@ -1156,72 +1158,23 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- Prange   # P-values to consider
-    oldplan <- future::plan()    # Save old plan settings
-    if (parallel) {
-      future::plan(future::multisession, workers = ncores)   # Plan multisession, i.e. parallel, programming
-      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)  # Fail-safe: in case of errors, old plan settings are reinstated
-    }
-
-    P_seq <- P_range[[1]]:P_range[[2]]
-
-    # Run a loop for each P to check and optimize over the remaining parameters
-    fitted_models <- furrr::future_map(
-      .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2, p_all) {
-
-        # For each P, fix dfun1
-        dfun1_P <- function(x, shape, skew) {
-          dfun1(x = x, shape = .x, skew = skew)
-        }
-
-        # For each P, fix dfun2
-        dfun2_P <- function(x, mu, sigt, shape, skew) {
-          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
-        }
-
-        # Now fix the final goal function to optimize over
-        # using dfun1_P and dfun2_P
-        goal_fun <- function(theta, rt) {
-          goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
-        }
-
-        est <- tryCatch(
-            expr = {suppressWarnings(Rsolnp::solnp(
-            pars = start_pars,
-            fun = goal_fun,
-            LB = LB,
-            UB = UB,
-            ineqfun = ineq_fun,
-            ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
-            ineqUB = rep(Inf, p_all),
-            control = control,
-            rt = rt_core
-          ))},
-          error = function(e1) {
-            stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-          }
-        )
-        est
-      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      ineq_fun = constr_fun, control = control, rt_core = rt_core,
-      dfun1 = dfun1, dfun2 = dfun2, p_all = p_all,
-      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
+    fit <- ald_fit(
+      Prange = Prange,
+      parallel = parallel,
+      dfun1 = dfun1,
+      dfun2 = dfun2,
+      goal_fun_s = goal_fun_s,
+      start_pars = start_pars,
+      LB = LB, UB = UB,
+      ineqfun = constr_fun,
+      ineqLB = ineqLB,
+      ineqUB = ineqUB,
+      rt_core = rt_core,
+      control = control
     )
-
-    future::plan(oldplan)   # Reinstate old plan settings
-
-    coll_nllh <- vapply(    # From each fitted model, obtain the negative
-      X = fitted_models,    # log-likelihood at the corresponding optimum
-      FUN = function(.x) {
-        tail(.x$values, 1)
-      },
-      FUN.VALUE = numeric(1)
-    )
-
-    P_sel <- P_seq[[which.min(coll_nllh)]]    # Select the optimal P
-
-    result <- fitted_models[[which.min(coll_nllh)]] # Save the model with the optimal P
+    # Make "result" and "P_sel" available
+    list2env(fit, envir = env)
+    rm(fit)
 
   } else {
 

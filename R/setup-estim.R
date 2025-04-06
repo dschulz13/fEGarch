@@ -322,3 +322,78 @@ rescale_estim <- function(pars, rt_core_o, sigt, cmeans, scale_const, n_arma_par
   )
 
 }
+
+ald_fit <- function(Prange, parallel, dfun1, dfun2, goal_fun_s, start_pars,
+                    LB, UB, ineqfun, ineqLB, ineqUB, rt_core, control) {
+
+  P_range <- Prange   # P-values to consider
+  oldplan <- future::plan()    # Save old plan settings
+  if (parallel) {
+    future::plan(future::multisession, workers = ncores)   # Plan multisession, i.e. parallel, programming
+    on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)  # Fail-safe: in case of errors, old plan settings are reinstated
+  }
+
+  P_seq <- P_range[[1]]:P_range[[2]]
+
+  # Run a loop for each P to check and optimize over the remaining parameters
+  fitted_models <- furrr::future_map(
+    .x = P_seq,
+    .f = function(.x, start_pars, goal_fun_s, LB, UB, ineqfun, ineqLB, ineqUB, control, rt_core, dfun1, dfun2) {
+
+      # For each P, fix dfun1
+      dfun1_P <- function(x, shape, skew) {
+        dfun1(x = x, shape = .x, skew = skew)
+      }
+
+      # For each P, fix dfun2
+      dfun2_P <- function(x, mu, sigt, shape, skew) {
+        dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
+      }
+
+      # Now fix the final goal function to optimize over
+      # using dfun1_P and dfun2_P
+      goal_fun <- function(theta, rt) {
+        goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
+      }
+
+      est <- tryCatch(
+        expr = {suppressWarnings(Rsolnp::solnp(
+        pars = start_pars,
+        fun = goal_fun,
+        LB = LB,
+        UB = UB,
+        ineqfun = ineq_fun,
+        ineqLB = ineqLB, #rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
+        ineqUB = ineqUB, #rep(Inf, p_all),
+        control = control,
+        rt = rt_core
+      ))},
+        error = function(e1) {
+          stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+        }
+      )
+        est
+      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
+      ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB,
+      control = control, rt_core = rt_core,
+      dfun1 = dfun1, dfun2 = dfun2,
+      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
+    )
+
+    future::plan(oldplan)   # Reinstate old plan settings
+
+    coll_nllh <- vapply(    # From each fitted model, obtain the negative
+      X = fitted_models,    # log-likelihood at the corresponding optimum
+      FUN = function(.x) {
+        tail(.x$values, 1)
+      },
+      FUN.VALUE = numeric(1)
+    )
+
+    list(
+      P_sel = P_seq[[which.min(coll_nllh)]],    # Select the optimal P
+      result = fitted_models[[which.min(coll_nllh)]] # Save the model with the optimal P
+    )
+
+}
+
