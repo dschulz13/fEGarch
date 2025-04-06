@@ -995,50 +995,33 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   q <- order[[2]]
   # Conditional distribution
   cond_d <- cond_dist(spec)
+  # Long-memory setting (for GARCH-part)
+  lm <- long_memo(spec)
 
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
+  # Settings for ARMA / FARIMA part in the mean
+  arma_settings <- identify_arma_settings(meanspec = meanspec, Drange = Drange)
+  list2env(arma_settings, envir = environment()) # makes list's named elements available in this environment
+  rm(arma_settings)
 
   # Look up internally saved density functions
   # from "data-raw/lookup.R"
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
-  incl_mean <- include_mean(meanspec)
-
   # Look up internally saved settings for additional parameters
   # from "data-raw/lookup.R"
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  # Long-memory setting (for GARCH-part)
-  lm <- long_memo(spec)
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
-  # Assign ARMA / FARIMA function
-  arma_fun <- if (lm_arma) {
-    grab_fun <- farima_grab_pars
-    D_par_name <- "D"
-    D_start <- 0.25 #mean(Drange)
-    D_low <- Drange[[1]]
-    D_up <- Drange[[2]]
-    farima_fit
-  } else {
-    grab_fun <- arma_grab_pars
-    D_par_name <- character(0)
-    D_start <- D_low <- D_up <- numeric(0)
-    arma_fit
-  }
-
   # Adjust (if ARMA relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0 || lm_arma
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
   model_type <- c("egarch", "fiegarch")[[lm + 1]]
-  sigt_fun_adj <- adj_sigt_fun(meanspec, model_type)
+  sigt_fun_adj <- adj_sigt_fun(
+    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
+    lm_arma = lm_arma, incl_mean = incl_mean,
+    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
+    arma_fun = cmean_fun,
+    model_type = model_type
+  )
 
   # Modulus settings
   mod <- modulus(spec)
@@ -1093,92 +1076,66 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     )
   }
 
-  vals <- lookup_table[["vals"]][[cond_d]]
+  # Get cond. distribution restrictions and starting values
+  # as objects sval, lval and uval in the environment
+  cond_d_vals <- cond_d_par_restr(cond_d)
+  list2env(cond_d_vals, envir = environment())
+  rm(cond_d_vals)
 
-  sval <- vals[[1]]
-  lval <- vals[[2]]
-  uval <- vals[[3]]
-
-  if (lm) {
-    d_low <- drange[[1]]
-    d_up <- drange[[2]]
-    d_spar <- 0.25
-    d_name <- "d"
-    phi_start <- rep(0.5 / p, p)
-    psi_start <- rep(-0.3 / (q - 1), q - 1)
-  } else {
-    d_spar <- d_low <- d_up <- numeric(0)
-    d_name <- character(0)
-    phi_start <- rep(0.8 / p, p)
-    psi_start <- rep(-0.3 / (q - 1), q - 1)
-  }
+  # Make further starting parameter values and restrictions available
+  pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
+  list2env(pars_and_restr, envir = environment())
+  rm(pars_and_restr)
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
-    mean_rt <- mean(rt_core)
+    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
+    min_rt <- list(NULL, min(rt_core))[[incl_mean + 1]]
+    max_rt <- list(NULL, max(rt_core))[[incl_mean + 1]]
+    skew_start <- list(NULL, 1)[[skew_par + 1]]
+    skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
+    skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
-    if (is.null(start_pars)) {
+    start_LB_UB <- set_start_LB_UB(
+      mean_val = mean_rt,
+      ar_start = ar_start,
+      ma_start = ma_start,
+      D_start = D_start,
+      omega_val = omega_start,
+      phi_start = phi_start,
+      psi_start = psi_start,
+      add_pars_start = add_pars_start,
+      d_start = d_spar,
+      sval = sval,
+      skew_start = skew_start,
+      mean_low = min_rt,
+      ar_low = ar_lb,
+      ma_low = ma_lb,
+      D_low = D_low,
+      omega_low = omega_low,
+      phi_low = phi_low,
+      psi_low = psi_low,
+      add_low = add_low,
+      d_low = d_low,
+      lval = lval, skew_low = skew_low,
+      mean_up = max_rt,
+      ar_up = ar_ub, ma_up = ma_ub,
+      D_up = D_up,
+      omega_up = omega_up,
+      phi_up = phi_up, psi_up = psi_up,
+      add_up = add_up,
+      d_up = d_up,
+      uval = uval, skew_up = skew_up,
+      start_pars = start_pars, LB = LB, UB = UB
+    )
 
-      start_pars <- c(
-        list(NULL, mean_rt)[[incl_mean + 1]],
-        rep(0.05 / p_ar, p_ar),
-        rep(0.05 / q_ma, q_ma),
-        D_start,
-        0,
-        phi_start,
-        psi_start,
-        -0.25, 0.2,
-        #0, 0,
-        d_spar,
-        sval,
-        list(NULL, 1)[[skew_par + 1]]
-      )
-
-    }
-
-    if (is.null(LB)) {
-
-      LB <- c(
-        list(NULL, min(rt_core))[[incl_mean + 1]],
-        rep(-2, p_ar),
-        rep(-2, q_ma),
-        D_low,
-        -10,
-        rep(-2, p),
-        rep(-2, q - 1),
-        rep(-1, 2),
-        d_low,
-        lval,
-        list(NULL, 1e-15)[[skew_par + 1]]
-      )
-
-    }
-
-    if (is.null(UB)) {
-
-      UB <- c(
-        list(NULL, max(rt_core))[[incl_mean + 1]],
-        rep(2, p_ar),
-        rep(2, q_ma),
-        D_up,
-        10,
-        rep(2, p),
-        rep(2, q - 1),
-        rep(1, 2),
-        d_up,
-        uval,
-        list(NULL, Inf)[[skew_par + 1]]
-      )
-
-    }
+    # Make available in environment
+    list2env(start_LB_UB, envir = environment())
+    rm(start_LB_UB)
 
   }
 
-  n_arma <- p_ar + q_ma
-  n_arma_im <- n_arma + incl_mean + lm_arma
-  low_phi <- 2 + n_arma_im
-  up_phi <- 1 + n_arma_im + p
-  low_ar <- 1 + incl_mean
-  up_ar <- incl_mean + p_ar
+  low_phi <- 2 + n_arma_pars
+  up_phi <- 1 + n_arma_pars + p
 
   # For stationarity, restrict phi / AR values
   constr_fun <- function(theta, rt) {
@@ -1194,7 +1151,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
-  #if (is.null(control$delta)) {control$delta <- 1e-10}
 
   p_all <- p + p_ar
 
@@ -1422,7 +1378,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
   }
   # omega_sig
-  pars[[n_arma_im + 1]] <- pars[[n_arma_im + 1]] + 2 * log(scale_const)
+  pars[[n_arma_pars + 1]] <- pars[[n_arma_pars + 1]] + 2 * log(scale_const)
 
   sigt <- final_series$sigt * scale_const   # Readjust for different scale
   cmeans <- final_series$cmeans * scale_const
@@ -1670,51 +1626,39 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     message("trunc reduced to n - 1")
   }
 
+  # GARCH specs
   order <- orders(spec)
   p <- order[[1]]
   q <- order[[2]]
   cond_d <- cond_dist(spec)
+  lm <- long_memo(spec) # GARCH-part
 
-  incl_mean <- include_mean(meanspec)
+  # Settings for ARMA / FARIMA part in the mean
+  arma_settings <- identify_arma_settings(meanspec)
+  list2env(arma_settings, envir = environment()) # makes list's elements available in this environment
 
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
-
+  # Call important density functions saved internally
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
+  # Get settings for extra parameters based on cond. distr.
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  lm <- long_memo(spec) # GARCH-part
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
-  # Assign ARMA / FARIMA function
-  arma_fun <- if (lm_arma) {
-    grab_fun <- farima_grab_pars
-    D_par_name <- "D"
-    D_start <- 0.25 #mean(Drange)
-    D_low <- Drange[[1]]
-    D_up <- Drange[[2]]
-    farima_fit
-  } else {
-    grab_fun <- arma_grab_pars
-    D_par_name <- character(0)
-    D_start <- D_low <- D_up <- numeric(0)
-    arma_fit
-  }
-
-  # Adjust (if ARMA-part relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0 || lm_arma
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-
+  # Adjust function for computing cond. means and cond. stand. deviations
+  # based on ARMA / FARIMA settings
   model_type <- c("loggarch", "filoggarch")[[lm + 1]]
-  sigt_fun_adj <- adj_sigt_fun(meanspec, model_type)
+  sigt_fun_adj <- adj_sigt_fun(
+    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
+    lm_arma = lm_arma, incl_mean = incl_mean,
+    n_arma_pars = n_arma_pars,
+    model_type = model_type
+  )
 
+  # Define function to integrate over to compute
+  # the expectation of ln(e_t^2) numerically in the
+  # numerical optimization; quantity depends on parameter
+  # settings for everything but a standard normal distribution
   int_fun <- function(x, shape, skew, dfun) {
     log(x^2) * dfun(x, shape = shape, skew = skew)
   }

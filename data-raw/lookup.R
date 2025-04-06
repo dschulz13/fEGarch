@@ -232,4 +232,47 @@ esemifar_default <- list(
   method = "lpr"
 )
 
-#usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, smoots_default, esemifar_default, internal = TRUE, overwrite = TRUE)
+start_pars_and_restr <- list(
+  "fiegarch" = function(drange, p, q) {
+    list(
+      d_low = drange[[1]],
+      d_up = drange[[2]],
+      d_spar = 0.25,
+      d_name = "d",
+      phi_start = rep(0.5 / p, p),
+      psi_start = rep(-0.3 / (q - 1), q - 1),
+      phi_low = rep(-2, p),
+      psi_low = rep(-2, q - 1),
+      phi_up = rep(2, p),
+      psi_up = rep(2, q - 1),
+      omega_start = 0,
+      omega_low = -10,
+      omega_up = 10,
+      add_pars_start = c(-0.25, 0.2),
+      add_low = c(-1, -1),
+      add_up = c(1, 1)
+    )
+  },
+    "egarch" = function(drange, p, q) {
+    list(
+      d_low = numeric(0),
+      d_up = numeric(0),
+      d_spar = numeric(0),
+      d_name = character(0),
+      phi_start = rep(0.8 / p, p),
+      psi_start = rep(-0.3 / (q - 1), q - 1),
+      phi_low = rep(-2, p),
+      psi_low = rep(-2, q - 1),
+      phi_up = rep(2, p),
+      psi_up = rep(2, q - 1),
+      omega_start = 0,
+      omega_low = -10,
+      omega_up = 10,
+      add_pars_start = c(-0.25, 0.2),
+      add_low = c(-1, -1),
+      add_up = c(1, 1)
+    )
+  }
+)
+
+#usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, smoots_default, esemifar_default, start_pars_and_restr, internal = TRUE, overwrite = TRUE)
