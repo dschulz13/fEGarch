@@ -272,6 +272,66 @@ start_pars_and_restr <- list(
       add_low = c(-1, -1),
       add_up = c(1, 1)
     )
+  },
+    "loggarch" = function(drange, p, q) {
+    list(
+      d_low = numeric(0),
+      d_up = numeric(0),
+      d_spar = numeric(0),
+      d_name = character(0),
+      phi_start = rep(0.95 / p, p),
+      psi_start = rep(-0.9 / q, q),
+      phi_low = rep(-2, p),
+      psi_low = rep(-2, q),
+      phi_up = rep(2, p),
+      psi_up = rep(2, q),
+      omega_start = 0,
+      omega_low = -10,
+      omega_up = 10,
+      add_pars_start = numeric(0),
+      add_low = numeric(0),
+      add_up = numeric(0)
+    )
+  },
+    "filoggarch" = function(drange, p, q) {
+    list(
+      d_low = drange[[1]],
+      d_up = drange[[2]],
+      d_spar = 0.25,
+      d_name = "d",
+      phi_start = rep(0.55 / p, p),
+      psi_start = rep(-0.5 / q, q),
+      phi_low = rep(-2, p),
+      psi_low = rep(-2, q),
+      phi_up = rep(2, p),
+      psi_up = rep(2, q),
+      omega_start = 0,
+      omega_low = -10,
+      omega_up = 10,
+      add_pars_start = numeric(0),
+      add_low = numeric(0),
+      add_up = numeric(0)
+    )
+  },
+    "aparch" = function(drange, p, q) {
+    list(
+      d_low = numeric(0),
+      d_up = numeric(0),
+      d_spar = numeric(0),
+      d_name = character(0),
+      phi_start = rep(0.05 / p, p),
+      psi_start = rep(0.9 / q, q),
+      phi_low = rep(1e-6, p),
+      psi_low = rep(1e-6, q),
+      phi_up = rep(1 - 1e-6, p),
+      psi_up = rep(1 - 1e-6, q),
+      omega_start = 1,
+      omega_low = 1e-10,
+      omega_up = 10,
+      add_pars_start = c(0, 2),
+      add_low = c(rep(-1 + 1e-4, p), 0.3),
+      add_up = c(rep(1 - 1e-4, p), 3)
+    )
   }
 )
 
