@@ -428,7 +428,7 @@ aparch <- function(rt, orders = c(1, 1),
     skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
     skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
-    start_LB_UB <- set_start_LB_UB(
+    set_start_LB_UB(
       mean_val = mean_rt,
       ar_start = ar_start,
       ma_start = ma_start,
@@ -524,7 +524,8 @@ aparch <- function(rt, orders = c(1, 1),
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- suppressWarnings(Rsolnp::solnp(
+    result <- tryCatch(
+      expr = {suppressWarnings(Rsolnp::solnp(
         pars = start_pars,
         fun = goal_fun,
         LB = LB,
@@ -534,24 +535,11 @@ aparch <- function(rt, orders = c(1, 1),
         ineqUB = ineqUB,
         control = control,
         rt = rt_core
-      ))
-
-    # result <- tryCatch(
-    #   expr = {suppressWarnings(Rsolnp::solnp(
-    #     pars = start_pars,
-    #     fun = goal_fun,
-    #     LB = LB,
-    #     UB = UB,
-    #     ineqfun = constr_fun,
-    #     ineqLB = ineqLB,    # abs. values of roots must be outside of unit circle
-    #     ineqUB = ineqUB,
-    #     control = control,
-    #     rt = rt_core
-    #   ))},
-    #   error = function(e1) {
-    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-    #   }
-    # )
+      ))},
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
   }
   if (result$convergence %in% c(1, 2)) {
@@ -598,7 +586,7 @@ aparch <- function(rt, orders = c(1, 1),
 
     # Fix dfun2
     dfun2_P <- function(x, mu, sigt, shape, skew) {
-      pdf_fun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
     }
 
     # Fix the final goal function to optimize over

@@ -45,7 +45,7 @@ hessCalc <- function(pars, func, control.args = list(
 
   }
 
-  if (any(is.nan(out)) || is.na(tryCatch(expr = {solve(out)}, error = function(e1) {NA}))) {
+  if (any(is.nan(out)) || any(is.na(tryCatch(expr = {solve(out)}, error = function(e1) {NA})))) {
     out <- matrix(NA, nrow = length(pars), ncol = length(pars))
     warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
   }

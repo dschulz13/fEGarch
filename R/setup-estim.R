@@ -421,13 +421,15 @@ compute_vcov <- function(goal_fun, pars, rt_core, scale_const, incl_mean, P_sel,
 
   # Compute the (negative) hessian at the optimum using a finite-difference
   # approximation via "hessian" from "numDeriv"; is usually more stable
-  nhess <- tryCatch(
-    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
-    error = function(e1) {
-      warning("Unable to obtain standard errors.", call. = FALSE)
-      matrix(NA, nrow = length(pars), ncol = length(pars))
-    }
-  )
+  # nhess <- tryCatch(
+  #   expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)},
+  #   error = function(e1) {
+  #     warning("Unable to obtain standard errors.", call. = FALSE)
+  #     matrix(NA, nrow = length(pars), ncol = length(pars))
+  #   }
+  # )
+
+  nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
 
   # Obtain the variance-covariance matrix as the inverse of the
   # negative hessian
