@@ -80,7 +80,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     incl_mean = incl_mean,
     extra_par = extra_par,
     skew_par = skew_par,
-    sig_fun = sigt_fun_adj
+    sig_fun = sigt_fun_adj,
+    trunc = trunc
   )
 
   extra_args <- switch(
