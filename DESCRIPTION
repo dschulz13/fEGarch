@@ -65,6 +65,7 @@ Collate:
   'sim-functions.R'
   'nonparametric-step.R'
   'setup-estim.R'
+  'general_garch_fitting.R'
   'aparchfit.R'
   'gjrgarchfit.R'
   'garchfit.R'

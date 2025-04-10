@@ -399,7 +399,7 @@ start_pars_and_restr <- list(
       d_up = drange[[2]],
       d_spar = 0.25,
       d_name = "d",
-      phi_start = rep(0.05 / p, p),
+      phi_start = rep(0.1 / p, p),
       psi_start = rep(0.4 / q, q),
       phi_low = rep(0, p),
       psi_low = rep(0, q),
@@ -411,6 +411,26 @@ start_pars_and_restr <- list(
       add_pars_start = numeric(0),
       add_low = numeric(0),
       add_up = numeric(0)
+    )
+  },
+    "figjrgarch" = function(drange, p, q) {
+    list(
+      d_low = drange[[1]],
+      d_up = drange[[2]],
+      d_spar = 0.25,
+      d_name = "d",
+      phi_start = rep(0.1 / p, p),
+      psi_start = rep(0.4 / q, q),
+      phi_low = rep(0, p),
+      psi_low = rep(0, q),
+      phi_up = rep(2, p),
+      psi_up = rep(2, q),
+      omega_start = 5,
+      omega_low = 1e-10,
+      omega_up = 20,
+      add_pars_start = 0.1,
+      add_low = -1 + 1e-4,
+      add_up = 1 - 1e-4
     )
   }
 )

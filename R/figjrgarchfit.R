@@ -28,7 +28,9 @@ figjrgarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_figjrgarch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc) {
+              trunc, ...) {
+
+  list2env(list(...), envir = environment())
 
   all_pars <- figjrgarch_grab_pars(
     theta = theta,
@@ -86,15 +88,7 @@ goal_fun_creator_figjrgarch <- function(
               incl_mean, extra_par, skew_par,
               trunc)
 
-  sigt <- res_list$sigt
-
-  cmeans <- res_list$cmeans
-  skew <- res_list$skew
-  shape <- res_list$shape
-
-  out <- -sum(log(pdf_fun2(x, cmeans, sigt, shape, skew)))
-
-  out
+  nllhood_calc(res_list, x, pdf_fun2)
 
 }
 
@@ -365,6 +359,11 @@ figjrgarch <- function(rt, orders = c(1, 1),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", Prange = c(1, 5)) {
 
+  if (!all(orders == c(1, 1))) {
+    orders <- c(1, 1)
+    message("Only orders p=1 with q=1 are currently supported for FIGJR-GARCH models.")
+  }
+
   if (use_nonpar) {
 
     nonpar_out <- run_nonpar(nonparspec = nonparspec,
@@ -376,11 +375,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
 
   }
 
-  split_rt <- split_ts(rt, n_test)
-  rt_core_o <- zoo::coredata(split_rt$train)
-
-  scale_const <- sd(rt_core_o)         # for rescaling later
-  rt_core <- rt_core_o / scale_const   # now has sample variance 1
+  initial_split(rt, n_test)
 
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
@@ -392,188 +387,103 @@ figjrgarch <- function(rt, orders = c(1, 1),
     message("trunc reduced to n - 1")
   }
 
-  if (!all(orders == c(1, 1))) {
-    orders <- c(1, 1)
-    message("Only orders p=1 with q=1 are currently supported for FIGJR-GARCH models.")
-  }
-
   p <- orders[[1]]
   q <- orders[[2]]
 
   cond_d <- match.arg(cond_dist)
+  lm <- TRUE
 
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
+  # Settings for ARMA / FARIMA part in the mean; makes objects available in this
+  # environment
+  identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
-  pdf_fun2 <- lookup_table$fun2[[cond_d]]
-
-  incl_mean <- meanspec@include_mean
+  dfun1 <- lookup_table$fun1[[cond_d]]
+  dfun2 <- lookup_table$fun2[[cond_d]]
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
-  # Assign ARMA / FARIMA function
-  arma_fun <- if (lm_arma) {
-    grab_fun <- farima_grab_pars
-    D_par_name <- "D"
-    D_start <- 0.25 #mean(Drange)
-    D_low <- Drange[[1]]
-    D_up <- Drange[[2]]
-    farima_fit
-  } else {
-    grab_fun <- arma_grab_pars
-    D_par_name <- character(0)
-    D_start <- D_low <- D_up <- numeric(0)
-    arma_fit
-  }
-
-
-  n <- length(rt_core)
-  sigt_fun <- sigt_figjrgarch_R
   # Adjust (if ARMA relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0 || lm_arma
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-  sigt_fun_adj <- if (check) {
-    function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, trunc) {
+  model_type <- "figjrgarch"
+  sigt_fun_adj <- adj_sigt_fun(
+    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
+    lm_arma = lm_arma, incl_mean = incl_mean,
+    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
+    arma_fun = cmean_fun,
+    model_type = model_type
+  )
 
-      # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- grab_fun(
-        theta = theta,
-        incl_mean = incl_mean,
-        pg0 = pg0,
-        qg0 = qg0,
-        p = p_ar,
-        q = q_ma
-      )
-      mu <- arma_pars$mu
-      ar <- arma_pars$ar
-      ma <- arma_pars$ma
-
-      coef_inf <- if (lm_arma) {
-        coefs <- ar_infty(ar = ar, ma = ma, d = arma_pars$D, max_i = trunc)
-        coefs[[1]] <- 0
-        coefs
-      } else {
-        0
-      }
-
-      # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
-
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
-      #... and calculate conditional standard deviations from the residuals
-      # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, p, q, p_ar, q_ma, FALSE, extra_par, skew_par, trunc)
-      out$cmeans <- fitted_vs
-      out
-    }
-
-  } else {
-    sigt_fun             # ...else keep function for EGARCH-type
-  }
-
-  # est_sm <- suppressMessages(suppressWarnings(
-  #   aparch_pre(rt_core, orders = c(1, 1), cond_dist = cond_dist, trunc = trunc,
-  #              meanspec = meanspec)
-  # ))
-  # gamma0 <- est_sm[["gamma"]]
-  # delta0 <- est_sm[["delta"]]
-  # rt_dm <- rt_core - mean(rt_core)
-  # etransf_init <- mean((abs(rt_dm) - gamma0 * rt_dm)^delta0)
-
-  goal_fun_s <- function(theta, rt, pdf_fun2) {
+  goal_fun_s <- function(theta, rt, dfun2) {
 
     goal_fun_creator_figjrgarch(
      theta = theta,
      x = rt,
-     pdf_fun2 = pdf_fun2,
+     pdf_fun2 = dfun2,
      p = p,
      q = q,
      p_ar = p_ar,
      q_ma = q_ma,
      incl_mean = incl_mean,
-     extra_par = extra_par,
-     skew_par = skew_par,
-     penalty = FALSE,
+     extra_par,
+     skew_par,
      sig_fun = sigt_fun_adj,
      trunc = trunc
     )
 
   }
 
-  vals <- lookup_table[["vals"]][[cond_d]]
+  # Get cond. distribution restrictions and starting values
+  # as objects sval, lval and uval in the environment
+  cond_d_vals <- cond_d_par_restr(cond_d)
 
-  sval <- vals[[1]]
-  lval <- vals[[2]]
-  uval <- vals[[3]]
+  # Make further starting parameter values and restrictions available
+  # using internally saved table function
+  pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
+  list2env(pars_and_restr, envir = environment())
+  rm(pars_and_restr)
 
-  d_low <- drange[[1]]
-  d_up <- drange[[2]]
-  d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
-  d_name <- "d"
 
-  if (is.null(start_pars)) {
+  if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
+    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
+    min_rt <- list(NULL, min(rt_core))[[incl_mean + 1]]
+    max_rt <- list(NULL, max(rt_core))[[incl_mean + 1]]
+    skew_start <- list(NULL, 1)[[skew_par + 1]]
+    skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
+    skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
-    start_pars <- c(
-      list(NULL, mean(rt_core))[[incl_mean + 1]],
-      rep(0.05 / p_ar, p_ar),
-      rep(0.05 / q_ma, q_ma),
-      D_start,
-      5,
-      rep(0.1 / p, p),
-      rep(0.4 / q, q),
-      0.1,
-      d_spar,
-      sval,
-      list(NULL, 1)[[skew_par + 1]]
+    set_start_LB_UB(
+      mean_val = mean_rt,
+      ar_start = ar_start,
+      ma_start = ma_start,
+      D_start = D_start,
+      omega_val = omega_start,
+      phi_start = phi_start,
+      psi_start = psi_start,
+      add_pars_start = add_pars_start,
+      d_start = d_spar,
+      sval = sval,
+      skew_start = skew_start,
+      mean_low = min_rt,
+      ar_low = ar_lb,
+      ma_low = ma_lb,
+      D_low = D_low,
+      omega_low = omega_low,
+      phi_low = phi_low,
+      psi_low = psi_low,
+      add_low = add_low,
+      d_low = d_low,
+      lval = lval, skew_low = skew_low,
+      mean_up = max_rt,
+      ar_up = ar_ub, ma_up = ma_ub,
+      D_up = D_up,
+      omega_up = omega_up,
+      phi_up = phi_up, psi_up = psi_up,
+      add_up = add_up,
+      d_up = d_up,
+      uval = uval, skew_up = skew_up,
+      start_pars = start_pars, LB = LB, UB = UB
     )
 
-  }
-
-  if (is.null(LB)) {
-
-    LB <- c(
-      list(NULL, min(rt_core))[[incl_mean + 1]],
-      rep(-2, p_ar),
-      rep(-2, q_ma),
-      D_low,
-      1e-10,
-      rep(1e-6, p),
-      rep(1e-6, q),
-      -1 + 1e-4,
-      d_low,
-      lval,
-      list(NULL, 1e-15)[[skew_par + 1]]
-    )
-
-  }
-
-  if (is.null(UB)) {
-
-    UB <- c(
-      list(NULL, max(rt_core))[[incl_mean + 1]],
-      rep(2, p_ar),
-      rep(2, q_ma),
-      D_up,
-      20,
-      rep(1 - 1e-6, p),
-      rep(1 - 1e-6, q),
-      1 - 1e-4,
-      d_up,
-      uval,
-      list(NULL, Inf)[[skew_par + 1]]
-    )
 
   }
 
@@ -585,9 +495,9 @@ figjrgarch <- function(rt, orders = c(1, 1),
   up_phi <- low_phi
   low_beta <- low_phi + 1
   up_beta <- low_beta
-  d_idx <- low_beta + 2
+  d_idx <- up_beta + 2
 
-  ineq_fun <- function(theta, rt) {
+  constr_fun <- function(theta, rt) {
 
     phi <- theta[low_phi:up_phi]
     beta <- theta[low_beta:up_beta]
@@ -597,84 +507,49 @@ figjrgarch <- function(rt, orders = c(1, 1),
     r2 <- (2 - d) / 3 - phi
     r3 <- beta * r1 - d * (phi - (1 - d) / 2)
 
+    c2 <- abs(polyroot(c(1, -beta))) - 1
+
     if (pg0) {
       ar <- c(1, -theta[low_ar:up_ar])
-      c2 <- abs(polyroot(ar)) - 1
+      c3 <- abs(polyroot(ar)) - 1
     } else {
-      c2 <- numeric(0)
+      c3 <- numeric(0)
     }
 
-    c(r1, r2, r3, c2)
+    c(r1, r2, r3, c2, c3)
 
   }
 
   if (is.null(control$trace)) {control$trace <- FALSE}
-  #if (is.null(control$delta)) {control$delta <- 1e-10}
+
+  ineqLB <- c(0, 0, 0, rep(1e-6, p_ar + 1))
+  ineqUB <- c(Inf, Inf, Inf, rep(Inf, p_ar + 1))
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- Prange
-    oldplan <- future::plan()
-    if (parallel) {
-      future::plan(future::multisession, workers = ncores)
-      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
-    }
-
-    P_seq <- P_range[[1]]:P_range[[2]]
-
-    fitted_models <- furrr::future_map(
-      .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun2, p_ar) {
-
-        dfun2_P <- function(x, mu, sigt, shape, skew) {
-          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
-        }
-
-        goal_fun <- function(theta, rt) {
-          goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
-        }
-
-        est <- tryCatch(
-          expr = {suppressWarnings(Rsolnp::solnp(
-            pars = start_pars,
-            fun = goal_fun,
-            LB = LB,
-            UB = UB,
-            ineqfun = ineq_fun,
-            ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-            ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
-            control = control,
-            rt = rt_core
-          ))},
-          error = function(e1) {
-            stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-          }
-        )
-        est
-      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      ineq_fun = ineq_fun, control = control, rt_core = rt_core,
-      dfun2 = pdf_fun2, p_ar = p_ar,
-      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
+    # Makes "P_sel" and "result" available
+    ald_fit(
+      Prange = Prange,
+      parallel = parallel,
+      ncores = ncores,
+      dfun1 = dfun1,
+      dfun2 = dfun2,
+      goal_fun_s = goal_fun_s,
+      start_pars = start_pars,
+      LB = LB, UB = UB,
+      ineqfun = constr_fun,
+      ineqLB = ineqLB,
+      ineqUB = ineqUB,
+      rt_core = rt_core,
+      control = control
     )
-
-    future::plan(oldplan)
-
-    coll_nllh <- vapply(
-      X = fitted_models,
-      FUN = function(.x) {
-        tail(.x$values, 1)
-      },
-      FUN.VALUE = numeric(1)
-    )
-
-    P_sel <- P_seq[[which.min(coll_nllh)]]
-
-    result <- fitted_models[[which.min(coll_nllh)]]
 
   } else {
 
+    P_sel <- NULL
+
     goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, pdf_fun2 = pdf_fun2)
+      goal_fun_s(theta = theta, rt = rt, dfun2 = dfun2)
     }
 
 
@@ -686,9 +561,9 @@ figjrgarch <- function(rt, orders = c(1, 1),
           LB = LB,
           UB = UB,
           control = control,
-          ineqfun = ineq_fun,
-          ineqLB = c(0, 0, 0, rep(1e-6, p_ar)),
-          ineqUB = c(Inf, Inf, Inf, rep(Inf, p_ar)),
+          ineqfun = constr_fun,
+          ineqLB = ineqLB,
+          ineqUB = ineqUB,
           rt = rt_core
         ))
       },
@@ -696,6 +571,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
       }
     )
+
   }
 
   if (result$convergence %in% c(1, 2)) {
@@ -723,9 +599,6 @@ figjrgarch <- function(rt, orders = c(1, 1),
     character(0)
   )
 
-  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
-  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
-
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
     names_ar,
@@ -750,96 +623,66 @@ figjrgarch <- function(rt, orders = c(1, 1),
     # Fix the final goal function to optimize over
     # using dfun1_P and dfun2_P
     goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, pdf_fun2 = dfun2_P)
+      goal_fun_s(theta = theta, rt = rt, dfun2 = dfun2_P)
     }
 
   }
 
-  nhessian <- tryCatch(
-    expr = {hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core,
-                     control.args = list(
-				eps = 1e-4,
-				d = 1e-5,
-				zero.tol = sqrt(.Machine$double.eps / 7e-7),
-				r = 4,
-				v = 2,
-				show.details = FALSE))},
-    error = function(e1) {
-      warning("Unable to obtain standard errors.", call. = FALSE)
-      matrix(NA_real_, ncol = length(pars), nrow = length(pars))
-    }
+  # Compute the conditional standard deviations at the optimum
+  final_series <- sigt_fun_adj(
+    theta = unname(pars),
+    x = rt_core,
+    dfun = dfun1,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc#,
+  #  sig2_init = sig2_init
   )
 
-  I_mat <- diag(length(pars))
-  delta <- 2
-  if (incl_mean) {
-    I_mat[1, 1] <- scale_const
-  }
-  n_arma_im1 <- n_arma_im + 1
+  delta <- 2                 # treat as FIAPARCH with delta fixed at 2 for rescaling
   sc_delta <- scale_const^delta
-  I_mat[n_arma_im1, n_arma_im1] <- sc_delta
-  vcov_mat <- tryCatch(
-    expr = {I_mat %*% solve(nhessian) %*% I_mat},
-    error = function(e1) {
-      warning("Unable to obtain standard errors.", call. = FALSE)
-      matrix(NA_real_, ncol = length(pars), nrow = length(pars))
-    }
+  # Also updates "pars", if ald or sald
+  compute_vcov(
+    goal_fun = goal_fun,
+    pars = pars,
+    rt_core = rt_core,
+    scale_const = scale_const,
+    incl_mean = incl_mean,
+    P_sel = P_sel,
+    cond_d = cond_d,
+    par_names = par_names,
+    sc_delta = sc_delta,
+    n_arma_pars = n_arma_pars,
+    model_type = "fiaparch"     # treat as FIAPARCH with delta fixed at 2 for rescaling
   )
 
-  diag_vcov <- diag(vcov_mat)
-  if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {
-    vcov_mat <- matrix(NA, nrow = length(pars), ncol = length(pars))
-    diag_vcov <- rep(NA, length(pars))
-    warning("Unable to compute Hessian matrix. No standard errors available as consequence.")
-  }
+  rescale_estim(
+    pars = pars,
+    rt_core_o = rt_core_o,
+    sigt = final_series$sigt,
+    cmeans = final_series$cmeans,
+    scale_const = scale_const,
+    n_arma_pars = n_arma_pars,
+    incl_mean = incl_mean,
+    model_type = "fiaparch",  # treat as FIAPARCH with delta fixed at 2 for rescaling
+    sc_delta = sc_delta
+  )
 
-  res_f <- sigt_fun_adj(unname(pars), rt_core, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              trunc = trunc)
-
-  # Adjust parameters according to scaling where necessary
-  if (incl_mean) {
-    pars[[1]] <- pars[[1]] * scale_const    # mean adjustment
-  }
-  # omega
-  pars[[n_arma_im1]] <- pars[[n_arma_im1]] * sc_delta
-
-  sigt <- res_f$sigt * scale_const
-  cmeans <- res_f$cmeans * scale_const
-
-  etat <- (rt_core_o - cmeans) / sigt
-
-  if (cond_d %in% c("ald", "sald")) {
-    if (cond_d == "ald") {
-      pars <- c(pars, P_sel)
-      vcov_mat <- rbind(cbind(vcov_mat, NA), NA)
-    } else {
-      l_p <- length(pars)
-      pars <- c(pars[1:(l_p - 1)], P_sel, pars[[l_p]])
-      vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
-      vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
-    }
-    diag_vcov <- diag(vcov_mat)
-  }
-
-  serrors <- sqrt(diag_vcov)
 
   names(pars) <- par_names
-  names(serrors) <- par_names
-  colnames(vcov_mat) <- par_names
-  rownames(vcov_mat) <- par_names
 
-  k <- length(pars)
-  n <- length(rt_core)
-
-  m2llhood <- -2 * llhood
-  bic <- (m2llhood + k * log(n)) / n
-  aic <- (m2llhood + 2 * k) / n
+  # Makes "aic" and "bic" available
+  crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = split_rt$train,
+    rt = train_obs,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -854,7 +697,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = split_rt$train,
+    rt = train_obs,
     sigt = sigt,
     cmeans = cmeans,
     scale_fun = NULL,
@@ -865,7 +708,7 @@ figjrgarch <- function(rt, orders = c(1, 1),
     orders = orders,
     long_memo = TRUE,
     meanspec = meanspec,
-    test_obs = split_rt$test,
+    test_obs = test_obs,
     nonpar_model = NULL,
     trunc = trunc_i
   )

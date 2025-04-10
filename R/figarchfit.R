@@ -393,7 +393,7 @@ figarch <- function(rt, orders = c(1, 1),
   # environment
   identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
-
+  dfun1 <- lookup_table$fun1[[cond_d]]
   dfun2 <- lookup_table$fun2[[cond_d]]
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
