@@ -328,7 +328,7 @@ start_pars_and_restr <- list(
       omega_start = 1,
       omega_low = 1e-10,
       omega_up = 10,
-      add_pars_start = c(0, 2),
+      add_pars_start = c(rep(0, p), 2),
       add_low = c(rep(-1 + 1e-4, p), 0.3),
       add_up = c(rep(1 - 1e-4, p), 3)
     )
@@ -368,9 +368,9 @@ start_pars_and_restr <- list(
       omega_start = 1,
       omega_low = 1e-10,
       omega_up = 10,
-      add_pars_start = 0,
-      add_low = -1 + 1e-4,
-      add_up = 1 - 1e-4
+      add_pars_start = rep(0, p),
+      add_low = rep(-1 + 1e-4, p),
+      add_up = rep(1 - 1e-4, p)
     )
   },
     "fiaparch" = function(drange, p, q) {
