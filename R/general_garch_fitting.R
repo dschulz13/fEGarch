@@ -380,7 +380,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     character(0)
   }
 
-  gamma_name <- if (model_type %in% c("fiaparch", "gjrgarch")) {
+  gamma_name <- if (model_type %in% c("fiaparch", "figjrgarch")) {
     "gamma"
   } else if (model_type %in% c("aparch", "gjrgarch")) {
     paste0("gamma", 1:p)
@@ -447,6 +447,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   )
 
   sc_delta <- scale_const^delta
+
+  type_inp <- c("aparch", "fiaparch")[[lm + 1]]
   # Also updates "pars", if ald or sald
   compute_vcov(
     goal_fun = goal_fun,
@@ -459,7 +461,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     par_names = par_names,
     sc_delta = sc_delta,
     n_arma_pars = n_arma_pars,
-    model_type = "aparch"     # treat as APARCH with delta fixed at 2 for rescaling
+    model_type = type_inp     # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
   )
 
   rescale_estim(
@@ -470,7 +472,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     scale_const = scale_const,
     n_arma_pars = n_arma_pars,
     incl_mean = incl_mean,
-    model_type = "aparch",  # treat as APARCH with delta fixed at 2 for rescaling
+    model_type = type_inp,  # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
     sc_delta = sc_delta
   )
 
