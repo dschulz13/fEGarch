@@ -13,7 +13,12 @@ arma::vec fitted_arma_Cpp(const arma::vec& x, const double mu,
   const int n = x.size();
   const int nl = n + l;
 
-  arma::vec x_dm = arma::zeros<arma::vec>(nl);
+  arma::vec x_dm(nl);
+  if (mu == 0) {
+    x_dm = arma::vec(nl).fill(arma::mean(x));
+  } else {
+    x_dm = arma::zeros<arma::vec>(nl);
+  }
   arma::vec fitted = arma::zeros<arma::vec>(nl);
   x_dm.subvec(l, nl - 1) = x - mu;
 

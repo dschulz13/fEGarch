@@ -30,7 +30,7 @@ fiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, ...) {
+              trunc, presample, ...) {
 
   list2env(list(...), envir = environment())
 
@@ -52,7 +52,7 @@ sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  n <- length(x)
+  n <- length(x) + presample
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)
   coef_inf[[1]] <- 0
@@ -82,7 +82,8 @@ goal_fun_creator_fiaparch <- function(
     extra_par,
     skew_par,
     sig_fun,
-    trunc
+    trunc,
+    presample
 ) {
 
   res_list <- sig_fun(
@@ -95,7 +96,8 @@ goal_fun_creator_fiaparch <- function(
     incl_mean = incl_mean,
     extra_par = extra_par,
     skew_par = skew_par,
-    trunc = trunc)
+    trunc = trunc,
+    presample = presample)
 
   nllhood_calc(res_list, x, pdf_fun2)
 
@@ -180,7 +182,10 @@ goal_fun_creator_fiaparch <- function(
 #'use for parallel computations.
 #'@param trunc a positive integer indicating the finite truncation length of the
 #'infinite-order polynomial of the infinite-order ARCH-representation of the
-#'FIAPARCH.
+#'long-memory model parts.
+#'@param presample the presample length for initialization (for extended EGARCH- / Log-GARCH-type
+#'models only relevant for the FARIMA-part, as series in log-transformed
+#'conditional variance are initialized by zero).
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
@@ -360,7 +365,7 @@ fiaparch <- function(rt, orders = c(1, 1),
                         LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", Prange = c(1, 5)) {
+                        trunc = "none", presample = 10, Prange = c(1, 5)) {
 
   inp_args <- mget(names(formals()), envir = environment())
 

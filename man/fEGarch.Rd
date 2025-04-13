@@ -21,6 +21,7 @@ fEGarch(
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
+  presample = 10,
   Prange = c(1, 5)
 )
 }
@@ -110,6 +111,10 @@ infinite-order polynomial of the infinite-order ARCH-representation of the
 model, if it is a long-memory model; by default the character \code{"none"}
 specifies that truncation should always be applied back to the first observation
 time point;}
+
+\item{presample}{the presample length for initialization (for extended EGARCH- / Log-GARCH-type
+models only relevant for the FARIMA-part, as series in log-transformed
+conditional variance are initialized by zero).}
 
 \item{Prange}{a two-element vector that indicates the search boundaries for
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}

@@ -793,7 +793,7 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a short-memory EGARCH specification
 sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
   list2env(list(...), envir = environment())
@@ -853,7 +853,7 @@ sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a long-memory EGARCH specification
 sigt_egarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
   list2env(list(...), envir = environment())
@@ -880,7 +880,7 @@ sigt_egarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
   psi_2 <- if (q > 1) psi[-1] else numeric(0)
   n <- length(x)
   coef_inf <- ma_infty(ar = phi, ma = psi_2, d = d,
-                                     max_i = trunc - 1)
+                                     max_i = trunc - 1 - presample)
 
   E_vals <- expect_calc_egarch(
     int_fun_asy = int_fun_asy,
@@ -931,7 +931,8 @@ goal_fun_creator_egarch <- function(
     pows, mods,
     mode,
     lnsig2_init,
-    trunc
+    trunc,
+    presample
 ) {
 
   res_list <- sigt_fun(
@@ -945,6 +946,7 @@ goal_fun_creator_egarch <- function(
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
+    presample = presample,
     dfun = dfun1,
     int_fun_asy = int_fun_asy,
     int_fun_mag = int_fun_mag,
@@ -962,7 +964,7 @@ goal_fun_creator_egarch <- function(
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
+    ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 10, Prange = c(1, 5)) {
 
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
@@ -987,10 +989,10 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
-    trunc <- n - 1
-  } else if (is.numeric(trunc) && trunc >= n) {
-    trunc <- n - 1
-    message("trunc reduced to n - 1")
+    trunc <- n + presample - 1
+  } else if (is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
   }
 
   # Obtain model orders
@@ -1075,7 +1077,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       mods = mod,
       mode = mode,
       lnsig2_init = lnsig2_init,
-      trunc = trunc
+      trunc = trunc,
+      presample = presample
     )
   }
 
@@ -1278,6 +1281,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
+    presample = presample,
     int_fun_asy = int_fun_asy,
     int_fun_mag = int_fun_mag,
     pows = pow,
@@ -1385,7 +1389,7 @@ loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_pa
 }
 
 sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
   list2env(list(...), envir = environment())
@@ -1433,7 +1437,7 @@ sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
 }
 
 sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
   list2env(list(...), envir = environment())
@@ -1462,7 +1466,7 @@ sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
 
   n <- length(x)
   coef_inf <- ma_infty(ar = phi, ma = psi, d = d,
-                                     max_i = trunc)[-1]
+                                     max_i = trunc - presample)[-1]
 
   Elnsig2 <- omega_sig
 
@@ -1493,7 +1497,8 @@ goal_fun_creator_loggarch <- function(
     int_fun,
     sigt_fun,
     lnsig2_init,
-    trunc
+    trunc,
+    presample
 ) {
 
   res_list <- sigt_fun(
@@ -1507,6 +1512,7 @@ goal_fun_creator_loggarch <- function(
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
+    presample = presample,
     dfun = dfun1,
     int_fun = int_fun,
     lnsig2_init = lnsig2_init)
@@ -1516,7 +1522,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", Prange = c(1, 5)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 10, Prange = c(1, 5)) {
 
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
@@ -1541,10 +1547,10 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
-    trunc <- n - 1
-  } else if (is.numeric(trunc) && trunc >= n) {
-    trunc <- n - 1
-    message("trunc reduced to n - 1")
+    trunc <- n + presample - 1
+  } else if (is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
   }
 
   # Obtain model orders
@@ -1611,7 +1617,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       int_fun = int_fun,
       sigt_fun = sigt_fun_adj,
       lnsig2_init = lnsig2_init,
-      trunc = trunc
+      trunc = trunc,
+      presample = presample
     )
   }
 
@@ -1812,6 +1819,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
+    presample = presample,
     int_fun = int_fun,
     lnsig2_init = lnsig2_init
   )

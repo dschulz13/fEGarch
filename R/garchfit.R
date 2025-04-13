@@ -23,7 +23,7 @@ garch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_garch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   list2env(list(...), envir = environment())
 
@@ -68,7 +68,8 @@ goal_fun_creator_garch <- function(
     skew_par,
     sig_fun,
     sig2_init,
-    trunc
+    trunc,
+    presample
 ) {
 
   res_list <- sig_fun(
@@ -82,6 +83,7 @@ goal_fun_creator_garch <- function(
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
+    presample = presample,
     sig2_init = sig2_init)
 
   nllhood_calc(res_list, x, pdf_fun2)
@@ -160,6 +162,12 @@ goal_fun_creator_garch <- function(
 #'\code{cond_dist = "sald"}, and if simultaneously \code{parallel = TRUE};
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
+#'@param trunc a positive integer indicating the finite truncation length of the
+#'infinite-order polynomial of the infinite-order ARCH-representation of the
+#'long-memory model parts.
+#'@param presample the presample length for initialization (for extended EGARCH- / Log-GARCH-type
+#'models only relevant for the FARIMA-part, as series in log-transformed
+#'conditional variance are initialized by zero).
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
@@ -295,7 +303,7 @@ garch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", Prange = c(1, 5)) {
+                        trunc = "none", presample = 10, Prange = c(1, 5)) {
 
   inp_args <- mget(names(formals()), envir = environment())
 

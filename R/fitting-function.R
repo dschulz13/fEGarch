@@ -118,6 +118,9 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'model, if it is a long-memory model; by default the character \code{"none"}
 #'specifies that truncation should always be applied back to the first observation
 #'time point;
+#'@param presample the presample length for initialization (for extended EGARCH- / Log-GARCH-type
+#'models only relevant for the FARIMA-part, as series in log-transformed
+#'conditional variance are initialized by zero).
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
@@ -303,7 +306,7 @@ fEGarch <- function(spec = egarch_spec(),
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     control_nonpar = list(),
     parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-    trunc = "none", Prange = c(1, 5)) {
+    trunc = "none", presample = 10, Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
@@ -316,9 +319,23 @@ fEGarch <- function(spec = egarch_spec(),
 
   }
 
-  out <- fEGarch_fit(spec, rt, drange, meanspec, Drange = Drange,
-              n_test = n_test, start_pars, LB, UB, control,
-              parallel, ncores, trunc, Prange)
+  out <- fEGarch_fit(
+    spec = spec,
+    rt = rt,
+    drange = drange,
+    meanspec = meanspec,
+    Drange = Drange,
+    n_test = n_test,
+    start_pars = start_pars,
+    LB = LB,
+    UB = UB,
+    control = control,
+    parallel = parallel,
+    ncores = ncores,
+    trunc = trunc,
+    presample = presample,
+    Prange = Prange
+  )
 
   if (use_nonpar) {
     mu <- rep(nonpar_result$mu, length(rt))

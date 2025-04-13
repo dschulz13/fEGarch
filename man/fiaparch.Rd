@@ -15,7 +15,6 @@ fiaparch(
   use_nonpar = FALSE,
   n_test = 0,
   start_pars = NULL,
-  presample = 1000,
   LB = NULL,
   UB = NULL,
   control = list(),
@@ -79,9 +78,6 @@ routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used.}
 
-\item{presample}{a numeric value indicating the pre-sample length for
-initialization.}
-
 \item{LB}{the lower boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
@@ -120,6 +116,9 @@ FIAPARCH.}
 
 \item{Prange}{a two-element vector that indicates the search boundaries for
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}
+
+\item{presample}{a numeric value indicating the pre-sample length for
+initialization.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_fiaparch"}

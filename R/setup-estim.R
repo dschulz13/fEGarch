@@ -163,7 +163,7 @@ adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
 
   sigt_fun_adj <- if (check) {
     function(theta, x, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par, trunc, ...) {
+         incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
       # Collect input arguments (including also the ellipsis ...)
       # as a named list
@@ -196,7 +196,7 @@ adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
       }
 
       # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
+      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf, presample = presample)
 
       # ... adjust input arguments from intermediate results ...
       all_args[["theta"]] <- theta[-(1:n_arma_pars)]     # Remove the first few elements from theta (those for the parameters relevant for ARMA / FARIMA)

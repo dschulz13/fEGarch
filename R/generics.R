@@ -64,7 +64,7 @@ setGeneric("include_mean<-", function(x, value) {standardGeneric("include_mean<-
 
 #====================================================#
 
-setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000, Prange = c(1, 5)) {standardGeneric("fEGarch_fit")})
+setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 10, Prange = c(1, 5)) {standardGeneric("fEGarch_fit")})
 
 #====================================================#
 

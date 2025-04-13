@@ -7,7 +7,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", Prange = c(1, 5)) {
+                        trunc = "none", presample = 10, Prange = c(1, 5)) {
 
 
   p <- orders[[1]]
@@ -38,10 +38,10 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
   if (is.character(trunc) && trunc == "none") {
-    trunc <- n - 1
-  } else if (is.numeric(trunc) && trunc >= n) {
-    trunc <- n - 1
-    message("trunc reduced to n - 1")
+    trunc <- n + presample - 1
+  } else if (is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
   }
 
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
@@ -81,7 +81,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     extra_par = extra_par,
     skew_par = skew_par,
     sig_fun = sigt_fun_adj,
-    trunc = trunc
+    trunc = trunc,
+    presample = presample
   )
 
   extra_args <- switch(
@@ -314,7 +315,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     }
 
 
-    result <- suppressWarnings(Rsolnp::solnp(
+    result <- tryCatch(
+      expr = {
+        suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -325,25 +328,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
           ineqUB = ineqUB,
           rt = rt_core
         ))
-
-    # result <- tryCatch(
-    #   expr = {
-    #     suppressWarnings(Rsolnp::solnp(
-    #       pars = start_pars,
-    #       fun = goal_fun,
-    #       LB = LB,
-    #       UB = UB,
-    #       control = control,
-    #       ineqfun = constr_fun,
-    #       ineqLB = ineqLB,
-    #       ineqUB = ineqUB,
-    #       rt = rt_core
-    #     ))
-    #   },
-    #   error = function(e1) {
-    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-    #   }
-    # )
+      },
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
   }
 
@@ -432,7 +421,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       incl_mean = incl_mean,
       extra_par = extra_par,
       skew_par = skew_par,
-      trunc = trunc
+      trunc = trunc,
+      presample = presample
     ), extra_args)
   )
 
