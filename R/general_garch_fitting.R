@@ -7,7 +7,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", presample = 10, Prange = c(1, 5)) {
+                        trunc = "none", presample = 50, Prange = c(1, 5)) {
 
 
   p <- orders[[1]]
@@ -104,9 +104,45 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
-    "figarch" = list(),
-    "figjrgarch" = list(),
-    "fiaparch" = list()
+    "figarch" = {
+      list(presample_val = var(rt_core))
+    },
+    "figjrgarch" = {
+      est_s <- suppressWarnings(gjrgarch(
+        rt = rt,
+        orders = orders,
+        cond_dist = cond_dist,
+        meanspec = meanspec,
+        use_nonpar = use_nonpar,
+        nonparspec = nonparspec,
+        parallel = parallel,
+        ncores = ncores,
+        Prange = Prange,
+        n_test = n_test
+      ))
+      delta0 <- 2
+      gamma0 <- est_s@pars[["gamma1"]]
+      rt_dm <- rt_core - mean(rt_core)
+      list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
+    },
+    "fiaparch" = {
+      est_s <- suppressWarnings(aparch(
+        rt = rt,
+        orders = orders,
+        cond_dist = cond_dist,
+        meanspec = meanspec,
+        use_nonpar = use_nonpar,
+        nonparspec = nonparspec,
+        parallel = parallel,
+        ncores = ncores,
+        Prange = Prange,
+        n_test = n_test
+      ))
+      delta0 <- est_s@pars[["delta"]]
+      gamma0 <- est_s@pars[["gamma1"]]
+      rt_dm <- rt_core - mean(rt_core)
+      list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
+    }
   )
 
   goal_fun_s <- function(theta, rt, dfun2) {
@@ -315,9 +351,26 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     }
 
 
-    result <- tryCatch(
-      expr = {
-        suppressWarnings(Rsolnp::solnp(
+    # result <- tryCatch(
+    #   expr = {
+    #     suppressWarnings(Rsolnp::solnp(
+    #       pars = start_pars,
+    #       fun = goal_fun,
+    #       LB = LB,
+    #       UB = UB,
+    #       control = control,
+    #       ineqfun = constr_fun,
+    #       ineqLB = ineqLB,
+    #       ineqUB = ineqUB,
+    #       rt = rt_core
+    #     ))
+    #   },
+    #   error = function(e1) {
+    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+    #   }
+    # )
+
+    result <- suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -328,11 +381,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
           ineqUB = ineqUB,
           rt = rt_core
         ))
-      },
-      error = function(e1) {
-        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-      }
-    )
 
   }
 
@@ -430,10 +478,10 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     model_type,
     "garch" = 2,
     "gjrgarch" = 2,
-    "aparch" = n_arma_pars + 2 * p + q + 2,
+    "aparch" = pars[[n_arma_pars + 2 * p + q + 2]],
     "figarch" = 2,
     "figjrgarch" = 2,
-    "fiaparch" = n_arma_pars + 2 * p + q + 2
+    "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]]
   )
 
   sc_delta <- scale_const^delta

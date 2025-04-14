@@ -536,6 +536,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
   coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)[-1]
+
   sigt_fc <- c(sigt_fiaparch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
       coef_inf = coef_inf_garch,

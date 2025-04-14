@@ -303,7 +303,7 @@ garch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", presample = 10, Prange = c(1, 5)) {
+                        trunc = "none", presample = 50, Prange = c(1, 5)) {
 
   inp_args <- mget(names(formals()), envir = environment())
 
@@ -355,7 +355,7 @@ setMethod(
     "*        Fitted GARCH Model        *\n",
     "************************************\n",
     " \n",
-    "Type: sGARCH\n",
+    "Type: garch\n",
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",

@@ -45,7 +45,7 @@ sigt_figarch_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  n <- length(x)
+  n <- length(x) + presample
   coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
                                      max_i = trunc)
   coef_inf[[1]] <- 0
@@ -56,10 +56,10 @@ sigt_figarch_R <- function(theta, x, p, q, p_ar, q_ma,
   np2 <- nextpow2(2 * n - 1)
 
   c_adj <- c(coef_inf, rep(0, np2 - lc))
-  x_adj <- c(x_dm^2, rep(0, np2 - n))
+  x_adj <- c(rep(presample_val, presample), x_dm^2, rep(0, np2 - n))
 
   sigt <- sqrt(
-    omega + Re(utils::head(stats::fft(stats::fft(c_adj) * stats::fft(x_adj), inverse = TRUE), n)) / np2
+    omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj) * stats::fft(x_adj), inverse = TRUE), n), length(x_dm))) / np2
   )
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -79,7 +79,8 @@ goal_fun_creator_figarch <- function(
     skew_par,
     sig_fun,
     trunc,
-    presample
+    presample,
+    presample_val
 ) {
 
   res_list <- sig_fun(
@@ -93,7 +94,8 @@ goal_fun_creator_figarch <- function(
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
-    presample = presample
+    presample = presample,
+    presample_val = presample_val
   )
 
   nllhood_calc(res_list, x, pdf_fun2)
@@ -356,7 +358,7 @@ figarch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", presample = 10, Prange = c(1, 5)) {
+                        trunc = "none", presample = 50, Prange = c(1, 5)) {
 
   inp_args <- mget(names(formals()), envir = environment())
 
@@ -409,7 +411,7 @@ setMethod(
     "*        Fitted FIGARCH Model       *\n",
     "*************************************\n",
     " \n",
-    "Type: fiGARCH\n",
+    "Type: figarch\n",
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
