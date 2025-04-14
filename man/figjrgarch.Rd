@@ -22,6 +22,7 @@ figjrgarch(
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
+  presample = 50,
   Prange = c(1, 5)
 )
 }
@@ -112,7 +113,11 @@ use for parallel computations.}
 
 \item{trunc}{a positive integer indicating the finite truncation length of the
 infinite-order polynomial of the infinite-order ARCH-representation of the
-FIGJR-GARCH.}
+long-memory model parts.}
+
+\item{presample}{the presample length for initialization (for extended EGARCH- / Log-GARCH-type
+models only relevant for the FARIMA-part, as series in log-transformed
+conditional variance are initialized by zero).}
 
 \item{Prange}{a two-element vector that indicates the search boundaries for
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}

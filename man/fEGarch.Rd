@@ -21,7 +21,7 @@ fEGarch(
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
-  presample = 10,
+  presample = 50,
   Prange = c(1, 5)
 )
 }

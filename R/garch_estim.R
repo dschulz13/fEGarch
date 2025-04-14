@@ -129,11 +129,11 @@
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
-#'model <- garch_estim(rt, model = "garch")
+#'model <- garchm_estim(rt, model = "garch")
 #'model
 #'
 
-garch_estim <- function(rt,
+garchm_estim <- function(rt,
                         model = c("garch", "gjrgarch", "aparch", "figarch", "figjrgarch", "fiaparch"),
                         orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
@@ -144,7 +144,7 @@ garch_estim <- function(rt,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(),
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", presample = 10, Prange = c(1, 5)) {
+                        trunc = "none", presample = 50, Prange = c(1, 5)) {
 
 
   model <- match.arg(model)

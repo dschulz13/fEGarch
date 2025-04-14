@@ -22,6 +22,7 @@ figarch(
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
+  presample = 50,
   Prange = c(1, 5)
 )
 }
@@ -109,11 +110,13 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 \code{ncores} is a single numeric value indicating the number of cores to
 use for parallel computations.}
 
-\item{trunc}{a truncation for the finite-order coefficient series
-in long-memory models; can either be the character \code{"none"} for truncation
-back to the very first observation at each time point, or to any positive integer
-for setting the corresponding truncation length of the infinite-order representation
-polynomial.}
+\item{trunc}{a positive integer indicating the finite truncation length of the
+infinite-order polynomial of the infinite-order ARCH-representation of the
+long-memory model parts.}
+
+\item{presample}{the presample length for initialization (for extended EGARCH- / Log-GARCH-type
+models only relevant for the FARIMA-part, as series in log-transformed
+conditional variance are initialized by zero).}
 
 \item{Prange}{a two-element vector that indicates the search boundaries for
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}
