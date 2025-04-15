@@ -63,6 +63,9 @@
 #'for the hyperparameter estimation algorithm in the nonparametric
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
+#'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
+#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
 #'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
@@ -142,7 +145,7 @@ garchm_estim <- function(rt,
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-                        control_nonpar = list(),
+                        control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", presample = 50, Prange = c(1, 5)) {
 
@@ -172,6 +175,7 @@ garchm_estim <- function(rt,
     LB = LB, UB = UB,
     control = control,
     control_nonpar = control_nonpar,
+    mean_after_nonpar = mean_after_nonpar,
     parallel = parallel,
     ncores = ncores,
     trunc = trunc,

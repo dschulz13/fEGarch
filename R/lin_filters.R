@@ -16,11 +16,11 @@ ma_infty <- function(ar, ma, d, max_i) {
   ma_adj <- c(ma, rep(0, np2 - l))
   d_adj <- c(d_coefs_inv(d, max_i), rep(0, np2 - n))
 
-  ma_inf <- Re(fft(fft(d_adj) * fft(ma_adj), inverse = TRUE) / np2)
+  ma_inf <- Re(stats::fft(stats::fft(d_adj) * stats::fft(ma_adj), inverse = TRUE) / np2)
 
   ar_adj <- c(poly_inv(ar, max_i = max_i), rep(0, np2 - n))
 
-  head(Re(fft(fft(ar_adj) * fft(ma_inf), inverse = TRUE) / np2), n)
+  utils::head(Re(stats::fft(stats::fft(ar_adj) * stats::fft(ma_inf), inverse = TRUE) / np2), n)
 
 }
 
@@ -34,10 +34,10 @@ ar_infty <- function(ar, ma, d, max_i) {
 
   d_adj <- c(d_coefs(d, max_i), rep(0, np2 - n))
 
-  ar_inf <- Re(fft(fft(d_adj) * fft(ar_adj), inverse = TRUE) / np2)
+  ar_inf <- Re(stats::fft(stats::fft(d_adj) * stats::fft(ar_adj), inverse = TRUE) / np2)
 
   ma_adj <- c(poly_inv(-ma, max_i = max_i), rep(0, np2 - n))
 
-  -head(Re(fft(fft(ma_adj) * fft(ar_inf), inverse = TRUE) / np2), n)
+  -utils::head(Re(stats::fft(stats::fft(ma_adj) * stats::fft(ar_inf), inverse = TRUE) / np2), n)
 
 }

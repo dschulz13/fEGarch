@@ -20,6 +20,7 @@ garchm_estim(
   UB = NULL,
   control = list(),
   control_nonpar = list(),
+  mean_after_nonpar = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
@@ -101,6 +102,10 @@ function \code{solnp} of the package \code{Rsolnp}.}
 for the hyperparameter estimation algorithm in the nonparametric
 scale function estimation for
 \code{use_nonpar = TRUE}; see "Details" for more information.}
+
+\item{mean_after_nonpar}{only for \code{use_nonpar = TRUE}; considers the unconditional mean
+of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+model is considered for the parametric part in a semiparametric model.}
 
 \item{parallel}{only relevant for a (skewed) average Laplace (AL)
 distribution, i.e.

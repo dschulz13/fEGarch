@@ -130,7 +130,8 @@ goal_fun_creator_fiaparch <- function(
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param presample a numeric value indicating the pre-sample length for
 #'initialization.
 #'@param drange a two-element numeric vector that gives the boundaries of the
@@ -159,17 +160,22 @@ goal_fun_creator_fiaparch <- function(
 #'@param LB the lower boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments
 #'for the hyperparameter estimation algorithm in the nonparametric
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
+#'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
+#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
 #'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
@@ -192,7 +198,8 @@ goal_fun_creator_fiaparch <- function(
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
 #'@details
-#'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
+#'Consider a FIAPARCH(\eqn{p, d, q}) with constant asymmetry term \eqn{\gamma} regardless
+#'of the lag. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
 #'\deqn{\sigma_t^{\delta}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}.}
@@ -208,16 +215,22 @@ goal_fun_creator_fiaparch <- function(
 #'and \eqn{q} are the model orders definable through the argument \code{orders},
 #'where \eqn{p} is the first element and \eqn{q} is the second element in the
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-#'real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,0.5)} as the
-#'long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
+#'real-valued parameter and \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,1]} as the
+#'parameter for the level of integration. With \eqn{d = 0} the model reduces
+#'to a short-memory APARCH, for \eqn{d=1} we have a full integration, and for
+#'\eqn{d\in(0, 1)}, we have fractional integration, where \eqn{d\in(0, 0.5)} is
+#'considered to describe a long-memory process. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 #'
 #'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}}
 #'are replaced by the in-sample arithmetic mean of
-#'\eqn{\left(\left|r_t^{*} - \mu\right|-\gamma\left(r_t^{*}-\mu\right)\right)^{\delta}}, where
-#'\eqn{r_t^{*}} are considered as the observations and \eqn{\mu}, initial values
-#'for \eqn{\gamma} and
-#'\eqn{\delta} are obtained from a previous fitting of a short-memory APARCH.
+#'\eqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
+#'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{\delta_0}}, where
+#'\eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
+#'mean of \eqn{r_t^{*}}. Initial values
+#'for \eqn{\gamma_0} and
+#'\eqn{\delta_0} as initial guesses for \eqn{\gamma} and \eqn{\delta} are obtained
+#'from a previous fitting of a short-memory APARCH.
 #'
 #'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 #'to ensure the non-negativity of all of the infinite-order coefficient series
@@ -234,11 +247,26 @@ goal_fun_creator_fiaparch <- function(
 #'See also the reference section for sources on the APARCH (Ding et al., 1993)
 #'and the FIAPARCH (Tse, 1998) models.
 #'
+#'The truncated infinite order polynomial is computed following the idea
+#'by Nielsen
+#'and Noel (2021) as is the series of conditional variances for most
+#'computational efficiency. To ensure stability of the first fitted in-sample
+#'conditional standard deviations, we however use a small, but also adjustable (also
+#'to length zero) presample, which may introduce biases into the parameter estimators.
+#'
+#'In the current package version, standard errors of parameter estimates are
+#'computed from the Hessian at the optimum of the log-likelihood using
+#'\code{\link[numDeriv]{hessian}}. To ensure numerical stability and
+#'applicability to a huge variety of differently scaled data, parametric
+#'models are first fitted to data that is scaled to have sample variance
+#'1. Parameter estimates and other quantities are then either
+#'retransformed or recalculated afterwards for the original data.
+#'
 #'For a conditional average Laplace distribution, an optimal model for each
-#'distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+#'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
 #'\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
-#'estimated by selecting the estimated model among the eight fitted models that
-#'has the largest log-likelihood. The eight models are, by default, fitted
+#'estimated by selecting the estimated model among the five fitted models that
+#'has the largest log-likelihood. The five models are, by default, fitted
 #'simultaneously using parallel programming techniques (see also the arguments
 #'\code{parallel} and \code{ncores}, which are only relevant for a conditional
 #'average Laplace distribution). After the optimal model (including
@@ -297,6 +325,14 @@ goal_fun_creator_fiaparch <- function(
 #'or Letmathe et al. (2023) for more information on the semiparametric extension
 #'of volatility models.
 #'
+#'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
+#'is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
+#'\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
+#'\phi, \beta, \gamma, \delta, d, \text{shape parameter},
+#'\text{skewness parameter}}. Depending on the exact model specification,
+#'parameters irrelevant for the specification at hand should be dropped
+#'in \code{start_pars}, \code{LB} and \code{UB}.
+#'
 #'@export
 #'
 #'@return
@@ -352,6 +388,9 @@ goal_fun_creator_fiaparch <- function(
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 #'in R. Comunications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
+#'\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient computation of ARCH(\eqn{\infty})
+#'models. Journal of Time Series Analysis,
+#'42(3), 338–354. DOI: 10.1111/jtsa.12570.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 #'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
@@ -365,7 +404,7 @@ fiaparch <- function(rt, orders = c(1, 1),
                         n_test = 0,
                         start_pars = NULL,
                         LB = NULL, UB = NULL, control = list(),
-                        control_nonpar = list(),
+                        control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", presample = 50, Prange = c(1, 5)) {
 

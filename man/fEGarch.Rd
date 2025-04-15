@@ -18,6 +18,7 @@ fEGarch(
   UB = NULL,
   control = list(),
   control_nonpar = list(),
+  mean_after_nonpar = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
@@ -41,7 +42,7 @@ of the interval over which to search for the fractional differencing
 parameter \eqn{d} in a long-memory GARCH-type model in the conditional
 volatility model part; by default,
 \eqn{d} being searched for on the
-interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+interval from 0 to 1; note that specific
 settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
 
@@ -53,7 +54,7 @@ of the interval over which to search for the fractional differencing
 parameter \eqn{d} in a long-memory ARMA-type model in the conditional
 mean model part; by default,
 \eqn{D} being searched for on the
-interval from 0 to \eqn{0.5 - 1\times 10^{-6}}; note that specific
+interval from 0 to 1; note that specific
 settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
 
@@ -72,17 +73,20 @@ reserve for backtesting.}
 \item{start_pars}{a vector with starting parameters for the
 optimization; must be of the same length as the output vector of
 parameters; the default NULL uses internally saved default sets
-of starting values.}
+of starting values; see "Details" for the
+order of elements.}
 
 \item{LB}{a vector with lower boundaries for parameters; must be
 of the same length as the output vector of
 parameters; the default NULL uses internally saved default sets
-of lower boundary values.}
+of lower boundary values; see "Details" for the
+order of elements.}
 
 \item{UB}{a vector with upper boundaries for parameters; must be
 of the same length as the output vector of
 parameters; the default NULL uses internally saved default sets
-of upper boundary values.}
+of upper boundary values; see "Details" for the
+order of elements.}
 
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}
@@ -91,6 +95,10 @@ function \code{solnp} of the package \code{Rsolnp}.}
 for the hyperparameter estimation algorithm in the nonparametric
 scale function estimation for
 \code{use_nonpar = TRUE}; see "Details" for more information.}
+
+\item{mean_after_nonpar}{only for \code{use_nonpar = TRUE}; considers the unconditional mean
+of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+model is considered for the parametric part in a semiparametric model.}
 
 \item{parallel}{only relevant for a (skewed) average Laplace (AL)
 distribution, i.e.
@@ -189,10 +197,10 @@ models are first fitted to data that is scaled to have sample variance
 retransformed or recalculated afterwards for the original data.
 
 For a conditional average Laplace distribution, an optimal model for each
-distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
 \eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
-estimated by selecting the estimated model among the eight fitted models that
-has the largest log-likelihood. The eight models are, by default, fitted
+estimated by selecting the estimated model among the five fitted models that
+has the largest log-likelihood. The five models are, by default, fitted
 simultaneously using parallel programming techniques (see also the arguments
 \code{parallel} and \code{ncores}, which are only relevant for a conditional
 average Laplace distribution). After the optimal model (including
@@ -254,8 +262,20 @@ model part) for that same time point. See for example Feng et al. (2022)
 or Letmathe et al. (2023) for more information on the semiparametric extension
 of volatility models. Moreover, if \code{bwidth} in the object passed to \code{nonparspec}
 is not at its default \code{NULL} but instead a numeric value between \code{0} and \code{0.5},
-the automated badnwidth selection is skipped and the provided bandwidth in \code{bwidth}
+the automated bandwidth selection is skipped and the provided bandwidth in \code{bwidth}
 is used.
+
+The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
+is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
+\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega_{\sigma},
+\phi_1,\dots,\phi_p, \psi_1, \dots, \psi_{q-1}, \kappa, \gamma, d, \text{shape parameter},
+\text{skewness parameter}} for Type I models (see \code{\link{fEGarch_spec}}). For Type
+II models, we have \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
+\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega_{\sigma},
+\phi_1,\dots,\phi_p, \psi_1, \dots, \psi_{q}, d, \text{shape parameter},
+\text{skewness parameter}}. Depending on the exact model specification,
+parameters irrelevant for the specification at hand should be dropped
+in \code{start_pars}, \code{LB} and \code{UB}.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

@@ -241,9 +241,9 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 #'
 #'@examples
 #'est <- gjrgarch_ru(SP500)
-#'est$pars
-#'est$se
-#'plot(est$sigt)
+#'est@pars
+#'est@se
+#'plot(est@sigt)
 #'
 aparch_ru <- function(rt, orders = c(1, 1),
             cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged"),

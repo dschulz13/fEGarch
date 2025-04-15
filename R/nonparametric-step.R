@@ -1,4 +1,4 @@
-run_nonpar <- function(nonparspec, control_nonpar, rt, n_test) {
+run_nonpar <- function(nonparspec, control_nonpar, rt, n_test, mean_after_nonpar) {
 
   nonpar_result <- nonpar_est(
     rt = rt,
@@ -13,6 +13,10 @@ run_nonpar <- function(nonparspec, control_nonpar, rt, n_test) {
     long_memo = FALSE,
     include_mean = FALSE
   )
+
+  if (mean_after_nonpar) {
+    include_mean(meanspec) <- TRUE
+  }
 
   rt <- nonpar_result$et
   n_test <- 0

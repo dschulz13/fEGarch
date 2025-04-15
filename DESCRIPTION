@@ -1,6 +1,6 @@
 Package: fEGarch
 Type: Package
-Title: Application of a Broad Family of EGARCH Models
+Title: Estimation of a Broad Family of EGARCH Models
 Version: 1.0.0
 Authors@R:
     c(person(given = "Dominik",
@@ -35,7 +35,7 @@ Description: Implement and fit a variety of models from a very broad family of e
   modulus Log-GARCH), and more. For convenience and the purpose of comparison, a variety of
   other popular GARCH-type models, like an APARCH model, a fractionally integrated
   APARCH (FIAPARCH) model, and even standard GARCH and fractionally integrated GARCH
-  (FIGARCH) models, are implemented.
+  (FIGARCH) models, are implemented. Models are fitted through quasi-maximum-likelihood estimation.
 License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
@@ -44,6 +44,7 @@ RoxygenNote: 7.3.2
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
+  'close_to_lreturn.R'
   'lin_filters.R'
   'hessCalc.R'
   'arma-farima-wrappers.R'
@@ -100,7 +101,6 @@ Imports:
     furrr,
     rlang,
     ggplot2,
-    ufRisk,
     magrittr,
     cli,
     numDeriv

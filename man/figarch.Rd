@@ -19,6 +19,7 @@ figarch(
   UB = NULL,
   control = list(),
   control_nonpar = list(),
+  mean_after_nonpar = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
   trunc = "none",
@@ -76,17 +77,20 @@ reserve for backtesting.}
 \item{start_pars}{the starting parameters for the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
-an internally saved default set of values is used.}
+an internally saved default set of values is used; see "Details" for the
+order of elements.}
 
 \item{LB}{the lower boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
-an internally saved default set of values is used.}
+an internally saved default set of values is used; see "Details" for the
+order of elements.}
 
 \item{UB}{the upper boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
-an internally saved default set of values is used.}
+an internally saved default set of values is used; see "Details" for the
+order of elements.}
 
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}
@@ -95,6 +99,10 @@ function \code{solnp} of the package \code{Rsolnp}.}
 for the hyperparameter estimation algorithm in the nonparametric
 scale function estimation for
 \code{use_nonpar = TRUE}; see "Details" for more information.}
+
+\item{mean_after_nonpar}{only for \code{use_nonpar = TRUE}; considers the unconditional mean
+of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+model is considered for the parametric part in a semiparametric model.}
 
 \item{parallel}{only relevant for a (skewed) average Laplace (AL)
 distribution, i.e.
@@ -173,8 +181,11 @@ Moreover, \eqn{B} is the backshift operator and
 and \eqn{q} are the model orders definable through the argument \code{orders},
 where \eqn{p} is the first element and \eqn{q} is the second element in the
 argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-real-valued parameter and \eqn{d \in [0,0.5)} as the
-long-memory parameter. \eqn{\omega > 0} is the intercept. It is assumed that
+real-valued parameter  and \eqn{d \in [0,1]} as the
+parameter for the level of integration. With \eqn{d = 0} the model reduces
+to a short-memory GARCH, for \eqn{d=1} we have a full integration, and for
+\eqn{d\in(0, 1)}, we have fractional integration, where \eqn{d\in(0, 0.5)} is usually
+considered to describe a long-memory process. \eqn{\omega > 0} is the intercept. It is assumed that
 all \eqn{\beta_j} and \eqn{\phi_i} are non-negative. Furthermore, we have
 \eqn{\omega > 0} as the intercept.
 
@@ -192,14 +203,23 @@ by Bollerslev and Mikkelsen (1996) only.
 The truncated infinite order polynomial is computed following the idea
 by Nielsen
 and Noel (2021) as is the series of conditional variances for most
-computational efficiency. This also implies that no pre-sample values are
-set.
+computational efficiency. To ensure stability of the first fitted in-sample
+conditional standard deviations, we however use a small, but also adjustable (also
+to length zero) presample, which may introduce biases into the parameter estimators.
+
+In the current package version, standard errors of parameter estimates are
+computed from the Hessian at the optimum of the log-likelihood using
+\code{\link[numDeriv]{hessian}}. To ensure numerical stability and
+applicability to a huge variety of differently scaled data, parametric
+models are first fitted to data that is scaled to have sample variance
+1. Parameter estimates and other quantities are then either
+retransformed or recalculated afterwards for the original data.
 
 For a conditional average Laplace distribution, an optimal model for each
-distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
 \eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
-estimated by selecting the estimated model among the eight fitted models that
-has the largest log-likelihood. The eight models are, by default, fitted
+estimated by selecting the estimated model among the five fitted models that
+has the largest log-likelihood. The five models are, by default, fitted
 simultaneously using parallel programming techniques (see also the arguments
 \code{parallel} and \code{ncores}, which are only relevant for a conditional
 average Laplace distribution). After the optimal model (including
@@ -257,6 +277,14 @@ and of the estimated conditional standard deviation (following the parametric
 model part) for that same time point. See for example Feng et al. (2022)
 or Letmathe et al. (2023) for more information on the semiparametric extension
 of volatility models.
+
+The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
+is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
+\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
+\phi, \beta, d, \text{shape parameter},
+\text{skewness parameter}}. Depending on the exact model specification,
+parameters irrelevant for the specification at hand should be dropped
+in \code{start_pars}, \code{LB} and \code{UB}.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
@@ -285,5 +313,8 @@ long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 in R. Comunications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
+\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient computation of ARCH(\eqn{\infty})
+models. Journal of Time Series Analysis,
+42(3), 338–354. DOI: 10.1111/jtsa.12570.}
 }
 }

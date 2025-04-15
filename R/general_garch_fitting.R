@@ -5,7 +5,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-                        control_nonpar = list(),
+                        control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", presample = 50, Prange = c(1, 5)) {
 
@@ -24,7 +24,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   if (use_nonpar) {
 
     nonpar_out <- run_nonpar(nonparspec = nonparspec,
-               control_nonpar = control_nonpar, rt = rt, n_test = n_test)
+               control_nonpar = control_nonpar, rt = rt, n_test = n_test,
+               mean_after_nonpar = mean_after_nonpar)
     rt <- nonpar_out$rt
     meanspec <- nonpar_out$meanspec
     nonpar_result <- nonpar_out$nonpar_result

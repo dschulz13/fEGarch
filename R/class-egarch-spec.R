@@ -102,7 +102,7 @@ setValidity("egarch_type_spec", function(object){
 #'\code{egarch_type_spec()} is when setting \code{model_type} in
 #'\code{\link{fEGarch_spec}} to \code{eGARCH}.
 #'\code{loggarch_type_spec()} is a shortcut when setting
-#'\code{model_type = "logGARCH"}. See \code{\link{fEGarch_spec}}
+#'\code{model_type = "loggarch"}. See \code{\link{fEGarch_spec}}
 #'for further details.
 #'
 #'@return
@@ -164,8 +164,8 @@ loggarch_type_spec <- function(
 #'Create an object with specifications for a model from
 #'the broader EGARCH family.
 #'
-#'@param model_type a character value (either \code{"eGARCH"} or
-#'\code{"logGARCH"}) that indicates the type of model to
+#'@param model_type a character value (either \code{"egarch"} or
+#'\code{"loggarch"}) that indicates the type of model to
 #'implement (see Details for more information).
 #'@param orders a two-element numeric vector with the model
 #'orders; the first element is the order \eqn{p} for the term based on
@@ -224,10 +224,10 @@ loggarch_type_spec <- function(
 #'with real coefficients \eqn{\phi_{0},\dots,\phi_{p},\psi_{0},\dots,\psi_{q-1}},
 #'by fixing \eqn{\phi_{0}=\psi_{0}=1}, and without common roots. Furthermore,
 #'the
-#'long-memory parameter is \eqn{d \in [0,0.5)}.
+#'fractional differencing parameter is \eqn{d \in [0,1]}.
 #'
 #'\eqn{g\left(\cdot\right)} can be defined in different ways.
-#'Following a type I specification (\code{model_type = "eGARCH"}), we have
+#'Following a type I specification (\code{model_type = "egarch"}), we have
 #'\deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{g_m\left(\eta_t\right)-E\left[ g_m\left(\eta_t\right)\right]\right\}}
 #'with \eqn{g_a\left(\eta_t\right)=g_m\left(\eta_t\right)=\eta_t} and consequently
 #'\eqn{E\left[g_a\left(\eta_t\right)\right] = E\left(\eta_t\right) = 0} and
@@ -250,7 +250,7 @@ loggarch_type_spec <- function(
 #'\eqn{g_{1,a}} and \eqn{g_{2,a}} correspond to
 #'setting the first element in \code{modulus} to \code{FALSE} or
 #'\code{TRUE}, respectively, under
-#'\code{model_type = "eGARCH"}, where \eqn{p_a} can be selected
+#'\code{model_type = "egarch"}, where \eqn{p_a} can be selected
 #'via the first element in \code{powers}. As a special case, for
 #'\eqn{p_a = 0}, a log-transformation is employed and the division
 #'through \eqn{p_a} is dropped, i.e.
@@ -260,7 +260,7 @@ loggarch_type_spec <- function(
 #'thoughts hold for \eqn{g_{1,m}} and \eqn{g_{2,m}} and the second
 #'elements in the arguments \code{modulus} and \code{powers}. The aforementioned
 #'model family is a type I model selectable through
-#'\code{model_type = "eGARCH"}.
+#'\code{model_type = "egarch"}.
 #'
 #'\eqn{\textbf{Type II}:}
 #'
@@ -287,18 +287,18 @@ loggarch_type_spec <- function(
 #'
 #'This describes the
 #'established Log-GARCH models as part of the broad EGARCH family
-#'(type II models; \code{model_type = "logGARCH"}).
+#'(type II models; \code{model_type = "loggarch"}).
 #'
 #'\eqn{\textbf{General information}:}
 #'
 #'While the arguments \code{powers} and \code{modulus} are only relevant
-#'under a type I model, i.e. for \code{model_type = "eGARCH"}, the arguments
+#'under a type I model, i.e. for \code{model_type = "egarch"}, the arguments
 #'\code{orders}, \code{long_memo} and \code{cond_dist} are
-#'meaningful for both \code{model_type = "eGARCH"}
-#'and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
+#'meaningful for both \code{model_type = "egarch"}
+#'and \code{model_type = "loggarch"}, i.e. both under type I and II models.
 #'The first element of the two-element vector orders is the order \eqn{p},
 #'while the second element is the order \eqn{q}. Furthermore, for
-#'\code{long_memo = TRUE}, the metnioned models are kept as they are, while
+#'\code{long_memo = TRUE}, the mentioned models are kept as they are, while
 #'for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
 #'\code{cond_dist} controls the conditional distribution.
 #'The unconditional mean \eqn{\mu} is controlled via the function
@@ -349,7 +349,7 @@ loggarch_type_spec <- function(
 #'spec4 <- fEGarch_spec(modulus = c(TRUE, FALSE), powers = c(0, 1))
 #'# Some unnamed specification
 #'spec5 <- fEGarch_spec(
-#'  model_type = "eGARCH",
+#'  model_type = "egarch",
 #'  orders = c(1, 1),
 #'  long_memo = TRUE,
 #'  cond_dist = "std",
@@ -359,7 +359,7 @@ loggarch_type_spec <- function(
 #'
 
 fEGarch_spec <- function(
-  model_type = c("eGARCH", "logGARCH"),
+  model_type = c("egarch", "loggarch"),
   orders = c(1, 1),
   long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
@@ -373,7 +373,7 @@ fEGarch_spec <- function(
     }
   )
   if (is.null(model_type) || is.na(model_type)) {
-    model_type <- "eGARCH"
+    model_type <- "egarch"
   }
   if (is.null(orders) || all(is.na(orders))) {
     orders <- c(1, 1)
@@ -381,7 +381,7 @@ fEGarch_spec <- function(
   if (is.null(long_memo) || is.na(long_memo)) {
     long_memo <- FALSE
   }
-  if ((is.null(modulus) || all(is.na(modulus))) && (model_type == "eGARCH")) {
+  if ((is.null(modulus) || all(is.na(modulus))) && (model_type == "egarch")) {
     modulus <- c(FALSE, FALSE)
   }
   cond_dist <- tryCatch(
@@ -390,11 +390,11 @@ fEGarch_spec <- function(
       stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
     }
   )
-  if ((is.null(powers) || all(is.na(powers))) && (model_type == "eGARCH")) {
+  if ((is.null(powers) || all(is.na(powers))) && (model_type == "egarch")) {
     powers <- c(1, 1)
   }
 
-  if (model_type == "eGARCH") {
+  if (model_type == "egarch") {
     out <- egarch_type_spec(
       orders = orders,
       long_memo = long_memo,
@@ -402,7 +402,7 @@ fEGarch_spec <- function(
       powers = powers,
       modulus = modulus
     )
-  } else if (model_type == "logGARCH") {
+  } else if (model_type == "loggarch") {
     out <- loggarch_type_spec(
       orders = orders,
       long_memo = long_memo,
@@ -512,40 +512,40 @@ setMethod("cond_dist<-", "base_garch_spec", function(x, value) {x@cond_dist <- v
 #'
 #'\eqn{\textbf{EGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{model_type = "egarch"}, \code{long_memo = FALSE},
 #'\code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
 #'
 #'\eqn{\textbf{FIEGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{model_type = "egarch"}, \code{long_memo = TRUE},
 #'\code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
 #'
 #'\eqn{\textbf{MEGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{model_type = "egarch"}, \code{long_memo = FALSE},
 #'\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 #'
 #'\eqn{\textbf{Log-GARCH:}}
 #'
-#'\code{model_type = "logGARCH"}, \code{long_memo = FALSE}
+#'\code{model_type = "loggarch"}, \code{long_memo = FALSE}
 #'
 #'\eqn{\textbf{FILog-GARCH:}}
 #'
-#'\code{model_type = "logGARCH"}, \code{long_memo = TRUE}
+#'\code{model_type = "loggarch"}, \code{long_memo = TRUE}
 #'
 #'\eqn{\textbf{MLog-GARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{model_type = "egarch"}, \code{long_memo = FALSE},
 #'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 #'
 #'\eqn{\textbf{FIMLog-GARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{model_type = "egarch"}, \code{long_memo = TRUE},
 #'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 #'
 #'\eqn{\textbf{FIMEGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{model_type = "egarch"}, \code{long_memo = TRUE},
 #'\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 #'
 #'@name submodel-specs
@@ -563,7 +563,7 @@ megarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
@@ -579,7 +579,7 @@ fimegarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
@@ -595,7 +595,7 @@ egarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
@@ -611,7 +611,7 @@ fiegarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
@@ -627,7 +627,7 @@ mloggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
@@ -643,7 +643,7 @@ fimloggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
@@ -659,7 +659,7 @@ loggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "logGARCH",
+    model_type = "loggarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist
@@ -673,7 +673,7 @@ filoggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "logGARCH",
+    model_type = "loggarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist
@@ -1948,7 +1948,7 @@ setMethod(
     "*     Fitted EGARCH Family Model    *\n",
     "*************************************\n",
     " \n",
-    "Type: eGARCH\n",
+    "Type: egarch\n",
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Modulus: (", x@modulus[[1]], ", ", x@modulus[[2]], ")\n",
     "Powers: (", x@powers[[1]], ", ", x@powers[[2]], ")\n",
@@ -2020,7 +2020,7 @@ setMethod(
     "*     Fitted EGARCH Family Model    *\n",
     "*************************************\n",
     " \n",
-    "Type: logGARCH\n",
+    "Type: loggarch\n",
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",

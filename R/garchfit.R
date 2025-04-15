@@ -116,7 +116,8 @@ goal_fun_creator_garch <- function(
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param meanspec an object of class "mean_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
@@ -139,17 +140,22 @@ goal_fun_creator_garch <- function(
 #'@param LB the lower boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments
 #'for the hyperparameter estimation algorithm in the nonparametric
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
+#'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
+#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
 #'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
@@ -185,13 +191,22 @@ goal_fun_creator_garch <- function(
 #'and \eqn{q} are the model orders definable through the argument \code{orders},
 #'where \eqn{p} is the first element and \eqn{q} is the second element in the
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-#'real-valued parameter. \eqn{\omega > 0} is the intercept.
+#'real-valued parameter. \eqn{\omega > 0} is the intercept. This overall
+#'definition is in accordance with Bollerslev (1986).
+#'
+#'In the current package version, standard errors of parameter estimates are
+#'computed from the Hessian at the optimum of the log-likelihood using
+#'\code{\link[numDeriv]{hessian}}. To ensure numerical stability and
+#'applicability to a huge variety of differently scaled data, parametric
+#'models are first fitted to data that is scaled to have sample variance
+#'1. Parameter estimates and other quantities are then either
+#'retransformed or recalculated afterwards for the original data.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
-#'distribution parameter \eqn{P} from 1 to 8 is estimated (assuming that
+#'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
 #'\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
-#'estimated by selecting the estimated model among the eight fitted models that
-#'has the largest log-likelihood. The eight models are, by default, fitted
+#'estimated by selecting the estimated model among the five fitted models that
+#'has the largest log-likelihood. The five models are, by default, fitted
 #'simultaneously using parallel programming techniques (see also the arguments
 #'\code{parallel} and \code{ncores}, which are only relevant for a conditional
 #'average Laplace distribution). After the optimal model (including
@@ -206,22 +221,21 @@ goal_fun_creator_garch <- function(
 #'
 #'As an alternative, a semiparametric extension of the pure models
 #'in the conditional variance can be implemented. If \code{use_nonpar = TRUE},
-#'\code{meanspec} is omitted and before fitting a zero-mean model in the
+#'\code{meanspec} is omitted and before fitting a model in the
 #'conditional volatility following the remaining function arguments, a smooth scale function,
 #'i.e. a function representing the unconditional standard deviation over time,
 #'is being estimated following the specifications in \code{nonparspec} and
 #'\code{control_nonpar}. This preliminary step stabilizes the input
 #'series \code{rt}, as long-term changes in the unconditional variance
 #'are being estimated and removed before the parametric step using
-#'\code{\link[esemifar]{tsmoothlm}}. \code{control_nonpar} can be adjusted following
-#'to make changes to the arguments of \code{\link[esemifar]{tsmoothlm}}
-#'for long-memory specifications. These arguments specify settings
+#'\code{\link[smoots]{tsmooth}}. \code{control_nonpar} can be adjusted following
+#'to make changes to the arguments of \code{\link[smoots]{tsmooth}}
+#'for short-memory specifications. These arguments specify settings
 #'for the automated bandwidth selection algorithms implemented by this
 #'function. By default, we use the settings
-#'\code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
-#'\code{qmax = 1}, \code{InfR = "Nai"},
+#'\code{InfR = "Nai"},
 #'\code{bStart = 0.15}, \code{cb = 0.05}, and
-#'\code{method = "lpr"} for \code{\link[esemifar]{tsmoothlm}}.
+#'\code{method = "lpr"} for \code{\link[smoots]{tsmooth}}.
 #'\code{\link{locpol_spec}} passed to \code{nonparspec} handles
 #'more direct settings of the local polynomial smoother itself. See
 #'the documentation for these functions to get a detailed overview
@@ -234,7 +248,7 @@ goal_fun_creator_garch <- function(
 #'almost surely. Once \eqn{y_t} are available, its trend \eqn{m(x_t)},
 #'with \eqn{x_t} as the rescaled time on the interval \eqn{[0, 1]}, is
 #'being estimated using
-#'\code{\link[esemifar]{tsmoothlm}} and denoted here by
+#'\code{\link[smoots]{tsmooth}} and denoted here by
 #'\eqn{\hat{m}(x_t)}. Then from \eqn{\hat{\xi}_t = y_t - \hat{m}(x_t)}
 #'obtain \eqn{\hat{C} = -\ln\left\{\sum_{t=1}^{n}\exp\left(\hat{\xi}_t\right)\right\}},
 #'and obtain the estimated scale function as
@@ -249,6 +263,14 @@ goal_fun_creator_garch <- function(
 #'model part) for that same time point. See for example Feng et al. (2022)
 #'or Letmathe et al. (2023) for more information on the semiparametric extension
 #'of volatility models.
+#'
+#'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
+#'is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
+#'\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
+#'\phi_1,\dots,\phi_p, \beta_1, \dots, \beta_{q}, \text{shape parameter},
+#'\text{skewness parameter}}. Depending on the exact model specification,
+#'parameters irrelevant for the specification at hand should be dropped
+#'in \code{start_pars}, \code{LB} and \code{UB}.
 #'
 #'@export
 #'
@@ -277,7 +299,7 @@ goal_fun_creator_garch <- function(
 #'testing following \code{n_test}.}
 #'\item{\code{scale_fun}:}{the estimated scale function values, if \code{use_nonpar = TRUE}, otherwise
 #'\code{NULL}; formatting of \code{rt} is reused.}
-#'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
+#'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[smoots]{tsmooth}} for
 #'\code{use_nonpar = TRUE}.}
 #'\item{\code{trunc}:}{the input argument \code{trunc}.}
 #'}
@@ -290,9 +312,15 @@ goal_fun_creator_garch <- function(
 #'
 #'@references
 #'\itemize{
-#'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
-#'memory in stock market volatility. Journal of Econometrics, 73(1):
-#'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
+#'\item{Bollerslev, T. (1986). Generalized autoregressive conditional
+#'heteroskedasticity. Journal of Econometrics, 31(3):
+#'307-327. DOI: 10.1016/0304-4076(86)90063-1.}
+#'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
+#'Trend Stationary Time Series. The R Journal,
+#'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
+#'in R. Comunications in Statistics - Theory and Methods,
+#'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'}
 #'
 garch <- function(rt, orders = c(1, 1),
@@ -301,7 +329,7 @@ garch <- function(rt, orders = c(1, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-                        control_nonpar = list(),
+                        control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", presample = 50, Prange = c(1, 5)) {
 

@@ -125,7 +125,8 @@ goal_fun_creator_gjrgarch <- function(
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param meanspec an object of class "mean_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
@@ -148,17 +149,22 @@ goal_fun_creator_gjrgarch <- function(
 #'@param LB the lower boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; see "Details" for the
+#'order of elements.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments
 #'for the hyperparameter estimation algorithm in the nonparametric
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
+#'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
+#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
 #'if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
@@ -201,10 +207,18 @@ goal_fun_creator_gjrgarch <- function(
 #'APARCH (Ding et al., 1993)
 #'and the FIAPARCH (Tse, 1998) models.
 #'
+#'In the current package version, standard errors of parameter estimates are
+#'computed from the Hessian at the optimum of the log-likelihood using
+#'\code{\link[numDeriv]{hessian}}. To ensure numerical stability and
+#'applicability to a huge variety of differently scaled data, parametric
+#'models are first fitted to data that is scaled to have sample variance
+#'1. Parameter estimates and other quantities are then either
+#'retransformed or recalculated afterwards for the original data.
+#'
 #'For a conditional average Laplace distribution, an optimal model for each
 #'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
 #'\eqn{P} is then fixed to the corresponding value). Afterwards, \eqn{P} is then
-#'estimated by selecting the estimated model among the eight fitted models that
+#'estimated by selecting the estimated model among the five fitted models that
 #'has the largest log-likelihood. The eight models are, by default, fitted
 #'simultaneously using parallel programming techniques (see also the arguments
 #'\code{parallel} and \code{ncores}, which are only relevant for a conditional
@@ -220,7 +234,7 @@ goal_fun_creator_gjrgarch <- function(
 #'
 #'As an alternative, a semiparametric extension of the pure models
 #'in the conditional variance can be implemented. If \code{use_nonpar = TRUE},
-#'\code{meanspec} is omitted and before fitting a zero-mean model in the
+#'\code{meanspec} is omitted and before fitting a model in the
 #'conditional volatility following the remaining function arguments, a smooth scale function,
 #'i.e. a function representing the unconditional standard deviation over time,
 #'is being estimated following the specifications in \code{nonparspec} and
@@ -230,7 +244,7 @@ goal_fun_creator_gjrgarch <- function(
 #'\code{\link[smoots]{tsmooth}}. \code{control_nonpar} can be adjusted following
 #'to make changes to the arguments of \code{\link[smoots]{tsmooth}}
 #'for long-memory specifications. These arguments specify settings
-#'for the automated bandwidth selection algorithms implemented by thís
+#'for the automated bandwidth selection algorithms implemented by this
 #'function. By default, we use the settings
 #'\code{InfR = "Nai"},
 #'\code{bStart = 0.15}, \code{cb = 0.05}, and
@@ -263,6 +277,15 @@ goal_fun_creator_gjrgarch <- function(
 #'or Letmathe et al. (2023) for more information on the semiparametric extension
 #'of volatility models.
 #'
+#'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
+#'is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
+#'\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
+#'\phi_1,\dots,\phi_p, \beta_1, \dots, \beta_{q}, \gamma_1,
+#'\dots,\gamma_p, \text{shape parameter},
+#'\text{skewness parameter}}. Depending on the exact model specification,
+#'parameters irrelevant for the specification at hand should be dropped
+#'in \code{start_pars}, \code{LB} and \code{UB}.
+#'
 #'@export
 #'
 #'@return
@@ -290,7 +313,7 @@ goal_fun_creator_gjrgarch <- function(
 #'testing following \code{n_test}.}
 #'\item{\code{scale_fun}:}{the estimated scale function values, if \code{use_nonpar = TRUE}, otherwise
 #'\code{NULL}; formatting of \code{rt} is reused.}
-#'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
+#'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[smoots]{tsmooth}} for
 #'\code{use_nonpar = TRUE}.}
 #'\item{\code{trunc}:}{the input argument \code{trunc}.}
 #'}
@@ -303,12 +326,6 @@ goal_fun_creator_gjrgarch <- function(
 #'
 #'@references
 #'\itemize{
-#'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
-#'memory in stock market volatility. Journal of Econometrics, 73(1):
-#'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
-#'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
-#'413-449. DOI: 10.1093/jjfinec/nbj015.}
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
 #'and a new model. Journal of Empirical Finance, 1(1):
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
@@ -329,7 +346,7 @@ gjrgarch <- function(rt, orders = c(1, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-                        control_nonpar = list(),
+                        control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
                         trunc = "none", presample = 50, Prange = c(1, 5)) {
 
