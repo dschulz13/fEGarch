@@ -114,8 +114,10 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 use for parallel computations.}
 
 \item{trunc}{a positive integer indicating the finite truncation length of the
-infinite-order polynomial of the infinite-order ARCH-representation of the
-long-memory model parts.}
+infinite-order polynomials of the infinite-order representations of the
+long-memory model parts; the character \code{"none"} is an optional input
+that specifies that truncation should always be applied back to the first (presample) observation
+time point, i.e. that maximum length filters should be applied at all times.}
 
 \item{presample}{the presample length for initialization (for extended EGARCH- / Log-GARCH-type
 models only relevant for the FARIMA-part, as series in log-transformed

@@ -189,13 +189,18 @@ goal_fun_creator_fiaparch <- function(
 #'\code{ncores} is a single numeric value indicating the number of cores to
 #'use for parallel computations.
 #'@param trunc a positive integer indicating the finite truncation length of the
-#'infinite-order polynomial of the infinite-order ARCH-representation of the
-#'long-memory model parts.
+#'infinite-order polynomials of the infinite-order representations of the
+#'long-memory model parts; the character \code{"none"} is an optional input
+#'that specifies that truncation should always be applied back to the first (presample) observation
+#'time point, i.e. that maximum length filters should be applied at all times.
 #'@param presample the presample length for initialization (for extended EGARCH- / Log-GARCH-type
 #'models only relevant for the FARIMA-part, as series in log-transformed
 #'conditional variance are initialized by zero).
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
+#'@param fix_delta let the parameter \eqn{delta} be either free (\code{fix_delta = NA}),
+#'fix it to 1 (\code{fix_delta = 1}) or to 2 (\code{fix_delta = 2}); the latter
+#'two are specific submodels of a FIAPARCH.
 #'
 #'@details
 #'Consider a FIAPARCH(\eqn{p, d, q}) with constant asymmetry term \eqn{\gamma} regardless
@@ -406,11 +411,26 @@ fiaparch <- function(rt, orders = c(1, 1),
                         LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = "none", presample = 50, Prange = c(1, 5)) {
+                        trunc = 1000, presample = 50, Prange = c(1, 5),
+                        fix_delta = c(NA, 1, 2)) {
 
   inp_args <- mget(names(formals()), envir = environment())
 
-  inp_args[["model_type"]] <- "fiaparch"
+  if (length(fix_delta) == 3 && (is.na(fix_delta[[1]]) && fix_delta[[2]] == 1 && fix_delta[[3]] == 2)) {
+    fix_delta <- NA
+  }
+
+  inp_args[["fix_delta"]] <- NULL
+
+  mt <- if (is.na(fix_delta)) {
+    "fiaparch"
+  } else if (fix_delta == 1) {
+    "fitgarch"
+  } else if (fix_delta == 2) {
+    "figjrgarch"
+  }
+
+  inp_args[["model_type"]] <- mt
   do.call(general_garch_fitting, args = inp_args)
 
 }

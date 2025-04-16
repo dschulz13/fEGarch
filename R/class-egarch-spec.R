@@ -964,7 +964,7 @@ goal_fun_creator_egarch <- function(
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 50, Prange = c(1, 5)) {
+    ncores = max(1, future::availableCores() - 1), trunc = 1000, presample = 50, Prange = c(1, 5)) {
 
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
@@ -1522,7 +1522,7 @@ goal_fun_creator_loggarch <- function(
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 50, Prange = c(1, 5)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000, presample = 50, Prange = c(1, 5)) {
 
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
@@ -2046,21 +2046,23 @@ setMethod(
   }
 )
 
-#'Methods for Accessing Model Estimation Output Elements
+#'Methods for Accessing Model Estimation and Foprecasting Output Elements
 #'
 #'Accessors to access the elements of the same name in
 #'output objects returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'\code{\link{garchm_estim}}, \code{predict} or \code{predict_roll}.
 #'
 #'@param x an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'\code{\link{garchm_estim}}, \code{predict} (for \code{sigt} and \code{cmeans})
+#'or \code{predict_roll} (for \code{sigt} and \code{cmeans}).
 #'
 #'@details
 #'Convenience methods to access the elements of the same name
 #'that can otherwise be accessed via the operator \code{@} within
 #'objects that inherit from class \code{"fEGarch_fit"}, which covers
-#'objects returned by \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'objects returned by either \code{\link{fEGarch}},
+#'\code{\link{garchm_estim}}, \code{predict} (for \code{sigt} and \code{cmeans})
+#'or \code{predict_roll} (for \code{sigt} and \code{cmeans}).
 #'
 #'@return
 #'The element within the input object of the same name as the method

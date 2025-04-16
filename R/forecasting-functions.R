@@ -124,8 +124,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
     numeric(0)
   }
 
-  mu <- if (exists("mu", where = as.list(model_pars)) && !is.null(object@nonpar_model)) {
-    model_pars[["mu"]]
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    if (!is.null(object@nonpar_model)) {
+      0
+    } else {
+      model_pars[["mu"]]
+    }
   } else {
     0
   }
@@ -578,6 +582,30 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_figjrgarch",
   }
 )
 
+# For TGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_tgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 1
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For FITGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_fitgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 1
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
 # For GARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
   function(object, n.ahead = 10, trunc = NULL, ...) {
@@ -732,10 +760,13 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_figarch",
 methods::setMethod("predict_internal", "fEGarch_fit",
   function(object, n.ahead = 10, trunc = NULL, ...) {
 
+    trunc_obj <- object@trunc
+    check <- is.character(trunc_obj) && trunc_obj == "none"
+
     # Get truncation for long-memory models from fitted object
-    if (is.null(trunc)) {
+    if (is.null(trunc) || check) {
       trunc_obj <- object@trunc
-      if (is.character(trunc_obj) && trunc_obj == "none") {
+      if (check) {
         trunc <- length(object@rt) - 1 + n.ahead
       } else {
         trunc <- trunc_obj

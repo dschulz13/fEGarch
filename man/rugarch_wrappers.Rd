@@ -150,9 +150,9 @@ of volatility models.
 }
 \examples{
 est <- gjrgarch_ru(SP500)
-est$pars
-est$se
-plot(est$sigt)
+est@pars
+est@se
+plot(est@sigt)
 
 }
 \references{

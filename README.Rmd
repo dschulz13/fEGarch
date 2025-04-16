@@ -24,7 +24,8 @@ knitr::opts_chunk$set(
 `r badger::badge_license(color = "yellow")`
 <!-- badges: end -->
 
-The goal of `fEGarch` is to provide easy access to a broad family of exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models both with either short or long memory. The six most common conditional distributions, i.e. a normal distribution, a $t$-distribution, a generalized error distribution, and the skewed variants of those three, are available. Furthermore, we introduce the average Laplace distribution and its skewed variant as newly selectable conditional distributions for the EGARCH family models. Overall, the EGARCH family models are a strong competition to well-established GARCH-type models and provide new ways to estimate conditional volatilities, while making the prominent EGARCH and fractionally integrated EGARCH (FIEGARCH) available as special cases. For convenience and the purpose of comparison, fractionally integrated asymmetric power ARCH (FIAPARCH) and fractionally integrated GARCH (FIGARCH) models are available as well for estimation among other additional models.
+The goal of `fEGarch` is to provide easy access to a broad family of exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models both with either short or long memory. The six most common conditional distributions, i.e. a normal distribution, a $t$-distribution, a generalized error distribution, and the skewed variants of those three, are available. Furthermore, we introduce the average Laplace distribution and its skewed variant as newly selectable conditional distributions. Overall, the EGARCH family models are a strong competition to well-established GARCH-type models and provide new ways to estimate conditional volatilities, while making the prominent EGARCH and fractionally integrated EGARCH (FIEGARCH) available as special cases. For convenience and the purpose of comparison, a fractionally integrated asymmetric power ARCH (FIAPARCH), a fractionally
+integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH) and fractionally integrated GARCH (FIGARCH) models are available as well as their short-memory variants. Throughout, the estimation method is quasi-maximum-likelihood estimation (conditioned on presample values).
 
 ## Installation
 
@@ -47,8 +48,9 @@ library(fEGarch)
 
 ### 1. Set model specification via "fEGarch_spec()"
 spec1 <- fEGarch_spec(
-  model_type = "eGARCH",       # the basic model type among EGARCH and
-                               # Log-GARCH as subclasses of the EGARCH family;
+  model_type = "egarch",       # the basic model type among EGARCH and
+                               # Log-GARCH as subclasses of the broad 
+                               # EGARCH family;
   orders = c(1, 1),            # the model orders;
   long_memo = TRUE,            # include long memory?;
   cond_dist = "norm",          # the conditional distribution;
@@ -62,19 +64,20 @@ spec1 <- fEGarch_spec(
 
 ```
 
-Afterwards, use the model specification returned by `fEGarch_spec()` together with your data object and apply the estimation function `fEGarch()` to them.
+Afterwards, use the model specification returned by `fEGarch_spec()` together with your data object and apply the estimation function `fEGarch()` to them. As can be seen, the package also imports and exports the pipe operator `%>%` of the `magrittr` package for a simplified coding workflow.
 
 ```{r}
 ### 2. Use specification to fit model to data
 rt <- SP500
-model1 <- fEGarch(spec1, rt)
+model1 <- spec1 %>%
+  fEGarch(rt)
 model1
 ```
 
 Using the model description in the documentation of `fEGarch_spec()`, the fitted model following the previous estimation results is
-$$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
+$$r_t = 0.0002 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
+$$\ln\left(\sigma_t^2\right)=-8.5977 + (1-0.8094 B)^{-1}(1-B)^{-0.3634}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$g\left(\eta_{t-1}\right)=-0.2447\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3053\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
 
@@ -99,7 +102,8 @@ spec10 <- megarch_spec(orders = c(2, 1), cond_dist = "std")
 They can all be used in `fEGarch()`. In the following, the previously created model specification `spec9` is considered for the log-returns. The other specifications can be applied analogously.
 
 ```{r}
-model10 <- fEGarch(spec10, rt)   # ... and so on for other specifications
+model10 <- spec10 %>%
+  fEGarch(rt)   # ... and so on for other specifications
 model10
 ```
 
@@ -112,11 +116,8 @@ spec_arma <- mean_spec(
   long_memo = FALSE,    # Long-memory?
   include_mean = TRUE   # Estimate uncond. mean?
 )
-model11 <- fEGarch(
-  spec = spec_egarch,
-  rt = rt,
-  meanspec = spec_arma
-)
+model11 <- spec_egarch %>%
+  fEGarch(rt, meanspec = spec_arma)
 model11
 ```
 
@@ -124,15 +125,17 @@ Yet another alternative is the fitting of semiparametric extensions of condition
 
 ```{r}
 model12 <- fiegarch_spec(cond_dist = "std") %>%
-  fEGarch(rt = SP500, use_nonpar = TRUE)
+  fEGarch(rt, use_nonpar = TRUE)
 model12
-plot(cbind("Standardized" = (SP500 - mean(SP500)) / sd(SP500), 
-           "Scale-adjusted" = (SP500 - mean(SP500)) / model12@scale_fun),
+plot(cbind("Standardized" = (rt - mean(rt)) / sd(rt), 
+           "Scale-adjusted" = (rt - mean(rt)) / model12@scale_fun),
      xlab = "Year",
      main = "Standardized log-returns and their scale-adjusted version")
 ```
 
 The estimated volatility is then the product of the estimated scale function and the estimated conditional standard deviation both obtained at the corresponding time point.
+
+Note that the returned AIC and BIC values are only valid for parametric model parts and are, in case of a semiparametric model, based on the scale-adjusted returns. A direct comparison of AIC and BIC values between purely parametric and semiparametric models is therefore not possible.
 
 ### Illustrations
 
@@ -179,14 +182,16 @@ plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
 
 ### Alternatives
 
-The `fEGarch` package also allows for the estimation of FIAPARCH and FIGARCH models, however, currently only with fixed model orders $p=q=1$. For these two models, there are two fitting functions `figarch()` and `fiaparch()` available without any preceding model specification steps. Model specifications can be made via arguments within these functions directly. ALternatively, the wrapper `garch_estim()` can be used to select and fit a GARCH-type model (not belonging to the EGARCH family).
+The `fEGarch` package also allows for the estimation of FIAPARCH and FIGARCH models, however, currently only with fixed model orders $p=q=1$. For these two models, there are two fitting functions `figarch()` and `fiaparch()` available without any preceding model specification steps. Model specifications can be made via arguments within these functions directly. Alternatively, the wrapper `garchm_estim()` can be used to select and fit a GARCH-type model (not belonging to the EGARCH family).
 
 ```{r}
-model_fiaparch <- fiaparch(rt, orders = c(1, 1), cond_dist = "std")
-model_fiaparch2 <- garch_estim(rt, model = "fiaparch", orders = c(1, 1),
-                               cond_dist = "std")
-model_figarch <- figarch(rt, orders = c(1, 1), cond_dist = "std")
-model_fiaparch
+model_fiaparch <- rt %>%
+  fiaparch(orders = c(1, 1), cond_dist = "std")
+model_fiaparch2 <- rt %>%
+  garchm_estim(model = "fiaparch", orders = c(1, 1), cond_dist = "std")
+model_figarch <- rt %>%
+  figarch(orders = c(1, 1), cond_dist = "std")
+model_figarch
 ```
 
 ```{r, fig.height = 8}
@@ -207,6 +212,86 @@ plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 
 The package provides the two commands `predict()` and `predict_roll()` to compute, given a fitted model from the package, either multistep out-of-sample point forecasts of the conditional standard deviation (and of the conditional mean) or rolling point forecasts (of arbitrarily selectable step size) of the conditional standard deviation (and of the conditional mean) over some reserved test sample.
 
+For multistep forecasts into the future, consider `predict` and its argument `n.ahead`.
+
+```{r, eval = TRUE, echo = FALSE, include = FALSE}
+Sys.setlocale(locale = "en_US.UTF-8")
+```
+
+
+```{r}
+new_model <- egarch_spec() %>%
+  fEGarch(rt, meanspec = mean_spec(orders = c(1, 0))) 
+new_model
+fc <- new_model %>%
+  predict(n.ahead = 20)
+plot(
+  cbind(
+    "Return" = cmeans(fc),
+    "Volatility" = sigt(fc),
+    "Return_in" = window(new_model@rt, start = as.Date("2024-10-01")),
+    "Vol_in" = window(sigt(new_model), start = as.Date("2024-10-01"))
+  ),
+  screens = c(1, 2, 1, 2),
+  col = c(2, 2, 1, 1),
+  main = "Multistep forecasting results for\nan ARMA(1, 0)-EGARCH(1, 1)",
+  xlab = "Month"
+)
+```
+
+Rolling point forecasts can be computed using `predict_roll`, if previously in the model estimation step observations were reserved for testing using the argument `n_test`.
+
+```{r, fig.height = 7}
+new_model <- egarch_spec() %>%
+  fEGarch(rt, meanspec = mean_spec(orders = c(1, 0)), n_test = 250) 
+new_model
+fc2 <- new_model %>%
+  predict_roll()
+plot(
+  cbind(
+    "Return" = new_model@test_obs,
+    "Mean" = cmeans(fc2),
+    "Volatility" = sigt(fc2)
+  ),
+  screens = c(1, 2, 3),
+  main = "One-step rolling forecast results for\nan ARMA(1, 0)-EGARCH(1, 1)",
+  xlab = "Month"
+)
+```
+
+### Backtesting
+
+The results from one-step rolling point forecasts for the conditional mean and the conditional standard deviation for test time points can be used for common backtesting approaches. first and foremost, the resulting object from a call to `predict_roll` can be fed to `measure_risk` to compute value at risk (VaR) and expected shortfall (ES) following those forecasts and the underlying conditional distribution.
+
+```{r}
+risk <- fc2 %>%
+  measure_risk()
+```
+
+By default, the 97.5% and the 99% VaR and ES will be computed. A plotting method (also additionally available as `autoplot` for compatibility with the `ggplot2` framework) allows for plotting the test returns together with the VaR and ES of a selected confidence level from the output of `measure_risk`.
+
+```{r, fig.height = 4}
+risk %>%
+  plot(which = 0.975, xlab = "Month")
+```
+
+As can be seen, the breaches of the VaR are automatically highlighted through the colors red and purple. Breaches of the ES (and therefore implied also of the VaR) are shown through the color purple alone. Furthermore, time series formatting of `"zoo"` objects is kept for simplified formatting of the x-axis.
+
+Moreover, a test suite consisting of traffic light tests for VaR and ES and of coverage and independence tests can be applied using `backtest_suite` on the output of `measure_risk`.
+
+```{r}
+risk %>%
+  backtest_suite()
+```
+
+Ultimately, the package is also capable of computing loss functions based on VaR and ES. For detailed description of those loss functions, see the manual of the package.
+
+```{r}
+risk %>%
+  loss_functions(penalty = 1e-04)
+```
+
+
 ## Main functions
 
 The main functions of the package are:
@@ -215,7 +300,7 @@ The main functions of the package are:
 
 - `fEGarch()`: fitting function for models of the broader EGARCH family,
 
-- `garch_estim()`: GARCH-type model fitting selectable from standard GARCH, GJR-GARCH, APARCH, FIGARCH, FIGJR-GARCH and FIAPARCH.
+- `garchm_estim()`: GARCH-type model fitting selectable from standard GARCH, GJR-GARCH, APARCH, FIGARCH, FIGJR-GARCH and FIAPARCH.
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
@@ -236,6 +321,8 @@ The main functions of the package are:
 - `predict()`: a forecasting method to compute multistep point forecasts of the conditional mean and the conditional standard deviation following one of the package's fitted models,
 
 - `predict_roll()`: a method to compute rolling point forecasts of the conditional mean and the conditional standard deviation over a test set following one of the package's fitted models.
+
+- `backtest_suite`: a collection of tests for backtesting of VaR and ES.
 
 The package, however, provides many other useful functions for you to discover.
 

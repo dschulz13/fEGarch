@@ -14,11 +14,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   q <- orders[[2]]
 
   cond_d <- match.arg(cond_dist)
-  lm <- (model_type %in% c("figarch", "figjrgarch", "fiaparch"))
+  lm <- (model_type %in% c("figarch", "figjrgarch", "fiaparch", "fitgarch"))
 
   if (lm && !all(orders == c(1, 1))) {
     orders <- c(1, 1)
-    message("Only orders p=1 with q=1 are currently supported for FIGARCH, FIGJR-GARCH and FIAPARCH models.")
+    message("Only orders p=1 with q=1 are currently supported for FIGARCH, FITGARCH, FIGJR-GARCH and FIAPARCH models.")
   }
 
   if (use_nonpar) {
@@ -67,9 +67,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     model_type,
     "garch" = goal_fun_creator_garch,
     "gjrgarch" = goal_fun_creator_gjrgarch,
+    "tgarch" = goal_fun_creator_tgarch,
     "aparch" = goal_fun_creator_aparch,
     "figarch" = goal_fun_creator_figarch,
     "figjrgarch" = goal_fun_creator_figjrgarch,
+    "fitgarch" = goal_fun_creator_fitgarch,
     "fiaparch" = goal_fun_creator_fiaparch
   )
 
@@ -91,6 +93,14 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "garch" = list(sig2_init = 1),
     "gjrgarch" = {
       delta0 <- 2    # use delta0 = 2
+      gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
+      sigd_init <- sd(rt_core)^delta0
+      rt_dm <- rt_core - mean(rt_core)
+      etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
+      list(sigd_init = sigd_init, etransf_init = etransf_init)
+    },
+    "tgarch" = {
+      delta0 <- 1    # use delta0 = 1
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
       sigd_init <- sd(rt_core)^delta0
       rt_dm <- rt_core - mean(rt_core)
@@ -122,6 +132,24 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         n_test = n_test
       ))
       delta0 <- 2
+      gamma0 <- est_s@pars[["gamma1"]]
+      rt_dm <- rt_core - mean(rt_core)
+      list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
+    },
+    "fitgarch" = {
+      est_s <- suppressWarnings(gjrgarch(
+        rt = rt,
+        orders = orders,
+        cond_dist = cond_dist,
+        meanspec = meanspec,
+        use_nonpar = use_nonpar,
+        nonparspec = nonparspec,
+        parallel = parallel,
+        ncores = ncores,
+        Prange = Prange,
+        n_test = n_test
+      ))
+      delta0 <- 1
       gamma0 <- est_s@pars[["gamma1"]]
       rt_dm <- rt_core - mean(rt_core)
       list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
@@ -251,6 +279,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       model_type,
       "figarch" = 1,
       "figjrgarch" = 2,
+      "fitgarch" = 2,
       "fiaparch" = 3
     )
 
@@ -290,7 +319,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
           sum(phi) + sum(beta)
         }
-      } else if (model_type %in% c("gjrgarch", "aparch")) {
+      } else if (model_type %in% c("gjrgarch", "tgarch", "aparch")) {
         ineqLB_vol <- NULL
         ineqUB_vol <- NULL
 
@@ -418,9 +447,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     character(0)
   }
 
-  gamma_name <- if (model_type %in% c("fiaparch", "figjrgarch")) {
+  gamma_name <- if (model_type %in% c("fiaparch", "figjrgarch", "fitgarch")) {
     "gamma"
-  } else if (model_type %in% c("aparch", "gjrgarch")) {
+  } else if (model_type %in% c("aparch", "gjrgarch", "tgarch")) {
     paste0("gamma", 1:p)
   } else {
     character(0)
@@ -479,9 +508,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     model_type,
     "garch" = 2,
     "gjrgarch" = 2,
+    "tgarch" = 1,
     "aparch" = pars[[n_arma_pars + 2 * p + q + 2]],
     "figarch" = 2,
     "figjrgarch" = 2,
+    "fitgarch" = 1,
     "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]]
   )
 
@@ -539,9 +570,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     model_type,
     "garch" = fEGarch_fit_garch,
     "gjrgarch" = fEGarch_fit_gjrgarch,
+    "tgarch" = fEGarch_fit_tgarch,
     "aparch" = fEGarch_fit_aparch,
     "figarch" = fEGarch_fit_figarch,
     "figjrgarch" = fEGarch_fit_figjrgarch,
+    "fitgarch" = fEGarch_fit_fitgarch,
     "fiaparch" = fEGarch_fit_fiaparch
   )
 

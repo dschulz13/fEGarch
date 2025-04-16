@@ -21,9 +21,10 @@ aparch(
   mean_after_nonpar = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = "none",
+  trunc = 1000,
   presample = 50,
-  Prange = c(1, 5)
+  Prange = c(1, 5),
+  fix_delta = c(NA, 1, 2)
 )
 }
 \arguments{
@@ -114,8 +115,10 @@ if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 use for parallel computations.}
 
 \item{trunc}{a positive integer indicating the finite truncation length of the
-infinite-order polynomial of the infinite-order ARCH-representation of the
-long-memory model parts.}
+infinite-order polynomials of the infinite-order representations of the
+long-memory model parts; the character \code{"none"} is an optional input
+that specifies that truncation should always be applied back to the first (presample) observation
+time point, i.e. that maximum length filters should be applied at all times.}
 
 \item{presample}{the presample length for initialization (for extended EGARCH- / Log-GARCH-type
 models only relevant for the FARIMA-part, as series in log-transformed
@@ -123,6 +126,10 @@ conditional variance are initialized by zero).}
 
 \item{Prange}{a two-element vector that indicates the search boundaries for
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}
+
+\item{fix_delta}{let the parameter \eqn{delta} be either free (\code{fix_delta = NA}),
+fix it to 1 (\code{fix_delta = 1}) or to 2 (\code{fix_delta = 2}); the latter
+two are specific submodels of a FIAPARCH.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_aparch"}

@@ -160,10 +160,18 @@ setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
 
   idx <- obs < VaR
 
-  obs <- as.numeric(obs)[idx]
+  obs_s1 <- as.numeric(obs)[idx]
   tp2 <- c(time(VaR))[idx]
   if (sum(idx) >= 1) {
-    lines(tp2, obs, type = "h", col = "red", lwd = 1.5)
+    lines(tp2, obs_s1, type = "h", col = "red", lwd = 1.5)
+  }
+
+  idx <- obs < ES
+
+  obs_s2 <- as.numeric(obs)[idx]
+  tp2 <- c(time(ES))[idx]
+  if (sum(idx) >= 1) {
+    lines(tp2, obs_s2, type = "h", col = "purple", lwd = 1.5)
   }
 
 
@@ -250,6 +258,28 @@ if (inherits(obs, what = "zoo")) {
         data = df,
         mapping = ggplot2::aes(x = .data[["Time"]], y = .data[["Obs"]], yend = 0),
         color = "red",
+        inherit.aes = FALSE
+      )
+
+  }
+
+  idx <- obs < ES
+
+  obs3 <- as.numeric(obs)[idx]
+  tp2 <- c(time(ES))[idx]
+
+  if (length(idx) > 0) {
+
+    df <- data.frame(
+      Time = tp2,
+      Obs = obs3
+    )
+
+    out <- out +
+      ggplot2::geom_segment(
+        data = df,
+        mapping = ggplot2::aes(x = .data[["Time"]], y = .data[["Obs"]], yend = 0),
+        color = "purple",
         inherit.aes = FALSE
       )
 

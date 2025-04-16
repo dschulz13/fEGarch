@@ -761,7 +761,7 @@ loss0 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$ES)
+  VaR_names <- names(object@measures$VaR)
   m_VaR <- length(VaR_names)
   ES_names <- names(object@measures$ES)
   m_ES <- length(ES_names)
@@ -808,7 +808,7 @@ loss1 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$ES)
+  VaR_names <- names(object@measures$VaR)
   m_VaR <- length(VaR_names)
   ES_names <- names(object@measures$ES)
   m_ES <- length(ES_names)
@@ -855,7 +855,7 @@ loss2 <- function(object, penalty = 1e-4, ...) {
   obs <- zoo::coredata(object@observations)
   n <- length(obs)
 
-  VaR_names <- names(object@measures$ES)
+  VaR_names <- names(object@measures$VaR)
   m_VaR <- length(VaR_names)
   ES_names <- names(object@measures$ES)
   m_ES <- length(ES_names)

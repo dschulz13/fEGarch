@@ -140,7 +140,8 @@ identify_arma_settings <- function(meanspec, Drange) {
 adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
                          grab_fun, arma_fun,
             model_type = c("garch", "figarch", "aparch", "fiaparch", "gjrgarch",
-                      "figjrgarch", "loggarch", "filoggarch", "egarch", "fiegarch")) {
+                      "figjrgarch", "loggarch", "filoggarch", "egarch", "fiegarch",
+                      "tgarch", "fitgarch")) {
 
   check <- pg0 || qg0 || lm_arma
 
@@ -155,6 +156,8 @@ adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
     "fiaparch" = sigt_fiaparch_R,
     "gjrgarch" = sigt_gjrgarch_R,
     "figjrgarch" = sigt_figjrgarch_R,
+    "tgarch" = sigt_tgarch_R,
+    "fitgarch" = sigt_fitgarch_R,
     "loggarch" = sigt_loggarch_short_R,
     "filoggarch" = sigt_loggarch_long_R,
     "egarch" = sigt_egarch_short_R,

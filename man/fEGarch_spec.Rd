@@ -160,7 +160,7 @@ meaningful for both \code{model_type = "egarch"}
 and \code{model_type = "loggarch"}, i.e. both under type I and II models.
 The first element of the two-element vector orders is the order \eqn{p},
 while the second element is the order \eqn{q}. Furthermore, for
-\code{long_memo = TRUE}, the metnioned models are kept as they are, while
+\code{long_memo = TRUE}, the mentioned models are kept as they are, while
 for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
 \code{cond_dist} controls the conditional distribution.
 The unconditional mean \eqn{\mu} is controlled via the function
