@@ -90,6 +90,7 @@ Collate:
   'ufRisk-functions.R'
   'reexport-pipe.R'
   'test-functions.R'
+  'cond_new.R'
 Depends: 
     R (>= 3.5),
     methods
