@@ -257,7 +257,7 @@ if (inherits(obs, what = "zoo")) {
       ggplot2::geom_segment(
         data = df,
         mapping = ggplot2::aes(x = .data[["Time"]], y = .data[["Obs"]], yend = 0),
-        color = "red",
+        color = "red", linewidth = 0.6,
         inherit.aes = FALSE
       )
 
@@ -279,7 +279,7 @@ if (inherits(obs, what = "zoo")) {
       ggplot2::geom_segment(
         data = df,
         mapping = ggplot2::aes(x = .data[["Time"]], y = .data[["Obs"]], yend = 0),
-        color = "purple",
+        color = "purple", linewidth = 0.6,
         inherit.aes = FALSE
       )
 
