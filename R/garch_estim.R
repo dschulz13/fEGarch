@@ -8,7 +8,8 @@
 #'a numeric vector, a \code{"zoo"} class time series object, or a
 #'\code{"ts"} class time series object.
 #'@param model any character object among \code{"garch"}, \code{"gjrgarch"},
-#'\code{"aparch"}, \code{"figarch"}, \code{"figjrgarch"} and \code{"fiaparch"}.
+#'\code{"aparch"}, \code{"tgarch"}, \code{"figarch"}, \code{"figjrgarch"},
+#'\code{"fitgarch"}and \code{"fiaparch"}.
 #'@param orders a two-element numeric vector containing the two model
 #'orders \eqn{p} and \eqn{q} (see Details for more information); currently,
 #'only the default \code{orders = c(1, 1)} is supported for long-memory
@@ -25,7 +26,8 @@
 #'@param start_pars the starting parameters for the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param drange a two-element numeric vector that gives the boundaries of the
 #'search interval for the fractional differencing parameter \eqn{d} in the
 #'conditional volatility model part of a long-memory model; is
@@ -52,11 +54,13 @@
 #'@param LB the lower boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
-#'an internally saved default set of values is used.
+#'an internally saved default set of values is used; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments
@@ -91,8 +95,8 @@
 #'
 #'@details
 #'See the documentation on \code{\link{garch}}, \code{\link{gjrgarch}},
-#'\code{\link{aparch}}, \code{\link{figarch}},
-#'\code{\link{figjrgarch}} and \code{\link{fiaparch}} for more detailed
+#'\code{\link{tgarch}}, \code{\link{aparch}}, \code{\link{figarch}},
+#'\code{\link{figjrgarch}}, \code{\link{fitgarch}} and \code{\link{fiaparch}} for more detailed
 #'information on the corresponding models and functions selectable through this
 #'wrapper function.
 #'
@@ -100,8 +104,9 @@
 #'
 #'@return
 #'An object of S4-class \code{"fEGarch_fit_garch"}, \code{"fEGarch_fit_gjrgarch"},
-#'\code{"fEGarch_fit_aparch"}, \code{"fEGarch_fit_figarch"}, \code{"fEGarch_fit_figjrgarch"}
-#'or \code{"fEGarch_fit_fiaparch"}
+#'\code{"fEGarch_fit_tgarch"},
+#'\code{"fEGarch_fit_aparch"}, \code{"fEGarch_fit_figarch"}, \code{"fEGarch_fit_figjrgarch"},
+#'\code{"fEGarch_fit_fitgarch"} or \code{"fEGarch_fit_fiaparch"}
 #'is returned depending on the selected input for the argument
 #'\code{model}. The object then contains the following elements.
 #'\describe{
@@ -139,7 +144,7 @@
 #'
 
 garchm_estim <- function(rt,
-                        model = c("garch", "gjrgarch", "aparch", "figarch", "figjrgarch", "fiaparch"),
+                        model = c("garch", "gjrgarch", "tgarch", "aparch", "figarch", "figjrgarch", "fitgarch", "fiaparch"),
                         orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                         drange = c(0, 1),
@@ -158,9 +163,11 @@ garchm_estim <- function(rt,
     model,
     "garch" = garch,
     "gjrgarch" = gjrgarch,
+    "tgarch" = tgarch,
     "aparch" = aparch,
     "figarch" = figarch,
     "figjrgarch" = figjrgarch,
+    "fitgarch" = fitgarch,
     "fiaparch" = fiaparch
   )
 
@@ -185,7 +192,7 @@ garchm_estim <- function(rt,
     Prange = Prange
   )
 
-  if (model %in% c("garch", "gjrgarch", "aparch")) {
+  if (model %in% c("garch", "gjrgarch", "tgarch", "aparch")) {
     args[["drange"]] <- NULL
   }
 

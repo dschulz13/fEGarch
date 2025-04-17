@@ -130,7 +130,8 @@ goal_fun_creator_aparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param meanspec an object of class "mean_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
@@ -154,12 +155,14 @@ goal_fun_creator_aparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments

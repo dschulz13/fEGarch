@@ -174,7 +174,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     }
   )
 
-  goal_fun_s <- function(theta, rt, dfun2) {
+  goal_fun_s <- function(theta, rt, dfun1, dfun2) {
 
     do.call(
       what = creator_fun,
@@ -377,7 +377,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     P_sel <- NULL
 
     goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, dfun2 = dfun2)
+      goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2)
     }
 
 
@@ -480,7 +480,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     # Fix the final goal function to optimize over
     # using dfun1_P and dfun2_P
     goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, dfun2 = dfun2_P)
+      goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2_P)
     }
 
   }

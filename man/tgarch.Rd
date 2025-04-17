@@ -2,7 +2,7 @@
 % Please edit documentation in R/tgarchfit.R
 \name{tgarch}
 \alias{tgarch}
-\title{GJR-GARCH Model Fitting}
+\title{TGARCH Model Fitting}
 \usage{
 tgarch(
   rt,
@@ -73,19 +73,22 @@ reserve for backtesting.}
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used; see "Details" for the
-order of elements.}
+order of elements; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{LB}{the lower boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used; see "Details" for the
-order of elements.}
+order of elements; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{UB}{the upper boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used; see "Details" for the
-order of elements.}
+order of elements; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}
@@ -127,7 +130,7 @@ conditional variance are initialized by zero).}
 the parameter \eqn{P} in a (skewed) average Laplace distribution.}
 }
 \value{
-An object of S4-class \code{"fEGarch_fit_gjrgarch"}
+An object of S4-class \code{"fEGarch_fit_tgarch"}
 is returned. It contains the following elements.
 \describe{
 \item{\code{pars}:}{a named numeric vector with the parameter estimates.}
@@ -157,7 +160,7 @@ testing following \code{n_test}.}
 }
 }
 \description{
-Fit a GJR-GARCH model under the six
+Fit a TGARCH model under the six
 most common and further conditional distributions to observed data
 using quasi maximum-likelihood estimation.
 }
@@ -165,7 +168,7 @@ using quasi maximum-likelihood estimation.
 Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-\deqn{\sigma_t^{2}=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right)^{2} + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}^{2}.}
+\deqn{\sigma_t=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right) + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}.}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 \eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -204,7 +207,7 @@ estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is th
 not obtained and the ones obtained for the remaining estimates do not account
 for \eqn{\hat{P}}.
 
-An ARMA-GJR-GARCH or a FARIMA-GJR-GARCH can be fitted by adjusting the
+An ARMA-TGARCH or a FARIMA-TGARCH can be fitted by adjusting the
 argument \code{meanspec} correspondingly.
 
 As an alternative, a semiparametric extension of the pure models
@@ -264,7 +267,7 @@ in \code{start_pars}, \code{LB} and \code{UB}.
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
-model <- gjrgarch(rt)
+model <- tgarch(rt)
 model
 
 }

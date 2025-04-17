@@ -31,7 +31,7 @@ sigt_tgarch_R <- function(theta, x, p, q, p_ar, q_ma,
 
   list2env(list(...), envir = environment())
 
-  all_pars <- gjrgarch_grab_pars(
+  all_pars <- tgarch_grab_pars(
     theta = theta,
     p = p,
     q = q,
@@ -101,9 +101,9 @@ goal_fun_creator_tgarch <- function(
 }
 
 
-#'GJR-GARCH Model Fitting
+#'TGARCH Model Fitting
 #'
-#'Fit a GJR-GARCH model under the six
+#'Fit a TGARCH model under the six
 #'most common and further conditional distributions to observed data
 #'using quasi maximum-likelihood estimation.
 #'
@@ -126,7 +126,8 @@ goal_fun_creator_tgarch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param meanspec an object of class "mean_spec"; indicates the
 #'specifications for the model in the conditional mean.
 #'@param Drange a two-element numeric vector that indicates the boundaries
@@ -150,12 +151,14 @@ goal_fun_creator_tgarch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments
@@ -192,7 +195,7 @@ goal_fun_creator_tgarch <- function(
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t^{2}=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right)^{2} + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}^{2}.}
+#'\deqn{\sigma_t=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right) + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -231,7 +234,7 @@ goal_fun_creator_tgarch <- function(
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
 #'
-#'An ARMA-GJR-GARCH or a FARIMA-GJR-GARCH can be fitted by adjusting the
+#'An ARMA-TGARCH or a FARIMA-TGARCH can be fitted by adjusting the
 #'argument \code{meanspec} correspondingly.
 #'
 #'As an alternative, a semiparametric extension of the pure models
@@ -291,7 +294,7 @@ goal_fun_creator_tgarch <- function(
 #'@export
 #'
 #'@return
-#'An object of S4-class \code{"fEGarch_fit_gjrgarch"}
+#'An object of S4-class \code{"fEGarch_fit_tgarch"}
 #'is returned. It contains the following elements.
 #'\describe{
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
@@ -323,7 +326,7 @@ goal_fun_creator_tgarch <- function(
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
-#'model <- gjrgarch(rt)
+#'model <- tgarch(rt)
 #'model
 #'
 #'@references
@@ -364,7 +367,7 @@ tgarch <- function(rt, orders = c(1, 1),
 #'@aliases show,fEgarch_fit_tgarch-method
 setMethod(
   "show",
-  "fEGarch_fit_gjrgarch",
+  "fEGarch_fit_tgarch",
   function(object) {
   x <- object
   par_names <- names(x@pars)

@@ -32,7 +32,7 @@ sigt_fitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
 
   list2env(list(...), envir = environment())
 
-  all_pars <- figjrgarch_grab_pars(
+  all_pars <- fitgarch_grab_pars(
     theta = theta,
     p = p,
     q = q,
@@ -68,7 +68,7 @@ sigt_fitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
 
 }
 
-goal_fun_creator_figjrgarch <- function(
+goal_fun_creator_fitgarch <- function(
     theta,
     x,
     pdf_fun2,
@@ -105,9 +105,9 @@ goal_fun_creator_figjrgarch <- function(
 }
 
 
-#'FIGJR-GARCH Model Fitting
+#'FITGARCH Model Fitting
 #'
-#'Fit a fractionally integrated GJR-GARCH model under the six
+#'Fit a fractionally integrated TGARCH model under the six
 #'most common and further conditional distributions to observed data
 #'using quasi maximum-likelihood estimation.
 #'
@@ -130,7 +130,8 @@ goal_fun_creator_figjrgarch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param drange a two-element numeric vector that gives the boundaries of the
 #'search interval for the fractional differencing parameter \eqn{d} in the
 #'conditional volatility model part; is
@@ -158,12 +159,14 @@ goal_fun_creator_figjrgarch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments
@@ -197,11 +200,11 @@ goal_fun_creator_figjrgarch <- function(
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
 #'
 #'@details
-#'Consider a FIGJR-GARCH(\eqn{p, d, q}) with constant asymmetry term \eqn{\gamma} regardless
+#'Consider a FITGARCH(\eqn{p, d, q}) with constant asymmetry term \eqn{\gamma} regardless
 #'of the lag. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{2}.}
+#'\deqn{\sigma_t=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right).}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -216,19 +219,19 @@ goal_fun_creator_figjrgarch <- function(
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
 #'real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,1]} as the
 #'parameter for the level of integration. With \eqn{d = 0} the model reduces
-#'to a short-memory GJR-GARCH, for \eqn{d=1} we have a full integration, and for
+#'to a short-memory TGARCH, for \eqn{d=1} we have a full integration, and for
 #'\eqn{d\in(0, 1)}, we have fractional integration, where \eqn{d\in(0, 0.5)} is
 #'considered to describe a long-memory process. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 #'
-#'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{2}}
+#'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)}
 #'are replaced by the in-sample arithmetic mean of
 #'\eqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
-#'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{2}}, where
+#'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)}, where
 #'\eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 #'mean of \eqn{r_t^{*}}. An initial value
 #'for \eqn{\gamma_0} as initial guess for \eqn{\gamma} is obtained
-#'from a previous fitting of a short-memory GJR-GARCH.
+#'from a previous fitting of a short-memory TGARCH.
 #'
 #'The truncated infinite order polynomial is computed following the idea
 #'by Nielsen
@@ -274,7 +277,7 @@ goal_fun_creator_figjrgarch <- function(
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
 #'
-#'An ARMA-FIGJR-GARCH or a FARIMA-FIGJR-GARCH can be fitted by adjusting the
+#'An ARMA-FITGARCH or a FARIMA-FITGARCH can be fitted by adjusting the
 #'argument \code{meanspec} correspondingly.
 #'
 #'As an alternative, a semiparametric extension of the pure models
@@ -334,7 +337,7 @@ goal_fun_creator_figjrgarch <- function(
 #'@export
 #'
 #'@return
-#'An object of S4-class \code{"fEGarch_fit_figjrgarch"}
+#'An object of S4-class \code{"fEGarch_fit_fitgarch"}
 #'is returned. It contains the following elements.
 #'\describe{
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
@@ -366,7 +369,7 @@ goal_fun_creator_figjrgarch <- function(
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
-#'model <- figjrgarch(rt)
+#'model <- fitgarch(rt)
 #'model
 #'
 #'@references
@@ -417,7 +420,7 @@ fitgarch <- function(rt, orders = c(1, 1),
 #'@aliases show,fEgarch_fit_fitgarch-method
 setMethod(
   "show",
-  "fEGarch_fit_figjrgarch",
+  "fEGarch_fit_fitgarch",
   function(object) {
   x <- object
   par_names <- names(x@pars)

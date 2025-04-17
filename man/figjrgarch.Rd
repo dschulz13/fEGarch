@@ -79,19 +79,22 @@ reserve for backtesting.}
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used; see "Details" for the
-order of elements.}
+order of elements; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{LB}{the lower boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used; see "Details" for the
-order of elements.}
+order of elements; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{UB}{the upper boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
 an internally saved default set of values is used; see "Details" for the
-order of elements.}
+order of elements; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}

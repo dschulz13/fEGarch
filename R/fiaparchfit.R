@@ -131,7 +131,8 @@ goal_fun_creator_fiaparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param presample a numeric value indicating the pre-sample length for
 #'initialization.
 #'@param drange a two-element numeric vector that gives the boundaries of the
@@ -161,12 +162,14 @@ goal_fun_creator_fiaparch <- function(
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param UB the upper boundaries of the parameters in the numerical optimization
 #'routine; should be of the same length as the parameter output vector
 #'within the output object (also keeping the same order); for \code{NULL},
 #'an internally saved default set of values is used; see "Details" for the
-#'order of elements.
+#'order of elements; elements should be set with respect to a series rescaled
+#'to have sample variance one.
 #'@param control a list that is passed to \code{control} of the
 #'function \code{solnp} of the package \code{Rsolnp}.
 #'@param control_nonpar a list containing changes to the arguments

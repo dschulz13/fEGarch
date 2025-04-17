@@ -6,7 +6,8 @@
 \usage{
 garchm_estim(
   rt,
-  model = c("garch", "gjrgarch", "aparch", "figarch", "figjrgarch", "fiaparch"),
+  model = c("garch", "gjrgarch", "tgarch", "aparch", "figarch", "figjrgarch", "fitgarch",
+    "fiaparch"),
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   drange = c(0, 1),
@@ -34,7 +35,8 @@ a numeric vector, a \code{"zoo"} class time series object, or a
 \code{"ts"} class time series object.}
 
 \item{model}{any character object among \code{"garch"}, \code{"gjrgarch"},
-\code{"aparch"}, \code{"figarch"}, \code{"figjrgarch"} and \code{"fiaparch"}.}
+\code{"aparch"}, \code{"tgarch"}, \code{"figarch"}, \code{"figjrgarch"},
+\code{"fitgarch"}and \code{"fiaparch"}.}
 
 \item{orders}{a two-element numeric vector containing the two model
 orders \eqn{p} and \eqn{q} (see Details for more information); currently,
@@ -83,17 +85,20 @@ reserve for backtesting.}
 \item{start_pars}{the starting parameters for the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
-an internally saved default set of values is used.}
+an internally saved default set of values is used; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{LB}{the lower boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
-an internally saved default set of values is used.}
+an internally saved default set of values is used; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{UB}{the upper boundaries of the parameters in the numerical optimization
 routine; should be of the same length as the parameter output vector
 within the output object (also keeping the same order); for \code{NULL},
-an internally saved default set of values is used.}
+an internally saved default set of values is used; elements should be set with respect to a series rescaled
+to have sample variance one.}
 
 \item{control}{a list that is passed to \code{control} of the
 function \code{solnp} of the package \code{Rsolnp}.}
@@ -136,8 +141,9 @@ the parameter \eqn{P} in a (skewed) average Laplace distribution.}
 }
 \value{
 An object of S4-class \code{"fEGarch_fit_garch"}, \code{"fEGarch_fit_gjrgarch"},
-\code{"fEGarch_fit_aparch"}, \code{"fEGarch_fit_figarch"}, \code{"fEGarch_fit_figjrgarch"}
-or \code{"fEGarch_fit_fiaparch"}
+\code{"fEGarch_fit_tgarch"},
+\code{"fEGarch_fit_aparch"}, \code{"fEGarch_fit_figarch"}, \code{"fEGarch_fit_figjrgarch"},
+\code{"fEGarch_fit_fitgarch"} or \code{"fEGarch_fit_fiaparch"}
 is returned depending on the selected input for the argument
 \code{model}. The object then contains the following elements.
 \describe{
@@ -174,8 +180,8 @@ of the extended EGARCH family.
 }
 \details{
 See the documentation on \code{\link{garch}}, \code{\link{gjrgarch}},
-\code{\link{aparch}}, \code{\link{figarch}},
-\code{\link{figjrgarch}} and \code{\link{fiaparch}} for more detailed
+\code{\link{tgarch}}, \code{\link{aparch}}, \code{\link{figarch}},
+\code{\link{figjrgarch}}, \code{\link{fitgarch}} and \code{\link{fiaparch}} for more detailed
 information on the corresponding models and functions selectable through this
 wrapper function.
 }

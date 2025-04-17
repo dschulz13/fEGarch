@@ -10,6 +10,7 @@
 \alias{show,fEgarch_fit_aparch-method}
 \alias{show,fEGarch_fit_gjrgarch-method}
 \alias{show,fEgarch_fit_gjrgarch-method}
+\alias{show,fEGarch_fit_tgarch-method}
 \alias{show,fEgarch_fit_tgarch-method}
 \alias{show,fEGarch_fit_garch-method}
 \alias{show,fEgarch_fit_garch-method}
@@ -17,6 +18,7 @@
 \alias{show,fEgarch_fit_fiaparch-method}
 \alias{show,fEGarch_fit_figjrgarch-method}
 \alias{show,fEgarch_fit_figjrgarch-method}
+\alias{show,fEGarch_fit_fitgarch-method}
 \alias{show,fEgarch_fit_fitgarch-method}
 \alias{show,fEGarch_fit_figarch-method}
 \alias{show,fEgarch_fit_figarch-method}
@@ -32,7 +34,7 @@
 
 \S4method{show}{fEGarch_fit_gjrgarch}(object)
 
-\S4method{show}{fEGarch_fit_gjrgarch}(object)
+\S4method{show}{fEGarch_fit_tgarch}(object)
 
 \S4method{show}{fEGarch_fit_garch}(object)
 
@@ -40,7 +42,7 @@
 
 \S4method{show}{fEGarch_fit_figjrgarch}(object)
 
-\S4method{show}{fEGarch_fit_figjrgarch}(object)
+\S4method{show}{fEGarch_fit_fitgarch}(object)
 
 \S4method{show}{fEGarch_fit_figarch}(object)
 

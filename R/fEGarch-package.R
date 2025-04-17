@@ -63,14 +63,16 @@
 #'\item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 #'models given a model specification and an observation series,}
 #'\item{\code{\link{garch_estim}}:}{fitting a GARCH-type model selectable from a standard GARCH,
-#'a GJR-GARCH, an APARCH, a FIGARCH, a FIGJR-GARCH and a FIAPARCH,}
+#'a GJR-GARCH, a TGARCH, an APARCH, a FIGARCH, a FIGJR-GARCH, a FITGARCH and a FIAPARCH,}
 #'\item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model,}
 #'\item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model,}
 #'\item{\code{\link{figarch_sim}}:}{simulating from a FIGARCH model,}
 #'\item{\code{\link{figjrgarch_sim}}:}{simulating from a FIGJR-GARCH model,}
+#'\item{\code{\link{fitgarch_sim}}:}{simulating from a FITGARCH model,}
 #'\item{\code{\link{aparch_sim}}:}{simulating from an APARCH model,}
 #'\item{\code{\link{garch_sim}}:}{simulating from a GARCH model,}
 #'\item{\code{\link{gjrgarch_sim}}:}{simulating from a GJR-GARCH model,}
+#'\item{\code{\link{tgarch_sim}}:}{simulating from a TGARCH model,}
 #'\item{\code{\link{predict,fEGarch_fit-method}}:}{multistep point forecasts of
 #'the conditional mean and the conditional standard deviation,}
 #'\item{\code{\link{predict_roll,fEGarch_fit-method}}:}{rolling point forecasts of
