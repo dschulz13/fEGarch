@@ -370,8 +370,8 @@ model_figarch
 #> 
 #>          par     se    tval   pval
 #> mu    0.0008 0.0001  8.3469 0.0000
-#> omega 0.0000 0.0000  4.1991 0.0000
-#> phi1  0.0290 0.0337  0.8629 0.3882
+#> omega 0.0000 0.0000  4.1992 0.0000
+#> phi1  0.0290 0.0337  0.8630 0.3882
 #> beta1 0.5895 0.0591  9.9808 0.0000
 #> d     0.6218 0.0580 10.7187 0.0000
 #> df    6.4791 0.4862 13.3253 0.0000
@@ -732,7 +732,8 @@ The main functions of the package are:
 - `fEGarch()`: fitting function for models of the broader EGARCH family,
 
 - `garchm_estim()`: GARCH-type model fitting selectable from standard
-  GARCH, GJR-GARCH, APARCH, FIGARCH, FIGJR-GARCH and FIAPARCH.
+  GARCH, GJR-GARCH, TGARCH, APARCH, FIGARCH, FIGJR-GARCH, FITGARCH and
+  FIAPARCH.
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
@@ -742,11 +743,15 @@ The main functions of the package are:
 
 - `figjrgarch_sim()`: FIGJR-GARCH simulation,
 
+- `fitgarch_sim()`: FITGARCH simulation,
+
 - `aparch_sim()`: APARCH simulation,
 
 - `garch_sim()`: GARCH simulation,
 
 - `gjrgarch_sim()`: GJR-GARCH simulation,
+
+- `tgarch_sim()`: TGARCH simulation,
 
 - `mean_spec()`: ARMA or FARIMA model specification for simultaneously
   modelling the conditional mean,
@@ -759,10 +764,10 @@ The main functions of the package are:
   conditional mean and the conditional standard deviation over a test
   set following one of the package’s fitted models.
 
-- `backtest_suite`: a collection of tests for backtesting of VaR and ES.
+- `backtest_suite()`: a collection of tests for backtesting of VaR and
+  ES.
 
-The package, however, provides many other useful functions for you to
-discover.
+The package, however, provides many other useful functions to discover.
 
 ## Datasets
 
@@ -789,3 +794,12 @@ as a time series object of class `"zoo"`.
 
 For questions, bug reports, etc., please contact the maintainer
 Mr. Dominik Schulz via <dominik.schulz@uni-paderborn.de>.
+
+## Citation
+
+If you are using this software for your publication, please consider
+citing
+
+- Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch:
+  Estimation of a Broad Family of EGARCH Models. R package version
+  1.0.0. URL: <https://CRAN.R-project.org/package=fEGarch>.

@@ -300,7 +300,7 @@ The main functions of the package are:
 
 - `fEGarch()`: fitting function for models of the broader EGARCH family,
 
-- `garchm_estim()`: GARCH-type model fitting selectable from standard GARCH, GJR-GARCH, APARCH, FIGARCH, FIGJR-GARCH and FIAPARCH.
+- `garchm_estim()`: GARCH-type model fitting selectable from standard GARCH, GJR-GARCH, TGARCH, APARCH, FIGARCH, FIGJR-GARCH, FITGARCH and FIAPARCH.
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
@@ -310,11 +310,15 @@ The main functions of the package are:
 
 - `figjrgarch_sim()`: FIGJR-GARCH simulation,
 
+- `fitgarch_sim()`: FITGARCH simulation,
+
 - `aparch_sim()`: APARCH simulation,
 
 - `garch_sim()`: GARCH simulation,
 
 - `gjrgarch_sim()`: GJR-GARCH simulation,
+
+- `tgarch_sim()`: TGARCH simulation,
 
 - `mean_spec()`: ARMA or FARIMA model specification for simultaneously modelling the conditional mean,
 
@@ -322,9 +326,9 @@ The main functions of the package are:
 
 - `predict_roll()`: a method to compute rolling point forecasts of the conditional mean and the conditional standard deviation over a test set following one of the package's fitted models.
 
-- `backtest_suite`: a collection of tests for backtesting of VaR and ES.
+- `backtest_suite()`: a collection of tests for backtesting of VaR and ES.
 
-The package, however, provides many other useful functions for you to discover.
+The package, however, provides many other useful functions to discover.
 
 ## Datasets
 
@@ -344,3 +348,9 @@ The package contains an example time series `SP500`, namely the Standard and Poo
 
 For questions, bug reports, etc., please contact the maintainer Mr. Dominik 
 Schulz via [dominik.schulz@uni-paderborn.de](mailto:dominik.schulz@uni-paderborn.de).
+
+## Citation
+
+If you are using this software for your publication, please consider citing
+
+- Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch: Estimation of a Broad Family of EGARCH Models. R package version 1.0.0. URL: [https://CRAN.R-project.org/package=fEGarch](https://CRAN.R-project.org/package=fEGarch).
