@@ -244,13 +244,10 @@ goal_fun_creator_figjrgarch <- function(
 #'to ensure the non-negativity of all of the infinite-order coefficient series
 #'\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
 #'with \eqn{\omega>0} ensures that all the conditional volatilities
-#'are greater than zero, we employ the sufficient conditions mentioned
-#'in Footnote 6 in Tse (1998) in the optimization problem, which are
-#'taken from Bollerslev and Mikkelsen (1996). Conrad and Haag (2006) provide
-#'necessary and sufficient conditions for cases with simple model orders and
-#'sufficient conditions for general model orders, however, due to
-#'time efficiency, this function uses the set of sufficient conditions
-#'by Bollerslev and Mikkelsen (1996) only.
+#'are greater than zero, we employ the necessary and sufficient conditions
+#'for models of orders \eqn{(1, d, 1)} mentioned
+#'in Conrad and Haag (2006), i.e. the whole allowed parameter space is
+#'searched.
 #'
 #'See also the reference section for sources on the more general
 #'APARCH (Ding et al., 1993) and the FIAPARCH (Tse, 1998) models.

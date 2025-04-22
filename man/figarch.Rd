@@ -198,12 +198,10 @@ Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 to ensure the non-negativity of all of the infinite-order coefficient series
 \eqn{\psi(B)}, which in combination
 with \eqn{\omega>0} ensures that all the conditional volatilities
-are greater than zero, we employ the sufficient conditions mentioned
-in Bollerslev and Mikkelsen (1996). Conrad and Haag (2006) provide
-necessary and sufficient conditions for cases with simple model orders and
-sufficient conditions for general model orders, however, due to
-time efficiency, this function uses the set of sufficient conditions
-by Bollerslev and Mikkelsen (1996) only.
+are greater than zero, we employ the necessary and sufficient conditions
+for models of orders \eqn{(1, d, 1)} mentioned
+in Conrad and Haag (2006), i.e. the whole allowed parameter space is
+searched.
 
 The truncated infinite order polynomial is computed following the idea
 by Nielsen
