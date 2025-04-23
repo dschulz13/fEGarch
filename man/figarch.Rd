@@ -198,13 +198,13 @@ Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 to ensure the non-negativity of all of the infinite-order coefficient series
 \eqn{\psi(B)}, which in combination
 with \eqn{\omega>0} ensures that all the conditional volatilities
-are greater than zero, we employ the sufficient conditions mentioned
-in Footnote 6 in Tse (1998) in the optimization problem, which are
-taken from Bollerslev and Mikkelsen (1996). Conrad and Haag (2006) provide
-necessary and sufficient conditions for cases with simple model orders and
-sufficient conditions for general model orders, however, due to
-time efficiency and complexity, this function uses the set of sufficient conditions
-by Bollerslev and Mikkelsen (1996) only.
+are greater than zero, we employ inequality constraints ensuring that the first
+50 coefficients of the infinite-order ARCH-representation are non-negative as an
+approximation to ensuring that all of the coefficients are non-negative. To ensure
+that they are non-negative, one may in theory consider the sufficient conditions
+mentioned in Bollerslev and Mikkelsen (1996) or Tse (1998), which are however
+sometimes restrictive, or the simultenaously necessary and sufficient conditions
+by Conrad and Haag (2006), which are however complex to implement properly.
 
 The truncated infinite order polynomial is computed following the idea
 by Nielsen

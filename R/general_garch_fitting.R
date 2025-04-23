@@ -294,8 +294,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     d_idx <- up_beta + add_s
 
 
-    ineqLB_vol <- c(0, 0, 0, 1e-6)
-    ineqUB_vol <- rep(Inf, 4)
+    ineqLB_vol <- c(rep(0, 50), 1e-6)
+    ineqUB_vol <- rep(Inf, 51)
 
     function(theta) {
 
@@ -303,12 +303,10 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       beta <- theta[low_beta:up_beta]
       d <- theta[[d_idx]]
 
-      r1 <- phi - beta + d
-      r2 <- (2 - d) / 3 - phi
-      r3 <- beta * r1 - d * (phi - (1 - d) / 2)
+      coef_inf <- ar_infty(ar = phi, ma = -beta, d = d, max_i = 50)[-1]
 
       c2 <- abs(polyroot(c(1, -beta))) - 1
-      c(r1, r2, r3, c2)
+      c(coef_inf, c2)
 
     }
   } else {
