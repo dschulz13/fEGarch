@@ -38,7 +38,7 @@ vcov_mat(x)
 }
 \arguments{
 \item{x}{an object returned by either \code{\link{fEGarch}},
-\code{\link{fiaparch}} or \code{\link{lmgarch}}.}
+\code{\link{fiaparch}} or \code{\link{figarch}}, etc.}
 }
 \value{
 These generics do not return anything. Inspect the methods based on

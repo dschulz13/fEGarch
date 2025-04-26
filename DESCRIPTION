@@ -1,6 +1,6 @@
 Package: fEGarch
 Type: Package
-Title: Application of a Broad Family of EGARCH Models
+Title: Estimation of a Broad Family of EGARCH Models
 Version: 1.0.0
 Authors@R:
     c(person(given = "Dominik",
@@ -28,20 +28,28 @@ Authors@R:
         comment = "formerly: Paderborn University, Germany"),
       person(given = "Thomas", family = "Gries",
         role = "ctb",
-        comment = "Paderborn University, Germany"))             
+        comment = "Paderborn University, Germany"),
+      person(given = "Shujie", family = "Li",
+        role = "ctb",
+        comment = "Paderborn University, Germany")        )             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
-Description: Implement a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
+Description: Implement and fit a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
   such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), FIMLog-GARCH (fractionally integrated
-  modulus Log-GARCH), and more. For convenience and the purpose of comparison, also a fractionally integrated asymmetric
-  power ARCH (FIAPARCH) and a long-memory GARCH (LMGARCH) can be implemented.
+  modulus Log-GARCH), and more. For convenience and the purpose of comparison, a variety of
+  other popular GARCH-type models, like an APARCH model, a fractionally integrated
+  APARCH (FIAPARCH) model, and even standard GARCH and fractionally integrated GARCH
+  (FIGARCH) models, are implemented. Models are fitted through quasi-maximum-likelihood estimation.
 License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Collate:
   'AttachMessage.R'
   'RcppExports.R'
+  'close_to_lreturn.R'
+  'lin_filters.R'
+  'hessCalc.R'
   'arma-farima-wrappers.R'
   'format_applier_ts.R'
   'ts_split_train_and_test.R'
@@ -52,13 +60,25 @@ Collate:
   'generics.R'
   'input_checkers_egarch_spec.R' 
   'input_checkers_mean_spec.R'
+  'input_checkers_nonpar_spec.R'
   'class-mean_spec.R'
+  'class-locpol_spec.R'
   'class-fEGarch_fit.R'
   'class-egarch-spec.R'
   'fitting-function.R'
   'sim-functions.R'
+  'nonparametric-step.R'
+  'setup-estim.R'
+  'general_garch_fitting.R'
+  'aparchfit.R'
+  'gjrgarchfit.R'
+  'tgarchfit.R'
+  'garchfit.R'
   'fiaparchfit.R'
-  'lmgarchfit.R'
+  'figjrgarchfit.R'
+  'fitgarchfit.R'
+  'figarchfit.R'
+  'garch_estim.R'
   'varescalc.R'
   'datasets.R'
   'fEGarch-package.R'
@@ -68,12 +88,15 @@ Collate:
   'fEGarch_fit-plot.R'
   'class-fEGarch_risk.R'
   'ufRisk-functions.R'
+  'reexport-pipe.R'
+  'test-functions.R'
 Depends: 
-    R (>= 2.10),
+    R (>= 3.5),
     methods
 Imports:
     Rcpp (>= 1.0.9),
     Rsolnp,
+    smoots,
     esemifar,
     zoo,
     stats,
@@ -83,7 +106,9 @@ Imports:
     furrr,
     rlang,
     ggplot2,
-    ufRisk
+    magrittr,
+    cli,
+    numDeriv
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -5,7 +5,7 @@
 \title{General EGARCH Family Model Specification}
 \usage{
 fEGarch_spec(
-  model_type = c("eGARCH", "logGARCH"),
+  model_type = c("egarch", "loggarch"),
   orders = c(1, 1),
   long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
@@ -14,8 +14,8 @@ fEGarch_spec(
 )
 }
 \arguments{
-\item{model_type}{a character value (either \code{"eGARCH"} or
-\code{"logGARCH"}) that indicates the type of model to
+\item{model_type}{a character value (either \code{"egarch"} or
+\code{"loggarch"}) that indicates the type of model to
 implement (see Details for more information).}
 
 \item{orders}{a two-element numeric vector with the model
@@ -86,10 +86,10 @@ are characteristic polynomials
 with real coefficients \eqn{\phi_{0},\dots,\phi_{p},\psi_{0},\dots,\psi_{q-1}},
 by fixing \eqn{\phi_{0}=\psi_{0}=1}, and without common roots. Furthermore,
 the
-long-memory parameter is \eqn{d \in [0,0.5)}.
+fractional differencing parameter is \eqn{d \in [0,1]}.
 
 \eqn{g\left(\cdot\right)} can be defined in different ways.
-Following a type I specification (\code{model_type = "eGARCH"}), we have
+Following a type I specification (\code{model_type = "egarch"}), we have
 \deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{g_m\left(\eta_t\right)-E\left[ g_m\left(\eta_t\right)\right]\right\}}
 with \eqn{g_a\left(\eta_t\right)=g_m\left(\eta_t\right)=\eta_t} and consequently
 \eqn{E\left[g_a\left(\eta_t\right)\right] = E\left(\eta_t\right) = 0} and
@@ -112,7 +112,7 @@ transformation. The choices
 \eqn{g_{1,a}} and \eqn{g_{2,a}} correspond to
 setting the first element in \code{modulus} to \code{FALSE} or
 \code{TRUE}, respectively, under
-\code{model_type = "eGARCH"}, where \eqn{p_a} can be selected
+\code{model_type = "egarch"}, where \eqn{p_a} can be selected
 via the first element in \code{powers}. As a special case, for
 \eqn{p_a = 0}, a log-transformation is employed and the division
 through \eqn{p_a} is dropped, i.e.
@@ -122,7 +122,7 @@ are employed for \eqn{p_a=0}. Completely analogous
 thoughts hold for \eqn{g_{1,m}} and \eqn{g_{2,m}} and the second
 elements in the arguments \code{modulus} and \code{powers}. The aforementioned
 model family is a type I model selectable through
-\code{model_type = "eGARCH"}.
+\code{model_type = "egarch"}.
 
 \eqn{\textbf{Type II}:}
 
@@ -149,18 +149,18 @@ beginning of the type II model description.
 
 This describes the
 established Log-GARCH models as part of the broad EGARCH family
-(type II models; \code{model_type = "logGARCH"}).
+(type II models; \code{model_type = "loggarch"}).
 
 \eqn{\textbf{General information}:}
 
 While the arguments \code{powers} and \code{modulus} are only relevant
-under a type I model, i.e. for \code{model_type = "eGARCH"}, the arguments
+under a type I model, i.e. for \code{model_type = "egarch"}, the arguments
 \code{orders}, \code{long_memo} and \code{cond_dist} are
-meaningful for both \code{model_type = "eGARCH"}
-and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
+meaningful for both \code{model_type = "egarch"}
+and \code{model_type = "loggarch"}, i.e. both under type I and II models.
 The first element of the two-element vector orders is the order \eqn{p},
 while the second element is the order \eqn{q}. Furthermore, for
-\code{long_memo = TRUE}, the metnioned models are kept as they are, while
+\code{long_memo = TRUE}, the mentioned models are kept as they are, while
 for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
 \code{cond_dist} controls the conditional distribution.
 The unconditional mean \eqn{\mu} is controlled via the function
@@ -190,7 +190,7 @@ spec3 <- fEGarch_spec(long_memo = TRUE)
 spec4 <- fEGarch_spec(modulus = c(TRUE, FALSE), powers = c(0, 1))
 # Some unnamed specification
 spec5 <- fEGarch_spec(
- model_type = "eGARCH",
+ model_type = "egarch",
  orders = c(1, 1),
  long_memo = TRUE,
  cond_dist = "std",

@@ -59,6 +59,6 @@ These are wrappers for \code{\link{fEGarch_spec}}.
 \code{egarch_type_spec()} is when setting \code{model_type} in
 \code{\link{fEGarch_spec}} to \code{eGARCH}.
 \code{loggarch_type_spec()} is a shortcut when setting
-\code{model_type = "logGARCH"}. See \code{\link{fEGarch_spec}}
+\code{model_type = "loggarch"}. See \code{\link{fEGarch_spec}}
 for further details.
 }

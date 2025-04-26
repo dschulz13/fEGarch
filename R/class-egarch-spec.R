@@ -102,7 +102,7 @@ setValidity("egarch_type_spec", function(object){
 #'\code{egarch_type_spec()} is when setting \code{model_type} in
 #'\code{\link{fEGarch_spec}} to \code{eGARCH}.
 #'\code{loggarch_type_spec()} is a shortcut when setting
-#'\code{model_type = "logGARCH"}. See \code{\link{fEGarch_spec}}
+#'\code{model_type = "loggarch"}. See \code{\link{fEGarch_spec}}
 #'for further details.
 #'
 #'@return
@@ -164,8 +164,8 @@ loggarch_type_spec <- function(
 #'Create an object with specifications for a model from
 #'the broader EGARCH family.
 #'
-#'@param model_type a character value (either \code{"eGARCH"} or
-#'\code{"logGARCH"}) that indicates the type of model to
+#'@param model_type a character value (either \code{"egarch"} or
+#'\code{"loggarch"}) that indicates the type of model to
 #'implement (see Details for more information).
 #'@param orders a two-element numeric vector with the model
 #'orders; the first element is the order \eqn{p} for the term based on
@@ -224,10 +224,10 @@ loggarch_type_spec <- function(
 #'with real coefficients \eqn{\phi_{0},\dots,\phi_{p},\psi_{0},\dots,\psi_{q-1}},
 #'by fixing \eqn{\phi_{0}=\psi_{0}=1}, and without common roots. Furthermore,
 #'the
-#'long-memory parameter is \eqn{d \in [0,0.5)}.
+#'fractional differencing parameter is \eqn{d \in [0,1]}.
 #'
 #'\eqn{g\left(\cdot\right)} can be defined in different ways.
-#'Following a type I specification (\code{model_type = "eGARCH"}), we have
+#'Following a type I specification (\code{model_type = "egarch"}), we have
 #'\deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{g_m\left(\eta_t\right)-E\left[ g_m\left(\eta_t\right)\right]\right\}}
 #'with \eqn{g_a\left(\eta_t\right)=g_m\left(\eta_t\right)=\eta_t} and consequently
 #'\eqn{E\left[g_a\left(\eta_t\right)\right] = E\left(\eta_t\right) = 0} and
@@ -250,7 +250,7 @@ loggarch_type_spec <- function(
 #'\eqn{g_{1,a}} and \eqn{g_{2,a}} correspond to
 #'setting the first element in \code{modulus} to \code{FALSE} or
 #'\code{TRUE}, respectively, under
-#'\code{model_type = "eGARCH"}, where \eqn{p_a} can be selected
+#'\code{model_type = "egarch"}, where \eqn{p_a} can be selected
 #'via the first element in \code{powers}. As a special case, for
 #'\eqn{p_a = 0}, a log-transformation is employed and the division
 #'through \eqn{p_a} is dropped, i.e.
@@ -260,7 +260,7 @@ loggarch_type_spec <- function(
 #'thoughts hold for \eqn{g_{1,m}} and \eqn{g_{2,m}} and the second
 #'elements in the arguments \code{modulus} and \code{powers}. The aforementioned
 #'model family is a type I model selectable through
-#'\code{model_type = "eGARCH"}.
+#'\code{model_type = "egarch"}.
 #'
 #'\eqn{\textbf{Type II}:}
 #'
@@ -287,18 +287,18 @@ loggarch_type_spec <- function(
 #'
 #'This describes the
 #'established Log-GARCH models as part of the broad EGARCH family
-#'(type II models; \code{model_type = "logGARCH"}).
+#'(type II models; \code{model_type = "loggarch"}).
 #'
 #'\eqn{\textbf{General information}:}
 #'
 #'While the arguments \code{powers} and \code{modulus} are only relevant
-#'under a type I model, i.e. for \code{model_type = "eGARCH"}, the arguments
+#'under a type I model, i.e. for \code{model_type = "egarch"}, the arguments
 #'\code{orders}, \code{long_memo} and \code{cond_dist} are
-#'meaningful for both \code{model_type = "eGARCH"}
-#'and \code{model_type = "logGARCH"}, i.e. both under type I and II models.
+#'meaningful for both \code{model_type = "egarch"}
+#'and \code{model_type = "loggarch"}, i.e. both under type I and II models.
 #'The first element of the two-element vector orders is the order \eqn{p},
 #'while the second element is the order \eqn{q}. Furthermore, for
-#'\code{long_memo = TRUE}, the metnioned models are kept as they are, while
+#'\code{long_memo = TRUE}, the mentioned models are kept as they are, while
 #'for \code{long_memo = FALSE} the parameter \eqn{d} is set to zero.
 #'\code{cond_dist} controls the conditional distribution.
 #'The unconditional mean \eqn{\mu} is controlled via the function
@@ -349,7 +349,7 @@ loggarch_type_spec <- function(
 #'spec4 <- fEGarch_spec(modulus = c(TRUE, FALSE), powers = c(0, 1))
 #'# Some unnamed specification
 #'spec5 <- fEGarch_spec(
-#'  model_type = "eGARCH",
+#'  model_type = "egarch",
 #'  orders = c(1, 1),
 #'  long_memo = TRUE,
 #'  cond_dist = "std",
@@ -359,7 +359,7 @@ loggarch_type_spec <- function(
 #'
 
 fEGarch_spec <- function(
-  model_type = c("eGARCH", "logGARCH"),
+  model_type = c("egarch", "loggarch"),
   orders = c(1, 1),
   long_memo = FALSE,
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
@@ -373,7 +373,7 @@ fEGarch_spec <- function(
     }
   )
   if (is.null(model_type) || is.na(model_type)) {
-    model_type <- "eGARCH"
+    model_type <- "egarch"
   }
   if (is.null(orders) || all(is.na(orders))) {
     orders <- c(1, 1)
@@ -381,7 +381,7 @@ fEGarch_spec <- function(
   if (is.null(long_memo) || is.na(long_memo)) {
     long_memo <- FALSE
   }
-  if ((is.null(modulus) || all(is.na(modulus))) && (model_type == "eGARCH")) {
+  if ((is.null(modulus) || all(is.na(modulus))) && (model_type == "egarch")) {
     modulus <- c(FALSE, FALSE)
   }
   cond_dist <- tryCatch(
@@ -390,11 +390,11 @@ fEGarch_spec <- function(
       stop('"cond_dist" must be kept at default or must be of length 1 and one of the defaults')
     }
   )
-  if ((is.null(powers) || all(is.na(powers))) && (model_type == "eGARCH")) {
+  if ((is.null(powers) || all(is.na(powers))) && (model_type == "egarch")) {
     powers <- c(1, 1)
   }
 
-  if (model_type == "eGARCH") {
+  if (model_type == "egarch") {
     out <- egarch_type_spec(
       orders = orders,
       long_memo = long_memo,
@@ -402,7 +402,7 @@ fEGarch_spec <- function(
       powers = powers,
       modulus = modulus
     )
-  } else if (model_type == "logGARCH") {
+  } else if (model_type == "loggarch") {
     out <- loggarch_type_spec(
       orders = orders,
       long_memo = long_memo,
@@ -512,40 +512,40 @@ setMethod("cond_dist<-", "base_garch_spec", function(x, value) {x@cond_dist <- v
 #'
 #'\eqn{\textbf{EGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{model_type = "egarch"}, \code{long_memo = FALSE},
 #'\code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
 #'
 #'\eqn{\textbf{FIEGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{model_type = "egarch"}, \code{long_memo = TRUE},
 #'\code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
 #'
 #'\eqn{\textbf{MEGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{model_type = "egarch"}, \code{long_memo = FALSE},
 #'\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 #'
 #'\eqn{\textbf{Log-GARCH:}}
 #'
-#'\code{model_type = "logGARCH"}, \code{long_memo = FALSE}
+#'\code{model_type = "loggarch"}, \code{long_memo = FALSE}
 #'
 #'\eqn{\textbf{FILog-GARCH:}}
 #'
-#'\code{model_type = "logGARCH"}, \code{long_memo = TRUE}
+#'\code{model_type = "loggarch"}, \code{long_memo = TRUE}
 #'
 #'\eqn{\textbf{MLog-GARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+#'\code{model_type = "egarch"}, \code{long_memo = FALSE},
 #'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 #'
 #'\eqn{\textbf{FIMLog-GARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{model_type = "egarch"}, \code{long_memo = TRUE},
 #'\code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 #'
 #'\eqn{\textbf{FIMEGARCH:}}
 #'
-#'\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+#'\code{model_type = "egarch"}, \code{long_memo = TRUE},
 #'\code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 #'
 #'@name submodel-specs
@@ -563,7 +563,7 @@ megarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
@@ -579,7 +579,7 @@ fimegarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
@@ -595,7 +595,7 @@ egarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
@@ -611,7 +611,7 @@ fiegarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
@@ -627,7 +627,7 @@ mloggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist,
@@ -643,7 +643,7 @@ fimloggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "eGARCH",
+    model_type = "egarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist,
@@ -659,7 +659,7 @@ loggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "logGARCH",
+    model_type = "loggarch",
     orders = orders,
     long_memo = FALSE,
     cond_dist = cond_dist
@@ -673,7 +673,7 @@ filoggarch_spec <- function(
     cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald")
 ) {
   fEGarch_spec(
-    model_type = "logGARCH",
+    model_type = "loggarch",
     orders = orders,
     long_memo = TRUE,
     cond_dist = cond_dist
@@ -792,10 +792,11 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
 
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a short-memory EGARCH specification
-sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode) {
+sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
+
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -821,7 +822,7 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   E_vals <- expect_calc_egarch(
     int_fun_asy = int_fun_asy,
     int_fun_mag = int_fun_mag,
-    dfun = dfun1,
+    dfun = dfun,
     shape = shape,
     skew = skew,
     pows = pows)
@@ -841,8 +842,8 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     beta = beta,
     E_asy = E_asy,
     E_mag = E_mag,
-    Elnsig2 = Elnsig2,
-    powers = pows, modulus = mods, mode = mode
+    powers = pows, modulus = mods, mode = mode,
+    lnsig2_init = lnsig2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
@@ -851,10 +852,11 @@ sigt_egarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a long-memory EGARCH specification
-sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode) {
+sigt_egarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
+
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -877,13 +879,13 @@ sigt_egarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
 
   psi_2 <- if (q > 1) psi[-1] else numeric(0)
   n <- length(x)
-  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi_2, d = d,
-                                     max_i = n - 1)
+  coef_inf <- ma_infty(ar = phi, ma = psi_2, d = d,
+                                     max_i = trunc - 1 - presample)
 
   E_vals <- expect_calc_egarch(
     int_fun_asy = int_fun_asy,
     int_fun_mag = int_fun_mag,
-    dfun = dfun1,
+    dfun = dfun,
     shape = shape,
     skew = skew,
     pows = pows)
@@ -927,34 +929,71 @@ goal_fun_creator_egarch <- function(
     int_fun_mag,
     sigt_fun,
     pows, mods,
-    mode
+    mode,
+    lnsig2_init,
+    trunc,
+    presample
 ) {
 
-  res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode)
+  res_list <- sigt_fun(
+    theta = theta,
+    x = x,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    presample = presample,
+    dfun = dfun1,
+    int_fun_asy = int_fun_asy,
+    int_fun_mag = int_fun_mag,
+    pows = pows,
+    mods = mods,
+    mode = mode,
+    lnsig2_init = lnsig2_init
+  )
 
-  sigt <- res_list$sigt
-  skew <- res_list$skew
-  shape <- res_list$shape
-  cmeans <- res_list$cmeans
-
-  out <- -sum(log(dfun2(x, cmeans, sigt, shape, skew)))
-
-  out
+  nllhood_calc(res_list, x, dfun2)
 
 }
 
-setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
-    n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
-    ncores = max(1, future::availableCores() - 1)) {
 
-  split_rt <- split_ts(rt, n_test)
-  rt_core <- zoo::coredata(split_rt$train)
+setMethod("fEGarch_fit", "egarch_type_spec",
+  function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
+    n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
+    ncores = max(1, future::availableCores() - 1), trunc = 1000, presample = 50, Prange = c(1, 5)) {
+
+  # Make rt have sample variance 1; more robust for
+  # differently scaled data; results like parameters
+  # and the log-likelihood with regard to the original data
+  # can be computed easily later,
+  # as, if required, the corresponding values returned for the scaled data
+  # are just multiplied by a constant
+  # or shifted by a constant. This transformation just shifts the
+  # entire log-likelihood by a constant and therefore does not affect
+  # the shape of the log-likelihood.
+
+  # Makes available
+  # - rt_core_o: pure original obs. of the training set,
+  # - rt_core: pure rescaled obs.,
+  # - scale_const: the scaling constant used,
+  # - test_obs: the test obs. with keeping initial formatting,
+  # - train_obs: the train obs. with keeping initial formatting
+  initial_split(rt, n_test)
+
 
   n <- length(rt_core)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  trunc_i <- trunc
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n + presample - 1
+  } else if (is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
+  }
 
   # Obtain model orders
   order <- orders(spec)
@@ -962,97 +1001,32 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   q <- order[[2]]
   # Conditional distribution
   cond_d <- cond_dist(spec)
+  # Long-memory setting (for GARCH-part)
+  lm <- long_memo(spec)
 
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
+  # Settings for ARMA / FARIMA part in the mean; makes objects available in this
+  # environment
+  identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
   # Look up internally saved density functions
   # from "data-raw/lookup.R"
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
-  incl_mean <- include_mean(meanspec)
-
   # Look up internally saved settings for additional parameters
   # from "data-raw/lookup.R"
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  # Long-memory setting (for GARCH-part)
-  lm <- long_memo(spec)
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
-  # Assign ARMA / FARIMA function
-  arma_fun <- if (lm_arma) {
-    grab_fun <- farima_grab_pars
-    D_par_name <- "D"
-    D_start <- 0.25 #mean(Drange)
-    D_low <- Drange[[1]]
-    D_up <- Drange[[2]]
-    farima_fit
-  } else {
-    grab_fun <- arma_grab_pars
-    D_par_name <- character(0)
-    D_start <- D_low <- D_up <- numeric(0)
-    arma_fit
-  }
-  # Look up internally saved calculation function for conditional
-  # standard deviations from "data-raw/lookup.R"
-  sigt_fun <- sigt_funs_egarch[[lm + 1]]
   # Adjust (if ARMA relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-  sigt_fun_adj <- if (check) {
-    function(theta, x, dfun1, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par,
-         int_fun_asy, int_fun_mag, pows, mods,
-         mode) {
-
-      # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- grab_fun(
-        theta = theta,
-        incl_mean = incl_mean,
-        pg0 = pg0,
-        qg0 = qg0,
-        p = p_ar,
-        q = q_ma
-      )
-      mu <- arma_pars$mu
-      ar <- arma_pars$ar
-      ma <- arma_pars$ma
-
-      coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
-      } else {
-        0
-      }
-
-      # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
-
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
-      #... and calculate conditional standard deviations from the residuals
-      # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
-              FALSE, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pows, mods,
-              mode)
-      out$cmeans <- fitted_vs
-      out
-    }
-
-  } else {
-    sigt_fun             # ...else keep function for EGARCH-type
-  }
-
+  model_type <- c("egarch", "fiegarch")[[lm + 1]]
+  sigt_fun_adj <- adj_sigt_fun(
+    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
+    lm_arma = lm_arma, incl_mean = incl_mean,
+    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
+    arma_fun = cmean_fun,
+    model_type = model_type
+  )
 
   # Modulus settings
   mod <- modulus(spec)
@@ -1076,6 +1050,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # on power and modulus settings from "data-raw/lookup.R"
   mode <- mode_mat[pow_asy_check, pow_mag_check]
 
+  # Initialize ln(sig_t^2) with some reasonable, fixed value
+  lnsig2_init <- log(var(rt_core))
+
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
   # must be kept flexible for (skewed) average Laplace distribution
@@ -1098,97 +1075,69 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       sigt_fun = sigt_fun_adj,
       pows = pow,
       mods = mod,
-      mode = mode
+      mode = mode,
+      lnsig2_init = lnsig2_init,
+      trunc = trunc,
+      presample = presample
     )
   }
 
-  vals <- lookup_table[["vals"]][[cond_d]]
+  # Get cond. distribution restrictions and starting values
+  # as objects sval, lval and uval in the environment
+  cond_d_vals <- cond_d_par_restr(cond_d)
 
-  sval <- vals[[1]]
-  lval <- vals[[2]]
-  uval <- vals[[3]]
-
-  if (lm) {
-    d_low <- drange[[1]]
-    d_up <- drange[[2]]
-    d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
-    d_name <- "d"
-  } else {
-    d_spar <- d_low <- d_up <- numeric(0)
-    d_name <- character(0)
-  }
+  # Make further starting parameter values and restrictions available
+  # using internally saved table function
+  pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
+  list2env(pars_and_restr, envir = environment())
+  rm(pars_and_restr)
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
-    mean_rt <- mean(rt_core)
-    lrt2_shift <- log((rt_core - mean_rt)^2) + 1.27
+    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
+    min_rt <- list(NULL, min(rt_core))[[incl_mean + 1]]
+    max_rt <- list(NULL, max(rt_core))[[incl_mean + 1]]
+    skew_start <- list(NULL, 1)[[skew_par + 1]]
+    skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
+    skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
-    if (is.null(start_pars)) {
+    start_LB_UB <- set_start_LB_UB(
+      mean_val = mean_rt,
+      ar_start = ar_start,
+      ma_start = ma_start,
+      D_start = D_start,
+      omega_val = omega_start,
+      phi_start = phi_start,
+      psi_start = psi_start,
+      add_pars_start = add_pars_start,
+      d_start = d_spar,
+      sval = sval,
+      skew_start = skew_start,
+      mean_low = min_rt,
+      ar_low = ar_lb,
+      ma_low = ma_lb,
+      D_low = D_low,
+      omega_low = omega_low,
+      phi_low = phi_low,
+      psi_low = psi_low,
+      add_low = add_low,
+      d_low = d_low,
+      lval = lval, skew_low = skew_low,
+      mean_up = max_rt,
+      ar_up = ar_ub, ma_up = ma_ub,
+      D_up = D_up,
+      omega_up = omega_up,
+      phi_up = phi_up, psi_up = psi_up,
+      add_up = add_up,
+      d_up = d_up,
+      uval = uval, skew_up = skew_up,
+      start_pars = start_pars, LB = LB, UB = UB
+    )
 
-      start_pars <- c(
-        list(NULL, mean_rt)[[incl_mean + 1]],
-        rep(0.05 / p_ar, p_ar),
-        rep(0.05 / q_ma, q_ma),
-        D_start,
-        mean(lrt2_shift),
-        rep(0.2 / p, p),
-        rep(0, q - 1),
-        -0.2, 0.3,
-        #0, 0,
-        d_spar,
-        sval,
-        list(NULL, 1)[[skew_par + 1]]
-      )
-
-    }
-
-    if (is.null(LB)) {
-
-      mean_lrt2_s <- mean(lrt2_shift)
-
-      LB <- c(
-        list(NULL, min(rt_core))[[incl_mean + 1]],
-        rep(-2, p_ar),
-        rep(-2, q_ma),
-        D_low,
-        mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
-        rep(-2, p),
-        rep(-2, q - 1),
-        rep(-1, 2),
-        d_low,
-        lval,
-        list(NULL, 1e-15)[[skew_par + 1]]
-      )
-
-    }
-
-    if (is.null(UB)) {
-
-      mean_lrt2_s <- mean(lrt2_shift)
-
-      UB <- c(
-        list(NULL, max(rt_core))[[incl_mean + 1]],
-        rep(2, p_ar),
-        rep(2, q_ma),
-        D_up,
-        mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
-        rep(2, p),
-        rep(2, q - 1),
-        rep(1, 2),
-        d_up,
-        uval,
-        list(NULL, Inf)[[skew_par + 1]]
-      )
-
-    }
 
   }
 
-  n_arma <- p_ar + q_ma
-  n_arma_im <- n_arma + incl_mean + lm_arma
-  low_phi <- 2 + n_arma_im
-  up_phi <- 1 + n_arma_im + p
-  low_ar <- 1 + incl_mean
-  up_ar <- incl_mean + p_ar
+  low_phi <- 2 + n_arma_pars
+  up_phi <- 1 + n_arma_pars + p
 
   # For stationarity, restrict phi / AR values
   constr_fun <- function(theta, rt) {
@@ -1207,103 +1156,68 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   p_all <- p + p_ar
 
+  ineqLB <- rep(1e-6, p_all)
+  ineqUB <- rep(Inf, p_all)
+
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)   # P-values to consider
-    oldplan <- future::plan()    # Save old plan settings
-    if (parallel) {
-      future::plan(future::multisession, workers = ncores)   # Plan multisession, i.e. parallel, programming
-      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)  # Fail-safe: in case of errors, old plan settings are reinstated
-    }
-
-    P_seq <- P_range[[1]]:P_range[[2]]
-
-    # Run a loop for each P to check and optimize over the remaining parameters
-    fitted_models <- furrr::future_map(
-      .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2, p_all) {
-
-        # For each P, fix dfun1
-        dfun1_P <- function(x, shape, skew) {
-          dfun1(x = x, shape = .x, skew = skew)
-        }
-
-        # For each P, fix dfun2
-        dfun2_P <- function(x, mu, sigt, shape, skew) {
-          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
-        }
-
-        # Now fix the final goal function to optimize over
-        # using dfun1_P and dfun2_P
-        goal_fun <- function(theta, rt) {
-          goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
-        }
-
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          ineqfun = ineq_fun,
-          ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
-          ineqUB = rep(Inf, p_all),
-          control = control,
-          rt = rt_core
-        ))
-        est
-      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      ineq_fun = constr_fun, control = control, rt_core = rt_core,
-      dfun1 = dfun1, dfun2 = dfun2, p_all = p_all,
-      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
+    # Makes "P_sel" and "result" available
+    ald_fit(
+      Prange = Prange,
+      parallel = parallel,
+      ncores = ncores,
+      dfun1 = dfun1,
+      dfun2 = dfun2,
+      goal_fun_s = goal_fun_s,
+      start_pars = start_pars,
+      LB = LB, UB = UB,
+      ineqfun = constr_fun,
+      ineqLB = ineqLB,
+      ineqUB = ineqUB,
+      rt_core = rt_core,
+      control = control
     )
-
-    future::plan(oldplan)   # Reinstate old plan settings
-
-    coll_nllh <- vapply(    # From each fitted model, obtain the negative
-      X = fitted_models,    # log-likelihood at the corresponding optimum
-      FUN = function(.x) {
-        tail(.x$values, 1)
-      },
-      FUN.VALUE = numeric(1)
-    )
-
-    P_sel <- P_seq[[which.min(coll_nllh)]]    # Select the optimal P
-
-    result <- fitted_models[[which.min(coll_nllh)]] # Save the model with the optimal P
 
   } else {
+
+    P_sel <- NULL
 
     # Use dfun1 and dfun2 directly without further adjustments
     goal_fun <- function(theta, rt) {
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- suppressWarnings(Rsolnp::solnp(
-      pars = start_pars,
-      fun = goal_fun,
-      LB = LB,
-      UB = UB,
-      ineqfun = constr_fun,
-      ineqLB = rep(1e-6, p_all),    # abs. values of roots must be outside of unit circle
-      ineqUB = rep(Inf, p_all),
-      control = control,
-      rt = rt_core
-    ))
+    result <- tryCatch(
+      expr = {suppressWarnings(Rsolnp::solnp(
+        pars = start_pars,
+        fun = goal_fun,
+        LB = LB,
+        UB = UB,
+        ineqfun = constr_fun,
+        ineqLB = ineqLB,    # abs. values of roots must be outside of unit circle
+        ineqUB = ineqUB,
+        control = control,
+        rt = rt_core
+      ))},
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
   }
 
+  if (result$convergence %in% c(1, 2)) {
+    warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+  }
+
   pars <- result$pars
-  llhood <- -tail(result$values, 1)
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun_asy, int_fun_mag, pow, mod,
-              mode)
-  sigt <- final_series$sigt
-  cmeans <- final_series$cmeans
+  # Compute log-likelihood which is shifted from the obtained negative
+  # log-likelihood at the optimum; "-tail(result$values, 1)" is the
+  # log-likelihood at the optimum for the scaled data, which is too large by
+  # "n * log(scale_const)" in comparison to original data
+  llhood <- -tail(result$values, 1) - n * log(scale_const)
 
-  mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt_core - cmeans) / sigt
 
   psi_names <- if (q > 1) {paste0("psi", 1:(q - 1))} else {NULL}
 
@@ -1317,9 +1231,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     "sald" = "P",
     character(0)
   )
-
-  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
-  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
 
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
@@ -1336,39 +1247,83 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- result$hessian[-(1:p_all), -(1:p_all)]
-  vcov_mat <- solve(nhess)
-
+  # Adjust goal function one last time for hessian computation
   if (cond_d %in% c("ald", "sald")) {
-    if (cond_d == "ald") {
-      pars <- c(pars, P_sel)
-      vcov_mat <- rbind(cbind(vcov_mat, NA), NA)
-    } else {
-      l_p <- length(pars)
-      pars <- c(pars[1:(l_p - 1)], P_sel, pars[[l_p]])
-      vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
-      vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
+
+    # Fix dfun1
+    dfun1_P <- function(x, shape, skew) {
+      dfun1(x = x, shape = P_sel, skew = skew)
+    }
+
+    # Fix dfun2
+    dfun2_P <- function(x, mu, sigt, shape, skew) {
+      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+    }
+
+    # Fix the final goal function to optimize over
+    # using dfun1_P and dfun2_P
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
     }
 
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  # Compute the conditional standard deviations at the optimum
+  final_series <- sigt_fun_adj(
+    theta = unname(pars),
+    x = rt_core,
+    dfun = dfun1,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    presample = presample,
+    int_fun_asy = int_fun_asy,
+    int_fun_mag = int_fun_mag,
+    pows = pow,
+    mods = mod,
+    mode = mode,
+    lnsig2_init = lnsig2_init
+  )
+
+  # Also updates "pars", if ald or sald
+  compute_vcov(
+    goal_fun = goal_fun,
+    pars = pars,
+    rt_core = rt_core,
+    scale_const = scale_const,
+    incl_mean = incl_mean,
+    P_sel = P_sel,
+    cond_d = cond_d,
+    par_names = par_names,
+    model_type = model_type
+  )
+
+  # Create rescaled final parameters and results
+  rescale_estim(
+    pars = pars,
+    rt_core_o = rt_core_o,
+    sigt = final_series$sigt,
+    cmeans = final_series$cmeans,
+    scale_const = scale_const,
+    n_arma_pars = n_arma_pars,
+    incl_mean = incl_mean,
+    model_type = model_type
+  )
+
   names(pars) <- par_names
-  names(serrors) <- par_names
-  rownames(vcov_mat) <- par_names
-  colnames(vcov_mat) <- par_names
 
-  k <- length(pars)
-  n <- length(rt_core)
-
-  m2llhood <- -2 * llhood
-  bic <- (m2llhood + k * log(n)) / n
-  aic <- (m2llhood + 2 * k) / n
+  # Makes "aic" and "bic" available
+  crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = split_rt$train,
+    rt = train_obs,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1383,8 +1338,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = split_rt$train,
+    rt = train_obs,
     cmeans = cmeans,
+    scale_fun = NULL,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
@@ -1395,7 +1351,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     modulus = mod,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = split_rt$test
+    test_obs = test_obs,
+    nonpar_model = NULL,
+    trunc = trunc_i
   )
 
   list_out
@@ -1430,9 +1388,11 @@ loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_pa
 
 }
 
-sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun) {
+sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
+
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1451,11 +1411,10 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   skew <- all_pars$skew
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1,
+                  dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
 
-  Elnsig2 <- omega_sig
   omega <- omega_sig * (1 - sum(phi))
   l <- max(p, q)
   phi_s <- psi_s <- rep(0, l)
@@ -1470,17 +1429,18 @@ sigt_loggarch_short_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
     phi = phi,
     psi = alpha,
     Elneta2 = Elneta2,
-    Elnsig2 = Elnsig2
+    lnsig2_init = lnsig2_init
   ))
 
   list(sigt = sigt, mu = mu, skew = skew, shape = shape, cmeans = rep(mu, length(sigt)))
 
 }
 
-sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun) {
+sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
+              incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
+  # Make ellipsis objects available
+  list2env(list(...), envir = environment())
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1500,13 +1460,13 @@ sigt_loggarch_long_R <- function(theta, x, dfun1, p, q, p_ar, q_ma,
   skew <- all_pars$skew
 
   Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
-                  dfun = dfun1,
+                  dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
 
   n <- length(x)
-  coef_inf <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
-                                     max_i = n)[-1]
+  coef_inf <- ma_infty(ar = phi, ma = psi, d = d,
+                                     max_i = trunc - presample)[-1]
 
   Elnsig2 <- omega_sig
 
@@ -1535,122 +1495,112 @@ goal_fun_creator_loggarch <- function(
     extra_par,
     skew_par,
     int_fun,
-    sigt_fun
+    sigt_fun,
+    lnsig2_init,
+    trunc,
+    presample
 ) {
 
-  res_list <- sigt_fun(theta, x, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun)
+  res_list <- sigt_fun(
+    theta = theta,
+    x = x,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    presample = presample,
+    dfun = dfun1,
+    int_fun = int_fun,
+    lnsig2_init = lnsig2_init)
 
-  sigt <- res_list$sigt
-  cmeans <- res_list$cmeans
-  skew <- res_list$skew
-  shape <- res_list$shape
-
-  out <- -sum(log(dfun2(x, cmeans, sigt, shape, skew)))
-
-  out
+  nllhood_calc(res_list, x, dfun2)
 
 }
 
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000, presample = 50, Prange = c(1, 5)) {
 
-  split_rt <- split_ts(rt, n_test)
-  rt_core <- zoo::coredata(split_rt$train)
+  # Make rt have sample variance 1; more robust for
+  # differently scaled data; results like parameters
+  # and the log-likelihood with regard to the original data
+  # can be computed easily later,
+  # as, if required, the corresponding values returned for the scaled data
+  # are just multiplied by a constant
+  # or shifted by a constant. This transformation just shifts the
+  # entire log-likelihood by a constant and therefore does not affect
+  # the shape of the log-likelihood.
 
+  # Makes available
+  # - rt_core_o: pure original obs. of the training set,
+  # - rt_core: pure rescaled obs.,
+  # - scale_const: the scaling constant used,
+  # - test_obs: the test obs. with keeping initial formatting,
+  # - train_obs: the train obs. with keeping initial formatting
+  initial_split(rt, n_test)
+
+
+  n <- length(rt_core)
+  if (Prange[[1]] < 1) {Prange[[1]] <- 1}
+  trunc_i <- trunc
+  if (is.character(trunc) && trunc == "none") {
+    trunc <- n + presample - 1
+  } else if (is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
+  }
+
+  # Obtain model orders
   order <- orders(spec)
   p <- order[[1]]
   q <- order[[2]]
+  # Conditional distribution
   cond_d <- cond_dist(spec)
+  # Long-memory setting (for GARCH-part)
+  lm <- long_memo(spec)
 
-  incl_mean <- include_mean(meanspec)
+  # Settings for ARMA / FARIMA part in the mean; makes objects available in this
+  # environment
+  identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
-  # ARMA orders
-  order_arma <- orders(meanspec)
-  p_ar <- order_arma[[1]]
-  q_ma <- order_arma[[2]]
-
+  # Look up internally saved density functions
+  # from "data-raw/lookup.R"
   dfun1 <- lookup_table[["fun1"]][[cond_d]]
   dfun2 <- lookup_table[["fun2"]][[cond_d]]
 
+  # Look up internally saved settings for additional parameters
+  # from "data-raw/lookup.R"
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
-  lm <- long_memo(spec) # GARCH-part
-  # Long-memory setting (for ARMA-part)
-  lm_arma <- long_memo(meanspec)
-  # Assign ARMA / FARIMA function
-  arma_fun <- if (lm_arma) {
-    grab_fun <- farima_grab_pars
-    D_par_name <- "D"
-    D_start <- 0.25 #mean(Drange)
-    D_low <- Drange[[1]]
-    D_up <- Drange[[2]]
-    farima_fit
-  } else {
-    grab_fun <- arma_grab_pars
-    D_par_name <- character(0)
-    D_start <- D_low <- D_up <- numeric(0)
-    arma_fit
-  }
+  # Adjust (if ARMA relevant)
+  model_type <- c("loggarch", "filoggarch")[[lm + 1]]
+  sigt_fun_adj <- adj_sigt_fun(
+    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
+    lm_arma = lm_arma, incl_mean = incl_mean,
+    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
+    arma_fun = cmean_fun,
+    model_type = model_type
+  )
 
-  sigt_fun <- sigt_funs_loggarch[[lm + 1]]
-  # Adjust (if ARMA-part relevant)
-  pg0 <- p_ar > 0
-  qg0 <- q_ma > 0
-  check <- pg0 || qg0
-  n_arma_pars <- incl_mean + p_ar + q_ma + lm_arma
-  sigt_fun_adj <- if (check) {
-    function(theta, x, dfun1, p, q, p_ar, q_ma,
-         incl_mean, extra_par, skew_par,
-         int_fun) {
-
-      # Obtain ARMA / FARIMA parameters from theta
-      arma_pars <- grab_fun(
-        theta = theta,
-        incl_mean = incl_mean,
-        pg0 = pg0,
-        qg0 = qg0,
-        p = p_ar,
-        q = q_ma
-      )
-      mu <- arma_pars$mu
-      ar <- arma_pars$ar
-      ma <- arma_pars$ma
-
-      coef_inf <- if (lm_arma) {
-        esemifar::farima_to_ar(ar = ar, ma = ma, d = arma_pars$D, max_i = n)[-1]
-      } else {
-        0
-      }
-
-      # Calculate fitted values following these parameters...
-      fitted_vs <- arma_fun(x = x, mu = mu, ma = ma, ar = ar, coef_inf = coef_inf)
-      # ... and calculate the residuals
-      res <- x - fitted_vs
-
-      # Remove the first few elements from theta (those for the parameters
-      # relevant for ARMA / FARIMA) ...
-      theta2 <- theta[-(1:n_arma_pars)]
-      #... and calculate conditional standard deviations from the residuals
-      # following the specified GARCH-type
-      out <- sigt_fun(theta2, res, dfun1, p, q, p_ar, q_ma,
-              FALSE, extra_par, skew_par,
-              int_fun)
-      out$cmeans <- fitted_vs
-      out
-    }
-
-  } else {
-    sigt_fun             # ...else keep function for EGARCH-type
-  }
-
-
+  # Define function to integrate over to compute
+  # the expectation of ln(e_t^2) numerically in the
+  # numerical optimization; quantity depends on parameter
+  # settings for everything but a standard normal distribution
   int_fun <- function(x, shape, skew, dfun) {
     log(x^2) * dfun(x, shape = shape, skew = skew)
   }
 
+  # Initialize ln(sig_t^2) with some reasonable, fixed value
+  lnsig2_init <- log(var(rt_core))
+
+  # Create the goal function to optimize over
+  # (this is intermediate goal function, as dfun1 and dfun2
+  # must be kept flexible for (skewed) average Laplace distribution
+  # in order to be able to fix its parameter at different integer values)
   goal_fun_s <- function(theta, rt, dfun1, dfun2) {
     goal_fun_creator_loggarch(
       theta = theta,
@@ -1665,89 +1615,71 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       extra_par = extra_par,
       skew_par = skew_par,
       int_fun = int_fun,
-      sigt_fun = sigt_fun_adj
+      sigt_fun = sigt_fun_adj,
+      lnsig2_init = lnsig2_init,
+      trunc = trunc,
+      presample = presample
     )
   }
 
-  vals <- lookup_table[["vals"]][[cond_d]]
+  # Get cond. distribution restrictions and starting values
+  # as objects sval, lval and uval in the environment
+  cond_d_vals <- cond_d_par_restr(cond_d)
 
-  sval <- vals[[1]]
-  lval <- vals[[2]]
-  uval <- vals[[3]]
+  # Make further starting parameter values and restrictions available
+  # using internally saved table function
+  pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
+  list2env(pars_and_restr, envir = environment())
+  rm(pars_and_restr)
 
-  if (lm) {
-    d_low <- drange[[1]]
-    d_up <- drange[[2]]
-    d_spar <- 0.25 #d_low + abs(d_up - d_low) / 2
-    d_name <- "d"
-  } else {
-    d_spar <- d_low <- d_up <- numeric(0)
-    d_name <- character(0)
-  }
+  if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
+    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
+    min_rt <- list(NULL, min(rt_core))[[incl_mean + 1]]
+    max_rt <- list(NULL, max(rt_core))[[incl_mean + 1]]
+    skew_start <- list(NULL, 1)[[skew_par + 1]]
+    skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
+    skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
-  mean_rt <- mean(rt_core)
-  lrt2_shift <- log((rt_core - mean_rt)^2) + 1.27
-  mean_lrt2_s <- mean(lrt2_shift)
-
-  if (is.null(start_pars)) {
-
-    start_pars <- c(
-      list(NULL, mean(rt_core))[[incl_mean + 1]],
-      rep(0.05 / p_ar, p_ar),
-      rep(0.05 / q_ma, q_ma),
-      D_start,
-      mean_lrt2_s,
-      rep(0.55 / p, p),
-      rep(-0.5 / q, q),
-      d_spar,
-      sval,
-      list(NULL, 1)[[skew_par + 1]]
+    start_LB_UB <- set_start_LB_UB(
+      mean_val = mean_rt,
+      ar_start = ar_start,
+      ma_start = ma_start,
+      D_start = D_start,
+      omega_val = omega_start,
+      phi_start = phi_start,
+      psi_start = psi_start,
+      add_pars_start = add_pars_start,
+      d_start = d_spar,
+      sval = sval,
+      skew_start = skew_start,
+      mean_low = min_rt,
+      ar_low = ar_lb,
+      ma_low = ma_lb,
+      D_low = D_low,
+      omega_low = omega_low,
+      phi_low = phi_low,
+      psi_low = psi_low,
+      add_low = add_low,
+      d_low = d_low,
+      lval = lval, skew_low = skew_low,
+      mean_up = max_rt,
+      ar_up = ar_ub, ma_up = ma_ub,
+      D_up = D_up,
+      omega_up = omega_up,
+      phi_up = phi_up, psi_up = psi_up,
+      add_up = add_up,
+      d_up = d_up,
+      uval = uval, skew_up = skew_up,
+      start_pars = start_pars, LB = LB, UB = UB
     )
 
-  }
-
-  if (is.null(LB)) {
-
-    LB <- c(
-      list(NULL, min(rt_core))[[incl_mean + 1]],
-      rep(-2, p_ar),
-      rep(-2, q_ma),
-      D_low,
-      mean_lrt2_s - 0.2 * abs(mean_lrt2_s - min(lrt2_shift)),
-      rep(-2, p),
-      rep(-2, q),
-      d_low,
-      lval,
-      list(NULL, 1e-15)[[skew_par + 1]]
-    )
 
   }
 
-  if (is.null(UB)) {
+  low_phi <- 2 + n_arma_pars
+  up_phi <- 1 + n_arma_pars + p
 
-    UB <- c(
-      list(NULL, max(rt_core))[[incl_mean + 1]],
-      rep(2, p_ar),
-      rep(2, q_ma),
-      D_up,
-      mean_lrt2_s + 0.8 * abs(mean_lrt2_s - max(lrt2_shift)),
-      rep(2, p),
-      rep(2, q),
-      d_up,
-      uval,
-      list(NULL, Inf)[[skew_par + 1]]
-    )
-
-  }
-
-  n_arma <- p_ar + q_ma
-  n_arma_im <- n_arma + incl_mean + lm_arma
-  low_phi <- 2 + n_arma_im
-  up_phi <- 1 + n_arma_im + p
-  low_ar <- 1 + incl_mean
-  up_ar <- incl_mean + p_ar
-
-  # Restrict phi / AR values
+  # For stationarity, restrict phi / AR values
   constr_fun <- function(theta, rt) {
     phi <- c(1, -theta[low_phi:up_phi])
     c1 <- abs(polyroot(phi)) - 1
@@ -1760,102 +1692,74 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     c(c1, c2)
   }
 
+  if (is.null(control$trace)) {control$trace <- FALSE}
+
   p_all <- p + p_ar
 
-  if (is.null(control$trace)) {control$trace <- FALSE}
+  ineqLB <- rep(1e-6, p_all)
+  ineqUB <- rep(Inf, p_all)
 
   if (cond_d %in% c("ald", "sald")) {
 
-    P_range <- c(1, 8)
-    oldplan <- future::plan()
-    if (parallel) {
-      future::plan(future::multisession, workers = ncores)
-      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
-    }
-
-    P_seq <- P_range[[1]]:P_range[[2]]
-
-    fitted_models <- furrr::future_map(
-      .x = P_seq,
-      .f = function(.x, start_pars, goal_fun_s, LB, UB, ineq_fun, control, rt_core, dfun1, dfun2, p_all) {
-
-        dfun1_P <- function(x, shape, skew) {
-          dfun1(x = x, shape = .x, skew = skew)
-        }
-
-        dfun2_P <- function(x, mu, sigt, shape, skew) {
-          dfun2(x = x, mu = mu, sigt = sigt, shape = .x, skew = skew)
-        }
-
-        goal_fun <- function(theta, rt) {
-          goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
-        }
-
-        est <- suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
-          fun = goal_fun,
-          LB = LB,
-          UB = UB,
-          ineqfun = ineq_fun,
-          ineqLB = rep(1e-6, p_all),
-          ineqUB = rep(Inf, p_all),
-          control = control,
-          rt = rt_core
-        ))
-        est
-      }, start_pars = start_pars, goal_fun_s = goal_fun_s, LB = LB, UB = UB,
-      control = control, rt_core = rt_core, ineq_fun = constr_fun,
-      dfun1 = dfun1, dfun2 = dfun2, p_all = p_all,
-      .progress = FALSE, .options = furrr::furrr_options(seed = NULL)
+    # Makes "P_sel" and "result" available
+    ald_fit(
+      Prange = Prange,
+      parallel = parallel,
+      ncores = ncores,
+      dfun1 = dfun1,
+      dfun2 = dfun2,
+      goal_fun_s = goal_fun_s,
+      start_pars = start_pars,
+      LB = LB, UB = UB,
+      ineqfun = constr_fun,
+      ineqLB = ineqLB,
+      ineqUB = ineqUB,
+      rt_core = rt_core,
+      control = control
     )
-
-    future::plan(oldplan)
-
-    coll_nllh <- vapply(
-      X = fitted_models,
-      FUN = function(.x) {
-        tail(.x$values, 1)
-      },
-      FUN.VALUE = numeric(1)
-    )
-
-    P_sel <- P_seq[[which.min(coll_nllh)]]
-
-    result <- fitted_models[[which.min(coll_nllh)]]
 
   } else {
 
+    P_sel <- NULL
+
+    # Use dfun1 and dfun2 directly without further adjustments
     goal_fun <- function(theta, rt) {
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- suppressWarnings(Rsolnp::solnp(
-      pars = start_pars,
-      fun = goal_fun,
-      LB = LB,
-      UB = UB,
-      ineqfun = constr_fun,
-      ineqLB = rep(1e-6, p_all),
-      ineqUB = rep(Inf, p_all),
-      control = control,
-      rt = rt_core
-    ))
+    result <- tryCatch(
+      expr = {suppressWarnings(Rsolnp::solnp(
+        pars = start_pars,
+        fun = goal_fun,
+        LB = LB,
+        UB = UB,
+        ineqfun = constr_fun,
+        ineqLB = ineqLB,    # abs. values of roots must be outside of unit circle
+        ineqUB = ineqUB,
+        control = control,
+        rt = rt_core
+      ))},
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
 
   }
 
+  if (result$convergence %in% c(1, 2)) {
+    warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+  }
 
   pars <- result$pars
-  llhood <- -tail(result$values, 1)
 
-  final_series <- sigt_fun_adj(unname(pars), rt_core, dfun1, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par,
-              int_fun)
+  # Compute log-likelihood which is shifted from the obtained negative
+  # log-likelihood at the optimum; "-tail(result$values, 1)" is the
+  # log-likelihood at the optimum for the scaled data, which is too large by
+  # "n * log(scale_const)" in comparison to original data
+  llhood <- -tail(result$values, 1) - n * log(scale_const)
 
-  sigt <- final_series$sigt
-  cmeans <- final_series$cmeans
 
-  mu <- if (incl_mean) pars[[1]] else 0
-  etat <- (rt_core - cmeans) / sigt
+  psi_names <- paste0("psi", 1:q)
 
   extra_par_name <- switch(
     cond_d,
@@ -1868,9 +1772,6 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     character(0)
   )
 
-  names_ar <- list(character(0), paste0("ar", 1:p_ar))[[pg0 + 1]]
-  names_ma <- list(character(0), paste0("ma", 1:q_ma))[[qg0 + 1]]
-
   par_names <- c(
     list(NULL, "mu")[[incl_mean + 1]],
     names_ar,
@@ -1878,45 +1779,85 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     D_par_name,
     "omega_sig",
     paste0("phi", 1:p),
-    paste0("psi", 1:q),
+    psi_names,
     d_name,
     extra_par_name,
     list(NULL, "skew")[[skew_par + 1]]
   )
 
-  nhess <- result$hessian[-(1:p_all), -(1:p_all)]
-  vcov_mat <- solve(nhess)
-
+  # Adjust goal function one last time for hessian computation
   if (cond_d %in% c("ald", "sald")) {
-    if (cond_d == "ald") {
-      pars <- c(pars, P_sel)
-      vcov_mat <- rbind(cbind(vcov_mat, NA), NA)
-    } else {
-      l_p <- length(pars)
-      pars <- c(pars[1:(l_p - 1)], P_sel, pars[[l_p]])
-      vcov_c <- cbind(vcov_mat[, 1:(l_p - 1)], NA, vcov_mat[, l_p])
-      vcov_mat <- rbind(vcov_c[1:(l_p - 1), ], NA, vcov_c[l_p, ])
+
+    # Fix dfun1
+    dfun1_P <- function(x, shape, skew) {
+      dfun1(x = x, shape = P_sel, skew = skew)
+    }
+
+    # Fix dfun2
+    dfun2_P <- function(x, mu, sigt, shape, skew) {
+      dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
+    }
+
+    # Fix the final goal function to optimize over
+    # using dfun1_P and dfun2_P
+    goal_fun <- function(theta, rt) {
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
     }
 
   }
 
-  serrors <- sqrt(diag(vcov_mat))
+  # Compute the conditional standard deviations at the optimum
+  final_series <- sigt_fun_adj(
+    theta = unname(pars),
+    x = rt_core,
+    dfun = dfun1,
+    p = p,
+    q = q,
+    p_ar = p_ar,
+    q_ma = q_ma,
+    incl_mean = incl_mean,
+    extra_par = extra_par,
+    skew_par = skew_par,
+    trunc = trunc,
+    presample = presample,
+    int_fun = int_fun,
+    lnsig2_init = lnsig2_init
+  )
+
+  # Also updates "pars", if ald or sald
+  compute_vcov(
+    goal_fun = goal_fun,
+    pars = pars,
+    rt_core = rt_core,
+    scale_const = scale_const,
+    incl_mean = incl_mean,
+    P_sel = P_sel,
+    cond_d = cond_d,
+    par_names = par_names,
+    model_type = model_type
+  )
+
+  # Create rescaled final parameters and results
+  rescale_estim(
+    pars = pars,
+    rt_core_o = rt_core_o,
+    sigt = final_series$sigt,
+    cmeans = final_series$cmeans,
+    scale_const = scale_const,
+    n_arma_pars = n_arma_pars,
+    incl_mean = incl_mean,
+    model_type = model_type
+  )
+
   names(pars) <- par_names
-  names(serrors) <- par_names
-  rownames(vcov_mat) <- par_names
-  colnames(vcov_mat) <- par_names
 
-  k <- length(pars)
-  n <- length(rt_core)
-
-  m2llhood <- -2 * llhood
-  bic <- (m2llhood + k * log(n)) / n
-  aic <- (m2llhood + 2 * k) / n
+  # Makes "aic" and "bic" available
+  crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = split_rt$train,
+    rt = train_obs,
     list_of_ts = list(
       "cmeans" = cmeans,
       "sigt" = sigt,
@@ -1931,8 +1872,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     pars = pars,
     se = serrors,
     vcov_mat = vcov_mat,
-    rt = split_rt$train,
+    rt = train_obs,
     cmeans = cmeans,
+    scale_fun = NULL,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
@@ -1941,7 +1883,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     orders = order,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = split_rt$test
+    test_obs = test_obs,
+    nonpar_model = NULL,
+    trunc = trunc_i
   )
 
   list_out
@@ -1985,12 +1929,26 @@ setMethod(
   )
   row.names(df) <- par_names
 
+  check_nonpar <- !is.null(x@nonpar_model)
+  b <- if (is.null(x@nonpar_model$b0)) {
+    x@nonpar_model$b
+  } else {
+    x@nonpar_model$b0
+  }
+  bwidth <- if (check_nonpar) {
+    paste0(
+      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", b), ")"
+    )
+  } else {
+    ""
+  }
+
   part1 <- paste0(
     "*************************************\n",
     "*     Fitted EGARCH Family Model    *\n",
     "*************************************\n",
     " \n",
-    "Type: eGARCH\n",
+    "Type: egarch\n",
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Modulus: (", x@modulus[[1]], ", ", x@modulus[[2]], ")\n",
     "Powers: (", x@powers[[1]], ", ", x@powers[[2]], ")\n",
@@ -2000,12 +1958,14 @@ setMethod(
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     "\n",
+    "Scale estimation: ", paste0(check_nonpar, bwidth), "\n",
+    " \n",
     "Fitted parameters:\n"
   )
 
   part2 <- paste0(
     " \n",
-    "Information criteria:\n",
+    "Information criteria (parametric part):\n",
     "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
     ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
   )
@@ -2041,12 +2001,26 @@ setMethod(
   )
   row.names(df) <- par_names
 
+  check_nonpar <- !is.null(x@nonpar_model)
+  b <- if (is.null(x@nonpar_model$b0)) {
+    x@nonpar_model$b
+  } else {
+    x@nonpar_model$b0
+  }
+  bwidth <- if (check_nonpar) {
+    paste0(
+      " (poly_order = ", x@nonpar_model$p,"; bandwidth = ", sprintf("%.4f", b), ")"
+    )
+  } else {
+    ""
+  }
+
   part1 <- paste0(
     "*************************************\n",
     "*     Fitted EGARCH Family Model    *\n",
     "*************************************\n",
     " \n",
-    "Type: logGARCH\n",
+    "Type: loggarch\n",
     "Orders: (", x@orders[[1]], ", ", x@orders[[2]], ")\n",
     "Long memory: ", x@long_memo, "\n",
     "Cond. distribution: ", x@cond_dist, "\n",
@@ -2054,12 +2028,14 @@ setMethod(
     "ARMA orders (cond. mean): (", x@meanspec@orders[[1]], ", ", x@meanspec@orders[[2]], ")\n",
     "Long memory (cond. mean): ", x@meanspec@long_memo, "\n",
     "\n",
+    "Scale estimation: ", paste0(check_nonpar, bwidth), "\n",
+    " \n",
     "Fitted parameters:\n"
   )
 
   part2 <- paste0(
     " \n",
-    "Information criteria:\n",
+    "Information criteria (parametric part):\n",
     "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
     ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
   )
@@ -2070,21 +2046,23 @@ setMethod(
   }
 )
 
-#'Methods for Accessing Model Estimation Output Elements
+#'Methods for Accessing Model Estimation and Foprecasting Output Elements
 #'
 #'Accessors to access the elements of the same name in
 #'output objects returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'\code{\link{garchm_estim}}, \code{predict} or \code{predict_roll}.
 #'
 #'@param x an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'\code{\link{garchm_estim}}, \code{predict} (for \code{sigt} and \code{cmeans})
+#'or \code{predict_roll} (for \code{sigt} and \code{cmeans}).
 #'
 #'@details
 #'Convenience methods to access the elements of the same name
 #'that can otherwise be accessed via the operator \code{@} within
 #'objects that inherit from class \code{"fEGarch_fit"}, which covers
-#'objects returned by \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'objects returned by either \code{\link{fEGarch}},
+#'\code{\link{garchm_estim}}, \code{predict} (for \code{sigt} and \code{cmeans})
+#'or \code{predict_roll} (for \code{sigt} and \code{cmeans}).
 #'
 #'@return
 #'The element within the input object of the same name as the method

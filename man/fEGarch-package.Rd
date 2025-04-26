@@ -3,14 +3,14 @@
 \docType{package}
 \name{fEGarch-package}
 \alias{fEGarch-package}
-\title{Implementation of a Broad Family of EGARCH Models}
+\title{Estimation of a Broad Family of EGARCH Models}
 \description{
 A library of quasi maximum-likelihood estimation (QMLE) methods for
 fitting various short- and long-memory models from a broad family of
 exponential generalized conditional heteroskedasticity (EGARCH) models.
 For the purpose of comparison, a FIAPARCH (fractionally integrated
-asymmetric power ARCH) and a long-memory GARCH (LMGARCH)
-can be implemented as well.
+asymmetric power ARCH) and a FIGARCH (fractionally integrated GARCH)
+can be implemented as well among others.
 }
 \details{
 \code{fEGarch} is an R package for estimating a broad family of
@@ -37,8 +37,10 @@ submodels are available as well: \code{\link{egarch_spec}},
 As a popular alternative for the sake of comparison, a FIAPARCH
 model can be fitted as well using \code{\link{fiaparch}}. The
 corresponding documentation page also includes further information
-on the model. Similarly, \code{\link{lmgarch}} can be utilized for
-fitting LMGARCH models.
+on the model. Similarly, \code{\link{figarch}} can be utilized for
+fitting FIGARCH models. A general function for estimation additional
+GARCH-type models, including FIAPARCH and FIGARCH among others, is
+\code{\link{garch_estim}}.
 
 In addition, the package provides functionalities in order to
 simultaneously model the conditional mean (using either autoregressive
@@ -48,6 +50,13 @@ conditional variance. For this purpose, the function
 \code{\link{arma_spec}} can be utilized and its result needs to be
 passed to \code{\link{fEGarch}} alongside the result of either
 \code{\link{fEGarch_spec}} or one of its wrappers.
+
+Further options include the specification of semiparametric
+volatility models, where a smooth, nonparametric scale function
+is at first estimated and removed from an observed series, before
+estimating a parametric model. The scale estimation is currently
+done through automated local polynomial regression with designated
+bandwidth selection algorithms under short memory and long memory.
 }
 \section{Main Functions}{
 
@@ -59,11 +68,17 @@ a model from the broader EGARCH family,}
 the conditional mean,}
 \item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 models given a model specification and an observation series,}
-\item{\code{\link{fiaparch}}:}{fitting a FIAPARCH model,}
-\item{\code{\link{lmgarch}}:}{fitting an LMGARCH model,}
+\item{\code{\link{garch_estim}}:}{fitting a GARCH-type model selectable from a standard GARCH,
+a GJR-GARCH, a TGARCH, an APARCH, a FIGARCH, a FIGJR-GARCH, a FITGARCH and a FIAPARCH,}
 \item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model,}
-\item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model.}
-\item{\code{\link{lmgarch_sim}}:}{simulating from an LMGARCH model,}
+\item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model,}
+\item{\code{\link{figarch_sim}}:}{simulating from a FIGARCH model,}
+\item{\code{\link{figjrgarch_sim}}:}{simulating from a FIGJR-GARCH model,}
+\item{\code{\link{fitgarch_sim}}:}{simulating from a FITGARCH model,}
+\item{\code{\link{aparch_sim}}:}{simulating from an APARCH model,}
+\item{\code{\link{garch_sim}}:}{simulating from a GARCH model,}
+\item{\code{\link{gjrgarch_sim}}:}{simulating from a GJR-GARCH model,}
+\item{\code{\link{tgarch_sim}}:}{simulating from a TGARCH model,}
 \item{\code{\link{predict,fEGarch_fit-method}}:}{multistep point forecasts of
 the conditional mean and the conditional standard deviation,}
 \item{\code{\link{predict_roll,fEGarch_fit-method}}:}{rolling point forecasts of
@@ -103,16 +118,25 @@ and a new model. Journal of Empirical Finance, 1(1):
 \item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
 Working Papers CIE No. 137, Paderborn University, Center for International Economics.
 URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
+\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
+Trend Stationary Time Series. The R Journal,
+14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 \item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 57-61. DOI: 10.1080/07474938608800088.}
 \item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of
 long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
+\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
+in R. Comunications in Statistics - Theory and Methods,
+53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 \item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
 \item{Missiakoulis, S. (1983). Sargan Densities: Which One?. Journal of Econometrics, 23(2): 223-233.
 DOI: 10.1016/0304-4076(93)90078-J}
 \item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
 59(2), 347–370. DOI: 10.2307/2938260.}
+\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient computation of ARCH(\eqn{\infty})
+models. Journal of Time Series Analysis,
+42(3), 338–354. DOI: 10.1111/jtsa.12570.}
 \item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 71-74. DOI: 10.1080/07474938608800089.}
 \item{Tse, Y. K. (1987). A Note On Sargan Densities. Journal of Econometrics, 34(3): 349-354.

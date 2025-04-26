@@ -88,40 +88,40 @@ first to understand the following descriptions on the arguments of
 
 \eqn{\textbf{EGARCH:}}
 
-\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+\code{model_type = "egarch"}, \code{long_memo = FALSE},
 \code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
 
 \eqn{\textbf{FIEGARCH:}}
 
-\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+\code{model_type = "egarch"}, \code{long_memo = TRUE},
 \code{powers = c(1, 1)}, \code{modulus = c(FALSE, FALSE)}
 
 \eqn{\textbf{MEGARCH:}}
 
-\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+\code{model_type = "egarch"}, \code{long_memo = FALSE},
 \code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 
 \eqn{\textbf{Log-GARCH:}}
 
-\code{model_type = "logGARCH"}, \code{long_memo = FALSE}
+\code{model_type = "loggarch"}, \code{long_memo = FALSE}
 
 \eqn{\textbf{FILog-GARCH:}}
 
-\code{model_type = "logGARCH"}, \code{long_memo = TRUE}
+\code{model_type = "loggarch"}, \code{long_memo = TRUE}
 
 \eqn{\textbf{MLog-GARCH:}}
 
-\code{model_type = "eGARCH"}, \code{long_memo = FALSE},
+\code{model_type = "egarch"}, \code{long_memo = FALSE},
 \code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 
 \eqn{\textbf{FIMLog-GARCH:}}
 
-\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+\code{model_type = "egarch"}, \code{long_memo = TRUE},
 \code{powers = c(0, 0)}, \code{modulus = c(TRUE, TRUE)}
 
 \eqn{\textbf{FIMEGARCH:}}
 
-\code{model_type = "eGARCH"}, \code{long_memo = TRUE},
+\code{model_type = "egarch"}, \code{long_memo = TRUE},
 \code{powers = c(0, 1)}, \code{modulus = c(TRUE, FALSE)}
 }
 \examples{

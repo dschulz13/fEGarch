@@ -8,13 +8,16 @@ setClass("fEGarch_fit",
     cmeans = "ANY",
     sigt = "ANY",
     etat = "ANY",
+    scale_fun = "ANY",
     llhood = "numeric",
     inf_criteria = "numeric",
     cond_dist = "character",
     orders = "numeric",
     long_memo = "logical",
     meanspec = "mean_spec",
-    test_obs = "ANY"
+    test_obs = "ANY",
+    nonpar_model = "ANY",
+    trunc = "ANY"
   ),
   prototype = list(
     pars = numeric(1),
@@ -24,13 +27,16 @@ setClass("fEGarch_fit",
     cmeans = numeric(1),
     sigt = numeric(1),
     etat = numeric(1),
+    scale_fun = numeric(1),
     llhood = numeric(1),
     inf_criteria = numeric(1),
     cond_dist = character(1),
     orders = numeric(1),
     long_memo = logical(1),
     meanspec = mean_spec(),
-    test_obs = numeric(1)
+    test_obs = numeric(1),
+    nonpar_model = numeric(1),
+    trunc = numeric(1)
   )
 )
 
@@ -54,7 +60,31 @@ setClass("fEGarch_fit_fiaparch",
   contains = "fEGarch_fit"
 )
 
-setClass("fEGarch_fit_lmgarch",
+setClass("fEGarch_fit_aparch",
+  contains = "fEGarch_fit"
+)
+
+setClass("fEGarch_fit_figjrgarch",
+  contains = "fEGarch_fit"
+)
+
+setClass("fEGarch_fit_gjrgarch",
+  contains = "fEGarch_fit"
+)
+
+setClass("fEGarch_fit_fitgarch",
+  contains = "fEGarch_fit"
+)
+
+setClass("fEGarch_fit_tgarch",
+  contains = "fEGarch_fit"
+)
+
+setClass("fEGarch_fit_garch",
+  contains = "fEGarch_fit"
+)
+
+setClass("fEGarch_fit_figarch",
   contains = "fEGarch_fit"
 )
 
@@ -78,6 +108,7 @@ fEGarch_fit_egarch <- function(
     cmeans,
     sigt,
     etat,
+    scale_fun,
     llhood,
     inf_criteria,
     cond_dist,
@@ -86,7 +117,9 @@ fEGarch_fit_egarch <- function(
     modulus,
     long_memo,
     meanspec,
-    test_obs
+    test_obs,
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_egarch",
@@ -105,7 +138,10 @@ fEGarch_fit_egarch <- function(
     modulus = modulus,
     long_memo = long_memo,
     meanspec = meanspec,
-    test_obs = test_obs
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -124,7 +160,11 @@ fEGarch_fit_loggarch <- function(
     orders,
     long_memo,
     meanspec,
-    test_obs
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+
 ) {
 
   new("fEGarch_fit_loggarch",
@@ -141,7 +181,10 @@ fEGarch_fit_loggarch <- function(
     orders = orders,
     long_memo = long_memo,
     meanspec = meanspec,
-    test_obs = test_obs
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -161,7 +204,10 @@ fEGarch_fit_fiaparch <- function(
     orders,
     long_memo,
     meanspec,
-    test_obs
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_fiaparch",
@@ -178,12 +224,15 @@ fEGarch_fit_fiaparch <- function(
     orders = orders,
     long_memo = long_memo,
     meanspec = meanspec,
-    test_obs = test_obs
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
 
-fEGarch_fit_lmgarch <- function(
+fEGarch_fit_aparch <- function(
     pars,
     se,
     vcov_mat,
@@ -197,10 +246,13 @@ fEGarch_fit_lmgarch <- function(
     orders,
     long_memo,
     meanspec,
-    test_obs
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
 ) {
 
-  new("fEGarch_fit_lmgarch",
+  new("fEGarch_fit_aparch",
     pars = pars,
     se = se,
     vcov_mat = vcov_mat,
@@ -214,7 +266,264 @@ fEGarch_fit_lmgarch <- function(
     orders = orders,
     long_memo = long_memo,
     meanspec = meanspec,
-    test_obs = test_obs
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
+  )
+
+}
+
+fEGarch_fit_figjrgarch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+) {
+
+  new("fEGarch_fit_figjrgarch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
+  )
+
+}
+
+fEGarch_fit_gjrgarch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+) {
+
+  new("fEGarch_fit_gjrgarch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
+  )
+
+}
+
+
+fEGarch_fit_fitgarch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+) {
+
+  new("fEGarch_fit_fitgarch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
+  )
+
+}
+
+fEGarch_fit_tgarch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+) {
+
+  new("fEGarch_fit_tgarch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
+  )
+
+}
+
+fEGarch_fit_garch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+) {
+
+  new("fEGarch_fit_garch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
+  )
+
+}
+
+
+fEGarch_fit_figarch <- function(
+    pars,
+    se,
+    vcov_mat,
+    rt,
+    sigt,
+    cmeans,
+    etat,
+    llhood,
+    inf_criteria,
+    cond_dist,
+    orders,
+    long_memo,
+    meanspec,
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
+) {
+
+  new("fEGarch_fit_figarch",
+    pars = pars,
+    se = se,
+    vcov_mat = vcov_mat,
+    rt = rt,
+    sigt = sigt,
+    cmeans = cmeans,
+    etat = etat,
+    llhood = llhood,
+    inf_criteria = inf_criteria,
+    cond_dist = cond_dist,
+    orders = orders,
+    long_memo = long_memo,
+    meanspec = meanspec,
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }
@@ -235,7 +544,10 @@ fEGarch_fit_rugarch_wrapper <- function(
     rugarch_model,
     model,
     meanspec,
-    test_obs
+    test_obs,
+    scale_fun,
+    nonpar_model,
+    trunc
 ) {
 
   new("fEGarch_fit_rugarch_wrapper",
@@ -254,7 +566,10 @@ fEGarch_fit_rugarch_wrapper <- function(
     rugarch_model = rugarch_model,
     model = model,
     meanspec = meanspec,
-    test_obs = test_obs
+    test_obs = test_obs,
+    scale_fun = scale_fun,
+    nonpar_model = nonpar_model,
+    trunc = trunc
   )
 
 }

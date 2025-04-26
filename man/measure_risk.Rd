@@ -27,12 +27,13 @@ indicates, what risk measures should be computed; by default, both VaR and ES
 are computed.}
 }
 \value{
-Returns a two-element list with elements \code{measures} and \code{observations}.
+Returns an object of class \code{"fEGarch_risk"} with elements \code{measures},
+\code{observations} and \code{model}.
 \code{observations} is the observed series at the time points, for which the
-risk measures are calculated. \code{measures} is again a list with elements
+risk measures are calculated. \code{measures} is a list with elements
 \code{VaR} and \code{ES}, distinguishing between computed VaR and ES values.
 These elements again are list with named elements representing the various
-computed series.
+computed series. \code{model} is the fitted model object.
 }
 \description{
 Provides easy access to value-at-risk (VaR) and expected shortfall (ES)

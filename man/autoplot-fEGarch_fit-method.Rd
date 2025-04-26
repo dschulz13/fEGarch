@@ -14,8 +14,10 @@ for example by \code{\link{fEGarch}}.}
 enter \code{"returns"} or \code{1} to show a plot of the input training series;
 enter \code{"means"} or \code{2} to show the
 fitted conditional means; enter \code{"stand_deviations"} or \code{3} to show
-the fitted conditional standard deviations; the
-default is \code{which = NULL} which then lets you select a plot
+the fitted conditional standard deviations;
+use \code{"residuals"} or \code{4} to show the standardized residuals
+following the fitted model;
+the default is \code{which = NULL} which then lets you select a plot
 interactively in the R console.}
 
 \item{...}{no purpose and only implemented for compatibility.}

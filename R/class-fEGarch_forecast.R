@@ -25,3 +25,12 @@ fEGarch_forecast <- function(
   )
 
 }
+
+#'@export
+#'@rdname accessor_methods
+#'@aliases sigt,fEGarch_forecast-method
+setMethod("sigt", "fEGarch_forecast", function(x) {x@sigt})
+#'@export
+#'@rdname accessor_methods
+#'@aliases cmeans,fEGarch_forecast-method
+setMethod("cmeans", "fEGarch_forecast", function(x) {x@cmeans})

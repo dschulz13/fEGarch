@@ -64,19 +64,19 @@ setGeneric("include_mean<-", function(x, value) {standardGeneric("include_mean<-
 
 #====================================================#
 
-setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = Drange, n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)) {standardGeneric("fEGarch_fit")})
+setGeneric("fEGarch_fit", function(spec, rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 50, Prange = c(1, 5)) {standardGeneric("fEGarch_fit")})
 
 #====================================================#
 
-setGeneric("fEGarch_predict", function(object, n.ahead, ...) {standardGeneric("fEGarch_predict")})
+setGeneric("fEGarch_predict", function(object, n.ahead = 10, trunc = NULL, ...) {standardGeneric("fEGarch_predict")})
 
 #====================================================#
 
-setGeneric("predict_internal", function(object, n.ahead, ...) {standardGeneric("predict_internal")})
+setGeneric("predict_internal", function(object, n.ahead = 10, trunc = NULL, ...) {standardGeneric("predict_internal")})
 
 #====================================================#
 
-setGeneric("predict_roll", function(object, step_size = 1, ...) {standardGeneric("predict_roll")})
+setGeneric("predict_roll", function(object, step_size = 1, trunc = NULL, ...) {standardGeneric("predict_roll")})
 
 #====================================================#
 #'Generics for Accessing Model Estimation Output Elements
@@ -85,7 +85,7 @@ setGeneric("predict_roll", function(object, step_size = 1, ...) {standardGeneric
 #'the \code{fEGarch} package. The generics themselves are without use.
 #'
 #'@param x an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'\code{\link{fiaparch}} or \code{\link{figarch}}, etc.
 #'
 #'@details
 #'These generics are without direct use. Consider the
@@ -128,3 +128,16 @@ setGeneric("se", function(x) {standardGeneric("se")})
 #'@export
 #'@aliases vcov_mat vcov_mat,ANY-method
 setGeneric("vcov_mat", function(x) {standardGeneric("vcov_mat")})
+
+#########################
+
+setGeneric("poly_order", function(x) {standardGeneric("poly_order")})
+setGeneric("kernel_order", function(x) {standardGeneric("kernel_order")})
+setGeneric("boundary_method", function(x) {standardGeneric("boundary_method")})
+setGeneric("bwidth", function(x) {standardGeneric("bwidth")})
+
+setGeneric("poly_order<-", function(x, value) {standardGeneric("poly_order<-")})
+setGeneric("kernel_order<-", function(x, value) {standardGeneric("kernel_order<-")})
+setGeneric("boundary_method<-", function(x, value) {standardGeneric("boundary_method<-")})
+setGeneric("bwidth<-", function(x, value) {standardGeneric("bwidth<-")})
+

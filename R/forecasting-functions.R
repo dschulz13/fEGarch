@@ -40,7 +40,7 @@ fetch_arma_pars_fit <- function(object) {
 
 }
 
-arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahead) {
+arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahead, trunc) {
 
   mean_fc <- if (pqg0 || lm_arma) {
 
@@ -54,7 +54,8 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
         horizon = n.ahead
       ))
     } else {
-      coef_inf_arma <- esemifar::farima_to_ar(ar = ar, ma = ma, d = D, max_i = length(x) + n.ahead - 1)[-1]
+      # Possibly truncate infinite coefficient series
+      coef_inf_arma <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc)[-1]
       c(forecast_farima_Cpp(
         x = x,
         mu = mu,
@@ -76,7 +77,7 @@ arma_farima_forecasts <- function(ar, ma, D, pqg0, lm_arma, mu, x, innov, n.ahea
 
 # For EGARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -124,7 +125,11 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   }
 
   mu <- if (exists("mu", where = as.list(model_pars))) {
-    model_pars[["mu"]]
+    if (!is.null(object@nonpar_model)) {
+      0
+    } else {
+      model_pars[["mu"]]
+    }
   } else {
     0
   }
@@ -168,7 +173,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
                                    lm_arma = lm_arma, mu = mu,
                                    x = zoo::coredata(object@rt),
                                    innov = zoo::coredata(object@rt - object@cmeans),
-                                   n.ahead = n.ahead)
+                                   n.ahead = n.ahead, trunc = trunc)
 
   # EGARCH point forecasts of cond. volatility
 
@@ -193,8 +198,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
       horizon = n.ahead
     ))
   } else {
-    coef_inf_garch <- esemifar::farima_to_ma(
-      ar = phi, ma = psi_2, d = d, max_i = length(object@rt) + n.ahead - 2
+    # Use AR-representation
+    coef_inf_garch <- ma_infty(
+      ar = phi, ma = psi_2, d = d, max_i = trunc - 1
     )
     c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
@@ -221,7 +227,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
 
 # For Log-GARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   lm_garch <- object@long_memo
   garch_orders <- object@orders
@@ -261,7 +267,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
     numeric(0)
   }
 
-  mu <- if (exists("mu", where = as.list(model_pars))) {
+  mu <- if (exists("mu", where = as.list(model_pars)) && !is.null(object@nonpar_model)) {
     model_pars[["mu"]]
   } else {
     0
@@ -294,9 +300,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
                                    lm_arma = lm_arma, mu = mu,
                                    x = zoo::coredata(object@rt),
                                    innov = zoo::coredata(object@rt - object@cmeans),
-                                   n.ahead = n.ahead)
+                                   n.ahead = n.ahead, trunc = trunc)
 
-  # EGARCH point forecasts of cond. volatility
+  # Log-GARCH point forecasts of cond. volatility
 
   sigt_fc <- if (!lm_garch) {
     omega <- Elnsig2 * (1 - sum(phi))
@@ -315,8 +321,8 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
       horizon = n.ahead
     ))
   } else {
-    coef_inf_garch <- esemifar::farima_to_ma(ar = phi, ma = psi, d = d,
-                                     max_i = n + n.ahead - 1)[-1]
+    coef_inf_garch <- ma_infty(ar = phi, ma = psi, d = d,
+                                     max_i = trunc)[-1]
     c(sigt_loggarch_forecast_long(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,
@@ -334,9 +340,122 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   }
 )
 
+# For APARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+  lm_garch <- object@long_memo
+  garch_orders <- object@orders
+  p <- garch_orders[[1]]
+  q <- garch_orders[[2]]
+  n <- length(object@rt)
+
+  model_pars <- object@pars
+  names_phi <- paste0("phi", 1:p)
+  phi <- model_pars[names_phi]
+
+  names_beta <- paste0("beta", 1:q)
+  beta <- model_pars[names_beta]
+
+  names_gamma <- paste0("gamma", 1:p)
+  gamma <- model_pars[names_gamma]
+
+  delta <- model_pars[["delta"]]
+
+  omega <- model_pars[["omega"]]
+
+  #d <- if (lm_garch) model_pars[["d"]] else numeric(0)   # no long-memory GARCH-type in this method
+
+  cond_dist <- object@cond_dist
+
+  skew <- if (cond_dist %in% c("snorm", "sstd", "sged", "sald")) {
+    model_pars[["skew"]]
+  } else {
+    numeric(0)
+  }
+
+  shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
+    sel_word <- switch(
+      cond_dist,
+      "std" = "df",
+      "sstd" = "df",
+      "ged" = "shape",
+      "sged" = "shape",
+      "ald" = "P",
+      "sald" = "P"
+    )
+    model_pars[[sel_word]]
+  } else  {
+    numeric(0)
+  }
+
+  mu <- if (exists("mu", where = as.list(model_pars))&& !is.null(object@nonpar_model)) {
+    model_pars[["mu"]]
+  } else {
+    0
+  }
+
+  # ARMA / FARIMA specifications
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
+
+  dfun <- lookup_table[["fun1"]][[cond_dist]]
+
+  int_fun <- function(x, gamma_i, delta, shape, skew, dfun) {
+    (abs(x) - gamma_i * x)^delta * dfun(x, shape = shape, skew = skew)
+  }
+
+  len_gamma <- length(gamma)
+
+  # Store expectations of transformed innovations;
+  # one required for each gamma-value
+  E_e_transf <- rep(NA, len_gamma)
+
+  for (i in 1:len_gamma) {
+    E_e_transf[[i]] <- stats::integrate(
+      f = int_fun, lower = -Inf, upper = Inf,
+      subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+      gamma_i = gamma[[i]], delta = delta, shape = shape,
+      skew = skew, dfun = dfun
+    )[[1]]
+  }
+
+  # ARMA / FARIMA point forecasts of cond. mean
+  mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
+                                   lm_arma = lm_arma, mu = mu,
+                                   x = zoo::coredata(object@rt),
+                                   innov = zoo::coredata(object@rt - object@cmeans),
+                                   n.ahead = n.ahead, trunc = trunc)
+
+  # APARCH point forecasts of cond. volatility
+
+  sigt_fc <- c(sigt_aparch_forecast_short(
+      et = zoo::coredata(object@etat),
+      sigt = zoo::coredata(object@sigt),
+      omega = omega,
+      phi = phi,
+      beta = beta,
+      gamma = gamma,
+      delta = delta,
+      E_e = E_e_transf,
+      horizon = n.ahead
+    ))
+
+  list(
+    cmeans = mean_fc,
+    sigt = sigt_fc
+  )
+
+  }
+)
+
 # For FIAPARCH-type
 methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   garch_orders <- object@orders
   p <- garch_orders[[1]]
@@ -357,7 +476,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
   d <- model_pars[["d"]]
 
-  mu <- if (exists("mu", where = as.list(model_pars))) {
+  mu <- if (exists("mu", where = as.list(model_pars))&& !is.null(object@nonpar_model)) {
     model_pars[["mu"]]
   } else {
     0
@@ -415,12 +534,13 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
                                    lm_arma = lm_arma, mu = mu,
                                    x = zoo::coredata(object@rt),
                                    innov = zoo::coredata(object@rt - object@cmeans),
-                                   n.ahead = n.ahead)
+                                   n.ahead = n.ahead, trunc = trunc)
 
   # FIAPARCH point forecasts of cond. volatility
 
-  coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-                                     max_i = n + n.ahead - 1)[-1]
+  coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
+                                     max_i = trunc)[-1]
+
   sigt_fc <- c(sigt_fiaparch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
       coef_inf = coef_inf_garch,
@@ -438,9 +558,141 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   }
 )
 
-# For LMGARCH-type
-methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
-  function(object, n.ahead = 1, ...) {
+# For GJR-GARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_gjrgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 2
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For FIGJR-GARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_figjrgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 2
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For TGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_tgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 1
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For FITGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_fitgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 1
+
+    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For GARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+  lm_garch <- object@long_memo
+  garch_orders <- object@orders
+  p <- garch_orders[[1]]
+  q <- garch_orders[[2]]
+  n <- length(object@rt)
+
+  model_pars <- object@pars
+  names_phi <- paste0("phi", 1:p)
+  phi <- model_pars[names_phi]
+
+  names_beta <- paste0("beta", 1:q)
+  beta <- model_pars[names_beta]
+
+  omega <- model_pars[["omega"]]
+
+  #d <- if (lm_garch) model_pars[["d"]] else numeric(0)   # no long-memory GARCH-type in this method
+
+  cond_dist <- object@cond_dist
+
+  skew <- if (cond_dist %in% c("snorm", "sstd", "sged", "sald")) {
+    model_pars[["skew"]]
+  } else {
+    numeric(0)
+  }
+
+  shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
+    sel_word <- switch(
+      cond_dist,
+      "std" = "df",
+      "sstd" = "df",
+      "ged" = "shape",
+      "sged" = "shape",
+      "ald" = "P",
+      "sald" = "P"
+    )
+    model_pars[[sel_word]]
+  } else  {
+    numeric(0)
+  }
+
+  mu <- if (exists("mu", where = as.list(model_pars))&& !is.null(object@nonpar_model)) {
+    model_pars[["mu"]]
+  } else {
+    0
+  }
+
+  # ARMA / FARIMA specifications
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
+
+  # ARMA / FARIMA point forecasts of cond. mean
+  mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
+                                   lm_arma = lm_arma, mu = mu,
+                                   x = zoo::coredata(object@rt),
+                                   innov = zoo::coredata(object@rt - object@cmeans),
+                                   n.ahead = n.ahead, trunc = trunc)
+
+  # GARCH point forecasts of cond. volatility
+
+  sigt_fc <- c(sigt_garch_forecast_short(
+      et = zoo::coredata(object@etat),
+      sigt = zoo::coredata(object@sigt),
+      omega = omega,
+      phi = phi,
+      beta = beta,
+      horizon = n.ahead
+    ))
+
+  list(
+    cmeans = mean_fc,
+    sigt = sigt_fc
+  )
+
+  }
+)
+
+# For FIGARCH-type
+methods::setMethod("fEGarch_predict", "fEGarch_fit_figarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
   garch_orders <- object@orders
   p <- garch_orders[[1]]
@@ -458,7 +710,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
   d <- model_pars[["d"]]
 
-  mu <- if (exists("mu", where = as.list(model_pars))) {
+  mu <- if (exists("mu", where = as.list(model_pars)) && !is.null(object@nonpar_model)) {
     model_pars[["mu"]]
   } else {
     0
@@ -484,13 +736,13 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
                                    lm_arma = lm_arma, mu = mu,
                                    x = zoo::coredata(object@rt),
                                    innov = zoo::coredata(object@rt - object@cmeans),
-                                   n.ahead = n.ahead)
+                                   n.ahead = n.ahead, trunc = trunc)
 
-  # LMGARCH point forecasts of cond. volatility
+  # FIGARCH point forecasts of cond. volatility
 
-  coef_inf_garch <- esemifar::farima_to_ar(ar = phi, ma = beta, d = d,
-                                     max_i = n + n.ahead - 1)[-1]
-  sigt_fc <- c(sigt_lmgarch_forecast(
+  coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
+                                     max_i = trunc)[-1]
+  sigt_fc <- c(sigt_figarch_forecast(
       rt = zoo::coredata(object@rt - object@cmeans),
       coef_inf = coef_inf_garch,
       omega = omega,
@@ -506,9 +758,22 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_lmgarch",
 
 # Returns a simple list and not the entire input object
 methods::setMethod("predict_internal", "fEGarch_fit",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
-    fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, ...)
+    trunc_obj <- object@trunc
+    check <- is.character(trunc_obj) && trunc_obj == "none"
+
+    # Get truncation for long-memory models from fitted object
+    if (is.null(trunc) || check) {
+      trunc_obj <- object@trunc
+      if (check) {
+        trunc <- length(object@rt) - 1 + n.ahead
+      } else {
+        trunc <- trunc_obj
+      }
+    }
+
+    fcasts <- fEGarch_predict(object = object, n.ahead = n.ahead, trunc = trunc, ...)
 
     rt <- object@rt
     if (inherits(rt, "zoo")) {
@@ -538,7 +803,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'
 #'@param object an object of class \code{"fEGarch_fit"},
 #'i.e. an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}; for
+#'\code{\link{fiaparch}} or \code{\link{figarch}}, etc.; for
 #'\code{predict_roll}, the slot \code{@test_obs} of the
 #'fitted model object should not be \code{NULL}.
 #'@param n.ahead a single numeric value indicating how
@@ -601,14 +866,32 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'fcast2
 #'
 methods::setMethod("predict", "fEGarch_fit",
-  function(object, n.ahead = 1, ...) {
+  function(object, n.ahead = 10, trunc = NULL, ...) {
 
-    fcasts <- predict_internal(object = object, n.ahead = n.ahead, ...)
+    np_check <- !is.null(object@nonpar_model)
+    object_orig <- object
+
+    if (np_check) {
+
+      mu_h <- utils::tail(zoo::coredata(object@cmeans), 1)
+      scale_h <- utils::tail(zoo::coredata(object@scale_fun), 1)
+
+      object@sigt <- object@sigt / object@scale_fun
+      object@rt <- (object@rt - mu_h) / object@scale_fun
+
+    }
+
+    fcasts <- predict_internal(object = object, n.ahead = n.ahead, trunc = trunc, ...)
+
+    if (np_check) {
+      fcasts$cmeans <- fcasts$cmeans + mu_h
+      fcasts$sigt <- fcasts$sigt * scale_h
+    }
 
     fEGarch_forecast(
       cmeans = fcasts$cmeans,
       sigt = fcasts$sigt,
-      model = object
+      model = object_orig
     )
 
   }
@@ -619,20 +902,63 @@ methods::setMethod("predict", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, ...) {
+  function(object, step_size = 1, trunc = NULL, ...) {
 
-    test_obs <- object@test_obs
-    n_test <- length(test_obs)
+    # Get truncation for long-memory models from fitted object
+    if (is.null(trunc)) {
+      trunc_obj <- object@trunc
+      if (is.character(trunc_obj) && trunc_obj == "none") {
+        trunc <- length(object@rt) - 1 + length(object@test_obs)
+      } else {
+        trunc <- trunc_obj
+      }
+    }
+
+    n_test <- length(object@test_obs)
     object2 <- object
 
+    np_check <- !is.null(object@nonpar_model)
+    step_size_check <- step_size > 1
+
     sigt_out <- cmeans_out <- rep(NA, n_test)
-    object2@rt <- zoo::coredata(object2@rt)
-    object2@sigt <- zoo::coredata(object2@sigt)
-    object2@cmeans <- zoo::coredata(object2@cmeans)
+    if (np_check) {
+      mu_h <- utils::tail(zoo::coredata(object2@cmeans), 1)
+      scale_h <- utils::tail(zoo::coredata(object2@scale_fun), 1)
+      test_obs <- (object@test_obs - mu_h) / scale_h
+      object2@rt <- zoo::coredata((object2@rt - object2@cmeans) / object2@scale_fun)
+      object2@sigt <- zoo::coredata(object2@sigt / object2@scale_fun)
+      object2@cmeans <- rep(0, length(object2@rt))
+      object2@scale_fun <- NULL
+      object2@nonpar_model <- NULL
+
+      if (step_size_check) {
+        object3 <- object
+        object3@rt <- object2@rt
+        object3@sigt <- object2@sigt
+        object3@cmeans <- object3@cmeans
+        object3@scale_fun <- NULL
+        object3@nonpar_model <- NULL
+      }
+
+    } else {
+      test_obs <- object@test_obs
+      object2@rt <- zoo::coredata(object2@rt)
+      object2@sigt <- zoo::coredata(object2@sigt)
+      object2@cmeans <- zoo::coredata(object2@cmeans)
+
+      if (step_size_check) {
+        object3 <- object
+        object3@rt <- object2@rt
+        object3@sigt <- object2@sigt
+        object3@cmeans <- object2@cmeans
+      }
+
+    }
+
     object2@etat <- zoo::coredata(object2@etat)
 
     for (i in seq_len(n_test)) {
-      pred <- predict_internal(object2, n.ahead = 1)
+      pred <- predict_internal(object2, n.ahead = 1, trunc = trunc)
       sigt_out[[i]] <- pred[["sigt"]]
       cmeans_out[[i]] <- pred[["cmeans"]]
       object2@rt <- c(object2@rt, test_obs[[i]])
@@ -643,14 +969,10 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     if (step_size > 1) {
 
-      object3 <- object
-      object3@rt <- zoo::coredata(object3@rt)
-      object3@sigt <- zoo::coredata(object3@sigt)
-      object3@cmeans <- zoo::coredata(object3@cmeans)
       object3@etat <- zoo::coredata(object3@etat)
       sigt_out_s <- cmeans_out_s <- rep(NA, n_test)
       for (i in step_size:n_test) {
-        pred <- predict_internal(object3, n.ahead = step_size)
+        pred <- predict_internal(object3, n.ahead = step_size, trunc = trunc)
         sigt_out_s[[i]] <- utils::tail(pred[["sigt"]], 1)
         cmeans_out_s[[i]] <- utils::tail(pred[["cmeans"]], 1)
         imss <- i - step_size + 1
@@ -676,6 +998,11 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       start <- tp[[1]]
       cmeans_out <- ts(cmeans_out, start = start, frequency = frequ)
       sigt_out <- ts(sigt_out, start = start, frequency = frequ)
+    }
+
+    if (np_check) {
+      sigt_out <- sigt_out * scale_h
+      cmeans_out <- cmeans_out + mu_h
     }
 
     fEGarch_forecast(

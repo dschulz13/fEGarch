@@ -10,7 +10,8 @@ fEGarch_sim(
     psi = numeric(0), kappa = -0.2, gamma = 0.3, d = 0, df = 10, shape = 2, P = 3, skew =
     1),
   n = 1000,
-  nstart = 5000
+  nstart = 5000,
+  trunc = "none"
 )
 }
 \arguments{
@@ -36,6 +37,12 @@ mean and in the conditional variance, is considered, two times \code{nstart}
 is considered in the first simulation step in the conditional variance,
 so that \code{n + nstart} values can be fed into the second simulation
 step for the conditional mean.}
+
+\item{trunc}{a truncation for the finite-order coefficient series
+in long-memory models; can either be the character \code{"none"} for truncation
+back to the very first observation at each time point, or to any positive integer
+for setting the corresponding truncation length of the infinite-order representation
+polynomial.}
 }
 \value{
 A list with four elements is returned: \code{rt} are the simulated

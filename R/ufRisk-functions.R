@@ -56,12 +56,13 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'@export
 #'
 #'@return
-#'Returns a two-element list with elements \code{measures} and \code{observations}.
+#'Returns an object of class \code{"fEGarch_risk"} with elements \code{measures},
+#'\code{observations} and \code{model}.
 #'\code{observations} is the observed series at the time points, for which the
-#'risk measures are calculated. \code{measures} is again a list with elements
+#'risk measures are calculated. \code{measures} is a list with elements
 #'\code{VaR} and \code{ES}, distinguishing between computed VaR and ES values.
 #'These elements again are list with named elements representing the various
-#'computed series.
+#'computed series. \code{model} is the fitted model object.
 #'
 #'@examples
 #'
@@ -122,7 +123,7 @@ setMethod("measure_risk", "fEGarch_fit",
       names_q <- paste0("VaR", level)
       lVaR <- list()
       for (i in seq_along(q_VaR)) {
-        lVaR[[names_q[[i]]]] <- zoo::zoo(zoo::coredata(object@cmeans + q_VaR[[i]] * object@sigt), order.by = time(object@sigt))
+        lVaR[[names_q[[i]]]] <- object@cmeans + q_VaR[[i]] * object@sigt
       }
     } else {
       lVaR <- list()
@@ -133,15 +134,18 @@ setMethod("measure_risk", "fEGarch_fit",
       names_q <- paste0("ES", level)
       lES <- list()
       for (i in seq_along(q_ES)) {
-        lES[[names_q[[i]]]] <- zoo::zoo(zoo::coredata(object@cmeans + q_ES[[i]] * object@sigt), order.by = time(object@sigt))
+        lES[[names_q[[i]]]] <- object@cmeans + q_ES[[i]] * object@sigt
       }
     } else {
       lES <- list()
     }
 
     fEGarch_risk(
-      measures = list(VaR = lVaR, ES = lES),
-      observations = object@rt
+      measures = list("VaR" = lVaR, "ES" = lES),
+      observations = object@rt,
+      model = object,
+      sigt = object@sigt,
+      cmeans = object@cmeans
     )
 
   }
@@ -159,165 +163,856 @@ setMethod("measure_risk", "fEGarch_forecast",
     func <- selectMethod("measure_risk", "fEGarch_fit")
     out <- func(object = object2, measure = measure, level = level, ...)
     out@observations <- object2@test_obs
+    out@sigt <- object2@sigt
+    out@cmeans <- object2@cmeans
     out
   }
 )
 
+setGeneric("trafflight_test", function(object, ...) {standardGeneric("trafflight_test")})
 
+zone_selector <- function(p) {
+  out <- if (p < 0.95) {
+    cli::col_green("Green zone")
+  } else if (p >= 0.95 && p < 0.9999) {
+    cli::col_yellow("Yellow zone")
+  } else if (p >= 0.9999) {
+    cli::col_red("Red zone")
+  }
+  out
+}
+
+#'Backtesting VaR and ES
+#'
+#'Run traffic light tests for value at risk (VaR) and expected
+#'shortfall (ES) as well as a selection of coverage and independence
+#'tests for VaR.
+#'
+#'@param object an object of class \code{"fEGarch_risk"}.
+#'@param silent a logical value indicating whether or not to
+#'print test results in a nicely formatted manner to the console.
+#'@param ... currently without use.
+#'
+#'@details
+#'
+#'\code{backtest_suite} runs all the other backtesting methods.
+#'\code{cov_tests} runs all of \code{uncond_cov_test},
+#'\code{indep_test} and \code{cond_cov_test}.
+#'
+#'Traffic light tests (\code{trafflight_test}):
+#'
+#'Given an input object \code{object} of class \code{"fEGarch_risk"},
+#'traffic light tests for value at risk (VaR) and expected shortfall (ES)
+#'are applied to the individual risk measure series in the object. Note
+#'that in order for a traffic light test in context of ES being applicable,
+#'the corresponding VaR series of the same confidence level must also
+#'be present in \code{object}. If this is not fulfilled,
+#'messages will be printed to the console, making the user aware of
+#'this issue.
+#'
+#'Let the number of test observations be denoted by
+#'\eqn{n\in \mathbb{N}} and let \eqn{\{r_t\}}, \eqn{t=1,\dots,n},
+#'be the test returns. \eqn{\{\text{VaR}_t\}} are the (one-step rolling) VaR point forecasts
+#'for the same period with confidence level \eqn{\alpha}. Denote by
+#'\eqn{I_t} an indicator that equals 1, whenever \eqn{r_t < \text{VaR}_t}, and
+#'0 otherwise, and define \eqn{K_1 = \sum_{t=1}^{n}I_t}. \eqn{I_t} are assumed
+#'to follow a binomial distribution with probability \eqn{P = \alpha} for any \eqn{I_t = 0}.
+#'Then \eqn{C} is computed as the cumulative probability of observing \eqn{K_1}
+#'under \eqn{P}. The forecasted VaR series is then classified following \eqn{C}. If
+#'\eqn{C < 0.95}, then it is sorted into the green zone, if \eqn{0.95 \leq C < 0.9999},
+#'then the series belongs to the yellow zone, and if \eqn{C \geq 0.9999},
+#'then the class of the VaR series is the red zone.
+#'
+#'The traffic light test for the ES uses a similar classification system
+#'based on the severity of breaches
+#'\deqn{B = \sum_{t = 1}^{n} \frac{1-F(\hat \eta_t)-\alpha}{1-\alpha}I_t,}
+#'where \eqn{F} is the (fitted) cumulative distribution function of the
+#'standardized innovations and with \eqn{\hat \eta_t} as the standardized residuals
+#'of a fitted GARCH-type model (or of its semiparametric extension).
+#'Then \eqn{B \overset{a}{\sim}N(\mu_{\text{ES}}, \sigma^2_{\text{ES}})} with
+#'\eqn{\mu_{\text{ES}} = 0.5(1-\alpha)n} and
+#'\eqn{\sigma^2_{\text{ES}} = (1-\alpha)[(1+3\alpha) / 12]}. The cumulative
+#'probability of observing a severity of breaches of \eqn{B} or less can
+#'be computed and classified in the same way as for the VaR traffic light test
+#'using this asymptotic distribution.
+#'
+#'Coverage and independence tests (\code{cov_tests}):
+#'
+#'Following Christoffersen (1998), the backtesting suite also includes
+#'a selection of coverage and independence tests regarding the VaR. Let the number of test
+#'observations be denoted by \eqn{n\in \mathbb{N}} and let \eqn{\{r_t\}}, \eqn{t=1,\dots,n},
+#'be the test returns. \eqn{\{\text{VaR}_t\}} are the (one-step rolling) VaR point forecasts
+#'for the same period with confidence level \eqn{\alpha}. Furthermore, define
+#'\eqn{I_t} to be an indicator that equals \eqn{1}, whenever \eqn{r_t < \text{VaR}_t} and
+#'zero otherwise. Let \eqn{K_1 = \sum_{t=1}^{n}I_t} and \eqn{K_0 = n - K_1}. Furthermore,
+#'\eqn{\hat z_1 = K_1 / (K_0 + K_1)} and \eqn{\hat z_0 = K_0 / (K_0 + K_1)} as well as
+#'\deqn{L_{\hat z} = \hat z_0^{K_0} \hat z_1^{K_1}}
+#'and
+#'\deqn{L_{\alpha} = \alpha^{K_0}(1-\alpha)^{K_1}.}
+#'
+#'In addition, we require \eqn{I^{*}_{i,j}(t)}, \eqn{t = 2,\dots,n} and \eqn{i,j \in \{0,1\}},
+#'to be other indicators that equal 1, whenever \eqn{I_t=j} and
+#'simultaneously \eqn{I_{t-1} = i}. Per consequence,
+#'\eqn{K_{i,j}=\sum_{t=2}^{n} I^{*}_{i,j}(t)} and \eqn{\hat z_{i,j} = K_{i,j} / (K_{i,0} + K_{i, 1})}.
+#'Moreover, \eqn{\hat z_1^{*} = (K_{0,1}+K_{1,1}) / (n - 1)} and
+#'\eqn{\hat z_0^{*} = 1-\hat z_1^{*}}. Now,
+#'\deqn{L_{\hat z_{0,0}} = \hat z_{0,0}^{K_{0,0}} \hat z_{0,1}^{K_{0,1}} \hat z_{1,0}^{K_{1,0}} \hat z_{1,1}^{K_{1,1}}}
+#'and
+#'\deqn{L_{\hat z^{*}} = (\hat z_{0}^{*})^{(K_{0,0} + K_{1,0})} (\hat z_{1}^{*})^{(K_{0,1} + K_{1,1})}.}
+#'
+#'Ultimately,
+#'\deqn{L_{\alpha^{*}} = \alpha^{(K_{0,0} + K_{1,0})}(1-\alpha)^{(K_{0,1} + K_{1, 1})}.}
+#'
+#'The three test statistics following Christoffersen (1998) are then
+#'\deqn{S_{\text{uc}} = -2 \ln\left[L_{\alpha} / L_{\hat{p}}\right] \overset{a}{\sim} \chi^2 (1),}
+#'\deqn{S_{\text{ind}} = -2 \ln\left[L_{\hat z^{*}} / L_{\hat{z}_{0,0}}\right] \overset{a}{\sim} \chi^2 (1), \hspace{4mm} \text{and}}
+#'\deqn{S_{\text{cc}} = -2 \ln\left[L_{\alpha^{*}} / L_{\hat{z}_{0,0}}\right] \overset{a}{\sim} \chi^2 (2),}
+#'where \eqn{S_{\text{uc}}} is the test statistic of the unconditional coverage test,
+#'\eqn{S_{\text{ind}}} is that of the independence test and
+#'\eqn{S_{\text{cc}}} is that of the conditional coverage test.
+#'
+#'@rdname backtest-tests
+#'
+#'@return
+#'All methods return a list invisibly. The elements of the list differ
+#'slightly depending on the method. Moreover, for \code{silent = FALSE},
+#'the default, test results are printed to the console.
+#'
 #'@export
-varcast_fEGarch <- function(
-    x,
-    level_VaR = 0.99,
-    level_ES = 0.975,
-    par_model_spec = list(
-      spec = egarch_spec(), include_mean = TRUE, drange = c(0, 0.5 - 1e-06), start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1)
-    ),
-    nonpar_lm_model_spec = list(p = 3, pmax = 1, qmax = 1, pmin = 0, qmin = 0, mu = 1, InfR = "Nai", bStart = 0.15, bb = 1, cb = 0.05),
-    nonpar_sm_model_spec = list(p = 3, mu = 1, bStart = 0.15, alg = "B"),
-    n.out = 250,
-    smooth = FALSE
-) {
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
+#'model <- fEGarch(egarch_spec(), rt, n_test = 250)
+#'fcast <- predict_roll(model)
+#'risk <- measure_risk(fcast, measure = c("VaR", "ES"), level = c(0.95, 0.975, 0.99))
+#'trafflight_test(risk)
+#'cov_tests(risk)
+#'backtest_suite(risk)
+#'
+setMethod("trafflight_test", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
 
-  args_p <- list(
-      spec = egarch_spec(), include_mean = TRUE, drange = c(0, 0.5 - 1e-06),
-      start_pars = NULL, LB = NULL, UB = NULL, control = list(),
-      parallel = TRUE, ncores = max(1, future::availableCores() - 1)
+  obs <- object@observations
+  n <- length(obs)
+  cond_d <- object@model@cond_dist
+  par_name <- switch(
+    cond_d,
+    "norm" = "df",    # irrelevant
+    "snorm" = "df",   # irrelevant
+    "std" = "df",
+    "sstd" = "df",
+    "ged" = "shape",
+    "sged" = "shape",
+    "ald" = "P",
+    "sald" = "P"
   )
-  elems <- names(par_model_spec)
-  for (nam in elems) {
-    args_p[[nam]] <- par_model_spec[[nam]]
+  shape <- if (cond_d %in% c("norm", "snorm")) {
+    0
+  } else {
+    object@model@pars[[par_name]]
   }
 
-
-  rt <- diff(log(x))
-
-  a.v <- level_VaR
-  a.e <- level_ES
-
-  if (!smooth) {
-
-    est <- fEGarch(spec = args_p$spec, rt = rt, drange = args_p$drange,
-                   meanspec = mean_spec(include_mean = args_p$include_mean),
-                   start_pars = ars_p$start_pars,
-                   LB = args_p$LB,
-                   UB = args_p$UB, n_test = n.out,
-                   control = args_p$control,
-                   parallel = args_p$parallel,
-                   ncores = args_p$ncores)
-
-    fcast <- predict_roll(est)
-    risk <- measure_risk(fcast, level = c(a.v, a.e))
-    name.v <- paste0("VaR", a.v)
-    name.VaR.e <- paste0("VaR", a.e)
-    name.ES.e <- paste0("ES", a.e)
-    VaR.v <- -risk@measures$VaR[[name.v]]
-    VaR.e <- -risk@measures$VaR[[name.VaR.e]]
-    ES.e <- -risk@measures$ES[[name.ES.e]]
-    mu <- if (args_p$include_mean) {
-      est@pars[["mu"]]
-    } else {
-      0
-    }
-    est_np <- NULL
-    sig.in <- est@sigt
-    sig.fc <- fcast@sigt
-    scale_fc <- NULL
-    scale <- NULL
-    est_np <- NULL
+  skew <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
+    object@model@pars[["skew"]]
   } else {
+    0
+  }
 
-    rt_tr <- utils::head(rt, -n.out)
-    rt_te <- utils::tail(rt, n.out)
+  VaR_names <- names(object@measures$VaR)
+  ES_names <- names(object@measures$ES)
 
-    mu <- mean(rt_tr)
-    rt_dm <- rt_tr - mu
-    yt <- zoo::coredata(log((rt_dm)^2))
+  n_VaR <- length(VaR_names)
+  n_ES <- length(ES_names)
 
+  list_VaR <- vector(mode = "list", length = n_VaR)
+  list_ES <- vector(mode = "list", length = n_ES)
 
-    lm <- long_memo(args_p$spec)
-    if (!lm) {
-      func <- smoots::msmooth
-      input_np <- nonpar_sm_model_spec
-      args_np <- list(p = 3, mu = 1, bStart = 0.15, alg = "B")
-    } else {
-      func <- esemifar::tsmoothlm
-      input_np <- nonpar_lm_model_spec
-      args_np <- list(p = 3, pmax = 1, qmax = 1, pmin = 0, qmin = 0, mu = 1, InfR = "Nai", bStart = 0.15, bb = 1, cb = 0.05)
+  if (n_VaR > 0) {
+
+    names(list_VaR) <- VaR_names
+    for (i in 1:n_VaR) {
+      conf_lvl <- as.numeric(substring(VaR_names[[i]], 4))
+      pot <- sum(obs < object@measures$VaR[[i]])
+      prob <- pbinom(q = pot, size = n, prob = 1 - conf_lvl)
+      list_VaR[[i]] <- list(
+        conf_lvl = conf_lvl,
+        pot = pot,
+        prob = prob,
+        zone = zone_selector(prob)
+      )
     }
-    names_np <- names(input_np)
-    for (j in names_np) {
-      args_np[[j]] <- input_np[[j]]
-    }
 
-    args_np[["y"]] <- yt
+  } else {
+    message("Note: No VaR measures to analyze in input object")
+  }
 
-    est_np <- do.call(what = func, args = args_np)
-    res <- est_np$res
-    C <- -log(mean(exp(res)))
-    scale_f <- exp((est_np$ye - C) / 2)
+  if (n_ES > 0 && n_VaR > 0) {
 
-    scale_fcast <- rep(utils::tail(scale_f, 1), n.out)
+    cmeans <- object@cmeans
+    sigt <- object@sigt
 
-    eps <- c(rt_dm / scale_f, (rt_te - mu) / scale_fcast)
-
-    est <- fEGarch(
-      spec = args_p$spec,
-      rt = eps,
-      drange = args_p$drange,
-      meanspec = mean_spec(include_mean = FALSE),
-      n_test = n.out,
-      start_pars = args_p$start_pars,
-      LB = args_p$LB,
-      UB = args_p$UB,
-      control = args_p$control,
-      parallel = args_p$parallel,
-      ncores = args_p$ncores
+    et <- (obs - cmeans) / sigt     # standardized residuals
+    args <- list(
+      dfun = lookup_table[["fun1"]][[cond_d]],
+      skew = skew,
+      shape = shape
     )
 
-    fcast <- predict_roll(est)
-    risk <- measure_risk(fcast, level = c(a.v, a.e))
-    name.v <- paste0("VaR", a.v)
-    name.VaR.e <- paste0("VaR", a.e)
-    name.ES.e <- paste0("ES", a.e)
-    VaR.v <- -risk@measures$VaR[[name.v]] * scale_fcast - mu
-    VaR.e <- -risk@measures$VaR[[name.VaR.e]] * scale_fcast - mu
-    ES.e <- -risk@measures$ES[[name.ES.e]] * scale_fcast - mu
 
-    sig.in <- est@sigt * scale_f
-    sig.fc <- fcast@sigt * scale_fcast
-    scale <- scale_f
-    scale_fc <- scale_fcast
+    names(list_ES) <- ES_names
+    for (i in 1:n_ES) {
+      conf_lvl <- as.numeric(substring(ES_names[[i]], 3))
+      check_VaR <- paste0("VaR", conf_lvl)
+      if (!(check_VaR %in% VaR_names)) {
+        message(paste0(ES_names, "cannot be analyzed because ", check_VaR, "is missing from input object"))
+        next
+      }
+
+      pot_idx <- obs < object@measures$VaR[[check_VaR]]
+      alpha <- conf_lvl
+      sum_severity <- if (sum(pot_idx) > 0) {
+        et_sub <- zoo::coredata(et[pot_idx])
+        args[["x"]] <- et_sub
+        nprobs <- do.call(what = cdf_fun, args = args)
+        probs <- 1 - nprobs
+
+        sum((probs - alpha) / (1 - alpha))
+      } else {
+        0
+      }
+        mean_ES <- 0.5 * (1 - alpha) * n
+        var_ES <- n * (1 - alpha) * ((1 + 3 * alpha) / 12)
+
+        prob <- pnorm(q = sum_severity, mean = mean_ES, sd = sqrt(var_ES))
+
+      list_ES[[i]] <- list(
+        conf_lvl = conf_lvl,
+        severity = sum_severity,
+        prob = prob,
+        zone = zone_selector(prob)
+      )
+    }
+
+  } else {
+    message("Note: No VaR and / or ES measures to analyze in input object")
+  }
+
+  if (!silent) {
+    msg_VaR <- paste0(
+      "\nVaR results:\n",
+      "************\n\n",
+      paste0(vapply(
+        X = list_VaR,
+        FUN = function(.x) {
+          paste0(
+            "Conf. level: ", .x$conf_lvl, "\n",
+            "Breaches: ", .x$pot, "\n",
+            "Cumul. prob.: ", sprintf("%.4f", .x$prob), "\n",
+            "Zone: ", .x$zone, "\n\n"
+          )
+        }, FUN.VALUE = character(1)
+      ), collapse = "")
+    )
+
+    msg_ES <- paste0(
+      "\nES results:\n",
+      "***********\n\n",
+      paste0(vapply(
+        X = list_ES,
+        FUN = function(.x) {
+          paste0(
+            "Conf. level: ", .x$conf_lvl, "\n",
+            "Severity of breaches: ", sprintf("%.4f", .x$severity), "\n",
+            "Cumul. prob.: ", sprintf("%.4f", .x$prob), "\n",
+            "Zone: ", .x$zone, "\n\n"
+          )
+        }, FUN.VALUE = character(1)
+      ), collapse = "")
+    )
+
+    cli::cat_line(paste0(
+      "\n***********************\n",
+      "* Traffic light tests *\n",
+      "***********************\n",
+      msg_VaR,
+      msg_ES))
 
   }
 
-  list(
-    mean = mu,
-    ret_in = rt_tr,
-    ret_out = rt_te,
-    sig_in = sig.in,
-    sig_fc = sig.fc,
-    scale = scale,
-    scale_fc = scale_fc,
-    VaR_e = VaR.e,
-    VaR_v = VaR.v,
-    ES = ES.e,
-    level_VaR = a.v,
-    level_ES = a.e,
-    model_par = est,
-    model_nonpar = est_np
+  invisible(list(VaR = list_VaR, ES = list_ES))
+
+})
+
+setGeneric("uncond_cov_test", function(object, ...) {standardGeneric("uncond_cov_test")})
+
+rejecter <- function(pval) {
+  if (pval < 0.05) {
+    cli::col_red("Reject H0")
+  } else if (pval >= 0.05) {
+    cli::col_green("Do not reject H0")
+  }
+}
+
+#'@rdname backtest-tests
+#'@export
+setMethod("uncond_cov_test", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
+
+    VaR <- object@measures$VaR
+
+    VaR_names <- names(VaR)
+    conf_lvls <- as.numeric(substring(VaR_names, 4))
+
+    m <- length(conf_lvls)
+
+    list_out <- vector(mode = "list", length = m)
+    names(list_out) <- VaR_names
+    obs <- zoo::coredata(object@observations)
+    n <- length(obs)
+
+    for (i in 1:m) {
+      alpha <- conf_lvls[[i]]   # Covered theoretically
+      K1 <- sum(obs < zoo::coredata(VaR[[i]]))
+      K0 <- n - K1
+
+      z0 <- K0 / n
+
+      stat <- -2 * log(alpha^K0 * (1 - alpha)^K1 / (z0^K0 * (1 - z0)^K1))
+      pval <- 1 - pchisq(stat, df = 1)
+
+      list_out[[i]] <- list(
+        conf_lvl = alpha,
+        breaches = K1,
+        test_statistic = stat,
+        p_value = pval,
+        decision = rejecter(pval)
+      )
+
+    }
+
+    if (!silent) {
+
+      header <- paste0(
+        "\n***************************************\n",
+        "* Unconditional coverage test for VaR *\n",
+        "***************************************\n\n",
+        "H0: true share of covered observations = theoretical share of VaR\n"
+      )
+
+      tests <- paste0(vapply(
+        list_out, FUN = function(.x) {
+          paste0(
+            "\nConf. level: ", .x$conf_lvl, "\n",
+            "Breaches: ", .x$breaches, "\n",
+            "Test statistic: ", sprintf("%.4f", .x$test_statistic), "\n",
+            "p-value: ", sprintf("%.4f", .x$p_value), "\n",
+            "Decision: ", .x$decision, "\n"
+          )
+        }, FUN.VALUE = character(1)
+      ), collapse = "")
+
+      cli::cat_line(paste0(
+        header, tests
+      ))
+
+    }
+
+    invisible(list_out)
+
+})
+
+setGeneric("indep_test", function(object, ...) {standardGeneric("indep_test")})
+
+#'@rdname backtest-tests
+#'@export
+setMethod("indep_test", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
+
+    VaR <- object@measures$VaR
+
+    VaR_names <- names(VaR)
+    conf_lvls <- as.numeric(substring(VaR_names, 4))
+
+    m <- length(conf_lvls)
+
+    list_out <- vector(mode = "list", length = m)
+    names(list_out) <- VaR_names
+    obs <- zoo::coredata(object@observations)
+    n <- length(obs)
+    n_adj <- n - 1
+
+    for (i in 1:m) {
+      alpha <- conf_lvls[[i]]   # Covered theoretically
+      It <- obs < zoo::coredata(VaR[[i]])
+
+      pre1 <- utils::head(It, -1) == 1
+      pre0 <- utils::head(It, -1) == 0
+      post1 <- utils::tail(It, n_adj) == 1
+      post0 <- utils::tail(It, n_adj) == 0
+
+      K00 <- sum(pre0 & post0)
+      K10 <- sum(pre1 & post0)
+      K01 <- sum(pre0 & post1)
+      K11 <- sum(pre1 & post1)
+
+      K0 <- K00 + K01
+      K1 <- K10 + K11
+
+      z00 <- K00 / K0
+      z10 <- K10 / K1
+
+      L_z00 <- z00^K00 * (1 - z00)^K01 * z10^K10 * (1 - z10)^K11
+
+      K <- K0 + K1
+      Ki0 <- K00 + K10
+      Ki1 <- K11 + K01
+      z0 <- Ki0 / K
+      z1 <- Ki1 / K
+
+      L_z0 <- z0^Ki0 * z1^Ki1
+
+      stat <- -2 * log(L_z0 / L_z00)
+
+      pval <- 1 - pchisq(stat, df = 1)
+
+      list_out[[i]] <- list(
+        conf_lvl = alpha,
+        breaches = K1,
+        test_statistic = stat,
+        p_value = pval,
+        decision = rejecter(pval)
+      )
+
+    }
+
+    if (!silent) {
+
+      header <- paste0(
+        "\n*****************************\n",
+        "* Independence test for VaR *\n",
+        "*****************************\n\n",
+        "H0: true share of covered observations independent\n    of breach or no breach at previous time point\n"
+      )
+
+      tests <- paste0(vapply(
+        list_out, FUN = function(.x) {
+          paste0(
+            "\nConf. level: ", .x$conf_lvl, "\n",
+            "Breaches: ", .x$breaches, "\n",
+            "Test statistic: ", sprintf("%.4f", .x$test_statistic), "\n",
+            "p-value: ", sprintf("%.4f", .x$p_value), "\n",
+            "Decision: ", .x$decision, "\n"
+          )
+        }, FUN.VALUE = character(1)
+      ), collapse = "")
+
+      cli::cat_line(paste0(
+        header, tests
+      ))
+
+    }
+
+    invisible(list_out)
+
+})
+
+setGeneric("cond_cov_test", function(object, ...) {standardGeneric("cond_cov_test")})
+
+#'@rdname backtest-tests
+#'@export
+setMethod("cond_cov_test", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
+
+    VaR <- object@measures$VaR
+
+    VaR_names <- names(VaR)
+    conf_lvls <- as.numeric(substring(VaR_names, 4))
+
+    m <- length(conf_lvls)
+
+    list_out <- vector(mode = "list", length = m)
+    names(list_out) <- VaR_names
+    obs <- zoo::coredata(object@observations)
+    n <- length(obs)
+    n_adj <- n - 1
+
+    for (i in 1:m) {
+      alpha <- conf_lvls[[i]]   # Covered theoretically
+      It <- obs < zoo::coredata(VaR[[i]])
+      K1 <- sum(It[-1])
+      K0 <- n_adj - K1
+
+      L_a <- alpha^K0 * (1 - alpha)^K1
+
+      pre1 <- utils::head(It, -1) == 1
+      pre0 <- utils::head(It, -1) == 0
+      post1 <- utils::tail(It, n_adj) == 1
+      post0 <- utils::tail(It, n_adj) == 0
+
+      K00 <- sum(pre0 & post0)
+      K10 <- sum(pre1 & post0)
+      K01 <- sum(pre0 & post1)
+      K11 <- sum(pre1 & post1)
+
+      z00 <- K00 / (K00 + K01)
+      z10 <- K10 / (K11 + K10)
+
+      L_z00 <- z00^K00 * (1 - z00)^K01 * z10^K10 * (1 - z10)^K11
+
+      stat <- -2 * log(L_a / L_z00)
+
+      pval <- 1 - pchisq(stat, df = 2)
+
+      list_out[[i]] <- list(
+        conf_lvl = alpha,
+        breaches = K1,
+        test_statistic = stat,
+        p_value = pval,
+        decision = rejecter(pval)
+      )
+
+    }
+
+    if (!silent) {
+
+      header <- paste0(
+        "\n*************************************\n",
+        "* Conditional coverage test for VaR *\n",
+        "*************************************\n\n",
+        "H0: true share of covered observations simultaneously\n    independent of breach or no breach at previous time point\n    and equal to theoretical share of VaR\n"
+      )
+
+      tests <- paste0(vapply(
+        list_out, FUN = function(.x) {
+          paste0(
+            "\nConf. level: ", .x$conf_lvl, "\n",
+            "Breaches: ", .x$breaches, "\n",
+            "Test statistic: ", sprintf("%.4f", .x$test_statistic), "\n",
+            "p-value: ", sprintf("%.4f", .x$p_value), "\n",
+            "Decision: ", .x$decision, "\n"
+          )
+        }, FUN.VALUE = character(1)
+      ), collapse = "")
+
+      cli::cat_line(paste0(
+        header, tests
+      ))
+
+    }
+
+    invisible(list_out)
+
+})
+
+
+
+
+setGeneric("cov_tests", function(object, ...) {standardGeneric("cov_tests")})
+
+#'@rdname backtest-tests
+#'@export
+setMethod("cov_tests", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
+
+    l1 <- uncond_cov_test(object, silent = silent, ...)
+    l2 <- indep_test(object, silent = silent, ...)
+    l3 <- cond_cov_test(object, silent = silent, ...)
+
+    list_out <- list(
+      uncond_cov_test = l1,
+      indep_test = l2,
+      cond_cov_test = l3
+    )
+
+    invisible(list_out)
+
+})
+
+setGeneric("backtest_suite", function(object, ...) {standardGeneric("backtest_suite")})
+
+#'@rdname backtest-tests
+#'@export
+setMethod("backtest_suite", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
+
+    l0 <- trafflight_test(object, silent = silent, ...)
+
+    l1 <- uncond_cov_test(object, silent = silent, ...)
+    l2 <- indep_test(object, silent = silent, ...)
+    l3 <- cond_cov_test(object, silent = silent, ...)
+
+    list_out <- list(
+      trafflight_test = l0,
+      uncond_cov_test = l1,
+      indep_test = l2,
+      cond_cov_test = l3
+    )
+
+    invisible(list_out)
+
+})
+
+
+########### loss functions ###############
+
+loss0 <- function(object, penalty = 1e-4, ...) {
+
+  obs <- zoo::coredata(object@observations)
+  n <- length(obs)
+
+  VaR_names <- names(object@measures$VaR)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
+
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
   )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
+
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      l1[!idx] <- 0
+
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      l1[!idx] <- 0
+
+      list_out$ES[[i]] <- sum(l1)
+    }
+  }
+
+  list_out
 
 }
 
-#'@export
-#'@importFrom ufRisk covtest
-ufRisk::covtest
+loss1 <- function(object, penalty = 1e-4, ...) {
 
-#'@export
-#'@importFrom ufRisk trafftest
-ufRisk::trafftest
+  obs <- zoo::coredata(object@observations)
+  n <- length(obs)
 
-#'@export
-#'@importFrom ufRisk lossfunc
-ufRisk::lossfunc
+  VaR_names <- names(object@measures$VaR)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
 
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
+
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      l1[!idx] <- penalty * abs(VaR[!idx])
+
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      l1[!idx] <- penalty * abs(ES[!idx])
+
+      list_out$ES[[i]] <- sum(l1)
+    }
+  }
+
+  list_out
+
+}
+
+loss2 <- function(object, penalty = 1e-4, ...) {
+
+  obs <- zoo::coredata(object@observations)
+  n <- length(obs)
+
+  VaR_names <- names(object@measures$VaR)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
+
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
+
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      l1[!idx] <- penalty * (abs(VaR[!idx] - obs[!idx]))
+
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      l1[!idx] <- penalty * (abs(ES[!idx] - obs[!idx]))
+
+      list_out$ES[[i]] <- sum(l1)
+    }
+  }
+
+  list_out
+
+}
+
+loss3 <- function(object, penalty = 1e-4, ...) {
+
+  obs <- zoo::coredata(object@observations)
+  n <- length(obs)
+
+  VaR_names <- names(object@measures$VaR)
+  m_VaR <- length(VaR_names)
+  ES_names <- names(object@measures$ES)
+  m_ES <- length(ES_names)
+
+  list_out <- list(
+    VaR = vector(mode = "list", length = m_VaR),
+    ES = vector(mode = "list", length = m_ES)
+  )
+  names(list_out$VaR) <- VaR_names
+  names(list_out$ES) <- ES_names
+
+  if (m_VaR > 0) {
+    for (i in 1:m_VaR) {
+      VaR <- zoo::coredata(object@measures$VaR[[i]])
+      idx <- obs < VaR
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (VaR[idx] - obs[idx])^2
+      diffe <- abs(VaR[!idx] - obs[!idx])
+      VaR_a <- abs(VaR[!idx])
+      selector <- diffe > VaR_a
+      diffe[selector] <- VaR_a[selector]
+      l1[!idx] <- penalty * diffe
+
+      list_out$VaR[[i]] <- sum(l1)
+    }
+  }
+
+  if (m_ES > 0) {
+    for (i in 1:m_ES) {
+      ES <- zoo::coredata(object@measures$ES[[i]])
+      idx <- obs < ES
+
+      l1 <- rep(NA, n)
+      l1[idx] <- (ES[idx] - obs[idx])^2
+      diffe <- abs(ES[!idx] - obs[!idx])
+      ES_a <- abs(ES[!idx])
+      selector <- diffe > ES_a
+      diffe[selector] <- ES_a[selector]
+      l1[!idx] <- penalty * diffe
+
+      list_out$ES[[i]] <- sum(l1)
+    }
+  }
+
+  list_out
+
+}
+
+setGeneric("loss_functions", function(object, penalty = 1e-4, ...) {standardGeneric("loss_functions")})
+
+#'Loss Function Calculation
+#'
+#'Compute loss function values given log-returns and corresponding
+#'value at risk (VaR) and expected shortfall (ES) series.
+#'
+#'@param object an object of class \code{"fEGarch_risk"} as returned
+#'by the model fitting functions of this package, for example
+#'\code{\link{fEGarch}}.
+#'@param penalty the penalty term to use in the opportunity cost terms.
+#'@param ...
+#'
+#'@details
+#'Let \eqn{n \in \mathbb{N}} be the number of observations of a (log-)return
+#'series \eqn{\{r_t\}}, \eqn{t=1,\dots,n}, and let \eqn{\text{VaR}_t} and
+#'\eqn{\text{ES}_t} be the
+#'estimated or forecasted VaR and ES (at some confidence level \eqn{\alpha}) at time
+#'\eqn{t}, respectively. Such series are included in an object of class
+#'\code{"fEGarch_risk"}. In the following, a risk measure at time \eqn{t} is
+#'simply denoted by \eqn{\text{RM}_t} and can either mean
+#'\eqn{\text{VaR}_t} or
+#'\eqn{\text{ES}_t}.
+#'
+#'Based on a calculated VaR and / or expected shortfall (ES), capital needs
+#'to be held back following regulatory rules. Commonly, among many models
+#'used for forecasting risk measures that fulfill regulatory conditions,
+#'loss functions are computed that also consider opportunity costs in to
+#'assess, what model that fulfills regulatory rules minimizes such loss
+#'functions. Let \eqn{\Omega \geq 0} be the penalty term.
+#'
+#'For all loss functions we have
+#'\deqn{\text{LF}_i = \sum_{t=1}^{n} l_{t,i}, \hspace{3mm} i = 0,1,2,3,}
+#'as the loss function with
+#'\deqn{l_{t,i} = (\text{RM}_t - r_t)^2, \hspace{3mm} i = 0,1,2,3,}
+#'for \eqn{r_t < \text{RM}_t}. They differ in how the case
+#'\eqn{r_t \geq \text{RM}_t} is treated.
+#'
+#'The regulatory loss function (\code{rlf}) uses \eqn{l_{t,0} = 0}.
+#'
+#'The firm's loss function (Sarma et al., 2003) (\code{flf}) considers
+#'\eqn{l_{t,1}=\Omega |\text{RM}_t|}.
+#'
+#'The adjusted loss function (Abad et al., 2015) (\code{alf}) makes use
+#'of \eqn{l_{t,2} = \Omega |\text{RM}_t - r_t|}.
+#'
+#'The corrected loss function (Feng, forthcoming) (\code{clf}) has
+#'\eqn{l_{t,3} = \Omega \text{min}\left(|\text{RM}_t - r_t|, |\text{RM}_t|\right)}.
+#'
+#'@export
+setMethod("loss_functions", "fEGarch_risk",
+  function(object, penalty = 1e-4, ...) {
+
+
+    list_out <- list(
+      rlf = loss0(object, penalty = penalty, ...),
+      flf = loss1(object, penalty = penalty, ...),
+      alf = loss2(object, penalty = penalty, ...),
+      clf = loss3(object, penalty = penalty, ...)
+    )
+
+    list_out
+
+})
