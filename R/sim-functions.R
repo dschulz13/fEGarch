@@ -112,72 +112,6 @@ rsald_s <- function(n, P = 8, skew = 1) {
   inv_cdf_fun(p = p, dfun = pdf_skew_sald_s, P = P, skew = skew)
 }
 
-#
-# fiegarch_sim <- function(n = 750, nstart = 1000,
-#                          mu = 0, omega_sig = -9, phi = 0.6, psi = numeric(0),
-#                          kappa = -0.2, gamma = 0.3, d = 0.25, shape = 2,
-#                          df = 10,
-#                          skew = 1,
-#                          cond_dist = c("norm", "std", "ged", "snorm", "sstd", "sged")) {
-#
-#   cond_dist <- match.arg(cond_dist)
-#   nn <- n + nstart          # pre-sample plus sample number of observations
-#   if ( cond_dist == "norm") {
-#     innov <- rnorm(nn + 1)    # we need innovations for our pre-sample and sample time points plus for one time point before the pre-sample
-#   } else if (cond_dist == "std") {
-#     innov <- rt(nn + 1, df = df) / sqrt(df / (df + 2))
-#   }
-#
-#
-#   # Obtain the probability density function for the innov. distribution
-#   # from the internal lookup table
-#   PDFunc <- lookup_table[["fun1"]][[cond_dist]]
-#   if (cond_dist %in% c("std", "sstd")) {
-#     shape <- df    # all pdfs are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
-#   }
-#
-#   # Define a function that follows the most basic definition of the expectation of
-#   # a continuous random variable (here: for the absolute innovations) but just for
-#   # the part behind the integration symbol
-#   Efun <- function(x, PDFunc, shape, skew) {
-#     abs(x) * PDFunc(x, shape = shape, skew = skew)
-#   }
-#
-#   # Then we can integrate numerically over that function and thus
-#   # follow the definition of an expectation
-#   Econst <- stats::integrate(
-#     f = Efun, lower = -Inf, upper = Inf,
-#     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
-#     stop.on.error = FALSE, PDFunc = PDFunc, shape = shape,
-#     skew = skew
-#   )[[1]]
-#
-#   # we need coefficients for the 1000 pre-pre-sample time points, for the pre-sample,
-#   # and for the sample with the exception of the very last sample time point
-#   m <- M <- nn + 1000 - 1
-#   if (m < 5000) {
-#     M <- 5000
-#   }
-#   coef_inf <- esemifar::farima_to_ar(ar = phi, ma = psi, d = d,
-#                                      max_i = M)[-1]
-#
-#   C_omega <- 1 - sum(coef_inf)
-#
-#   # problem: uncond. variance seems to be continuously (but slowly) decreasing over time
-#
-#   sim <- fiegarch_sim_ar(
-#     innov = innov, omega_sig = omega_sig, coef_inf = head(coef_inf, m),
-#     kappa = kappa, gamma = gamma, n_out = n, mu = mu,
-#     Econst = Econst, C_omega = C_omega
-#   )
-#
-#   out <- list(
-#     "rt" = ts(c(sim[["rt"]])),
-#     "sigt" = ts(c(sim[["sigt"]])),
-#     "etat" = ts(c(sim[["etat"]]))
-#   )
-#
-# }
 
 #'Simulate From Models of the Broader EGARCH Family
 #'
@@ -422,10 +356,10 @@ fEGarch_sim <- function(spec = egarch_spec(),
   }
 
   out <- list(
-    "rt" = ts(c(sim[["rt"]])),
-    "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]])),
-    "cmeans" = ts(rep(mu, n))
+    "rt" = stats::ts(c(sim[["rt"]])),
+    "sigt" = stats::ts(c(sim[["sigt"]])),
+    "etat" = stats::ts(c(sim[["etat"]])),
+    "cmeans" = stats::ts(rep(mu, n))
   )
 
   if (check) {
@@ -441,10 +375,10 @@ fEGarch_sim <- function(spec = egarch_spec(),
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
-    out[["rt"]] <- ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- ts(tail(out[["etat"]], n))
-    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
+    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
   }
 
   out
@@ -582,10 +516,10 @@ fiaparch_sim <- function(pars = list(
     gamma = gamma, delta = delta, n_out = N, mu = mu)
 
   out <- list(
-    "rt" = ts(c(sim[["rt"]])),
-    "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]])),
-    "cmeans" = ts(rep(mu, n))
+    "rt" = stats::ts(c(sim[["rt"]])),
+    "sigt" = stats::ts(c(sim[["sigt"]])),
+    "etat" = stats::ts(c(sim[["etat"]])),
+    "cmeans" = stats::ts(rep(mu, n))
   )
 
   if (check) {
@@ -601,10 +535,10 @@ fiaparch_sim <- function(pars = list(
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
-    out[["rt"]] <- ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- ts(tail(out[["etat"]], n))
-    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
+    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
   }
 
   out
@@ -867,10 +801,10 @@ figarch_sim <- function(pars = list(
     n_out = N, mu = mu)
 
   out <- list(
-    "rt" = ts(c(sim[["rt"]])),
-    "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]])),
-    "cmeans" = ts(rep(mu, n))
+    "rt" = stats::ts(c(sim[["rt"]])),
+    "sigt" = stats::ts(c(sim[["sigt"]])),
+    "etat" = stats::ts(c(sim[["etat"]])),
+    "cmeans" = stats::ts(rep(mu, n))
   )
 
   if (check) {
@@ -886,10 +820,10 @@ figarch_sim <- function(pars = list(
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
-    out[["rt"]] <- ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- ts(tail(out[["etat"]], n))
-    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
+    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
   }
 
   out
@@ -1041,10 +975,10 @@ aparch_sim <- function(pars = list(
     E_sigd = E_sigd)
 
   out <- list(
-    "rt" = ts(c(sim[["rt"]])),
-    "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]])),
-    "cmeans" = ts(rep(mu, n))
+    "rt" = stats::ts(c(sim[["rt"]])),
+    "sigt" = stats::ts(c(sim[["sigt"]])),
+    "etat" = stats::ts(c(sim[["etat"]])),
+    "cmeans" = stats::ts(rep(mu, n))
   )
 
   if (check) {
@@ -1060,10 +994,10 @@ aparch_sim <- function(pars = list(
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
-    out[["rt"]] <- ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- ts(tail(out[["etat"]], n))
-    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
+    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
   }
 
   out
@@ -1335,10 +1269,10 @@ garch_sim <- function(pars = list(
     n_out = N, mu = mu, EY2 = EY2)
 
   out <- list(
-    "rt" = ts(c(sim[["rt"]])),
-    "sigt" = ts(c(sim[["sigt"]])),
-    "etat" = ts(c(sim[["etat"]])),
-    "cmeans" = ts(rep(mu, n))
+    "rt" = stats::ts(c(sim[["rt"]])),
+    "sigt" = stats::ts(c(sim[["sigt"]])),
+    "etat" = stats::ts(c(sim[["etat"]])),
+    "cmeans" = stats::ts(rep(mu, n))
   )
 
   if (check) {
@@ -1354,10 +1288,10 @@ garch_sim <- function(pars = list(
       yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
 
     }
-    out[["rt"]] <- ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- ts(tail(out[["etat"]], n))
-    out[["sigt"]] <- ts(tail(out[["sigt"]], n))
+    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
+    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
+    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
+    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
   }
 
   out

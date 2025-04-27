@@ -59,7 +59,7 @@ settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
 
 \item{nonparspec}{an object of class \code{"locpol_spec"} returned
-by \code{\link{locpol_spec()}}; defines the settings of the nonparametric
+by \code{\link{locpol_spec}}; defines the settings of the nonparametric
 smoothing technique for \code{use_nonpar = TRUE}.}
 
 \item{use_nonpar}{a logical indicating whether or not to implement a
@@ -167,10 +167,10 @@ broader EGARCH family to some observed time series.
 }
 \details{
 For details on the models in the conditional variance, see \link[fEGarch]{fEGarch_spec}.
-For details on the models in the conditional mean, see \link[fEGarch]{meanspec}.
-The combined model defined through \link[fEGarch]{meanspec} and
+For details on the models in the conditional mean, see \link[fEGarch]{mean_spec}.
+The combined model defined through \link[fEGarch]{mean_spec} and
 \link[fEGarch]{fEGarch_spec} is the specified model. It can be thought of
-as the model described in \link[fEGarch]{meanspec} with \eqn{\left\{r_t\right\}}
+as the model described in \link[fEGarch]{mean_spec} with \eqn{\left\{r_t\right\}}
 therein being governed by a model from the EGARCH family as described in
 \link[fEGarch]{fEGarch_spec}, however with mean of \eqn{\left\{r_t\right\}} fixed
 to zero.

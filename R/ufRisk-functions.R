@@ -160,7 +160,7 @@ setMethod("measure_risk", "fEGarch_forecast",
     object2@sigt <- object@sigt
     object2@cmeans <- object@cmeans
 
-    func <- selectMethod("measure_risk", "fEGarch_fit")
+    func <- methods::selectMethod("measure_risk", "fEGarch_fit")
     out <- func(object = object2, measure = measure, level = level, ...)
     out@observations <- object2@test_obs
     out@sigt <- object2@sigt
@@ -334,7 +334,7 @@ setMethod("trafflight_test", "fEGarch_risk",
     for (i in 1:n_VaR) {
       conf_lvl <- as.numeric(substring(VaR_names[[i]], 4))
       pot <- sum(obs < object@measures$VaR[[i]])
-      prob <- pbinom(q = pot, size = n, prob = 1 - conf_lvl)
+      prob <- stats::pbinom(q = pot, size = n, prob = 1 - conf_lvl)
       list_VaR[[i]] <- list(
         conf_lvl = conf_lvl,
         pot = pot,
@@ -479,7 +479,7 @@ setMethod("uncond_cov_test", "fEGarch_risk",
       z0 <- K0 / n
 
       stat <- -2 * log(alpha^K0 * (1 - alpha)^K1 / (z0^K0 * (1 - z0)^K1))
-      pval <- 1 - pchisq(stat, df = 1)
+      pval <- 1 - stats::pchisq(stat, df = 1)
 
       list_out[[i]] <- list(
         conf_lvl = alpha,
@@ -574,7 +574,7 @@ setMethod("indep_test", "fEGarch_risk",
 
       stat <- -2 * log(L_z0 / L_z00)
 
-      pval <- 1 - pchisq(stat, df = 1)
+      pval <- 1 - stats::pchisq(stat, df = 1)
 
       list_out[[i]] <- list(
         conf_lvl = alpha,
@@ -662,7 +662,7 @@ setMethod("cond_cov_test", "fEGarch_risk",
 
       stat <- -2 * log(L_a / L_z00)
 
-      pval <- 1 - pchisq(stat, df = 2)
+      pval <- 1 - stats::pchisq(stat, df = 2)
 
       list_out[[i]] <- list(
         conf_lvl = alpha,
@@ -963,7 +963,7 @@ setGeneric("loss_functions", function(object, penalty = 1e-4, ...) {standardGene
 #'by the model fitting functions of this package, for example
 #'\code{\link{fEGarch}}.
 #'@param penalty the penalty term to use in the opportunity cost terms.
-#'@param ...
+#'@param ... currently without use.
 #'
 #'@details
 #'Let \eqn{n \in \mathbb{N}} be the number of observations of a (log-)return

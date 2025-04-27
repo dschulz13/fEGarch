@@ -11,7 +11,7 @@ initial_split <- function(rt, n_test) {
          pos = pf)
   #rt_core_o <- zoo::coredata(split_rt$train)
 
-  scale_const <- sd(rt_core_o)
+  scale_const <- stats::sd(rt_core_o)
   assign("scale_const", value = scale_const, pos = pf)
   #scale_const <- sd(rt_core_o)         # for rescaling later
   #rt_core <- rt_core_o / scale_const   # now has sample variance 1

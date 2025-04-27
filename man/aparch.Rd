@@ -59,7 +59,7 @@ settings in the arguments
 \code{LB} and \code{UB} overwrite this argument.}
 
 \item{nonparspec}{an object of class \code{"locpol_spec"} returned
-by \code{\link{locpol_spec()}}; defines the settings of the nonparametric
+by \code{\link{locpol_spec}}; defines the settings of the nonparametric
 smoothing technique for \code{use_nonpar = TRUE}.}
 
 \item{use_nonpar}{a logical indicating whether or not to implement a

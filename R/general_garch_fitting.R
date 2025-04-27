@@ -46,16 +46,17 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
-  if (is.character(trunc) && trunc == "none") {
-    trunc <- n + presample - 1
-  } else if (is.numeric(trunc) && trunc >= n + presample) {
-    trunc <- n + presample - 1
-    message("trunc reduced to n + ", presample, " - 1")
-  }
 
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
   # environment
   identify_arma_settings(meanspec = meanspec, Drange = Drange)
+
+  if ((lm || lm_arma) && is.character(trunc) && trunc == "none") {
+    trunc <- n + presample - 1
+  } else if ((lm || lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
+  }
 
   dfun1 <- lookup_table$fun1[[cond_d]]
   dfun2 <- lookup_table$fun2[[cond_d]]
@@ -102,7 +103,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "gjrgarch" = {
       delta0 <- 2    # use delta0 = 2
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-      sigd_init <- sd(rt_core)^delta0
+      sigd_init <- stats::sd(rt_core)^delta0
       rt_dm <- rt_core - mean(rt_core)
       etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)
@@ -110,7 +111,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "tgarch" = {
       delta0 <- 1    # use delta0 = 1
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-      sigd_init <- sd(rt_core)^delta0
+      sigd_init <- stats::sd(rt_core)^delta0
       rt_dm <- rt_core - mean(rt_core)
       etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)
@@ -118,7 +119,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "aparch" = {
       delta0 <- 2    # use delta0 = 2
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-      sigd_init <- sd(rt_core)^delta0
+      sigd_init <- stats::sd(rt_core)^delta0
       rt_dm <- rt_core - mean(rt_core)
       etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)

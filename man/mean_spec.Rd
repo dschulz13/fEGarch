@@ -43,7 +43,7 @@ mean in \eqn{\left\{y_t\right\}}. \eqn{D \in [0, 0.5)} is the fractional
 differencing parameter. \eqn{\left\{r_t\right\}} is a zero-mean (weak) white
 noise process, for example a member of the GARCH-models (with mean set to zero)
 presented in this package (see the
-descriptions in \link{fEGarch_spec}, \link{fiaparch}, \link{lmgarch}).
+descriptions in \link{fEGarch_spec}, \link{fiaparch}, \link{figarch}, etc.).
 
 The for \eqn{D=0}, which can be achieved through \code{long_memo = FALSE},
 the formulas above describe an autoregressive moving-average (ARMA) model.

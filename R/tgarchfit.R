@@ -139,7 +139,7 @@ goal_fun_creator_tgarch <- function(
 #'settings in the arguments
 #'\code{LB} and \code{UB} overwrite this argument.
 #'@param nonparspec an object of class \code{"locpol_spec"} returned
-#'by \code{\link{locpol_spec()}}; defines the settings of the nonparametric
+#'by \code{\link{locpol_spec}}; defines the settings of the nonparametric
 #'smoothing technique for \code{use_nonpar = TRUE}.
 #'@param use_nonpar a logical indicating whether or not to implement a
 #'semiparametric extension of the volatility model defined through \code{spec};

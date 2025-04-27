@@ -988,12 +988,6 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
-  if (is.character(trunc) && trunc == "none") {
-    trunc <- n + presample - 1
-  } else if (is.numeric(trunc) && trunc >= n + presample) {
-    trunc <- n + presample - 1
-    message("trunc reduced to n + ", presample, " - 1")
-  }
 
   # Obtain model orders
   order <- orders(spec)
@@ -1007,6 +1001,14 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
   # environment
   identify_arma_settings(meanspec = meanspec, Drange = Drange)
+
+  if ((lm || lm_arma) && is.character(trunc) && trunc == "none") {
+    trunc <- n + presample - 1
+  } else if ((lm || lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
+  }
+
 
   # Look up internally saved density functions
   # from "data-raw/lookup.R"
@@ -1546,12 +1548,6 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   n <- length(rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
-  if (is.character(trunc) && trunc == "none") {
-    trunc <- n + presample - 1
-  } else if (is.numeric(trunc) && trunc >= n + presample) {
-    trunc <- n + presample - 1
-    message("trunc reduced to n + ", presample, " - 1")
-  }
 
   # Obtain model orders
   order <- orders(spec)
@@ -1565,6 +1561,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
   # environment
   identify_arma_settings(meanspec = meanspec, Drange = Drange)
+
+  if ((lm || lm_arma) && is.character(trunc) && trunc == "none") {
+    trunc <- n + presample - 1
+  } else if ((lm || lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
+    trunc <- n + presample - 1
+    message("trunc reduced to n + ", presample, " - 1")
+  }
+
 
   # Look up internally saved density functions
   # from "data-raw/lookup.R"
@@ -1896,8 +1900,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 #'Display estimation results from the EGARCH family in
 #'a convenient way in the console.
 #'
-#'@param object an object returned by either \code{\link{fEGarch}},
-#'\code{\link{fiaparch}} or \code{\link{lmgarch}}.
+#'@param object an object returned by one of this package's fitting functions,
+#'for example \code{\link{fEGarch}},
+#'\code{\link{fiaparch}}, \code{\link{figarch}}, etc.
 #'
 #'@aliases show,fEGarch_fit_egarch-method
 #'@export

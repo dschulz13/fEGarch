@@ -133,7 +133,7 @@ setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
   input[["x"]] <- tp
   input[["y"]] <- all_series
 
-  do.call(matplot, args = input)
+  do.call(graphics::matplot, args = input)
 
   if (is.null(setting_o) && inherits(obs, "zoo")) {
     dates <- time(obs)
@@ -153,17 +153,17 @@ setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
       to = month_last,
       by = "month"
     )
-    axis(side = 1, at = months, labels = format(months, "%b %y"))
+    graphics::axis(side = 1, at = months, labels = format(months, "%b %y"))
   }
 
-  abline(h = 0, lty = 3, col = "lightgray")
+  graphics::abline(h = 0, lty = 3, col = "lightgray")
 
   idx <- obs < VaR
 
   obs_s1 <- as.numeric(obs)[idx]
   tp2 <- c(time(VaR))[idx]
   if (sum(idx) >= 1) {
-    lines(tp2, obs_s1, type = "h", col = "red", lwd = 1.5)
+    graphics::lines(tp2, obs_s1, type = "h", col = "red", lwd = 1.5)
   }
 
   idx <- obs < ES
@@ -171,7 +171,7 @@ setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
   obs_s2 <- as.numeric(obs)[idx]
   tp2 <- c(time(ES))[idx]
   if (sum(idx) >= 1) {
-    lines(tp2, obs_s2, type = "h", col = "purple", lwd = 1.5)
+    graphics::lines(tp2, obs_s2, type = "h", col = "purple", lwd = 1.5)
   }
 
 

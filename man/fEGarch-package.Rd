@@ -40,14 +40,14 @@ corresponding documentation page also includes further information
 on the model. Similarly, \code{\link{figarch}} can be utilized for
 fitting FIGARCH models. A general function for estimation additional
 GARCH-type models, including FIAPARCH and FIGARCH among others, is
-\code{\link{garch_estim}}.
+\code{\link{garchm_estim}}.
 
 In addition, the package provides functionalities in order to
 simultaneously model the conditional mean (using either autoregressive
 moving-average (ARMA) models or fractionally integrated ARMA (FARIMA)
 models) alongside the
 conditional variance. For this purpose, the function
-\code{\link{arma_spec}} can be utilized and its result needs to be
+\code{\link{mean_spec}} can be utilized and its result needs to be
 passed to \code{\link{fEGarch}} alongside the result of either
 \code{\link{fEGarch_spec}} or one of its wrappers.
 
@@ -64,11 +64,11 @@ The main functions of the package are:
 \describe{
 \item{\code{\link{fEGarch_spec}}:}{setting the model specifications for
 a model from the broader EGARCH family,}
-\item{\code{\link{arma_spec}}:}{setting the model specifications for
+\item{\code{\link{mean_spec}}:}{setting the model specifications for
 the conditional mean,}
 \item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 models given a model specification and an observation series,}
-\item{\code{\link{garch_estim}}:}{fitting a GARCH-type model selectable from a standard GARCH,
+\item{\code{\link{garchm_estim}}:}{fitting a GARCH-type model selectable from a standard GARCH,
 a GJR-GARCH, a TGARCH, an APARCH, a FIGARCH, a FIGJR-GARCH, a FITGARCH and a FIAPARCH,}
 \item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model,}
 \item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model,}

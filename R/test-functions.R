@@ -71,7 +71,7 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TR
 
   dfr <- (1:m_max) - n_par
   n_df_pos <- sum(dfr > 0)
-  p_vals <- c(rep(NA_real_, m_max - n_df_pos), 1 - pchisq(tail(stats, n_df_pos), df = tail(dfr, n_df_pos)))
+  p_vals <- c(rep(NA_real_, m_max - n_df_pos), 1 - stats::pchisq(tail(stats, n_df_pos), df = tail(dfr, n_df_pos)))
 
 
   m <- 1:m_max
@@ -137,7 +137,7 @@ setGeneric("sign_bias_test", function(object, drop_first = 5, silent = FALSE, ..
 setMethod("sign_bias_test", "fEGarch_fit", function(object, drop_first = 5, silent = FALSE, ...) {
 
   et <- utils::tail(zoo::coredata(object@etat), -drop_first)
-  et_h <- head(et, -1)
+  et_h <- utils::head(et, -1)
 
   It <- as.numeric(et_h < 0)
   It2 <- 1 - It
@@ -156,7 +156,7 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, drop_first = 5, sile
 
   pvals_reg <- unname(sum_stats$coefficients[, 4, drop = TRUE][-1])
 
-  p_joint <- 1 - pchisq(n * R2, df = 3)
+  p_joint <- 1 - stats::pchisq(n * R2, df = 3)
   p_all <- c(pvals_reg, p_joint)
 
   mat <- matrix(NA, ncol = 1, nrow = 4)
@@ -308,7 +308,7 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20
     df <- nb - 1 - adjust
 
     pval <- if (df >= 1) {
-      1 - pchisq(stat, df = df)
+      1 - stats::pchisq(stat, df = df)
     } else {
       NA
     }

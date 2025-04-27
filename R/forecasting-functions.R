@@ -564,7 +564,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_gjrgarch",
 
     object@pars[["delta"]] <- 2
 
-    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
     fun(object, n.ahead = n.ahead, trunc = trunc, ...)
 
   }
@@ -576,7 +576,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_figjrgarch",
 
     object@pars[["delta"]] <- 2
 
-    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
     fun(object, n.ahead = n.ahead, trunc = trunc, ...)
 
   }
@@ -588,7 +588,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_tgarch",
 
     object@pars[["delta"]] <- 1
 
-    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
     fun(object, n.ahead = n.ahead, trunc = trunc, ...)
 
   }
@@ -600,7 +600,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fitgarch",
 
     object@pars[["delta"]] <- 1
 
-    fun <- selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
     fun(object, n.ahead = n.ahead, trunc = trunc, ...)
 
   }
@@ -777,16 +777,16 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 
     rt <- object@rt
     if (inherits(rt, "zoo")) {
-      tp <- time(rt)
-      tp_f <- as.Date(tail(tp, 1)) + (1:n.ahead)
+      tp <- stats::time(rt)
+      tp_f <- as.Date(utils::tail(tp, 1)) + (1:n.ahead)
       fcasts$cmeans <- zoo::zoo(fcasts$cmeans, order.by = tp_f)
       fcasts$sigt <- zoo::zoo(fcasts$sigt, order.by = tp_f)
     } else if (inherits(rt, "ts")) {
       tp <- time(rt)
-      frequ <- frequency(rt)
-      start <- tail(tp, 1) + 1 / frequ
-      fcasts$cmeans <- ts(fcasts$cmeans, start = start, frequency = frequ)
-      fcasts$sigt <- ts(fcasts$sigt, start = start, frequency = frequ)
+      frequ <- stats::frequency(rt)
+      start <- utils::tail(tp, 1) + 1 / frequ
+      fcasts$cmeans <- stats::ts(fcasts$cmeans, start = start, frequency = frequ)
+      fcasts$sigt <- stats::ts(fcasts$sigt, start = start, frequency = frequ)
     }
     fcasts
 
@@ -994,10 +994,10 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       sigt_out <- zoo::zoo(sigt_out, order.by = tp_f)
     } else if (inherits(rt, "ts")) {
       tp <- time(object@test_obs)
-      frequ <- frequency(object@test_obs)
+      frequ <- stats::frequency(object@test_obs)
       start <- tp[[1]]
-      cmeans_out <- ts(cmeans_out, start = start, frequency = frequ)
-      sigt_out <- ts(sigt_out, start = start, frequency = frequ)
+      cmeans_out <- stats::ts(cmeans_out, start = start, frequency = frequ)
+      sigt_out <- stats::ts(sigt_out, start = start, frequency = frequ)
     }
 
     if (np_check) {

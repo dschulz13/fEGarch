@@ -13,7 +13,7 @@ by the model fitting functions of this package, for example
 
 \item{penalty}{the penalty term to use in the opportunity cost terms.}
 
-\item{...}{}
+\item{...}{currently without use.}
 }
 \description{
 Compute loss function values given log-returns and corresponding

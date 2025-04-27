@@ -68,7 +68,7 @@ test_that("fEGarch function works as intended", {
   })
 
   expect_no_error({
-   suppressWarnings(fEGarch(fiegarch_spec(), rt, trunc = 50))
+   suppressWarnings(fEGarch(fiegarch_spec(), rt, trunc = 100))
   })
 
   expect_no_error({

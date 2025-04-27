@@ -49,8 +49,9 @@
 \S4method{show}{fEGarch_fit_rugarch_wrapper}(object)
 }
 \arguments{
-\item{object}{an object returned by either \code{\link{fEGarch}},
-\code{\link{fiaparch}} or \code{\link{lmgarch}}.}
+\item{object}{an object returned by one of this package's fitting functions,
+for example \code{\link{fEGarch}},
+\code{\link{fiaparch}}, \code{\link{figarch}}, etc.}
 }
 \value{
 Nothing is returned. Results are printed in the R-console.
