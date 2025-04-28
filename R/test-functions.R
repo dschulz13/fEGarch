@@ -1,4 +1,24 @@
-# Generics
+#'Goodness-of-Fit Test Generics
+#'
+#'Generics for different goodness-of-fit tests. Currently
+#'without use.
+#'
+#'@param object currently without use.
+#'@param m_max currently without use.
+#'@param adj currently without use.
+#'@param weights currently without use.
+#'@param drop_first currently without use.
+#'@param silent currently without use.
+#'@param n_bins currently without use.
+#'@param ... currently without use.
+#'
+#'@return
+#'The generics are currently without use and do not
+#'return anything.
+#'
+#'@export
+#'@rdname fit-test-generics
+#'
 setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, drop_first = 5, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
 
 
@@ -101,7 +121,8 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TR
 })
 
 
-# Generics
+#'@export
+#'@rdname fit-test-generics
 setGeneric("sign_bias_test", function(object, drop_first = 5, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
 
 #'Sign Bias Test
@@ -191,7 +212,8 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, drop_first = 5, sile
 
 })
 
-# Generics
+#'@export
+#'@rdname fit-test-generics
 setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, drop_first = 5, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
 
 

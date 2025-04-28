@@ -1,3 +1,21 @@
+#'Generic for Computing Risk Measures
+#'
+#'A generic for computing risk measures that in itself is currently
+#'without use.
+#'
+#'@param object currently without use.
+#'@param measure currently without use.
+#'@param level currently without use.
+#'@param ... currently without use.
+#'
+#'@return
+#'The generic itself doesn't work and doesn't produce output.
+#'
+#'@export
+#'
+
+
+
 setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), ...) {standardGeneric("measure_risk")})
 
 #'VaR and ES Computation Following Fitted Models or Forecasts
@@ -169,6 +187,8 @@ setMethod("measure_risk", "fEGarch_forecast",
   }
 )
 
+#'@rdname backtest-generics
+#'@export
 setGeneric("trafflight_test", function(object, ...) {standardGeneric("trafflight_test")})
 
 zone_selector <- function(p) {
@@ -444,6 +464,8 @@ setMethod("trafflight_test", "fEGarch_risk",
 
 })
 
+#'@rdname backtest-generics
+#'@export
 setGeneric("uncond_cov_test", function(object, ...) {standardGeneric("uncond_cov_test")})
 
 rejecter <- function(pval) {
@@ -522,6 +544,8 @@ setMethod("uncond_cov_test", "fEGarch_risk",
 
 })
 
+#'@rdname backtest-generics
+#'@export
 setGeneric("indep_test", function(object, ...) {standardGeneric("indep_test")})
 
 #'@rdname backtest-tests
@@ -617,6 +641,25 @@ setMethod("indep_test", "fEGarch_risk",
 
 })
 
+#'Generics for backtests
+#'
+#'Generic functions to build backtesting methods from.
+#'
+#'@param object the generics are currently without use.
+#'@param ... the generics are currently without use.
+#'
+#'@details
+#'The generics are currently without use.
+#'
+#'@export
+#'
+#'@return
+#'The generics are currently without use, can therefore not be called
+#'and thus don't produce results.
+#'
+#'@rdname backtest-generics
+#'
+
 setGeneric("cond_cov_test", function(object, ...) {standardGeneric("cond_cov_test")})
 
 #'@rdname backtest-tests
@@ -707,7 +750,8 @@ setMethod("cond_cov_test", "fEGarch_risk",
 
 
 
-
+#'@rdname backtest-generics
+#'@export
 setGeneric("cov_tests", function(object, ...) {standardGeneric("cov_tests")})
 
 #'@rdname backtest-tests
@@ -729,6 +773,8 @@ setMethod("cov_tests", "fEGarch_risk",
 
 })
 
+#'@rdname backtest-generics
+#'@export
 setGeneric("backtest_suite", function(object, ...) {standardGeneric("backtest_suite")})
 
 #'@rdname backtest-tests
@@ -952,6 +998,21 @@ loss3 <- function(object, penalty = 1e-4, ...) {
 
 }
 
+#'Generic for Loss Function Calculation
+#'
+#'Currently without use. Use the methods derived from
+#'this generic.
+#'
+#'@param object currently without use.
+#'@param penalty currently without use.
+#'@param ... currently without use.
+#'
+#'@return
+#'The generic itself is currently without use and thus
+#'does not return anything.
+#'
+#'@export
+#'
 setGeneric("loss_functions", function(object, penalty = 1e-4, ...) {standardGeneric("loss_functions")})
 
 #'Loss Function Calculation

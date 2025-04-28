@@ -75,7 +75,35 @@ check_which_risk <- function(which, object) {
 
 }
 
-setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
+#'Plotting of Risk Measure Results (Base R)
+#'
+#'Plot risk measure results returned by \code{measure_risk}
+#'as a points-over-threshold plot in style of base R plots.
+#'
+#'@param object an object returned by \code{measure_risk}.
+#'@param y for compatibility but without use.
+#'@param which one of the levels of VaR and ES saved in
+#'\code{object}, usually either \code{0.975} or \code{0.99}
+#'by default.
+#'@param ... without use.
+#'
+#'@return
+#'Returns nothing but produces a base R plot in the plot window.
+#'
+#'@export
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2003-12-31")
+#'
+#'egarch_spec() %>%
+#'  fEGarch(rt = rt, n_test = 250) %>%
+#'  predict_roll() %>%
+#'  measure_risk() %>%
+#'  plot(which = 0.99)
+#'
+#'
+setMethod("plot", "fEGarch_risk", function(x, y = NULL, which = NULL, ...) {
 
   which <- check_which_risk(which, x)
 
@@ -177,6 +205,33 @@ setMethod("plot", "fEGarch_risk", function(x, which = NULL, ...) {
 
 })
 
+#'Plotting of Risk Measure Results (\code{ggplot2})
+#'
+#'Plot risk measure results returned by \code{measure_risk}
+#'as a points-over-threshold plot in style of \code{ggplot2}.
+#'
+#'@param object an object returned by \code{measure_risk}.
+#'@param which one of the levels of VaR and ES saved in
+#'\code{object}, usually either \code{0.975} or \code{0.99}
+#'by default.
+#'@param ... without use.
+#'
+#'@return
+#'Returns a \code{ggplot2} plot object.
+#'
+#'@export
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2003-12-31")
+#'
+#'egarch_spec() %>%
+#'  fEGarch(rt = rt, n_test = 250) %>%
+#'  predict_roll() %>%
+#'  measure_risk() %>%
+#'  autoplot(which = 0.99)
+#'
+#'
 setMethod("autoplot", "fEGarch_risk", function(object, which = NULL, ...) {
 
   which <- check_which_risk(which, object)

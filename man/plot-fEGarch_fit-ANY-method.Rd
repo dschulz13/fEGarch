@@ -4,11 +4,13 @@
 \alias{plot,fEGarch_fit,ANY-method}
 \title{Plot Method for Showing Fitting Step Results}
 \usage{
-\S4method{plot}{fEGarch_fit,ANY}(x, which = NULL, ...)
+\S4method{plot}{fEGarch_fit,ANY}(x, y = NULL, which = NULL, ...)
 }
 \arguments{
 \item{x}{an object returned by the fitting functions of this package,
 for example by \code{\link{fEGarch}}.}
+
+\item{y}{for compatibility but without use.}
 
 \item{which}{various plots can be selected either via a keyword or a number;
 enter \code{"returns"} or \code{1} to show a plot of the input training series;

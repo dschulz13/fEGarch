@@ -1,3 +1,5 @@
+
+
 set_default <- function(obj, repl) {
   arg_names <- names(repl)
   for (i in seq_along(arg_names)) {
@@ -130,6 +132,8 @@ plot_etat <- function(obj, ...) {
   do.call(plot, args = dots)
 }
 
+setGeneric("plot")
+
 ### Base R plot method
 
 #'Plot Method for Showing Fitting Step Results
@@ -139,6 +143,7 @@ plot_etat <- function(obj, ...) {
 #'
 #'@param x an object returned by the fitting functions of this package,
 #'for example by \code{\link{fEGarch}}.
+#'@param y for compatibility but without use.
 #'@param which various plots can be selected either via a keyword or a number;
 #'enter \code{"returns"} or \code{1} to show a plot of the input training series;
 #'enter \code{"means"} or \code{2} to show the
@@ -164,6 +169,7 @@ plot_etat <- function(obj, ...) {
 #'A graphic is created in the plots windows, the function itself, however,
 #'returns \code{NULL}.
 #'
+#'
 #'@author
 #'\itemize{
 #'\item Dominik Schulz (Research Assistant) (Department of Economics, Paderborn
@@ -180,7 +186,7 @@ plot_etat <- function(obj, ...) {
 #'plot(model, which = 3)
 #'
 
-setMethod("plot", "fEGarch_fit", function(x, which = NULL, ...) {
+setMethod("plot", "fEGarch_fit", function(x, y = NULL, which = NULL, ...) {
 
   which <- check_which(which)
 

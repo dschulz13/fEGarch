@@ -960,7 +960,31 @@ goal_fun_creator_egarch <- function(
 
 }
 
-
+#'Fitting Method for Type I EGARCH-Family Models
+#'
+#'Fits an EGARCH-family model of Type I. The method
+#'is not being exported.
+#'
+#'@param spec the generic is currently without use.
+#'@param rt the generic is currently without use.
+#'@param drange the generic is currently without use.
+#'@param meanspec the generic is currently without use.
+#'@param Drange the generic is currently without use.
+#'@param n_test the generic is currently without use.
+#'@param start_pars the generic is currently without use.
+#'@param LB the generic is currently without use.
+#'@param UB the generic is currently without use.
+#'@param control the generic is currently without use.
+#'@param parallel the generic is currently without use.
+#'@param ncores the generic is currently without use.
+#'@param trunc the generic is currently without use.
+#'@param presample the generic is currently without use.
+#'@param Prange the generic is currently without use.
+#'
+#'@return
+#'Returns an object of class \code{"fEGarch_fit_egarch"}.
+#'
+#'
 setMethod("fEGarch_fit", "egarch_type_spec",
   function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
@@ -1523,6 +1547,31 @@ goal_fun_creator_loggarch <- function(
 
 }
 
+#'Fitting Method for Type II EGARCH-Family Models
+#'
+#'Fits an EGARCH-family model of Type II. The method
+#'is not being exported.
+#'
+#'@param spec the generic is currently without use.
+#'@param rt the generic is currently without use.
+#'@param drange the generic is currently without use.
+#'@param meanspec the generic is currently without use.
+#'@param Drange the generic is currently without use.
+#'@param n_test the generic is currently without use.
+#'@param start_pars the generic is currently without use.
+#'@param LB the generic is currently without use.
+#'@param UB the generic is currently without use.
+#'@param control the generic is currently without use.
+#'@param parallel the generic is currently without use.
+#'@param ncores the generic is currently without use.
+#'@param trunc the generic is currently without use.
+#'@param presample the generic is currently without use.
+#'@param Prange the generic is currently without use.
+#'
+#'@return
+#'Returns an object of class \code{"fEGarch_fit_loggarch"}.
+#'
+#'
 setMethod("fEGarch_fit", "loggarch_type_spec",
   function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = 1000, presample = 50, Prange = c(1, 5)) {
 
