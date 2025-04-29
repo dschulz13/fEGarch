@@ -2,11 +2,14 @@
 % Please edit documentation in R/class-fEGarch_risk.R
 \name{plot,fEGarch_risk,ANY-method}
 \alias{plot,fEGarch_risk,ANY-method}
+\alias{plot,fEGarch_risk-method}
 \title{Plotting of Risk Measure Results (Base R)}
 \usage{
 \S4method{plot}{fEGarch_risk,ANY}(x, y = NULL, which = NULL, ...)
 }
 \arguments{
+\item{x}{an object returned by \code{measure_risk}.}
+
 \item{y}{for compatibility but without use.}
 
 \item{which}{one of the levels of VaR and ES saved in
@@ -14,8 +17,6 @@
 by default.}
 
 \item{...}{without use.}
-
-\item{object}{an object returned by \code{measure_risk}.}
 }
 \value{
 Returns nothing but produces a base R plot in the plot window.

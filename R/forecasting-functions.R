@@ -636,82 +636,18 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fitgarch",
 methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
   function(object, n.ahead = 10, trunc = NULL, ...) {
 
-  lm_garch <- object@long_memo
-  garch_orders <- object@orders
-  p <- garch_orders[[1]]
-  q <- garch_orders[[2]]
-  n <- length(object@rt)
+    p <- object@orders[[1]]
 
-  model_pars <- object@pars
-  names_phi <- paste0("phi", 1:p)
-  phi <- model_pars[names_phi]
-
-  names_beta <- paste0("beta", 1:q)
-  beta <- model_pars[names_beta]
-
-  omega <- model_pars[["omega"]]
-
-  #d <- if (lm_garch) model_pars[["d"]] else numeric(0)   # no long-memory GARCH-type in this method
-
-  cond_dist <- object@cond_dist
-
-  skew <- if (cond_dist %in% c("snorm", "sstd", "sged", "sald")) {
-    model_pars[["skew"]]
-  } else {
-    numeric(0)
-  }
-
-  shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
-    sel_word <- switch(
-      cond_dist,
-      "std" = "df",
-      "sstd" = "df",
-      "ged" = "shape",
-      "sged" = "shape",
-      "ald" = "P",
-      "sald" = "P"
+    object@pars[["delta"]] <- 2
+    l_sub <- rep(0, p)
+    names(l_sub) <- paste0("gamma", 1:p)
+    object@pars <- c(
+      object@pars,
+      l_sub
     )
-    model_pars[[sel_word]]
-  } else  {
-    numeric(0)
-  }
 
-  mu <- if (exists("mu", where = as.list(model_pars))&& !is.null(object@nonpar_model)) {
-    model_pars[["mu"]]
-  } else {
-    0
-  }
-
-  # ARMA / FARIMA specifications
-  mean_specs <- fetch_arma_pars_fit(object)
-  ar <- mean_specs$ar
-  ma <- mean_specs$ma
-  D <- mean_specs$D
-  pqg0 <- mean_specs$pqg0
-  lm_arma <- mean_specs$lm_arma
-
-  # ARMA / FARIMA point forecasts of cond. mean
-  mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
-                                   lm_arma = lm_arma, mu = mu,
-                                   x = zoo::coredata(object@rt),
-                                   innov = zoo::coredata(object@rt - object@cmeans),
-                                   n.ahead = n.ahead, trunc = trunc)
-
-  # GARCH point forecasts of cond. volatility
-
-  sigt_fc <- c(sigt_garch_forecast_short(
-      et = zoo::coredata(object@etat),
-      sigt = zoo::coredata(object@sigt),
-      omega = omega,
-      phi = phi,
-      beta = beta,
-      horizon = n.ahead
-    ))
-
-  list(
-    cmeans = mean_fc,
-    sigt = sigt_fc
-  )
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
 
   }
 )
@@ -721,64 +657,11 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_garch",
 methods::setMethod("fEGarch_predict", "fEGarch_fit_figarch",
   function(object, n.ahead = 10, trunc = NULL, ...) {
 
-  garch_orders <- object@orders
-  p <- garch_orders[[1]]
-  q <- garch_orders[[2]]
-  n <- length(object@rt)
+    object@pars[["delta"]] <- 2
+    object@pars[["gamma"]] <- 0
 
-  model_pars <- object@pars
-  names_phi <- paste0("phi", 1:p)
-  phi <- model_pars[names_phi]
-
-  names_beta <- paste0("beta", 1:q)
-  beta <- -model_pars[names_beta]   # change sign to use esemifar::farima_to_ar function correctly later
-
-  omega <- model_pars[["omega"]]
-
-  d <- model_pars[["d"]]
-
-  mu <- if (exists("mu", where = as.list(model_pars)) && !is.null(object@nonpar_model)) {
-    model_pars[["mu"]]
-  } else {
-    0
-  }
-
-  # ARMA / FARIMA specifications
-  mean_specs <- fetch_arma_pars_fit(object)
-  ar <- mean_specs$ar
-  ma <- mean_specs$ma
-  D <- mean_specs$D
-  pqg0 <- mean_specs$pqg0
-  lm_arma <- mean_specs$lm_arma
-
-  E_const <- if (n.ahead >= 2) {
-    1
-  } else {
-    0
-  }
-
-
-  # ARMA / FARIMA point forecasts of cond. mean
-  mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
-                                   lm_arma = lm_arma, mu = mu,
-                                   x = zoo::coredata(object@rt),
-                                   innov = zoo::coredata(object@rt - object@cmeans),
-                                   n.ahead = n.ahead, trunc = trunc)
-
-  # FIGARCH point forecasts of cond. volatility
-
-  coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
-                                     max_i = trunc)[-1]
-  sigt_fc <- c(sigt_figarch_forecast(
-      rt = zoo::coredata(object@rt - object@cmeans),
-      coef_inf = coef_inf_garch,
-      omega = omega,
-      horizon = n.ahead))
-
-  list(
-    cmeans = mean_fc,
-    sigt = sigt_fc
-  )
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
 
   }
 )
@@ -841,6 +724,9 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'forecasts; by default, \code{step_size = 1} is employed,
 #'i.e. for the immediately subsequent observation time
 #'point for the entire test set.
+#'@param trunc the truncation setting for the infinite-order
+#'polynomial of long-memory model parts; the default uses
+#'the setting from the fitted input object \code{object}.
 #'@param ... currently without use and included for compatibility
 #'with generics.
 #'

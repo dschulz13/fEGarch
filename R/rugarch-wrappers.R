@@ -144,6 +144,16 @@ rugarch_modelfit <- function(rt, model = "apARCH", orders = c(1, 1),
 #'at the end of \code{rt} not to include in the fitting process and to
 #'reserve for backtesting.
 #'@param start_pars a named list with starting parameters.
+#'@param nonparspec an object of class \code{"locpol_spec"} returned
+#'by \code{\link{locpol_spec}}; defines the settings of the nonparametric
+#'smoothing technique for \code{use_nonpar = TRUE}.
+#'@param use_nonpar a logical indicating whether or not to implement a
+#'semiparametric extension of the volatility model defined through \code{spec};
+#'see "Details" for more information.
+#'@param control_nonpar a list containing changes to the arguments
+#'for the hyperparameter estimation algorithm in the nonparametric
+#'scale function estimation for
+#'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'
 #'@details
 #'For most details, please see the documentation of the \code{rugarch} package

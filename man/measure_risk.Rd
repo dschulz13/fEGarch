@@ -19,17 +19,15 @@ fitting / estimation functions of this package like returned by for example
 as returned by \code{\link{predict,fEGarch_fit-method}} or
 \code{\link{predict_roll,fEGarch_fit-method}}.}
 
-\item{measure}{currently without use.}
+\item{measure}{a character vector with element \code{"VaR"}, \code{"ES"} or both;
+indicates, what risk measures should be computed; by default, both VaR and ES
+are computed.}
 
 \item{level}{a numeric vector of arbitrary length indicating the confidence
 levels to compute the VaR and the ES at; by default, the levels
 \code{0.975} and \code{0.99}, i.e. 97.5 percent and 99 percent, are considered.}
 
 \item{...}{currently without use.}
-
-\item{a}{character vector with element \code{"VaR"}, \code{"ES"} or both;
-indicates, what risk measures should be computed; by default, both VaR and ES
-are computed.}
 }
 \value{
 The generic itself doesn't work and doesn't produce output.

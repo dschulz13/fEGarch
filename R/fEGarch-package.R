@@ -158,6 +158,7 @@
 #'@importFrom stats integrate pnorm rnorm rt runif time uniroot
 #'@importFrom utils tail
 #'@importFrom ggplot2 autoplot
+#'@import methods
 #'
 "_PACKAGE"
 

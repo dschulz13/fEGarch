@@ -7,7 +7,7 @@
 close_to_lreturn(close)
 }
 \arguments{
-\item{a}{closing price series as  numerica vector or some time series object
+\item{close}{a closing price series as a numeric vector or some time series object
 like \code{"ts"} or \code{"zoo"} ordered chronologically.}
 }
 \value{

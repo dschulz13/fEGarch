@@ -9,23 +9,21 @@
 ljung_box_test(
   object,
   m_max = 20,
-  adj = TRUE,
-  weights = function(lag) {
+  weight_f = function(lag) {
      m <- max(lag)
      (m + 1 - lag)/m
  },
-  drop_first = 5,
+  adj_df = NULL,
   silent = FALSE,
   ...
 )
 
-sign_bias_test(object, drop_first = 5, silent = FALSE, ...)
+sign_bias_test(object, silent = FALSE, ...)
 
 goodn_of_fit_test(
   object,
   n_bins = c(20, 30, 40, 50),
   adj = TRUE,
-  drop_first = 5,
   silent = FALSE,
   ...
 )
@@ -35,11 +33,9 @@ goodn_of_fit_test(
 
 \item{m_max}{currently without use.}
 
-\item{adj}{currently without use.}
+\item{weight_f}{currently without use.}
 
-\item{weights}{currently without use.}
-
-\item{drop_first}{currently without use.}
+\item{adj_df}{currently without use.}
 
 \item{silent}{currently without use.}
 

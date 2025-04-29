@@ -57,11 +57,24 @@ distribution to consider.}
 \item{meanspec}{an object of class "mean_spec"; indicates the
 specifications for the model in the conditional mean.}
 
+\item{nonparspec}{an object of class \code{"locpol_spec"} returned
+by \code{\link{locpol_spec}}; defines the settings of the nonparametric
+smoothing technique for \code{use_nonpar = TRUE}.}
+
+\item{use_nonpar}{a logical indicating whether or not to implement a
+semiparametric extension of the volatility model defined through \code{spec};
+see "Details" for more information.}
+
 \item{n_test}{a single numerical value indicating, how many observations
 at the end of \code{rt} not to include in the fitting process and to
 reserve for backtesting.}
 
 \item{start_pars}{a named list with starting parameters.}
+
+\item{control_nonpar}{a list containing changes to the arguments
+for the hyperparameter estimation algorithm in the nonparametric
+scale function estimation for
+\code{use_nonpar = TRUE}; see "Details" for more information.}
 }
 \value{
 A list with the following named elements is returned.

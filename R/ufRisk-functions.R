@@ -32,7 +32,7 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'\code{\link{fEGarch}} among others, or an object of class \code{"fEGarch_forecast"}
 #'as returned by \code{\link{predict,fEGarch_fit-method}} or
 #'\code{\link{predict_roll,fEGarch_fit-method}}.
-#'@param a character vector with element \code{"VaR"}, \code{"ES"} or both;
+#'@param measure a character vector with element \code{"VaR"}, \code{"ES"} or both;
 #'indicates, what risk measures should be computed; by default, both VaR and ES
 #'are computed.
 #'@param level a numeric vector of arbitrary length indicating the confidence

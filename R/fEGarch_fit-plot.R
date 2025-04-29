@@ -132,6 +132,19 @@ plot_etat <- function(obj, ...) {
   do.call(plot, args = dots)
 }
 
+#'S4 Plot Generic
+#'
+#'Imported from base R.
+#'
+#'@param x see base R \code{plot} documentation.
+#'@param y see base R \code{plot} documentation.
+#'@param ... see base R \code{plot} documentation.
+#'
+#'@return
+#'Returns nothing to the console but creates a plot in the plot window.
+#'
+#'@export
+#'
 setGeneric("plot")
 
 ### Base R plot method
@@ -162,6 +175,8 @@ setGeneric("plot")
 #'either interactively from the console, or the argument \code{which} can be
 #'used to directly  select the kind of plot to create (see also the description
 #'of the argument \code{which}) within the function call.
+#'
+#'@aliases plot,fEGarch_fit-method
 #'
 #'@export
 #'
@@ -304,6 +319,8 @@ setGeneric(
 #'
 #'@export
 #'@importFrom ggplot2 autoplot
+#'
+#'@aliases autoplot,fEGarch_fit-method
 #'
 #'@return
 #'A ggplot2-graphic object is returned, i.e. an object of classes

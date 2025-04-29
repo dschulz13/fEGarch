@@ -7,12 +7,11 @@
 \S4method{ljung_box_test}{fEGarch_fit}(
   object,
   m_max = 20,
-  adj = TRUE,
-  weights = function(lag) {
+  weight_f = function(lag) {
      m <- max(lag)
      (m + 1 - lag)/m
  },
-  drop_first = 5,
+  adj_df = 0,
   silent = FALSE,
   type = c("simple", "squared"),
   ...
@@ -26,21 +25,16 @@ by \code{\link{fEGarch}}.}
 \item{m_max}{the maximum lag; tests will be conducted for 1 up to
 \code{m_max}.}
 
-\item{adj}{a logical value indicating whether or not to adjust
-the degrees of freedom in the chi-square distribution according
-to the number of estimated ARMA and GARCH parameters (without
-unconditional mean parameter).}
-
-\item{weights}{a function with argument \code{lag} stating how
+\item{weight_f}{a function with argument \code{lag} stating how
 weights should be calculated.}
 
-\item{drop_first}{a numerical value indicating how many initial
-residuals to omit; in cases of some long-memory models, the initial
-residuals may deviate strongly due to the initialization of the
-recursion in the estimation step.}
+\item{adj_df}{degrees of freedom to adjust for as a number; is 0 by default.}
 
 \item{silent}{a logical value reflecting whether or not test results
 should be printed in a well-formatted manner to the console.}
+
+\item{type}{either \code{"simple"} or \code{"squared"} for applying
+the test to simple or squared residuals.}
 
 \item{...}{currently without use.}
 }
@@ -48,7 +42,8 @@ should be printed in a well-formatted manner to the console.}
 Returns a numeric matrix invisibly.
 }
 \description{
-Apply a (weighted) Ljung-Box test to check
+Apply a (weighted) Ljung-Box test (through the
+Gamma approximation) to check
 the standardized residuals of a fitted model
 from this package for remaining autocorrelation.
 Two different options allow to check either the

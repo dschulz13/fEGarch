@@ -29,7 +29,7 @@ integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH) and fractionally integ
 
 ## Installation
 
-You can install the current version of the package from CRAN with:
+You can install the current version of the package from CRAN with: 
 
 ``` {r, message = FALSE, eval = FALSE, echo = TRUE}
 install.packages("fEGarch")

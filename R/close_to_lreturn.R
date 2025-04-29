@@ -2,7 +2,7 @@
 #'
 #'Makes log-returns available from an input closing price series.
 #'
-#'@param a closing price series as  numerica vector or some time series object
+#'@param close a closing price series as a numeric vector or some time series object
 #'like \code{"ts"} or \code{"zoo"} ordered chronologically.
 #'
 #'@details

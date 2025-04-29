@@ -8,7 +8,6 @@
   object,
   n_bins = c(10, 20, 30, 40, 50, 60),
   adj = TRUE,
-  drop_first = 5,
   silent = FALSE,
   ...
 )
@@ -23,11 +22,6 @@ by the fitting functions of this package like for example
 \item{adj}{a logical value indicating whether or not to adjust
 the number of degrees of freedom using the number of estimated
 model parameters.}
-
-\item{drop_first}{a numerical value indicating how many initial
-residuals to omit; in cases of some long-memory models, the initial
-residuals may deviate strongly due to the initialization of the
-recursion in the estimation step.}
 
 \item{silent}{a logical indicating whether or not to print
 the test results in a well-formatted manner to the console.}

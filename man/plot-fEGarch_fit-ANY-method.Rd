@@ -2,6 +2,7 @@
 % Please edit documentation in R/fEGarch_fit-plot.R
 \name{plot,fEGarch_fit,ANY-method}
 \alias{plot,fEGarch_fit,ANY-method}
+\alias{plot,fEGarch_fit-method}
 \title{Plot Method for Showing Fitting Step Results}
 \usage{
 \S4method{plot}{fEGarch_fit,ANY}(x, y = NULL, which = NULL, ...)

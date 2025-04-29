@@ -49,10 +49,6 @@ farima_sim_Cpp <- function(innov, mu, coef_inf, nout) {
     .Call('_fEGarch_farima_sim_Cpp', PACKAGE = 'fEGarch', innov, mu, coef_inf, nout)
 }
 
-autocorCpp <- function(xt, lag_max) {
-    .Call('_fEGarch_autocorCpp', PACKAGE = 'fEGarch', xt, lag_max)
-}
-
 sigt_egarch_forecast_shortCpp <- function(et, sigt, omega, phi, alpha, beta, E_asy, E_mag, powers, modulus, mode, horizon) {
     .Call('_fEGarch_sigt_egarch_forecast_shortCpp', PACKAGE = 'fEGarch', et, sigt, omega, phi, alpha, beta, E_asy, E_mag, powers, modulus, mode, horizon)
 }
@@ -93,24 +89,8 @@ fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu) {
     .Call('_fEGarch_fiaparch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, gamma, delta, n_out, mu)
 }
 
-sigt_figarch_forecast <- function(rt, coef_inf, omega, horizon) {
-    .Call('_fEGarch_sigt_figarch_forecast', PACKAGE = 'fEGarch', rt, coef_inf, omega, horizon)
-}
-
-figarch_sim_Cpp <- function(innov, omega, coef_inf, n_out, mu) {
-    .Call('_fEGarch_figarch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, n_out, mu)
-}
-
-sigt_garch_forecast_short <- function(et, sigt, omega, phi, beta, horizon) {
-    .Call('_fEGarch_sigt_garch_forecast_short', PACKAGE = 'fEGarch', et, sigt, omega, phi, beta, horizon)
-}
-
 sigt_garch_Cpp <- function(x, mu, phi, beta, omega, sig2_init) {
     .Call('_fEGarch_sigt_garch_Cpp', PACKAGE = 'fEGarch', x, mu, phi, beta, omega, sig2_init)
-}
-
-garch_sim_Cpp <- function(innov, omega, phi, beta, n_out, mu, EY2) {
-    .Call('_fEGarch_garch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, phi, beta, n_out, mu, EY2)
 }
 
 pdf_ged <- function(rt, mu, sigt, shape) {

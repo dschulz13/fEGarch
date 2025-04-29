@@ -5,11 +5,10 @@
 #'
 #'@param object currently without use.
 #'@param m_max currently without use.
-#'@param adj currently without use.
-#'@param weights currently without use.
-#'@param drop_first currently without use.
+#'@param weight_f currently without use.
 #'@param silent currently without use.
 #'@param n_bins currently without use.
+#'@param adj_df currently without use.
 #'@param ... currently without use.
 #'
 #'@return
@@ -19,12 +18,13 @@
 #'@export
 #'@rdname fit-test-generics
 #'
-setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, drop_first = 5, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
+setGeneric("ljung_box_test", function(object, m_max = 20, weight_f = function(lag) {m <- max(lag); (m + 1 - lag) / m}, adj_df = NULL, silent = FALSE, ...) {standardGeneric("ljung_box_test")})
 
 
 #'Weighted Ljung-Box Test for Autocorrelation
 #'
-#'Apply a (weighted) Ljung-Box test to check
+#'Apply a (weighted) Ljung-Box test (through the
+#'Gamma approximation) to check
 #'the standardized residuals of a fitted model
 #'from this package for remaining autocorrelation.
 #'Two different options allow to check either the
@@ -35,18 +35,16 @@ setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = 
 #'by \code{\link{fEGarch}}.
 #'@param m_max the maximum lag; tests will be conducted for 1 up to
 #'\code{m_max}.
-#'@param adj a logical value indicating whether or not to adjust
-#'the degrees of freedom in the chi-square distribution according
-#'to the number of estimated ARMA and GARCH parameters (without
-#'unconditional mean parameter).
-#'@param weights a function with argument \code{lag} stating how
+#'@param weight_f a function with argument \code{lag} stating how
 #'weights should be calculated.
-#'@param drop_first a numerical value indicating how many initial
-#'residuals to omit; in cases of some long-memory models, the initial
-#'residuals may deviate strongly due to the initialization of the
-#'recursion in the estimation step.
 #'@param silent a logical value reflecting whether or not test results
 #'should be printed in a well-formatted manner to the console.
+#'@param type either \code{"simple"} or \code{"squared"} for applying
+#'the test to simple or squared residuals.
+#'@param adj_df degrees of freedom to adjust for as a number or the default
+#'\code{NULL}, which uses automatic values from the fitted object; for
+#'squared residuals \code{adj_df = 0} is the default and for simple
+#'returns, it is the sum of ARMA-parameters.
 #'@param ... currently without use.
 #'
 #'@export
@@ -61,47 +59,55 @@ setGeneric("ljung_box_test", function(object, m_max = 20, adj = TRUE, weights = 
 #'model <- fEGarch(spec, rt)
 #'ljung_box_test(model)
 #'
-setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TRUE, weights = function(lag) {m <- max(lag); (m + 1 - lag) / m}, drop_first = 5, silent = FALSE, type = c("simple", "squared"), ...) {
+setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, weight_f = function(lag) {m <- max(lag); (m + 1 - lag) / m}, adj_df = NULL, silent = FALSE, type = c("simple", "squared"), ...) {
 
   type <- match.arg(type)
-  et <- tail(object@etat, -drop_first)
+  et <- zoo::coredata(object@etat)
 
   fun <- list(
     "simple" = function(et) {et},
     "squared" = function(et) {et^2}
   )[[type]]
 
+  adj_df <- if (!is.null(adj_df)) {
+    adj_df
+  } else if (is.null(adj_df) && type == "squared") {
+    0
+  } else if (is.null(adj_df) && type == "simple") {
+    sum(object@meanspec@orders)
+  }
+
   et_transf <- fun(et)
 
-  cors <- c(autocorCpp(et_transf, lag_max = m_max))
+  cors <- c(stats::acf(et_transf, plot = FALSE, type = "correlation", lag.max = m_max)$acf)[-1]
   n <- length(et)
 
   stats <- rep(NA, m_max)
 
+  lagg <- 1:m_max
+
   for (i in 1:m_max) {
-    w <- weights(lag = 1:i)
+    w <- weight_f(lag = 1:i)
     stats[[i]] <- (n * (n + 2)) * sum((cors[1:i]^2 * w) / (n - (1:i)))
   }
 
-  n_par <- if (adj) {
-    length(object@pars)
-  } else {
-    0
+  shape <- (3/4) * (lagg + 1)^2 * lagg / (2 * lagg^2 + 3 * lagg +
+            1 - 6 * lagg * adj_df)
+  scale <- (2/3) * (2 * lagg^2 + 3 * lagg + 1 - 6 * lagg *
+            adj_df) / lagg / (lagg + 1)
+
+  p_vals <- suppressWarnings(1 - stats::pgamma(stats, shape = shape, scale = scale))
+  if (any(is.nan(p_vals))) {
+    p_vals[is.nan(p_vals)] <- NA
   }
-
-  dfr <- (1:m_max) - n_par
-  n_df_pos <- sum(dfr > 0)
-  p_vals <- c(rep(NA_real_, m_max - n_df_pos), 1 - stats::pchisq(tail(stats, n_df_pos), df = tail(dfr, n_df_pos)))
-
 
   m <- 1:m_max
 
-  df <- matrix(NA_real_, nrow = m_max, ncol = 3)
+  df <- matrix(NA_real_, nrow = m_max, ncol = 2)
   df[, 1] <- m
-  df[, 2] <- dfr
-  df[, 3] <- suppressWarnings(p_vals)
+  df[, 2] <- suppressWarnings(p_vals)
   rownames(df) <- rep("", m_max)
-  colnames(df) <- c("m", "df", "pval")
+  colnames(df) <- c("m", "pval")
 
   if (!silent) {
     out1 <- paste0(
@@ -113,7 +119,7 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TR
     )
     cat(out1, fill = TRUE)
     df2 <- df
-    df2[, 3] <- suppressWarnings(as.numeric(sprintf("%.4f", p_vals)))
+    df2[, 2] <- suppressWarnings(as.numeric(sprintf("%.4f", p_vals)))
     print(df2)
   }
   invisible(df)
@@ -123,7 +129,7 @@ setMethod("ljung_box_test", "fEGarch_fit", function(object, m_max = 20, adj = TR
 
 #'@export
 #'@rdname fit-test-generics
-setGeneric("sign_bias_test", function(object, drop_first = 5, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
+setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGeneric("sign_bias_test")})
 
 #'Sign Bias Test
 #'
@@ -137,10 +143,6 @@ setGeneric("sign_bias_test", function(object, drop_first = 5, silent = FALSE, ..
 #'by \code{\link{fEGarch}}.
 #'@param silent a logical value reflecting whether or not test results
 #'should be printed in a well-formatted manner to the console.
-#'@param drop_first a numerical value indicating how many initial
-#'residuals to omit; in cases of some long-memory models, the initial
-#'residuals may deviate strongly due to the initialization of the
-#'recursion in the estimation step.
 #'@param ... currently without use.
 #'
 #'@export
@@ -155,9 +157,9 @@ setGeneric("sign_bias_test", function(object, drop_first = 5, silent = FALSE, ..
 #'model <- fEGarch(spec, rt)
 #'sign_bias_test(model)
 #'
-setMethod("sign_bias_test", "fEGarch_fit", function(object, drop_first = 5, silent = FALSE, ...) {
+setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...) {
 
-  et <- utils::tail(zoo::coredata(object@etat), -drop_first)
+  et <- zoo::coredata(object@etat)
   et_h <- utils::head(et, -1)
 
   It <- as.numeric(et_h < 0)
@@ -214,7 +216,7 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, drop_first = 5, sile
 
 #'@export
 #'@rdname fit-test-generics
-setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, drop_first = 5, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
+setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
 
 
 #'Adjusted Pearson Goodness-of-Fit Test for Standardized Model Residuals
@@ -233,10 +235,6 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'model parameters.
 #'@param silent a logical indicating whether or not to print
 #'the test results in a well-formatted manner to the console.
-#'@param drop_first a numerical value indicating how many initial
-#'residuals to omit; in cases of some long-memory models, the initial
-#'residuals may deviate strongly due to the initialization of the
-#'recursion in the estimation step.
 #'@param ... currently without purpose.
 #'
 #'@details
@@ -256,23 +254,17 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'model <- fEGarch(spec, rt)
 #'goodn_of_fit_test(model)
 #'
-setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20, 30, 40, 50, 60), adj = TRUE, drop_first = 5, silent = FALSE, ...) {
+setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20, 30, 40, 50, 60), adj = TRUE, silent = FALSE, ...) {
 
   model <- object
   pars <- model@pars
   cond_d <- model@cond_dist
   n_par <- length(pars)
 
-  int_fun_s <- lookup_table[["fun1"]][[cond_d]]
-
-  int_fun <- function(x, int_fun_s, shape, skew) {
-    xa <- abs(x)
-    int_fun_s(x = xa, shape = shape, skew = skew) + int_fun_s(x = -xa, shape = shape, skew = skew)
-  }
+  dfun <- lookup_table[["fun1"]][[cond_d]]
 
   args <- list(
-    "dfun" = int_fun,
-    "int_fun_s" = int_fun_s
+    dfun = dfun
   )
 
   args[["shape"]] <- if (!(cond_d %in% c("norm", "snorm"))) {
@@ -300,10 +292,9 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20
   out_mat <- matrix(NA, nrow = lb, ncol = 3)
   rownames(out_mat) <- rep("", lb)
   colnames(out_mat) <- c("n_bins", "df", "pval")
-  et <- utils::tail(zoo::coredata(model@etat), -drop_first)
-  et_a <- abs(et)
+  et <- zoo::coredata(model@etat)
   n <- length(et)
-  adjust <- n_par * adj
+  #adjust <- n_par * adj
 
   for (i in 1:lb) {
 
@@ -312,6 +303,8 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20
     p <- seq(from = one_div_nb, to = 1 - one_div_nb, by = one_div_nb)
 
     args[["p"]] <- p
+
+    return(do.call(inv_cdf_fun, args = args))
 
     quantiles <- -rev(do.call(inv_cdf_fun, args = args))   # Get quantiles corresponding to class bounds
 

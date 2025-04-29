@@ -404,6 +404,11 @@ fEGarch_sim <- function(spec = egarch_spec(),
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{fiaparch}} for information
@@ -563,6 +568,11 @@ fiaparch_sim <- function(pars = list(
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{figjrgarch}} for information
@@ -625,6 +635,11 @@ figjrgarch_sim <- function(pars = list(
 #'is considered in the first simulation step in the conditional variance,
 #'so that \code{n + nstart} values can be fed into the second simulation
 #'step for the conditional mean.
+#'@param trunc a truncation for the finite-order coefficient series
+#'in long-memory models; can either be the character \code{"none"} for truncation
+#'back to the very first observation at each time point, or to any positive integer
+#'for setting the corresponding truncation length of the infinite-order representation
+#'polynomial.
 #'
 #'@details
 #'See the documentation on \code{\link{fitgarch}} for information
@@ -731,102 +746,10 @@ figarch_sim <- function(pars = list(
                          ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                          n = 1000, nstart = 5e3, trunc = "none") {
 
-  cond_dist <- match.arg(cond_dist)
+  pars[["delta"]] <- 2
+  pars[["gamma"]] <- 0
+  fiaparch_sim(pars = pars, cond_dist = cond_dist, n = n, nstart = nstart, trunc = trunc)
 
-  nn <- n + nstart          # pre-sample plus sample number of observations
-  N <- n
-
-  trunc_vol <- trunc
-  trunc_mean <- trunc
-
-  # Parameter defaults (relevant if a truncated parameter list is provided)
-  pars_default <- lookup_table$sim_pars_default_figarch
-  names_pars <- names(pars)
-  for (nam in names_pars) {
-    pars_default[[nam]] <- pars[[nam]]
-  }
-
-  # Extract parameter settings
-  mu <- pars_default$mu
-  omega <- pars_default$omega
-  phi <- pars_default$phi
-  beta <- -pars_default$beta      # "-" required to create a polynomial with positive signs
-  d <- pars_default$d
-  df <- pars_default$df
-  P <- pars_default$P
-  shape <- pars_default$shape
-  skew <- pars_default$skew
-
-  # ARMA / FARIMA parameters
-  ar <- pars_default$ar
-  ma <- pars_default$ma
-  D <- pars_default$D
-  lm_arma <- D != 0
-
-  # Simulate even more observations if ARMA / FARIMA required
-  check <- length(ar) + length(ma) > 0 || lm_arma
-  nn <- if (check) {
-    N <- N + nstart
-    nn + nstart
-  } else {
-    nn
-  }
-
-  lm <- TRUE
-
-  if ((lm || lm_arma) && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
-    trunc_vol <- nn - 1
-    trunc_mean <- N - 1
-  }
-
-  if (cond_dist %in% c("std", "sstd")) {
-    shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
-  } else if (cond_dist %in% c("ald", "sald")) {
-    shape <- P
-  }
-
-  # Simulate innovations following selected distribution
-  sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
-  innov <- sim_fun(nn, shape = shape, skew = skew)
-
-  # we need coefficients for the 1 pre-pre-sample time points, for the pre-sample,
-  # and for the sample with the exception of the very last sample time point
-
-  coef_inf <- ar_infty(ar = phi, ma = beta, d = d,
-                                     max_i = trunc_vol)
-  coef_inf[[1]] <- 0
-
-  sim <- figarch_sim_Cpp(
-    innov = innov, omega = omega, coef_inf = coef_inf,
-    n_out = N, mu = mu)
-
-  out <- list(
-    "rt" = stats::ts(c(sim[["rt"]])),
-    "sigt" = stats::ts(c(sim[["sigt"]])),
-    "etat" = stats::ts(c(sim[["etat"]])),
-    "cmeans" = stats::ts(rep(mu, n))
-  )
-
-  if (check) {
-    rt <- out$rt - mu        # subtract mean again and then feed these as
-                             # the errors into an ARMA / FARIMA model
-    if (!lm_arma) {
-
-      yt_data <- arma_sim_Cpp(innov = rt, ar = ar, ma = ma, nout = n, mu = mu)
-
-    } else {
-
-      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
-      yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
-
-    }
-    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
-    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
-  }
-
-  out
 
 }
 
@@ -1209,91 +1132,13 @@ garch_sim <- function(pars = list(
                          ), cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                          n = 1000, nstart = 5e3, trunc = "none") {
 
-  cond_dist <- match.arg(cond_dist)
-
-  nn <- n + nstart          # pre-sample plus sample number of observations
-  N <- n
-
-  trunc_mean <- trunc
-
-  # Parameter defaults (relevant if a truncated parameter list is provided)
-  pars_default <- lookup_table$sim_pars_default_aparch
-  names_pars <- names(pars)
-  for (nam in names_pars) {
-    pars_default[[nam]] <- pars[[nam]]
-  }
-
-  # Extract parameter settings
-  mu <- pars_default$mu
-  omega <- pars_default$omega
-  phi <- pars_default$phi
-  beta <- pars_default$beta
-  df <- pars_default$df
-  P <- pars_default$P
-  shape <- pars_default$shape
-  skew <- pars_default$skew
-
-  # ARMA / FARIMA parameters
-  ar <- pars_default$ar
-  ma <- pars_default$ma
-  D <- pars_default$D
-  lm_arma <- D != 0
-
-  # Simulate even more observations if ARMA / FARIMA required
-  check <- length(ar) + length(ma) > 0 || lm_arma
-  nn <- if (check) {
-    N <- N + nstart
-    nn + nstart
-  } else {
-    nn
-  }
-
-  if (lm_arma && ((is.character(trunc) && trunc == "none") || (is.numeric(trunc) && trunc >= nn))) {
-    trunc_mean <- N - 1
-  }
-
-  if (cond_dist %in% c("std", "sstd")) {
-    shape <- df    # all functions are defined with "shape" argument (even if not used then within the function; for t-distr. types, we need to make shape our df)
-  } else if (cond_dist %in% c("ald", "sald")) {
-    shape <- P
-  }
-
-  # Simulate innovations following selected distribution
-  sim_fun <- lookup_table[["sim_funs"]][[cond_dist]]
-  innov <- sim_fun(nn, shape = shape, skew = skew)
-
-  EY2 <- omega / (1 - sum(phi) - sum(beta))
-
-  sim <- garch_sim_Cpp(
-    innov = innov, omega = omega, phi = phi, beta = beta,
-    n_out = N, mu = mu, EY2 = EY2)
-
-  out <- list(
-    "rt" = stats::ts(c(sim[["rt"]])),
-    "sigt" = stats::ts(c(sim[["sigt"]])),
-    "etat" = stats::ts(c(sim[["etat"]])),
-    "cmeans" = stats::ts(rep(mu, n))
+  p <- length(pars$phi)
+  pars[["delta"]] <- 2   # Fix delta at 1 and use APARCH functions
+  pars[["gamma"]] <- rep(0, p)
+  aparch_sim(
+    pars = pars,
+    cond_dist = cond_dist,
+    n = n, nstart = nstart, trunc = trunc
   )
-
-  if (check) {
-    rt <- out$rt - mu        # subtract mean again and then feed these as
-                             # the errors into an ARMA / FARIMA model
-    if (!lm_arma) {
-
-      yt_data <- arma_sim_Cpp(innov = rt, ar = ar, ma = ma, nout = n, mu = mu)
-
-    } else {
-
-      coef_inf <- ar_infty(ar = ar, ma = ma, d = D, max_i = trunc_mean)[-1]
-      yt_data <- farima_sim_Cpp(innov = rt, coef_inf = coef_inf, nout = n, mu = mu)
-
-    }
-    out[["rt"]] <- stats::ts(c(yt_data[["rt"]]))
-    out[["cmeans"]] <- stats::ts(c(yt_data[["cmeans"]]))
-    out[["etat"]] <- stats::ts(utils::tail(out[["etat"]], n))
-    out[["sigt"]] <- stats::ts(utils::tail(out[["sigt"]], n))
-  }
-
-  out
 
 }

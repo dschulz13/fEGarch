@@ -80,7 +80,7 @@ check_which_risk <- function(which, object) {
 #'Plot risk measure results returned by \code{measure_risk}
 #'as a points-over-threshold plot in style of base R plots.
 #'
-#'@param object an object returned by \code{measure_risk}.
+#'@param x an object returned by \code{measure_risk}.
 #'@param y for compatibility but without use.
 #'@param which one of the levels of VaR and ES saved in
 #'\code{object}, usually either \code{0.975} or \code{0.99}
@@ -89,6 +89,8 @@ check_which_risk <- function(which, object) {
 #'
 #'@return
 #'Returns nothing but produces a base R plot in the plot window.
+#'
+#'@aliases plot,fEGarch_risk-method
 #'
 #'@export
 #'
@@ -220,6 +222,8 @@ setMethod("plot", "fEGarch_risk", function(x, y = NULL, which = NULL, ...) {
 #'Returns a \code{ggplot2} plot object.
 #'
 #'@export
+#'
+#'@aliases autoplot,fEGarch_risk-method
 #'
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

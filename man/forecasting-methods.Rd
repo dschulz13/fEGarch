@@ -20,6 +20,10 @@ fitted model object should not be \code{NULL}.}
 far into the future the multistep point forecasts should be
 produced.}
 
+\item{trunc}{the truncation setting for the infinite-order
+polynomial of long-memory model parts; the default uses
+the setting from the fitted input object \code{object}.}
+
 \item{...}{currently without use and included for compatibility
 with generics.}
 
