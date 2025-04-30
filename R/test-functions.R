@@ -9,6 +9,9 @@
 #'@param silent currently without use.
 #'@param n_bins currently without use.
 #'@param adj_df currently without use.
+#'@param args_lbt currently without use.
+#'@param args_goft currently without use.
+#'@param args_sbt currently without use.
 #'@param ... currently without use.
 #'
 #'@return
@@ -159,16 +162,24 @@ setGeneric("sign_bias_test", function(object, silent = FALSE, ...) {standardGene
 #'
 setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...) {
 
-  et <- zoo::coredata(object@etat)
-  et_h <- utils::head(et, -1)
+  scale_f <- if (is.null(object@scale_fun)) {
+    1
+  } else {
+    object@scale_fun
+  }
 
-  It <- as.numeric(et_h < 0)
-  It2 <- 1 - It
+  dm <- zoo::coredata((object@rt - object@cmeans) / scale_f)   # obs adjusted for unconditional and cond. mean
+  et <- tail(zoo::coredata(object@etat), -1)    # standardized model residuals (without first)
+  dm_s <- utils::head(dm, -1)      # dm without last
 
-  V1 <- It
-  V2 <- It * et_h
-  V3 <- It2 * et_h
-  Y <- et[-1]^2
+  # Indicators
+  I_small <- as.numeric(dm_s < 0)
+  I_large <- as.numeric(dm_s >= 0)
+
+  V1 <- I_small
+  V2 <- I_small * dm_s
+  V3 <- I_large * dm_s
+  Y <- et^2
 
   n <- length(Y)
 
@@ -216,12 +227,12 @@ setMethod("sign_bias_test", "fEGarch_fit", function(object, silent = FALSE, ...)
 
 #'@export
 #'@rdname fit-test-generics
-setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj = TRUE, silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
+setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), silent = FALSE, ...) {standardGeneric("goodn_of_fit_test")})
 
 
 #'Adjusted Pearson Goodness-of-Fit Test for Standardized Model Residuals
 #'
-#'Consider a probability integral transform on the magnitudes of the
+#'Consider a probability integral transform on the
 #'standardized residuals of a fitted model and apply a
 #'Pearson goodness-of-fit test to the binned data using a
 #'selection of predefined number of bins.
@@ -230,15 +241,12 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'by the fitting functions of this package like for example
 #'\code{\link{fEGarch}}.
 #'@param n_bins a numeric vector giving the number of bins to use.
-#'@param adj a logical value indicating whether or not to adjust
-#'the number of degrees of freedom using the number of estimated
-#'model parameters.
 #'@param silent a logical indicating whether or not to print
 #'the test results in a well-formatted manner to the console.
 #'@param ... currently without purpose.
 #'
 #'@details
-#'Use a probability integral transform on the magnitudes of the
+#'Use a probability integral transform on the
 #'standardized residuals of a fitted model. This is then the
 #'basis to conduct a Pearson goodness-of-fit chi-square test.
 #'
@@ -254,7 +262,7 @@ setGeneric("goodn_of_fit_test", function(object, n_bins = c(20, 30, 40, 50), adj
 #'model <- fEGarch(spec, rt)
 #'goodn_of_fit_test(model)
 #'
-setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20, 30, 40, 50, 60), adj = TRUE, silent = FALSE, ...) {
+setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30, 40, 50), silent = FALSE, ...) {
 
   model <- object
   pars <- model@pars
@@ -304,23 +312,21 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20
 
     args[["p"]] <- p
 
-    return(do.call(inv_cdf_fun, args = args))
-
-    quantiles <- -rev(do.call(inv_cdf_fun, args = args))   # Get quantiles corresponding to class bounds
+    quantiles <- do.call(inv_cdf_fun, args = args)         # Get quantiles corresponding to class bounds
 
     np1 <- length(p) + 1
     frequ_et <- rep(NA, np1)
     q_adj <- c(-Inf, quantiles, Inf)
 
     for (j in seq_along(frequ_et)) {
-      frequ_et[[j]] <- sum(et_a >= q_adj[[j]] & et_a < q_adj[[j + 1]])
+      frequ_et[[j]] <- sum(et >= q_adj[[j]] & et < q_adj[[j + 1]])
     }
 
     expec <- n * one_div_nb   # expected frequencies in each class
 
     stat <- sum((frequ_et - expec)^2 / expec)   # test statistic
 
-    df <- nb - 1 - adjust
+    df <- nb - 1# - adjust
 
     pval <- if (df >= 1) {
       1 - stats::pchisq(stat, df = df)
@@ -354,4 +360,112 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(10, 20
   }
 
   invisible(out_mat)
+})
+
+#'@export
+#'@rdname fit-test-generics
+setGeneric("fit_test_suite", function(object, args_lbt = list(), args_sbt = list(), args_goft = list(), silent = FALSE, ...) {standardGeneric("fit_test_suite")})
+
+
+#'Post-Estimation Fit-Tests
+#'
+#'Apply a collection of fit-tests, including
+#'a weighted Ljung-Box test for the simple and the squared
+#'standardized residuals, a sign-bias test, and an
+#'adjusted Pearson goodness-of-fit test.
+#'
+#'@param object an object of class \code{"fEGarch_fit"} as returned
+#'by the fitting functions of this package like for example
+#'\code{\link{fEGarch}}.
+#'@param args_lbt a list of changes to make to the default argument settings in
+#'\code{ljung_box_test}.
+#'@param args_sbt a list of changes to make to the default argument settings in
+#'\code{sign_bias_test}.
+#'@param args_goft a list of changes to make to the default argument settings in
+#'\code{goodn_of_fit_test}.
+#'@param silent a logical indicating whether or not to print
+#'the test results in a well-formatted manner to the console.
+#'@param ... currently without purpose.
+#'
+#'@export
+#'
+#'@return
+#'Returns a list with the four test results invisibly.
+#'
+#'@examples
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2002-12-31")
+#'spec <- fEGarch_spec()
+#'model <- fEGarch(spec, rt)
+#'fit_test_suite(model)
+#'
+
+setMethod("fit_test_suite", "fEGarch_fit", function(object, args_lbt = list(),
+                                                    args_sbt = list(),
+                                                    args_goft = list(),
+                                                    silent = FALSE, ...) {
+
+  fun1 <- methods::selectMethod("ljung_box_test", "fEGarch_fit")
+  fun2 <- methods::selectMethod("sign_bias_test", "fEGarch_fit")
+  fun3 <- methods::selectMethod("goodn_of_fit_test", "fEGarch_fit")
+
+  default_lbt = list(
+    m_max = 20,
+    weight_f = function(lag) {m <- max(lag); (m + 1 - lag) / m},
+    adj_df = NULL
+  )
+
+  default_sbt = list()
+
+  default_goft = list(
+    n_bins = c(20, 30, 40, 50)
+  )
+
+
+  n1 <- length(args_lbt)
+  if (n1 > 0) {
+    names_lbt <- names(args_lbt)
+    for(i in names_lbt) {
+      default_lbt[[i]] <- args_lbt[[i]]
+    }
+  }
+  default_lbt[["object"]] <- object
+  default_lbt[["silent"]] <- silent
+
+  n2 <- length(args_sbt)
+  if (n2 > 0) {
+    names_sbt <- names(args_sbt)
+    for(i in names_sbt) {
+      default_sbt[[i]] <- args_sbt[[i]]
+    }
+  }
+  default_sbt[["object"]] <- object
+  default_sbt[["silent"]] <- silent
+
+  n3 <- length(args_goft)
+  if (n3 > 0) {
+    names_goft <- names(args_goft)
+    for(i in names_goft) {
+      default_goft[[i]] <- args_goft[[i]]
+    }
+  }
+  default_goft[["object"]] <- object
+  default_goft[["silent"]] <- silent
+
+  df1.2 <- default_lbt
+  default_lbt[["type"]] <- "simple"
+  df1.2[["type"]] <- "squared"
+
+  result1 <- do.call(fun1, args = default_lbt)
+  result1.2 <- do.call(fun1, args = df1.2)
+  result2 <- do.call(fun2, args = default_sbt)
+  result3 <- do.call(fun3, args = default_goft)
+
+  invisible(list(
+    "LBT_simple" = result1,
+    "LBT_squared" = result1.2,
+    "SBT" = result2,
+    "GOFT" = result3
+  ))
+
 })

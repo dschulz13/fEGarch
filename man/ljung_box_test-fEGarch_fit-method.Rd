@@ -11,7 +11,7 @@
      m <- max(lag)
      (m + 1 - lag)/m
  },
-  adj_df = 0,
+  adj_df = NULL,
   silent = FALSE,
   type = c("simple", "squared"),
   ...
@@ -28,7 +28,10 @@ by \code{\link{fEGarch}}.}
 \item{weight_f}{a function with argument \code{lag} stating how
 weights should be calculated.}
 
-\item{adj_df}{degrees of freedom to adjust for as a number; is 0 by default.}
+\item{adj_df}{degrees of freedom to adjust for as a number or the default
+\code{NULL}, which uses automatic values from the fitted object; for
+squared residuals \code{adj_df = 0} is the default and for simple
+returns, it is the sum of ARMA-parameters.}
 
 \item{silent}{a logical value reflecting whether or not test results
 should be printed in a well-formatted manner to the console.}

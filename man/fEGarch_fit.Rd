@@ -17,7 +17,7 @@ fEGarch_fit(
   control = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = "none",
+  trunc = floor(0.4 * length(rt)),
   presample = 50,
   Prange = c(1, 5)
 )

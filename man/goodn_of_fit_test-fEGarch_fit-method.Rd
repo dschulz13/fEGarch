@@ -4,13 +4,7 @@
 \alias{goodn_of_fit_test,fEGarch_fit-method}
 \title{Adjusted Pearson Goodness-of-Fit Test for Standardized Model Residuals}
 \usage{
-\S4method{goodn_of_fit_test}{fEGarch_fit}(
-  object,
-  n_bins = c(10, 20, 30, 40, 50, 60),
-  adj = TRUE,
-  silent = FALSE,
-  ...
-)
+\S4method{goodn_of_fit_test}{fEGarch_fit}(object, n_bins = c(20, 30, 40, 50), silent = FALSE, ...)
 }
 \arguments{
 \item{object}{an object of class \code{"fEGarch_fit"} as returned
@@ -18,10 +12,6 @@ by the fitting functions of this package like for example
 \code{\link{fEGarch}}.}
 
 \item{n_bins}{a numeric vector giving the number of bins to use.}
-
-\item{adj}{a logical value indicating whether or not to adjust
-the number of degrees of freedom using the number of estimated
-model parameters.}
 
 \item{silent}{a logical indicating whether or not to print
 the test results in a well-formatted manner to the console.}
@@ -32,13 +22,13 @@ the test results in a well-formatted manner to the console.}
 Returns a numeric matrix invisibly.
 }
 \description{
-Consider a probability integral transform on the magnitudes of the
+Consider a probability integral transform on the
 standardized residuals of a fitted model and apply a
 Pearson goodness-of-fit test to the binned data using a
 selection of predefined number of bins.
 }
 \details{
-Use a probability integral transform on the magnitudes of the
+Use a probability integral transform on the
 standardized residuals of a fitted model. This is then the
 basis to conduct a Pearson goodness-of-fit chi-square test.
 }

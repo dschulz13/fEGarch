@@ -17,7 +17,7 @@
   control = list(),
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = 1000,
+  trunc = floor(0.4 * length(rt)),
   presample = 50,
   Prange = c(1, 5)
 )

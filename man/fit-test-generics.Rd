@@ -4,6 +4,7 @@
 \alias{ljung_box_test}
 \alias{sign_bias_test}
 \alias{goodn_of_fit_test}
+\alias{fit_test_suite}
 \title{Goodness-of-Fit Test Generics}
 \usage{
 ljung_box_test(
@@ -20,10 +21,13 @@ ljung_box_test(
 
 sign_bias_test(object, silent = FALSE, ...)
 
-goodn_of_fit_test(
+goodn_of_fit_test(object, n_bins = c(20, 30, 40, 50), silent = FALSE, ...)
+
+fit_test_suite(
   object,
-  n_bins = c(20, 30, 40, 50),
-  adj = TRUE,
+  args_lbt = list(),
+  args_sbt = list(),
+  args_goft = list(),
   silent = FALSE,
   ...
 )
@@ -42,6 +46,12 @@ goodn_of_fit_test(
 \item{...}{currently without use.}
 
 \item{n_bins}{currently without use.}
+
+\item{args_lbt}{currently without use.}
+
+\item{args_sbt}{currently without use.}
+
+\item{args_goft}{currently without use.}
 }
 \value{
 The generics are currently without use and do not

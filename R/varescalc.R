@@ -24,9 +24,7 @@ baseVaR_calc <- function(level = 0.95, cond_dist, shape, skew) {
   )
 }
 
-#ES function does not work properly because uniroot fails at some point
-#
-#
+
 baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
 
   q <- baseVaR_calc(level = level, cond_dist = cond_dist, shape = shape, skew = skew)

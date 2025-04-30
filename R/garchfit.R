@@ -336,7 +336,7 @@ garch <- function(rt, orders = c(1, 1),
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = 1000, presample = 50, Prange = c(1, 5)) {
+                        trunc = floor(0.4 * length(rt)), presample = 50, Prange = c(1, 5)) {
 
   inp_args <- mget(names(formals()), envir = environment())
 
