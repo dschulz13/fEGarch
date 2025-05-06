@@ -408,15 +408,15 @@ goal_fun_creator_fiaparch <- function(
 #'
 fiaparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        drange = c(0, 1),
-                        meanspec = mean_spec(), Drange = c(0, 1),
+                        drange = c(0, 0.5 - 1e-6),
+                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL,
                         LB = NULL, UB = NULL, control = list(),
                         control_nonpar = list(), mean_after_nonpar = FALSE,
                         parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-                        trunc = floor(0.4 * length(rt)), presample = 50, Prange = c(1, 5),
+                        trunc = "none", presample = 50, Prange = c(1, 5),
                         fix_delta = c(NA, 1, 2)) {
 
   inp_args <- mget(names(formals()), envir = environment())

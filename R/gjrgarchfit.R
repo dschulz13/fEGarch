@@ -347,7 +347,7 @@ goal_fun_creator_gjrgarch <- function(
 #'
 gjrgarch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        meanspec = mean_spec(), Drange = c(0, 1),
+                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL, LB = NULL, UB = NULL, control = list(),

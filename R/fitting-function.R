@@ -317,14 +317,14 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'}
 
 fEGarch <- function(spec = egarch_spec(),
-    rt, drange = c(0, 1),
-    meanspec = mean_spec(), Drange = c(0, 1),
+    rt, drange = c(0, 0.5 - 1e-6),
+    meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
     nonparspec = locpol_spec(), use_nonpar = FALSE,
     n_test = 0,
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),
     control_nonpar = list(), mean_after_nonpar = FALSE,
     parallel = TRUE, ncores = max(1, future::availableCores() - 1),
-    trunc = floor(0.4 * length(rt)), presample = 50, Prange = c(1, 5)) {
+    trunc = "none", presample = 50, Prange = c(1, 5)) {
 
   if (use_nonpar) {
 
