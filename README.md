@@ -98,12 +98,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0000  23.6341 0.0000
-#> omega_sig -8.6601 0.1271 -68.1205 0.0000
-#> phi1       0.8681 0.0227  38.1930 0.0000
-#> kappa     -0.2362 0.0146 -16.1677 0.0000
-#> gamma      0.3194 0.0209  15.2986 0.0000
-#> d          0.2754 0.0377   7.3014 0.0000
+#> mu         0.0003 0.0000  20.1198 0.0000
+#> omega_sig -8.6600 0.1272 -68.0884 0.0000
+#> phi1       0.8680 0.0228  38.1357 0.0000
+#> kappa     -0.2363 0.0146 -16.1636 0.0000
+#> gamma      0.3194 0.0209  15.2975 0.0000
+#> d          0.2754 0.0378   7.2889 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.4945, BIC: -6.4880
@@ -112,8 +112,8 @@ model1
 Using the model description in the documentation of `fEGarch_spec()`,
 the fitted model following the previous estimation results is
 $$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6601 + (1-0.8681 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2362\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
+$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
+$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
 $$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
 $$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
 
@@ -256,11 +256,11 @@ model12
 #> 
 #>               par     se     tval   pval
 #> omega_sig -0.5382 0.1812  -2.9698 0.0030
-#> phi1       0.7907 0.0701  11.2812 0.0000
-#> kappa     -0.1519 0.0126 -12.0239 0.0000
-#> gamma      0.1236 0.0121  10.2397 0.0000
+#> phi1       0.7907 0.0701  11.2813 0.0000
+#> kappa     -0.1519 0.0126 -12.0240 0.0000
+#> gamma      0.1236 0.0121  10.2398 0.0000
 #> d          0.3963 0.0846   4.6866 0.0000
-#> df         7.5375 0.6688  11.2706 0.0000
+#> df         7.5375 0.6688  11.2707 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: 2.4655, BIC: 2.4719
@@ -369,15 +369,15 @@ model_figarch
 #> Fitted parameters:
 #> 
 #>          par     se    tval   pval
-#> mu    0.0008 0.0001  8.2931 0.0000
-#> omega 0.0000 0.0000  1.5871 0.1125
-#> phi1  0.0245 0.0424  0.5774 0.5637
-#> beta1 0.4644 0.0602  7.7183 0.0000
-#> d     0.5000 0.0394 12.6793 0.0000
-#> df    6.6393 0.5030 13.2003 0.0000
+#> mu    0.0008 0.0001  8.3454 0.0000
+#> omega 0.0000 0.0000  3.3310 0.0009
+#> phi1  0.0261 0.0328  0.7945 0.4269
+#> beta1 0.6088 0.0557 10.9287 0.0000
+#> d     0.6437 0.0571 11.2683 0.0000
+#> df    6.4693 0.4858 13.3160 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.5020, BIC: -6.4955
+#> AIC: -6.5033, BIC: -6.4968
 ```
 
 ``` r

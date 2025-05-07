@@ -317,8 +317,8 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'}
 
 fEGarch <- function(spec = egarch_spec(),
-    rt, drange = c(0, 0.5 - 1e-6),
-    meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+    rt, drange = c(0, 1),
+    meanspec = mean_spec(), Drange = c(0, 1),
     nonparspec = locpol_spec(), use_nonpar = FALSE,
     n_test = 0,
     start_pars = NULL, LB = NULL, UB = NULL, control = list(),

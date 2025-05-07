@@ -408,8 +408,8 @@ goal_fun_creator_fiaparch <- function(
 #'
 fiaparch <- function(rt, orders = c(1, 1),
                         cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                        drange = c(0, 0.5 - 1e-6),
-                        meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+                        drange = c(0, 1),
+                        meanspec = mean_spec(), Drange = c(0, 1),
                         nonparspec = locpol_spec(), use_nonpar = FALSE,
                         n_test = 0,
                         start_pars = NULL,

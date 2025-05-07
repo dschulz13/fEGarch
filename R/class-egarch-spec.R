@@ -986,7 +986,7 @@ goal_fun_creator_egarch <- function(
 #'
 #'
 setMethod("fEGarch_fit", "egarch_type_spec",
-  function(spec = egarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6),
+  function(spec = egarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1),
     n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE,
     ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 50, Prange = c(1, 5)) {
 
@@ -1573,7 +1573,7 @@ goal_fun_creator_loggarch <- function(
 #'
 #'
 setMethod("fEGarch_fit", "loggarch_type_spec",
-  function(spec = loggarch_spec(), rt, drange = c(0, 0.5 - 1e-6), meanspec = mean_spec(), Drange = c(0, 0.5 - 1e-6), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 50, Prange = c(1, 5)) {
+  function(spec = loggarch_spec(), rt, drange = c(0, 1), meanspec = mean_spec(), Drange = c(0, 1), n_test = 0, start_pars = NULL, LB = NULL, UB = NULL, control = list(), parallel = TRUE, ncores = max(1, future::availableCores() - 1), trunc = "none", presample = 50, Prange = c(1, 5)) {
 
   # Make rt have sample variance 1; more robust for
   # differently scaled data; results like parameters
