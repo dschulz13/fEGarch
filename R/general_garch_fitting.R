@@ -146,7 +146,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
     },
     "fitgarch" = {
-      est_s <- suppressWarnings(gjrgarch(
+      est_s <- suppressWarnings(tgarch(
         rt = rt,
         orders = orders,
         cond_dist = cond_dist,
