@@ -72,7 +72,7 @@ rstd_s <- function(n, df = 10000) {
 
 qged_s <- function(p, shape) {
   a <- sqrt(gamma(1 / shape) / gamma(3 / shape))
-  intermed <- qgamma(2 * abs(p - 0.5), shape = 1 / shape, scale = 1)
+  intermed <- stats::qgamma(2 * abs(p - 0.5), shape = 1 / shape, scale = 1)
   sign(p - 0.5) * (a^shape * intermed)^(1 / shape)
 
 }
@@ -87,13 +87,15 @@ rged_s <- function(n, shape = 2) {
 #'@export
 #'@rdname sim_functions
 rsged_s <- function(n, shape = 2, skew = 1) {
-  p <- runif(n)
-  out <- rep(NA, n)
-  p1 <- p > 0 && p <= 1 / (skew^2 + 1)
-  p2 <- p > 1 / (skew^2 + 1) && p < 1
-  out[p1] <- (1 / skew) * qged_s(((gamma^2 + 1) / 2) * p)
-  out[p2] <- skew * qged_s(1 - ((gamma^2 + 1) / (2 * gamma^2)) * (1 - p))
-  out
+	weight <- skew / (skew + 1 / skew)
+	z <- -runif(n, min = -weight, max = 1.0 - weight)
+	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
+	intmed <- fac * abs(rged_s(n, shape = shape)) * sign(z)
+	M1 <- gamma(2 / shape) / sqrt(gamma(1 / shape) * gamma(3 / shape))
+	mu <- M1 * (skew - 1 / skew)
+	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
+	out <- (intmed - mu) / sigma
+	out
 }
 
 #'@export
@@ -106,15 +108,29 @@ rald_s <- function(n, P = 8) {
 #'@export
 #'@rdname sim_functions
 rsnorm_s <- function(n, skew = 1) {
-  p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_norm_s, skew = skew)
+	weight <- skew / (skew + 1 / skew)
+	z <- -runif(n, min = -weight, max = 1.0 - weight)
+	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
+	intmed <- fac * abs(rged_s(n, shape = shape)) * sign(z)
+	M1 <- sqrt(2 / pi)
+	mu <- M1 * (skew - 1 / skew)
+	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
+	out <- (intmed - mu) / sigma
+	out
 }
 
 #'@export
 #'@rdname sim_functions
 rsstd_s <- function(n, df = 10000, skew = 1) {
-  p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_sstd_s, df = df, skew = skew)
+	weight <- skew / (skew + 1 / skew)
+	z <- -runif(n, min = -weight, max = 1.0 - weight)
+	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
+	intmed <- fac * abs(rged_s(n, shape = shape)) * sign(z)
+	M1 <- 2 * sqrt(df - 2) * gamma((df + 1) / 2) / ((df - 1) * sqrt(pi) * gamma(df / 2))
+	mu <- M1 * (skew - 1 / skew)
+	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
+	out <- (intmed - mu) / sigma
+	out
 }
 
 

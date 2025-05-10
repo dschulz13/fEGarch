@@ -1,23 +1,23 @@
-## Absolute moments of GEDs.
-
-absMomentGED <- function(order, shape) {
-
-  force(order)
-
-  FUN <- function(x, shape) {
-    x^order * c(pdf_ged_v1(x, shape))
-  }
-
-  2 * integrate(FUN, lower = 0, upper = Inf, shape = shape,
-                subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
-                stop.on.error = FALSE)[[1]]
-
-}
+# ## Absolute moments of GEDs.
+#
+# absMomentGED <- function(order, shape) {
+#
+#   force(order)
+#
+#   FUN <- function(x, shape) {
+#     x^order * c(pdf_ged_v1(x, shape))
+#   }
+#
+#   2 * integrate(FUN, lower = 0, upper = Inf, shape = shape,
+#                 subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+#                 stop.on.error = FALSE)[[1]]
+#
+# }
 
 ## Central moments of skewed standardized GED
 central_mom_sged <- function(skew, shape) {
-  M1 <- absMomentGED(order = 1, shape = shape)
-  M2 <- absMomentGED(order = 2, shape = shape)
+  M1 <- gamma(2 / shape) / sqrt(gamma(1 / shape) * gamma(3 / shape))
+  M2 <- 1
   Ez <- M1 * (skew - 1 / skew)
   skew2 <- skew^2
   M1_2 <- M1^2

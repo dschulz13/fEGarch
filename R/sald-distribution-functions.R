@@ -17,7 +17,7 @@ absMomentALD <- function(order, P) {
 ## Central moments of skewed standardized average Laplace distribution
 central_mom_sald <- function(skew, P) {
   M1 <- absMomentALD(order = 1, P = P)
-  M2 <- absMomentALD(order = 2, P = P)
+  M2 <- 1
   Ez <- M1 * (skew - 1 / skew)
   skew2 <- skew^2
   M1_2 <- M1^2
