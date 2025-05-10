@@ -98,11 +98,30 @@ rsged_s <- function(n, shape = 2, skew = 1) {
 	out
 }
 
+qlap <- function(p, scale) {
+  idx <- p <= 0.5
+  ifelse(
+    idx,
+    yes = scale * log(2 * p[idx]),
+    no = -scale * log(2 - 2 * p[!idx])
+  )
+}
+
 #'@export
 #'@rdname sim_functions
 rald_s <- function(n, P = 8) {
-  p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_ald_v1, P = P)
+  nl <- P + 1  # number of Laplace distributed RVs
+  m <- nl * n  # number of Laplace values to simulate
+
+  p <- runif(m)
+  a <- sqrt(nl / 2)
+  mat <- matrix(
+    qlap(p, scale = a),
+    nrow = n, ncol = nl
+  )
+
+  apply(mat, MARGIN = 1, FUN = mean, simplify = TRUE)
+
 }
 
 #'@export
@@ -111,7 +130,7 @@ rsnorm_s <- function(n, skew = 1) {
 	weight <- skew / (skew + 1 / skew)
 	z <- -runif(n, min = -weight, max = 1.0 - weight)
 	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
-	intmed <- fac * abs(rged_s(n, shape = shape)) * sign(z)
+	intmed <- fac * abs(rnorm_s(n)) * sign(z)
 	M1 <- sqrt(2 / pi)
 	mu <- M1 * (skew - 1 / skew)
 	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
@@ -125,7 +144,7 @@ rsstd_s <- function(n, df = 10000, skew = 1) {
 	weight <- skew / (skew + 1 / skew)
 	z <- -runif(n, min = -weight, max = 1.0 - weight)
 	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
-	intmed <- fac * abs(rged_s(n, shape = shape)) * sign(z)
+	intmed <- fac * abs(rstd_s(n, df = df)) * sign(z)
 	M1 <- 2 * sqrt(df - 2) * gamma((df + 1) / 2) / ((df - 1) * sqrt(pi) * gamma(df / 2))
 	mu <- M1 * (skew - 1 / skew)
 	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
@@ -142,8 +161,15 @@ rsstd_s <- function(n, df = 10000, skew = 1) {
 #'@export
 #'@rdname sim_functions
 rsald_s <- function(n, P = 8, skew = 1) {
-  p <- runif(n)
-  inv_cdf_fun(p = p, dfun = pdf_skew_sald_s, P = P, skew = skew)
+	weight <- skew / (skew + 1 / skew)
+	z <- -runif(n, min = -weight, max = 1.0 - weight)
+	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
+	intmed <- fac * abs(rald_s(n, P = P)) * sign(z)
+	M1 <- absMomentALD(order = 1, P = P)
+	mu <- M1 * (skew - 1 / skew)
+	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
+	out <- (intmed - mu) / sigma
+	out
 }
 
 
