@@ -9,7 +9,7 @@ garch(
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   meanspec = mean_spec(),
-  Drange = c(0, 0.5 - 1e-06),
+  Drange = c(0, 1),
   nonparspec = locpol_spec(),
   use_nonpar = FALSE,
   n_test = 0,
@@ -21,7 +21,7 @@ garch(
   mean_after_nonpar = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = floor(0.4 * length(rt)),
+  trunc = "none",
   presample = 50,
   Prange = c(1, 5)
 )

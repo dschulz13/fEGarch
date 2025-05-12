@@ -5,10 +5,10 @@
 \alias{rnorm_s}
 \alias{rstd_s}
 \alias{rged_s}
+\alias{rsged_s}
 \alias{rald_s}
 \alias{rsnorm_s}
 \alias{rsstd_s}
-\alias{rsged_s}
 \alias{rsald_s}
 \title{Sampling Functions for Innovations}
 \usage{
@@ -18,13 +18,13 @@ rstd_s(n, df = 10000)
 
 rged_s(n, shape = 2)
 
+rsged_s(n, shape = 2, skew = 1)
+
 rald_s(n, P = 8)
 
 rsnorm_s(n, skew = 1)
 
 rsstd_s(n, df = 10000, skew = 1)
-
-rsged_s(n, shape = 2, skew = 1)
 
 rsald_s(n, P = 8, skew = 1)
 }
@@ -36,11 +36,11 @@ rsald_s(n, P = 8, skew = 1)
 \item{shape}{the shape parameter for a (skewed) generalized error
 distribution.}
 
+\item{skew}{the skewness parameter in the skewed distributions.}
+
 \item{P}{the number of Laplace distributions (minus 1) to derive the arithmetic
 mean from as the basis for a (skewed) average Laplace (AL) distribution
 distribution.}
-
-\item{skew}{the skewness parameter in the skewed distributions.}
 }
 \value{
 These functions return a numeric vector of length \code{n}.

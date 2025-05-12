@@ -22,7 +22,7 @@ figjrgarch(
   mean_after_nonpar = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
-  trunc = floor(0.4 * length(rt)),
+  trunc = "none",
   presample = 50,
   Prange = c(1, 5)
 )
