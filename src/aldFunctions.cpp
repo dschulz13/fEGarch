@@ -18,6 +18,29 @@ double binomial_coef(const int n, const int k) {
 }
 
 // [[Rcpp::export]]
+double ald_first_abs_mom(const int P) {
+
+  const double K = std::pow(2.0, -2.0 * P) * binomial_coef(2 * P, P);
+  const int P1 = P + 1;
+
+  arma::vec cj = arma::ones<arma::vec>(P1);
+  int jm1;
+
+  if (P > 1) {
+    for (int j = 2; j <= P; ++j) {
+      jm1 = j - 1;
+      cj(j) = cj(jm1) * 2.0 * (P - jm1) / (j * (2.0 * P - jm1));
+    }
+  }
+
+  const double a = std::sqrt(2.0 * P1);
+
+  const arma::vec inp = arma::regspace(2, P + 2);
+
+  return (K / a) * arma::accu(cj % arma::tgamma(inp));
+}
+
+// [[Rcpp::export]]
 arma::vec pdf_ald(const arma::vec& x, const arma::vec& mu, const arma::vec& sigt, const int P) {
   const double a = std::sqrt(2.0 * (P + 1.0));
   const double K = std::pow(2.0, -2.0 * P) * binomial_coef(2 * P, P);

@@ -165,7 +165,7 @@ rsald_s <- function(n, P = 8, skew = 1) {
 	z <- -runif(n, min = -weight, max = 1.0 - weight)
 	fac <- ifelse(z > 0, yes = skew, no = 1 / skew)
 	intmed <- fac * abs(rald_s(n, P = P)) * sign(z)
-	M1 <- absMomentALD(order = 1, P = P)
+	M1 <- ald_first_abs_mom(P = P)
 	mu <- M1 * (skew - 1 / skew)
 	sigma <- sqrt((1 - M1^2) * (skew^2 + 1 / skew^2) + 2 * M1^2 - 1)
 	out <- (intmed - mu) / sigma

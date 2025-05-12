@@ -1,27 +1,12 @@
-## Absolute moments of average Laplace distribution
-
-absMomentALD <- function(order, P) {
-
-  force(order)
-
-  FUN <- function(x, P) {
-    x^order * c(pdf_ald_v1(x, P))
-  }
-
-  2 * integrate(FUN, lower = 0, upper = Inf, P = P,
-                subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
-                stop.on.error = FALSE)[[1]]
-
-}
 
 ## Central moments of skewed standardized average Laplace distribution
 central_mom_sald <- function(skew, P) {
-  M1 <- absMomentALD(order = 1, P = P)
+  M1 <- ald_first_abs_mom(P = P)
   M2 <- 1
   Ez <- M1 * (skew - 1 / skew)
   skew2 <- skew^2
   M1_2 <- M1^2
-  Varz <- (M2 - M1_2) * (skew^2 + 1 / skew2) + 2 * M1_2 - M2
+  Varz <- (M2 - M1_2) * (skew2 + 1 / skew2) + 2 * M1_2 - M2
   c("E" = Ez, "Var" = Varz)
 }
 

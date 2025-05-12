@@ -19,7 +19,7 @@ central_mom_snorm <- function(skew) {
   Ez <- M1 * (skew - 1 / skew)
   skew2 <- skew^2
   M1_2 <- M1^2
-  Varz <- (M2 - M1_2) * (skew^2 + 1 / skew2) + 2 * M1_2 - M2
+  Varz <- (M2 - M1_2) * (skew2 + 1 / skew2) + 2 * M1_2 - M2
   c("E" = Ez, "Var" = Varz)
 }
 

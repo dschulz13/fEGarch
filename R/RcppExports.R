@@ -5,6 +5,10 @@ binomial_coef <- function(n, k) {
     .Call('_fEGarch_binomial_coef', PACKAGE = 'fEGarch', n, k)
 }
 
+ald_first_abs_mom <- function(P) {
+    .Call('_fEGarch_ald_first_abs_mom', PACKAGE = 'fEGarch', P)
+}
+
 pdf_ald <- function(x, mu, sigt, P) {
     .Call('_fEGarch_pdf_ald', PACKAGE = 'fEGarch', x, mu, sigt, P)
 }

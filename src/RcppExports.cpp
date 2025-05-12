@@ -23,6 +23,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ald_first_abs_mom
+double ald_first_abs_mom(const int P);
+RcppExport SEXP _fEGarch_ald_first_abs_mom(SEXP PSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type P(PSEXP);
+    rcpp_result_gen = Rcpp::wrap(ald_first_abs_mom(P));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pdf_ald
 arma::vec pdf_ald(const arma::vec& x, const arma::vec& mu, const arma::vec& sigt, const int P);
 RcppExport SEXP _fEGarch_pdf_ald(SEXP xSEXP, SEXP muSEXP, SEXP sigtSEXP, SEXP PSEXP) {
@@ -647,6 +658,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_binomial_coef", (DL_FUNC) &_fEGarch_binomial_coef, 2},
+    {"_fEGarch_ald_first_abs_mom", (DL_FUNC) &_fEGarch_ald_first_abs_mom, 1},
     {"_fEGarch_pdf_ald", (DL_FUNC) &_fEGarch_pdf_ald, 4},
     {"_fEGarch_pdf_ald_v1", (DL_FUNC) &_fEGarch_pdf_ald_v1, 2},
     {"_fEGarch_pdf_skew_sald", (DL_FUNC) &_fEGarch_pdf_skew_sald, 3},
