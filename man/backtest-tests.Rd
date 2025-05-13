@@ -7,6 +7,7 @@
 \alias{cond_cov_test,fEGarch_risk-method}
 \alias{cov_tests,fEGarch_risk-method}
 \alias{backtest_suite,fEGarch_risk-method}
+\alias{WAD,fEGarch_risk-method}
 \title{Backtesting VaR and ES}
 \usage{
 \S4method{trafflight_test}{fEGarch_risk}(object, silent = FALSE, ...)
@@ -20,6 +21,8 @@
 \S4method{cov_tests}{fEGarch_risk}(object, silent = FALSE, ...)
 
 \S4method{backtest_suite}{fEGarch_risk}(object, silent = FALSE, ...)
+
+\S4method{WAD}{fEGarch_risk}(object, silent = FALSE, ...)
 }
 \arguments{
 \item{object}{an object of class \code{"fEGarch_risk"}.}
@@ -66,9 +69,9 @@ Then \eqn{C} is computed as the cumulative probability of observing \eqn{K_1}
 under \eqn{P}. The forecasted VaR series is then classified following \eqn{C}. If
 \eqn{C < 0.95}, then it is sorted into the green zone, if \eqn{0.95 \leq C < 0.9999},
 then the series belongs to the yellow zone, and if \eqn{C \geq 0.9999},
-then the class of the VaR series is the red zone.
+then the class of the VaR series is the red zone (Basle Committee on Banking Supervision, 1996).
 
-The traffic light test for the ES uses a similar classification system
+The traffic light test for the ES (Costanzino and Curran, 2018) uses a similar classification system
 based on the severity of breaches
 \deqn{B = \sum_{t = 1}^{n} \frac{1-F(\hat \eta_t)-\alpha}{1-\alpha}I_t,}
 where \eqn{F} is the (fitted) cumulative distribution function of the
@@ -80,6 +83,18 @@ Then \eqn{B \overset{a}{\sim}N(\mu_{\text{ES}}, \sigma^2_{\text{ES}})} with
 probability of observing a severity of breaches of \eqn{B} or less can
 be computed and classified in the same way as for the VaR traffic light test
 using this asymptotic distribution.
+
+Weighted Absolute Deviation (WAD) (\code{WAD}):
+Following the standard computation of the 99%-VaR, the 97.5%-VaR and the
+97.5%-ES for the traffic light tests, the WAD criterion takes all of these
+into account and summarizes them into one numeric value. Let \eqn{N_1} be the
+observed breaches for the 99%-VaR for the test set and let \eqn{\mu_1} be the
+corresponding expected number of breaches. \eqn{N_2} and \eqn{\mu_2} are to
+understood analogously for the 97.5%-VaR. \eqn{N_3} is then the severity of
+breaches of the 97.5%-ES (i.e. it is equal to \eqn{B} from before) and \eqn{\mu_3}
+is \eqn{\mu_{\text{ES}}} from before. Then
+\deqn{\text{WAD} = \frac{|N_1-\mu_1|}{\mu_1} + \frac{|N_2-\mu_2|}{\mu_2} + \frac{|N_3-\mu_3|}{\mu_3}.}
+See also Letmathe et al. (2022) for further information.
 
 Coverage and independence tests (\code{cov_tests}):
 
@@ -126,4 +141,18 @@ trafflight_test(risk)
 cov_tests(risk)
 backtest_suite(risk)
 
+}
+\references{
+\itemize{
+\item{Basle Committe on Banking Supervision (1996). Supervisory Framework For The Use of "Backtesting" in
+Conjunction With The Internal Models Approach to Market Risk Capital Requirements.
+URL: https://www.bis.org/publ/bcbs22.pdf.}
+\item{Christoffersen, P. F. (1998). Evaluating Interval Forecasts. International Economic Review,
+39(4): 841-862. DOI: 10.2307/2527341.}
+\item{Costanzino, N., & Curran, M. (2018). A Simple Traffic Light Approach to Backtesting Expected Shortfall.
+Risks, 6(1). DOI: 10.3390/risks6010002.}
+\item{Letmathe, S., Feng, Y., & Uhde, A. (2022). Semiparametric GARCH models with long memory
+applied to Value at Risk and Expected Shortfall. Journal of Risk,
+25(2). DOI: 10.21314/JOR.2022.044.}
+}
 }

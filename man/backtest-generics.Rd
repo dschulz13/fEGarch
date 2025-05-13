@@ -7,6 +7,7 @@
 \alias{cond_cov_test}
 \alias{cov_tests}
 \alias{backtest_suite}
+\alias{WAD}
 \title{Generics for backtests}
 \usage{
 trafflight_test(object, ...)
@@ -20,6 +21,8 @@ cond_cov_test(object, ...)
 cov_tests(object, ...)
 
 backtest_suite(object, ...)
+
+WAD(object, ...)
 }
 \arguments{
 \item{object}{the generics are currently without use.}

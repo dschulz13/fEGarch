@@ -241,9 +241,9 @@ zone_selector <- function(p) {
 #'under \eqn{P}. The forecasted VaR series is then classified following \eqn{C}. If
 #'\eqn{C < 0.95}, then it is sorted into the green zone, if \eqn{0.95 \leq C < 0.9999},
 #'then the series belongs to the yellow zone, and if \eqn{C \geq 0.9999},
-#'then the class of the VaR series is the red zone.
+#'then the class of the VaR series is the red zone (Basle Committee on Banking Supervision, 1996).
 #'
-#'The traffic light test for the ES uses a similar classification system
+#'The traffic light test for the ES (Costanzino and Curran, 2018) uses a similar classification system
 #'based on the severity of breaches
 #'\deqn{B = \sum_{t = 1}^{n} \frac{1-F(\hat \eta_t)-\alpha}{1-\alpha}I_t,}
 #'where \eqn{F} is the (fitted) cumulative distribution function of the
@@ -255,6 +255,18 @@ zone_selector <- function(p) {
 #'probability of observing a severity of breaches of \eqn{B} or less can
 #'be computed and classified in the same way as for the VaR traffic light test
 #'using this asymptotic distribution.
+#'
+#'Weighted Absolute Deviation (WAD) (\code{WAD}):
+#'Following the standard computation of the 99%-VaR, the 97.5%-VaR and the
+#'97.5%-ES for the traffic light tests, the WAD criterion takes all of these
+#'into account and summarizes them into one numeric value. Let \eqn{N_1} be the
+#'observed breaches for the 99%-VaR for the test set and let \eqn{\mu_1} be the
+#'corresponding expected number of breaches. \eqn{N_2} and \eqn{\mu_2} are to
+#'understood analogously for the 97.5%-VaR. \eqn{N_3} is then the severity of
+#'breaches of the 97.5%-ES (i.e. it is equal to \eqn{B} from before) and \eqn{\mu_3}
+#'is \eqn{\mu_{\text{ES}}} from before. Then
+#'\deqn{\text{WAD} = \frac{|N_1-\mu_1|}{\mu_1} + \frac{|N_2-\mu_2|}{\mu_2} + \frac{|N_3-\mu_3|}{\mu_3}.}
+#'See also Letmathe et al. (2022) for further information.
 #'
 #'Coverage and independence tests (\code{cov_tests}):
 #'
@@ -297,6 +309,21 @@ zone_selector <- function(p) {
 #'All methods return a list invisibly. The elements of the list differ
 #'slightly depending on the method. Moreover, for \code{silent = FALSE},
 #'the default, test results are printed to the console.
+#'
+#'@references
+#'\itemize{
+#'\item{Basle Committe on Banking Supervision (1996). Supervisory Framework For The Use of "Backtesting" in
+#'Conjunction With The Internal Models Approach to Market Risk Capital Requirements.
+#'URL: https://www.bis.org/publ/bcbs22.pdf.}
+#'\item{Christoffersen, P. F. (1998). Evaluating Interval Forecasts. International Economic Review,
+#'39(4): 841-862. DOI: 10.2307/2527341.}
+#'\item{Costanzino, N., & Curran, M. (2018). A Simple Traffic Light Approach to Backtesting Expected Shortfall.
+#'Risks, 6(1). DOI: 10.3390/risks6010002.}
+#'\item{Letmathe, S., Feng, Y., & Uhde, A. (2022). Semiparametric GARCH models with long memory
+#'applied to Value at Risk and Expected Shortfall. Journal of Risk,
+#'25(2). DOI: 10.21314/JOR.2022.044.}
+#'}
+#'
 #'
 #'@export
 #'
@@ -783,16 +810,17 @@ setMethod("backtest_suite", "fEGarch_risk",
   function(object, silent = FALSE, ...) {
 
     l0 <- trafflight_test(object, silent = silent, ...)
-
-    l1 <- uncond_cov_test(object, silent = silent, ...)
-    l2 <- indep_test(object, silent = silent, ...)
-    l3 <- cond_cov_test(object, silent = silent, ...)
+    l1 <- WAD(object, silent = silent, ...)
+    l2 <- uncond_cov_test(object, silent = silent, ...)
+    l3 <- indep_test(object, silent = silent, ...)
+    l4 <- cond_cov_test(object, silent = silent, ...)
 
     list_out <- list(
       trafflight_test = l0,
-      uncond_cov_test = l1,
-      indep_test = l2,
-      cond_cov_test = l3
+      wad = l1,
+      uncond_cov_test = l2,
+      indep_test = l3,
+      cond_cov_test = l4
     )
 
     invisible(list_out)
@@ -1075,5 +1103,64 @@ setMethod("loss_functions", "fEGarch_risk",
     )
 
     list_out
+
+})
+
+#'@rdname backtest-generics
+#'@export
+setGeneric("WAD", function(object, ...) {standardGeneric("WAD")})
+
+#'@rdname backtest-tests
+#'@export
+setMethod("WAD", "fEGarch_risk",
+  function(object, silent = FALSE, ...) {
+
+  VaR_names <- names(object@measures$VaR)
+  ES_names <- names(object@measures$ES)
+
+  if ("VaR0.975" %in% VaR_names && "VaR0.99" %in% VaR_names && "ES0.975" %in% ES_names) {
+
+    results <- trafflight_test(object, silent = TRUE)
+
+    N3 <- results$ES$ES0.975$severity    # severity of breaches for 97.5%-ES
+    N2 <- results$VaR$VaR0.975$pot       # number of breaches for 97.5%-VaR
+    N1 <- results$VaR$VaR0.99$pot        # number of breaches for 99%-VaR
+
+    n <- length(object@observations)
+
+    mu1 <- n * 0.01
+    mu2 <- n * 0.025
+    mu3 <- 0.5 * 0.025 * n
+
+    crit1 <- abs(N1 - mu1) / mu1
+    crit2 <- abs(N2 - mu2) / mu2
+    crit3 <- abs(N3 - mu3) / mu3
+
+    crit_total <- crit1 + crit2 + crit3
+
+    if (!silent) {
+
+      cat(paste0(
+        "\n*******************************\n",
+        "* Weighted Absolute Deviation *\n",
+        "*******************************\n",
+        "\n",
+        "Following 99%-VaR, 97.5%-VaR and 97.5%-ES.\n",
+        "\n",
+        "WAD: ", sprintf("%.4f", crit_total), "\n\n"
+      ))
+
+    }
+
+    return(invisible(crit_total))
+
+  } else {
+
+    warning("Not able to compute WAD criterion. 99%-VaR, 97.5%-VaR and 97.5%-ES required.")
+
+    return(NULL)
+
+  }
+
 
 })
