@@ -170,7 +170,7 @@ goal_fun_creator_aparch <- function(
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
-#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'of the parametric model part in the QMLE step in a semiparametric model; by default, a zero-mean
 #'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
@@ -255,7 +255,7 @@ goal_fun_creator_aparch <- function(
 #'\code{\link[smoots]{tsmooth}}. \code{control_nonpar} can be adjusted following
 #'to make changes to the arguments of \code{\link[smoots]{tsmooth}}
 #'for short-memory specifications. These arguments specify settings
-#'for the automated bandwidth selection algorithms implemented by thís
+#'for the automated bandwidth selection algorithms implemented by this
 #'function. By default, we use the settings
 #'\code{InfR = "Nai"},
 #'\code{bStart = 0.15}, \code{cb = 0.05}, and
@@ -344,7 +344,7 @@ goal_fun_creator_aparch <- function(
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-#'in R. Comunications in Statistics - Theory and Methods,
+#'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 #'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):

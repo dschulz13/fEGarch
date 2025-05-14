@@ -22,19 +22,16 @@ Authors@R:
         role = c("aut"),
         email = "oliver.kojo.ayensu@uni-paderborn.de",
         comment = "Paderborn University, Germany"),
-      person(given = "Sebastian",
-        family = "Letmathe",
-        role = "ctb",
-        comment = "formerly: Paderborn University, Germany"),
       person(given = "Thomas", family = "Gries",
         role = "ctb",
         comment = "Paderborn University, Germany"),
       person(given = "Sikandar", family = "Siddiqui",
         role = "ctb",
-        comment = "Deloitte Audit Analytics GmbH, Frankfurt, Germany"),        
-      person(given = "Shujie", family = "Li",
+        comment = "Deloitte Audit Analytics GmbH, Frankfurt, Germany"),
+      person(given = "Sebastian",
+        family = "Letmathe",
         role = "ctb",
-        comment = "Paderborn University, Germany")        )             
+        comment = "formerly: Paderborn University, Germany"))             
 Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
 Description: Implement and fit a variety of models from a very broad family of exponential generalized autoregressive heteroskedasticity (EGARCH) models,
   such as a MEGARCH (modified EGARCH), FIEGARCH (fractionally integrated EGARCH), FIMLog-GARCH (fractionally integrated

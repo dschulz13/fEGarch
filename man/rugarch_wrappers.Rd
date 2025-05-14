@@ -176,7 +176,7 @@ Trend Stationary Time Series. The R Journal,
 \item{Ghalanos, A. (2024). \code{rugarch}: Univariate GARCH models. R package
 version 1.5-3. DOI: 10.32614/CRAN.package.rugarch.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-in R. Comunications in Statistics - Theory and Methods,
+in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 }
 }

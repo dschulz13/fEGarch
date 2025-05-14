@@ -105,7 +105,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
-#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'of the parametric model part in the QMLE step in a semiparametric model; by default, a zero-mean
 #'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
@@ -189,7 +189,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'
 #'See the references section for sources on the EGARCH (Nelson, 1991),
 #'FIEGARCH (Bollerslev and Mikkelsen, 1996),
-#'Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
+#'Log-GARCH (Geweke, 1986; Pantula, 1986; Milhoj, 1987)
 #'and FILog-GARCH (Feng et al., 2020) models.
 #'
 #'In the current package version, standard errors of parameter estimates are
@@ -307,7 +307,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-#'in R. Comunications in Statistics - Theory and Methods,
+#'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
 #'\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,

@@ -68,7 +68,7 @@
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
-#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'of the parametric model part in the QMLE step in a semiparametric model; by default, a zero-mean
 #'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.

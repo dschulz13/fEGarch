@@ -174,7 +174,7 @@ goal_fun_creator_figjrgarch <- function(
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
-#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'of the parametric model part in the QMLE step in a semiparametric model; by default, a zero-mean
 #'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
@@ -249,7 +249,7 @@ goal_fun_creator_figjrgarch <- function(
 #'approximation to ensuring that all of the coefficients are non-negative. To ensure
 #'that they are non-negative, one may in theory consider the sufficient conditions
 #'mentioned in Bollerslev and Mikkelsen (1996) or Tse (1998), which are however
-#'sometimes restrictive, or the simultenaously necessary and sufficient conditions
+#'sometimes restrictive, or the simultaneously necessary and sufficient conditions
 #'by Conrad and Haag (2006), which are however complex to implement properly.
 #'
 #'See also the reference section for sources on the more general
@@ -292,7 +292,7 @@ goal_fun_creator_figjrgarch <- function(
 #'\code{\link[esemifar]{tsmoothlm}}. \code{control_nonpar} can be adjusted following
 #'to make changes to the arguments of \code{\link[esemifar]{tsmoothlm}}
 #'for long-memory specifications. These arguments specify settings
-#'for the automated bandwidth selection algorithms implemented by thís
+#'for the automated bandwidth selection algorithms implemented by this
 #'function. By default, we use the settings
 #'\code{pmin = 0}, \code{pmax = 1}, \code{qmin = 0},
 #'\code{qmax = 1}, \code{InfR = "Nai"},

@@ -92,7 +92,7 @@ locpol_spec(kernel_order = 2)
 Trend Stationary Time Series. The R Journal,
 14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-in R. Comunications in Statistics - Theory and Methods,
+in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 }
 }

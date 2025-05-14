@@ -12,7 +12,7 @@
 \alias{vcov_mat,fEGarch_fit-method}
 \alias{sigt,fEGarch_forecast-method}
 \alias{cmeans,fEGarch_forecast-method}
-\title{Methods for Accessing Model Estimation and Foprecasting Output Elements}
+\title{Methods for Accessing Model Estimation and Forecasting Output Elements}
 \usage{
 \S4method{sigt}{fEGarch_fit}(x)
 

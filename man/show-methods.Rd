@@ -24,7 +24,7 @@
 \alias{show,fEgarch_fit_figarch-method}
 \alias{show,fEGarch_fit_rugarch_wrapper-method}
 \alias{show,fEgarch_fit_rugarch_wrapper-method}
-\title{Show Method for Estimation Ouput}
+\title{Show Method for Estimation Output}
 \usage{
 \S4method{show}{fEGarch_fit_egarch}(object)
 

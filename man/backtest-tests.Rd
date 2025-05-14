@@ -144,7 +144,7 @@ backtest_suite(risk)
 }
 \references{
 \itemize{
-\item{Basel Committe on Banking Supervision (1996). Supervisory Framework For The Use of "Backtesting" in
+\item{Basel Committee on Banking Supervision (1996). Supervisory Framework For The Use of "Backtesting" in
 Conjunction With The Internal Models Approach to Market Risk Capital Requirements.
 URL: https://www.bis.org/publ/bcbs22.pdf.}
 \item{Christoffersen, P. F. (1998). Evaluating Interval Forecasts. International Economic Review,

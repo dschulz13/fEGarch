@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim-functions.R
 \name{figjrgarch_sim}
 \alias{figjrgarch_sim}
-\title{Simulate From FIGJRGARCH Models}
+\title{Simulate From FIGJR-GARCH Models}
 \usage{
 figjrgarch_sim(
   pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, omega = 4e-04, phi = 0.2,
@@ -51,7 +51,7 @@ FIGJR-GARCH models.
 }
 \details{
 See the documentation on \code{\link{figjrgarch}} for information
-on the FIGJRGARCH model. This function provides
+on the FIGJR-GARCH model. This function provides
 an easy way to simulate from these models.
 }
 \examples{

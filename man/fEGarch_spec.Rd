@@ -176,7 +176,7 @@ wrappers for \code{fEGarch_spec()}.
 
 See the references section for sources on the EGARCH (Nelson, 1991),
 FIEGARCH (Bollerslev and Mikkelsen, 1996),
-Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
+Log-GARCH (Geweke, 1986; Pantula, 1986; Milhoj, 1987)
 and FILog-GARCH (Feng et al., 2020) models.
 }
 \examples{

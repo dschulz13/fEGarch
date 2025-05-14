@@ -744,7 +744,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'rolling point forecasts over the test set using \code{predict_roll}.
 #'\code{step_size} then determines the forecasting horizon for
 #'the rolling point forecasts. For example, \code{step_size = 1}, i.e.
-#'the default, computes one-step rolling point foreccats, whereas for
+#'the default, computes one-step rolling point forecasts, whereas for
 #'example \code{step_size = 10} computes ten-step rolling point
 #'forecasts (starting at the tenth test time point).
 #'
@@ -754,7 +754,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'@return
 #'Returns an object of class \code{"fEGarch_forecast"} that has the
 #'two slots \code{@sigt} and \code{@cmeans} representing the
-#'forecasted codnitional standard deviations and conditional
+#'forecasted conditional standard deviations and conditional
 #'means, respectively. If the training series saved in \code{object}
 #'has a special time series formatting like \code{"zoo"} or \code{"ts"},
 #'the formatting is adopted accordingly to these numeric

@@ -610,7 +610,7 @@ fiaparch_sim <- function(pars = list(
 
 }
 
-#'Simulate From FIGJRGARCH Models
+#'Simulate From FIGJR-GARCH Models
 #'
 #'A streamlined simulation function to simulate from
 #'FIGJR-GARCH models.
@@ -636,7 +636,7 @@ fiaparch_sim <- function(pars = list(
 #'
 #'@details
 #'See the documentation on \code{\link{figjrgarch}} for information
-#'on the FIGJRGARCH model. This function provides
+#'on the FIGJR-GARCH model. This function provides
 #'an easy way to simulate from these models.
 #'
 #'@return

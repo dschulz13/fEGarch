@@ -127,7 +127,7 @@ Trend Stationary Time Series. The R Journal,
 long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-in R. Comunications in Statistics - Theory and Methods,
+in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 \item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
 \item{Missiakoulis, S. (1983). Sargan Densities: Which One?. Journal of Econometrics, 23(2): 223-233.
@@ -154,7 +154,7 @@ Author and Package Creator
 \item Yuanhua Feng (Department of Economics, Paderborn
 University), \cr
 Author
-\item Christian Peitz (formerly: Department of Economics, Paderborn
+\item Christian Peitz (Department of Economics, Paderborn
 University), \cr
 Author
 \item Oliver Kojo Ayensu (Department of Economics, Paderborn

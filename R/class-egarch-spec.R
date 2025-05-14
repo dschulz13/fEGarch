@@ -314,7 +314,7 @@ loggarch_type_spec <- function(
 #'
 #'See the references section for sources on the EGARCH (Nelson, 1991),
 #'FIEGARCH (Bollerslev and Mikkelsen, 1996),
-#'Log-GARCH (Geweke, 1986; Pantual, 1986; Milhoj, 1987)
+#'Log-GARCH (Geweke, 1986; Pantula, 1986; Milhoj, 1987)
 #'and FILog-GARCH (Feng et al., 2020) models.
 #'
 #'@return
@@ -1944,7 +1944,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   list_out
   })
 
-#'Show Method for Estimation Ouput
+#'Show Method for Estimation Output
 #'
 #'Display estimation results from the EGARCH family in
 #'a convenient way in the console.
@@ -2100,7 +2100,7 @@ setMethod(
   }
 )
 
-#'Methods for Accessing Model Estimation and Foprecasting Output Elements
+#'Methods for Accessing Model Estimation and Forecasting Output Elements
 #'
 #'Accessors to access the elements of the same name in
 #'output objects returned by either \code{\link{fEGarch}},

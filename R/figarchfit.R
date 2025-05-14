@@ -171,7 +171,7 @@ goal_fun_creator_figarch <- function(
 #'scale function estimation for
 #'\code{use_nonpar = TRUE}; see "Details" for more information.
 #'@param mean_after_nonpar only for \code{use_nonpar = TRUE}; considers the unconditional mean
-#'of the parametric model part in the QMLE step in a semiparameteric model; by default, a zero-mean
+#'of the parametric model part in the QMLE step in a semiparametric model; by default, a zero-mean
 #'model is considered for the parametric part in a semiparametric model.
 #'@param parallel only relevant for a (skewed) average Laplace (AL)
 #'distribution, i.e.
@@ -230,7 +230,7 @@ goal_fun_creator_figarch <- function(
 #'approximation to ensuring that all of the coefficients are non-negative. To ensure
 #'that they are non-negative, one may in theory consider the sufficient conditions
 #'mentioned in Bollerslev and Mikkelsen (1996) or Tse (1998), which are however
-#'sometimes restrictive, or the simultenaously necessary and sufficient conditions
+#'sometimes restrictive, or the simultaneously necessary and sufficient conditions
 #'by Conrad and Haag (2006), which are however complex to implement properly.
 #'
 #'The truncated infinite order polynomial is computed following the idea
@@ -377,7 +377,7 @@ goal_fun_creator_figarch <- function(
 #'long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 #'265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
-#'in R. Comunications in Statistics - Theory and Methods,
+#'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient computation of ARCH(\eqn{\infty})
 #'models. Journal of Time Series Analysis,
