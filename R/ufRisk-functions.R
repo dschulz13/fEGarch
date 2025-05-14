@@ -241,7 +241,7 @@ zone_selector <- function(p) {
 #'under \eqn{P}. The forecasted VaR series is then classified following \eqn{C}. If
 #'\eqn{C < 0.95}, then it is sorted into the green zone, if \eqn{0.95 \leq C < 0.9999},
 #'then the series belongs to the yellow zone, and if \eqn{C \geq 0.9999},
-#'then the class of the VaR series is the red zone (Basle Committee on Banking Supervision, 1996).
+#'then the class of the VaR series is the red zone (Basel Committee on Banking Supervision, 1996).
 #'
 #'The traffic light test for the ES (Costanzino and Curran, 2018) uses a similar classification system
 #'based on the severity of breaches
@@ -312,7 +312,7 @@ zone_selector <- function(p) {
 #'
 #'@references
 #'\itemize{
-#'\item{Basle Committe on Banking Supervision (1996). Supervisory Framework For The Use of "Backtesting" in
+#'\item{Basel Committe on Banking Supervision (1996). Supervisory Framework For The Use of "Backtesting" in
 #'Conjunction With The Internal Models Approach to Market Risk Capital Requirements.
 #'URL: https://www.bis.org/publ/bcbs22.pdf.}
 #'\item{Christoffersen, P. F. (1998). Evaluating Interval Forecasts. International Economic Review,

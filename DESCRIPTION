@@ -16,7 +16,7 @@ Authors@R:
         family = "Peitz",
         role = c("aut"),
         email = "christian.peitz@uni-paderborn.de",
-        comment = "formerly: Paderborn University, Germany"),
+        comment = "Paderborn University, Germany"),
       person(given = "Oliver Kojo",
         family = "Ayensu",
         role = c("aut"),
@@ -29,6 +29,9 @@ Authors@R:
       person(given = "Thomas", family = "Gries",
         role = "ctb",
         comment = "Paderborn University, Germany"),
+      person(given = "Sikandar", family = "Siddiqui",
+        role = "ctb",
+        comment = "Deloitte Audit Analytics GmbH, Frankfurt, Germany"),        
       person(given = "Shujie", family = "Li",
         role = "ctb",
         comment = "Paderborn University, Germany")        )             
