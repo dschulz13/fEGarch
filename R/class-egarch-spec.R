@@ -211,7 +211,7 @@ loggarch_type_spec <- function(
 #'\eqn{\omega_{\sigma}} is in fact
 #'\eqn{\omega_{\sigma}=E\left[\ln\left(\sigma_t^2\right)\right]}.
 #'This previous set of
-#'equations defines the broader family of EGARCH models, from which
+#'equations defines the broader family of EGARCH models (Feng et al., 2025), from which
 #'subtypes are described in the following that depend on the choice of
 #'\eqn{g}.
 #'
@@ -260,7 +260,8 @@ loggarch_type_spec <- function(
 #'thoughts hold for \eqn{g_{1,m}} and \eqn{g_{2,m}} and the second
 #'elements in the arguments \code{modulus} and \code{powers}. The aforementioned
 #'model family is a type I model selectable through
-#'\code{model_type = "egarch"}.
+#'\code{model_type = "egarch"}. One of such type I models is the FIMLog-GARCH
+#'(Feng et al., 2023).
 #'
 #'\eqn{\textbf{Type II}:}
 #'
@@ -329,6 +330,11 @@ loggarch_type_spec <- function(
 #'\item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
 #'Working Papers CIE No. 137, Paderborn University, Center for International Economics.
 #'URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
+#'\item{Feng, Y., Gries, T., & Letmathe, S. (2023). FIEGARCH, modulus asymmetric FILog-GARCH
+#'and trend-stationary dual long memory time series. Working Papers CIE No. 156, Paderborn University.
+#'URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
+#'\item{Feng, Y., Peitz, C., & Siddiqui, S. (2025). A few useful members of the EGARCH-family
+#'with short- or long-memory in volatility. Unpublished working paper at Paderborn University.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
 #'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}

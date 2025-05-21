@@ -296,7 +296,7 @@ zone_selector <- function(p) {
 #'\deqn{L_{\alpha^{*}} = \alpha^{(K_{0,0} + K_{1,0})}(1-\alpha)^{(K_{0,1} + K_{1, 1})}.}
 #'
 #'The three test statistics following Christoffersen (1998) are then
-#'\deqn{S_{\text{uc}} = -2 \ln\left[L_{\alpha} / L_{\hat{p}}\right] \overset{a}{\sim} \chi^2 (1),}
+#'\deqn{S_{\text{uc}} = -2 \ln\left[L_{\alpha} / L_{\hat{z}}\right] \overset{a}{\sim} \chi^2 (1),}
 #'\deqn{S_{\text{ind}} = -2 \ln\left[L_{\hat z^{*}} / L_{\hat{z}_{0,0}}\right] \overset{a}{\sim} \chi^2 (1), \hspace{4mm} \text{and}}
 #'\deqn{S_{\text{cc}} = -2 \ln\left[L_{\alpha^{*}} / L_{\hat{z}_{0,0}}\right] \overset{a}{\sim} \chi^2 (2),}
 #'where \eqn{S_{\text{uc}}} is the test statistic of the unconditional coverage test,

@@ -9,9 +9,10 @@
 #'
 #'@details
 #'\code{fEGarch} is an R package for estimating a broad family of
-#'EGARCH models including both short- and long-memory as well as a
+#'EGARCH models (Feng et al., 2025) including both short- and long-memory as well as a
 #'selection of varying transformations for the asymmetry and the
-#'magnitude term in such a model. Log-GARCH specifications can be
+#'magnitude term in such a model, for example in form of the
+#'FIMLog-GARCH (Feng et al., 2023). Log-GARCH specifications can be
 #'implemented as well as a special case of the broad EGARCH family.
 #'The six most common conditional distributions are supported, namely
 #'a normal distribution, a \eqn{t}- distribution, a generalized error
@@ -110,6 +111,11 @@
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Feng, Y., Gries, T., & Letmathe, S. (2023). FIEGARCH, modulus asymmetric FILog-GARCH
+#'and trend-stationary dual long memory time series. Working Papers CIE No. 156, Paderborn University.
+#'URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
+#'\item{Feng, Y., Peitz, C., & Siddiqui, S. (2025). A few useful members of the EGARCH-family
+#'with short- or long-memory in volatility. Unpublished working paper at Paderborn University.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
 #'\item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of

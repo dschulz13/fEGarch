@@ -175,7 +175,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'The combined model defined through \link[fEGarch]{mean_spec} and
 #'\link[fEGarch]{fEGarch_spec} is the specified model. It can be thought of
 #'as the model described in \link[fEGarch]{mean_spec} with \eqn{\left\{r_t\right\}}
-#'therein being governed by a model from the EGARCH family as described in
+#'therein being governed by a model from the EGARCH family (see for example Feng et al., 2025) as described in
 #'\link[fEGarch]{fEGarch_spec}, however with mean of \eqn{\left\{r_t\right\}} fixed
 #'to zero.
 #'
@@ -190,7 +190,8 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'See the references section for sources on the EGARCH (Nelson, 1991),
 #'FIEGARCH (Bollerslev and Mikkelsen, 1996),
 #'Log-GARCH (Geweke, 1986; Pantula, 1986; Milhoj, 1987)
-#'and FILog-GARCH (Feng et al., 2020) models.
+#'and FILog-GARCH (Feng et al., 2020) models. For information on the
+#'FIMLog-GARCH, see Feng et al. (2023).
 #'
 #'In the current package version, standard errors of parameter estimates are
 #'computed from the Hessian at the optimum of the log-likelihood using
@@ -304,6 +305,11 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Feng, Y., Gries, T., & Letmathe, S. (2023). FIEGARCH, modulus asymmetric FILog-GARCH
+#'and trend-stationary dual long memory time series. Working Papers CIE No. 156, Paderborn University.
+#'URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
+#'\item{Feng, Y., Peitz, C., & Siddiqui, S. (2025). A few useful members of the EGARCH-family
+#'with short- or long-memory in volatility. Unpublished working paper at Paderborn University.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
