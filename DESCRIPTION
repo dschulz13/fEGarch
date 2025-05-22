@@ -91,6 +91,7 @@ Collate:
   'ufRisk-functions.R'
   'reexport-pipe.R'
   'test-functions.R'
+  'distr_est.R'
 Depends: 
     R (>= 3.5),
     methods
