@@ -9,7 +9,8 @@
 #'
 #'@details
 #'\code{fEGarch} is an R package for estimating a broad family of
-#'EGARCH models (Feng et al., 2025) including both short- and long-memory as well as a
+#'EGARCH models (Feng et al., 2025; Ayensu et al., 2025)
+#'including both short- and long-memory as well as a
 #'selection of varying transformations for the asymmetry and the
 #'magnitude term in such a model, for example in form of the
 #'FIMLog-GARCH (Feng et al., 2023). Log-GARCH specifications can be
@@ -18,7 +19,8 @@
 #'a normal distribution, a \eqn{t}- distribution, a generalized error
 #'distribution, as well as the skewed variants of these three
 #'distributions. Furthermore, as a novelty, an average Laplace (AL)
-#'distribution and its skewed version are provided as well.
+#'distribution (see for example Feng et al., 2025) and its skewed
+#'version are provided as well.
 #'The main functions to implement these models are
 #'\code{\link{fEGarch_spec}} in combination with
 #'\code{\link{fEGarch}}. Further details on these models can also
@@ -48,7 +50,7 @@
 #'\code{\link{fEGarch_spec}} or one of its wrappers.
 #'
 #'Further options include the specification of semiparametric
-#'volatility models, where a smooth, nonparametric scale function
+#'volatility models (see also Ayensu et al., 2025), where a smooth, nonparametric scale function
 #'is at first estimated and removed from an observed series, before
 #'estimating a parametric model. The scale estimation is currently
 #'done through automated local polynomial regression with designated
@@ -94,6 +96,8 @@
 #'
 #'@references
 #'\itemize{
+#'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
+#'Theory and Application. Forthcoming preprint, Paderborn University.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
 #'73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
 #'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally

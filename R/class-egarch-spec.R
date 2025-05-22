@@ -211,7 +211,7 @@ loggarch_type_spec <- function(
 #'\eqn{\omega_{\sigma}} is in fact
 #'\eqn{\omega_{\sigma}=E\left[\ln\left(\sigma_t^2\right)\right]}.
 #'This previous set of
-#'equations defines the broader family of EGARCH models (Feng et al., 2025), from which
+#'equations defines the broader family of EGARCH models (Feng et al., 2025; Ayensu et al., 2025), from which
 #'subtypes are described in the following that depend on the choice of
 #'\eqn{g}.
 #'
@@ -325,6 +325,8 @@ loggarch_type_spec <- function(
 #'
 #'@references
 #'\itemize{
+#'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
+#'Theory and Application. Forthcoming preprint, Paderborn University.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
 #'73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
 #'\item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.

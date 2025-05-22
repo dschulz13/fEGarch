@@ -171,7 +171,7 @@ most common and further conditional distributions to observed data
 using quasi maximum-likelihood estimation.
 }
 \details{
-Consider a FITGARCH(\eqn{p, d, q}) with constant asymmetry term \eqn{\gamma} regardless
+Consider a FITGARCH(\eqn{p, d, q}) (Ayensu et al., 2025) with constant asymmetry term \eqn{\gamma} regardless
 of the lag. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
@@ -314,6 +314,8 @@ model
 }
 \references{
 \itemize{
+\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
+Theory and Application. Forthcoming preprint, Paderborn University.}
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
 memory in stock market volatility. Journal of Econometrics, 73(1):
 151-184. DOI: 10.1016/0304-4076(95)01736-4.}
