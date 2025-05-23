@@ -63,7 +63,7 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'to be negative in sign.
 #'
 #'Define
-#'\deqn{\text{VaR}_{\eta,\alpha} = f_{\eta}^{-1}(1-\alpha) \hspace{3mm} \text{ and } \hspace{3mm} \text{ES}_{\eta,\alpha} = (1-\alpha)^{-1}\int_{\alpha}^{\infty} \text{VaR}_{\eta, x} dx,}
+#'\deqn{\text{VaR}_{\eta,\alpha} = f_{\eta}^{-1}(1-\alpha) \hspace{3mm} \text{ and } \hspace{3mm} \text{ES}_{\eta,\alpha} = (1-\alpha)^{-1}\int_{\alpha}^{1} \text{VaR}_{\eta, x} dx,}
 #'which also need to be estimated for some distributions, if a distribution parameter needed to be estimated. \eqn{f} in the previous formula
 #'is the cumulative distribution function of the random variables \eqn{\eta_t}. Therefore,
 #'\eqn{f^{-1}_{\eta}(1-\alpha)} returns the quantile of the innovation distribution at level
