@@ -76,6 +76,26 @@ baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
 #'subsequently \code{integrate} (of the \code{stats} package) is
 #'used at the tail of the distribution.
 #'
+#'In detail, let \eqn{f(x)} be the probability density function (pdf) of a standardized random
+#'variable with mean zero and variance one. Without the need to state a
+#'cumulative distribution function (cdf) mathematically, we can define it in R numerically
+#'by integrating over \eqn{f} from \code{-Inf} to some quantile \code{x} using
+#'\code{\link[stats]{integrate}}. To then find a quantile for a given cumulative
+#'probability, we can use \code{\link[stats]{uniroot}} to find the quantile,
+#'where the numerical cdf function minus the set cumulative probability equals
+#'zero. This way, a numerical VaR can be found.
+#'
+#'On the other hand, a numerical ES for a (continuous) random variable with mean zero and variance one
+#'follows the alternative definition of the ES
+#'\deqn{\text{ES}_{\alpha}=(1-\alpha)^{-1}\int_{-\infty}^{\text{VaR}_{\alpha}}x f(x) dx,}
+#'where \eqn{\alpha}, usually 0.99 or 0.975, is the confidence level,
+#'\eqn{\text{VaR}_{\alpha}} is the VaR at the same \eqn{\alpha}. Using the previous
+#'approach, \eqn{\text{VaR}_{\alpha}} can be easily identified. Then, in R,
+#'a function \eqn{g(x)=x f(x)} can also be defined easily. Ultimately, only
+#'\code{\link[stats]{integrate}} needs to be applied from \code{-Inf} to the
+#'corresponding VaR as the upper bound to the function \eqn{g}. The resulting numerical
+#'integral is then divided by \eqn{(1-\alpha)}.
+#'
 #'@export
 #'
 #'@rdname VaR-ES-Calculation
