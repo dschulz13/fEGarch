@@ -46,9 +46,94 @@ nllhood_setup <- function(theta, y, pdf_fun, extra_par, skew_par, mean_par, sdev
 
 ### General estimation function
 
+#'MLE for Distribution Fitting
+#'
+#'Given a vector of values assumed to stem from
+#'independent but identically distributed (iid) random variables, fit a selection
+#'of distributions, from the normal distribution, the \eqn{t}-distribution, the
+#'generalized error distribution (GED), the average Laplace distribution (ALD), and
+#'their skewed variants, to the data using maximum-likelihood estimation (MLE).
+#'
+#'@param x a numeric vector with the data.
+#'@param dist a character value that specifies the distribution to consider;
+#'available are a normal distribution (\code{"norm"}), a \eqn{t}-distribution
+#'(\code{"std"}), a GED (\code{"ged"}), an ALD (\code{"ald"}), and their
+#'skewed variants (\code{"snorm"}, \code{"sstd"}, \code{"sged"}, \code{"sald"}).
+#'@param fix_mean optional; for the default \code{NULL}, a location parameter representing
+#'the (unconditional) mean of the distribution is also being estimated; for any
+#'numerical value, however, the mean will be fixed to the corresponding value and
+#'therefore excluded from the estimation itself.
+#'@param fix_sdev optional; for the default \code{NULL}, a scale parameter representing
+#'the (unconditional) standard deviation of the distribution is also being estimated; for any
+#'numerical value, however, the standard deviation will be fixed to the corresponding value and
+#'therefore excluded from the estimation itself.
+#'@param Prange a two-element numeric vector, giving the boundaries of the search space
+#'for the shape parameter \eqn{P} in an ALD or its skewed variant.
+#'
+#'@details
+#'
+#'Let \eqn{x} be an individual observation. Let \eqn{\mu} a real-valued location
+#'parameter, representing the unconditional mean of the distribution, and
+#'\eqn{\sigma} a real-valued scale parameter, representing the unconditional
+#'standard deviation. Generally, let \eqn{\theta} be a vector with all parameters
+#'of the underlying distribution. The likelihood of \eqn{x} is given through
+#'\deqn{L_x^{\text{norm}}(\theta)=\frac{\sigma^{-1}}{\sqrt{2\pi}}\exp\left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2\right)}
+#'for a normal distribution,
+#'\deqn{L_x^{\text{std}}(\theta)=\frac{\sigma^{-1}\Gamma\left(\frac{\nu + 1}{2}\right)}{\Gamma\left(\frac{\nu}{2}\right)\sqrt{\pi(\nu-2)}}\left[1+\frac{1}{\nu - 2}\left(\frac{x-\mu}{\sigma}\right)^2\right]^{-\frac{\nu + 1}{2}}}
+#'for a \eqn{t}-distribution with \eqn{\nu} as the degrees of freedom and \eqn{\Gamma}
+#'as the gamma function,
+#'\deqn{L_x^{\text{ged}}(\theta)=\frac{\sigma^{-1}\beta}{2}\sqrt{\frac{C_{\Gamma,3}}{C_{\Gamma,1}^3}} \exp\left\{-\left|\frac{x-\mu}{\sigma}\right|^{\beta}\left(\frac{C_{\Gamma,3}}{C_{\Gamma,1}}\right)^{\frac{\beta}{2}}\right\}}
+#'for a GED with \eqn{\beta} as its real-valued shape and with \eqn{C_{\Gamma,i}=\Gamma\left(\frac{i}{\beta}\right)}, \eqn{i\in\left\{1,3\right\}},
+#'and in
+#'\deqn{L_x^{\text{ald}}(\theta)=\frac{\sigma^{-1}sB}{2}\exp\left(-s\left|\frac{x-\mu}{\sigma}\right|\right)\sum_{j=0}^{P}c_j\left(s\left|\frac{x-\mu}{\sigma}\right|\right)^j}
+#'for an ALD with \eqn{P} as its discrete shape, where \eqn{s = \sqrt{2(P+1)}},
+#'\deqn{B=2^{-2P} {{2P}\choose{P}}, \hspace{4mm} P \geq 0,}
+#'and
+#'\deqn{c_{j}=\frac{2(P-j + 1)}{j(2P-j+1)}c_{j-1}, \hspace{4mm} j =2,3,\dots,P,}
+#'with \eqn{c_0 = c_1 = 1}.
+#'The individual-observation likelihoods for the skewed variants are derived analogously
+#'from the idea by Fernandez and Steel (1998). The log-likelihoods to maximize
+#'over are then just the sum of the log-transformed likelihoods for each observation.
+#'
+#'\code{distr_est} is a general purpose distribution fitting function, where the
+#'distribution can be selected through the argument \code{dist}. \code{norm_est},
+#'\code{std_est}, \code{ged_est}, \code{ald_est}, \code{snorm_est},
+#'\code{sstd_est}, \code{sged_est}, and \code{sald_est} are wrappers around
+#'\code{distr_est} in order to directly provide fitting functions for the
+#'different distributions available in this package.
+#'
+#'@return
+#'Returns a list with the following elements.
+#'
+#'@references
+#'\itemize{
+#'\item{Fernandez, C., & Steel, M. F. J. (1998). MOn Bayesian Modeling of Fat Tails and Skewness.
+#'Journal of the American Statistical Association,
+#'93(441), 359–371. DOI: 10.1080/01621459.1998.10474117.}
+#'}
 #'@export
+#'
+#'@rdname distribution_estimation
+#'
+#'@examples
+#'# Draw obs. from GED and implement standard deviation 1.2
+#'# and mean 3.1
+#'x <- rged_s(4000, shape = 1.5) * 1.2 + 3.1
+#'# Fit GED
+#'ged_est(x)
+#'# Fit GED differently using distr_est()
+#'distr_est(x, dist = "ged")
+#'# Fit GED while fixing mean and standard deviation
+#'ged_est(x, fix_mean = 3.1, fix_sdev = 1.2)
+#'# Fit another distribution
+#'sstd_est(x)
+#'
+
 distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
                       fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
+
+  x_orig <- x
+  x <- zoo::coredata(x)
 
   dist <- match.arg(dist)
 
@@ -253,6 +338,10 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
 
   }
 
+  if (!is.null(est$convergence) && est$convergence != 0){
+    warning("Convergence failed.")
+  }
+
   par <- est$pars
   par_names <- c(
     name_extra_par,
@@ -274,10 +363,13 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
     hess <- numDeriv::hessian(nllhood, x = par, y = x)
     vcov <- solve(hess)
     serror <- sqrt(diag(vcov))
+    if (any(is.nan(serror))) {
+      warning("Unable to compute standard errors.")
+    }
     if (check_ald) {
       par <- c(P, par)
-      serror <- c(NA, serror)
-      vcov <- rbind(NA, cbind(NA, vcov))
+      serror <- c(NA_real_, serror)
+      vcov <- rbind(NA_real_, cbind(NA_real_, vcov))
     }
     names(par) <- par_names
     names(serror) <- par_names
@@ -286,8 +378,8 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
   } else {
     if (check_ald) {
       par <- P
-      serror <- NA
-      vcov <- matrix(NA, ncol = 1, nrow = 1)
+      serror <- NA_real_
+      vcov <- matrix(NA_real_, ncol = 1, nrow = 1)
       names(par) <- "P"
       names(serror) <- "P"
       rownames(vcov) <- "P"
@@ -330,11 +422,15 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
     fixed <- numeric(0)
   }
 
-
-
-  list(
-    par = par, serror = serror, aic = aic, bic = bic, llhood = llhood, vcov = vcov,
-    fixed = fixed
+  fEGarch_distr_est(
+    pars = par,
+    se = serror,
+    vcov_mat = vcov,
+    x = x_orig,
+    inf_criteria = c("aic" = aic, "bic" = bic),
+    dist = dist,
+    fixed = fixed,
+    llhood = llhood
   )
 
 }
@@ -342,6 +438,7 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
 # Special normal distribution estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 norm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
   distr_est(x = x, dist = "norm", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -352,6 +449,7 @@ norm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 # Special t-distribution estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 std_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
   distr_est(x = x, dist = "std", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -362,6 +460,7 @@ std_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 # Special GED estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 ged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
   distr_est(x = x, dist = "ged", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -372,6 +471,7 @@ ged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 # Special ALD estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 ald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 
   distr_est(x = x, dist = "ald", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -382,6 +482,7 @@ ald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 # Special skewed normal distribution estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 snorm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
   distr_est(x = x, dist = "snorm", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -392,6 +493,7 @@ snorm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 # Special skewed t-distribution estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 sstd_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
   distr_est(x = x, dist = "sstd", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -402,6 +504,7 @@ sstd_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 # Special skewed GED estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 sged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
   distr_est(x = x, dist = "sged", fix_mean = fix_mean, fix_sdev = fix_sdev,
@@ -412,9 +515,85 @@ sged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 # Special skewed ALD estimation wrapper
 
 #'@export
+#'@rdname distribution_estimation
 sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 
   distr_est(x = x, dist = "sald", fix_mean = fix_mean, fix_sdev = fix_sdev,
             Prange = Prange)
+
+}
+
+
+#'@export
+find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"), fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), criterion = c("bic", "aic")) {
+
+  criterion <- match.arg(criterion)
+
+  ests <- lapply(
+    X = dists,
+    FUN = function(.y, x, fix_mean, fix_sdev, Prange) {
+      distr_est(x = x, dist = .y, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange)
+    },
+    x = x, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange
+  )
+
+  bics <- vapply(
+    X = ests,
+    FUN = function(.x, criterion) {
+      inf_criteria(.x)[[criterion]]
+    },
+    FUN.VALUE = numeric(1), criterion = criterion
+  )
+
+  idx <- which.min(bics)
+
+  ests[[idx]]
+
+}
+
+#'@export
+construct_risk <- function(x, dist, sigt, cmeans, level = c(0.975, 0.99)) {
+
+  dist_name <- dist@dist
+  par <- pars(dist)
+
+  args <- list("dist" = dist_name)
+
+  if (dist_name %in% c("std", "ged", "ald", "sstd", "sged", "sald")) {
+    par_name <- switch(
+      dist_name,
+      "std" = "df",
+      "ged" = "shape",
+      "ald" = "P",
+      "sstd" = "df",
+      "sged" = "shape",
+      "sald" = "P"
+    )
+    par_val <- par[[par_name]]
+    args[[par_name]] <- par_val
+  }
+
+  if(dist_name %in% c("snorm", "sstd", "sged", "sald")) {
+    args[["skew"]] <- par[["skew"]]
+  }
+
+  VaR_out <- ES_out <- vector(mode = "list", length = length(level))
+
+  i <- 0
+
+  for (lev in level) {
+    i <- i + 1
+    args[["level"]] <- lev
+    VaR <- do.call(what = VaR_calc, args = args)
+    ES <- do.call(what = ES_calc, args = args)
+
+    VaR_out[[i]] <- cmeans - sigt * VaR
+    ES_out[[i]] <- cmeans - sigt * ES
+  }
+
+  list(
+    VaR = VaR_out,
+    ES = ES_out
+  )
 
 }

@@ -92,6 +92,7 @@ Collate:
   'reexport-pipe.R'
   'test-functions.R'
   'distr_est.R'
+  'class-fEGarch_distr_est.R'
 Depends: 
     R (>= 3.5),
     methods
