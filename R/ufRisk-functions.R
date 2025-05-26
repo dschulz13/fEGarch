@@ -342,7 +342,16 @@ setMethod("trafflight_test", "fEGarch_risk",
 
   obs <- object@observations
   n <- length(obs)
-  cond_d <- object@model@cond_dist
+
+  slotnames <- methods::slotNames(object@model)
+  cond_d <- if ("cond_dist" %in% slotnames) {
+    object@model@cond_dist
+  } else if ("dist" %in% slotnames) {
+    object@model@dist
+  } else {
+    stop("Neither slot @cond_dist nor @dist to be found in model.")
+  }
+
   par_name <- switch(
     cond_d,
     "norm" = "df",    # irrelevant
