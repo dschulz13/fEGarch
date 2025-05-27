@@ -80,6 +80,9 @@
 #'the conditional mean and the conditional standard deviation,}
 #'\item{\code{\link{predict_roll,fEGarch_fit-method}}:}{rolling point forecasts of
 #'the conditional mean and the conditional standard deviation over a test set.}
+#'\item{\code{\link{find_dist}}:}{fits all eight distributions considered in this
+#'package to a supposed iid series and selects the best fitted distribution
+#'following either BIC (the default) or AIC.}
 #'}
 #'
 #'@section Datasets:

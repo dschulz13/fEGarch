@@ -639,6 +639,54 @@ find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd",
 setMethod("measure_risk", "fEGarch_distr_est",
   function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), test_obs, sigt, cmeans, ...) {
 
+  # check inheritance of time series formatting
+  inp_list <- list(
+    test_obs, sigt, cmeans
+  )
+  checks_zoo <- vapply(
+    X = inp_list,
+    FUN = function(.x) {
+      inherits(.x, what = "zoo")
+    },
+    FUN.VALUE = logical(1)
+  )
+  check_zoo <- any(checks_zoo)
+
+  checks_ts <- vapply(
+    X = inp_list,
+    FUN = function(.x) {
+      inherits(.x, what = "ts")
+    },
+    FUN.VALUE = logical(1)
+  )
+  check_ts <- any(checks_ts)
+
+  format_giver <- if (check_zoo) {
+    inp_list[checks_zoo][[1]]
+  } else if (check_ts) {
+    inp_list[checks_ts][[1]]
+  }
+
+  test_obs <- zoo::coredata(test_obs)
+  sigt <- zoo::coredata(sigt)
+  cmeans <- zoo::coredata(cmeans)
+
+  if (check_zoo || check_ts) {
+    series_out <- format_applier_ts(
+      rt = format_giver,
+      list_of_ts = list(
+        "test_obs" = test_obs,
+        "sigt" = sigt,
+        "cmeans" = cmeans
+      )
+    )
+
+  test_obs <- series_out$test_obs
+  sigt <- series_out$sigt
+  cmeans <- series_out$cmeans
+
+  }
+
   dist_name <- object@dist
   par <- pars(object)
 
@@ -703,7 +751,6 @@ setMethod("measure_risk", "fEGarch_distr_est",
   } else {
     ES_out <- list()
   }
-
 
   fEGarch_risk(
     measures = list("VaR" = VaR_out, "ES" = ES_out),

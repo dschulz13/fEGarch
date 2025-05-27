@@ -732,6 +732,73 @@ risk %>%
 #> [1] 0.000475253
 ```
 
+### Further VaR and ES Computation and Backtesting Capabilities
+
+``` r
+resids <- new_model@etat
+test_obs <- new_model@test_obs
+sigt <- fc2@sigt
+cmeans <- fc2@cmeans
+```
+
+Assume now that the objects `resids`, `test_obs`, `sigt` and `cmeans`
+reflect the in-sample standardized residuals obtained from some model,
+the test returns, one-step rolling point forecasts of the conditional
+standard deviation for the same test period and the one-step rolling
+point forecasts of the conditional mean for the same test period,
+respectively. Furthermore, also assume that they were not obtained
+through a parametric (or semiparametric) GARCH-type model but through
+some fully nonparametric idea like for example a neural network. Given
+those series, the `fEGarch` package provides a simple way to compute and
+backtest VaR and ES even for such nonparametric approaches.
+
+``` r
+opt_dist <- resids %>%
+  find_dist(fix_mean = 0, fix_sdev = 1, criterion = "bic")
+opt_dist
+#> *************************************
+#> *         Fitted Distribution       *
+#> *************************************
+#>  
+#> Distribution: sald
+#> Fixed: 0 (mean), 1 (sdev)
+#>  
+#> Fitted parameters:
+#> 
+#>         par     se    tval   pval
+#> P    2.0000     NA      NA     NA
+#> skew 0.8580 0.0142 60.4752 0.0000
+#>  
+#> Information criteria:
+#> AIC: 2.7878, BIC: 2.7900
+risk_obj <- opt_dist %>%
+  measure_risk(test_obs = test_obs, sigt = sigt, cmeans = cmeans)
+```
+
+`find_dist()` uses maximum-likelihood estimation on the in-sample
+standardized residual series to find the best distribution among the
+eight available innovation distributions in this package following
+either the BIC (the default) or the AIC. This returns an object of class
+`"fEGarch_distr_est"`, for which there is a special method of
+`measure_risk()`. Therefore, to compute the VaR and ES forecasts, feed
+the output of `find_dist()` to `measure_risk()` while also supplying the
+function with the objects `test_obs`, `sigt` and `cmeans`. The output is
+now formatted identically to that of the `measure_risk()` method applied
+to the output of `predict_roll()` for GARCH-type models and can be
+treated the same as before.
+
+``` r
+risk_obj %>%
+  plot(which = 0.975, xlab = "Month")
+# Inclusion of the output is omitted here to save space.
+```
+
+``` r
+risk_obj %>%
+  backtest_suite()
+# Inclusion of the output is omitted here to save space.
+```
+
 ## Main functions
 
 The main functions of the package are:
@@ -773,8 +840,16 @@ The main functions of the package are:
   conditional mean and the conditional standard deviation over a test
   set following one of the package’s fitted models.
 
+- `measure_risk()`: given certain input objects with information about
+  (forecasts of) conditional standard deviation and conditional mean,
+  computes the corresponding (forecasts of) VaR and ES.
+
 - `backtest_suite()`: a collection of tests for backtesting of VaR and
   ES.
+
+- `find_dist()`: fits all eight distributions considered in this package
+  to a supposed iid series and selects the best fitted distribution
+  following either BIC (the default) or AIC.
 
 The package, however, provides many other useful functions to discover.
 
@@ -793,8 +868,8 @@ as a time series object of class `"zoo"`.
 - Yuanhua Feng (Department Economics, Paderborn University, Germany)
   (Author)
 
-- Christian Peitz (formerly: Department Economics, Paderborn University,
-  Germany) (Author)
+- Christian Peitz (Financial Intelligence Unit, German Government)
+  (Author)
 
 - Oliver Kojo Ayensu (Department Economics, Paderborn University,
   Germany) (Author)
