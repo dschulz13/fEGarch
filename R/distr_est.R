@@ -523,8 +523,40 @@ sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 
 }
 
-
+#'Optimal Distribution Fitting to IID Data
+#'
+#'Given a series supposed to be from independent but identically distributed (iid)
+#'random variables, fit all eight distributions of this package to the data
+#'using maximum-likelihood estimation (MLE) and select the best one following
+#'either the BIC (the default) or the AIC.
+#'
+#'@param x the vector of iid values to fit distributions to.
+#'@param dists a vector with all the distribution abbreviations which
+#'should be considered in the selection process; by default, all eight
+#'distributions of this package are considered.
+#'@param fix_mean a value to fix the unconditional mean of the distribution to;
+#'with the default \code{NULL}, the unconditional mean is estimated as an extra parameter.
+#'@param fix_sdev a value to fix the unconditional standard deviation of the distribution to;
+#'with the default \code{NULL}, the unconditional standard deviation is estimated as an extra parameter.
+#'@param Prange a two-element vector giving the search range for the shape parameter
+#'\eqn{P} of the (skewed) average Laplace distribution.
+#'@param criterion either \code{"bic"} or \code{"aic"} to use BIC or AIC as
+#'the final selection criterion; by default \code{"bic"} is implemented.
+#'
+#'@details
+#'For information on the method and distributions, we refer the reader to
+#'\code{\link{distribution_estimation}}.
+#'
+#'@return
+#'Returns an object of class \code{"fEGarch_distr_est"} with various slots
+#'representing the estimation results of the selected fitted distribution.
+#'
 #'@export
+#'
+#'@examples
+#'x <- rnorm(2000) * 2.1 + 10.5
+#'find_dist(x)
+#'
 find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"), fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), criterion = c("bic", "aic")) {
 
   criterion <- match.arg(criterion)
@@ -532,7 +564,7 @@ find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd",
   ests <- lapply(
     X = dists,
     FUN = function(.y, x, fix_mean, fix_sdev, Prange) {
-      distr_est(x = x, dist = .y, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange)
+      suppressWarnings(distr_est(x = x, dist = .y, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange))
     },
     x = x, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange
   )
