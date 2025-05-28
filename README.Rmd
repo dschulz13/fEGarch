@@ -286,10 +286,29 @@ risk %>%
 
 Ultimately, the package is also capable of computing loss functions based on VaR and ES. For detailed description of those loss functions, see the manual of the package.
 
-```{r}
+```{r, eval = FALSE}
+# Output suppressed to save space
 risk %>%
   loss_functions(penalty = 1e-04)
 ```
+
+A better model regarding VaR and ES forecasting for this particular example could be implemented and checked as follows.
+
+```{r}
+# Fit and check a FILog-GARCH(1, d, 1) with
+# conditional t-distribution
+new_model2 <- filoggarch_spec(cond_dist = "std") %>%
+  fEGarch(rt, n_test = 250)
+
+risk_nm2 <- new_model2 %>%
+  predict_roll() %>%
+  measure_risk()
+
+risk_nm2 %>%
+  backtest_suite()
+```
+
+
 
 ### Further VaR and ES Computation and Backtesting Capabilities
 

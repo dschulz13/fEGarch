@@ -7,7 +7,7 @@
 \description{
 A library of quasi maximum-likelihood estimation (QMLE) methods for
 fitting various short- and long-memory models from a broad family of
-exponential generalized conditional heteroskedasticity (EGARCH) models.
+exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models.
 For the purpose of comparison, a FIAPARCH (fractionally integrated
 asymmetric power ARCH) and a FIGARCH (fractionally integrated GARCH)
 can be implemented as well among others.
@@ -86,9 +86,12 @@ a GJR-GARCH, a TGARCH, an APARCH, a FIGARCH, a FIGJR-GARCH, a FITGARCH and a FIA
 the conditional mean and the conditional standard deviation,}
 \item{\code{\link{predict_roll,fEGarch_fit-method}}:}{rolling point forecasts of
 the conditional mean and the conditional standard deviation over a test set.}
+\item{\code{\link{measure_risk}}:}{value at risk and expected shortfall computation for various model specifications.}
 \item{\code{\link{find_dist}}:}{fits all eight distributions considered in this
 package to a supposed iid series and selects the best fitted distribution
 following either BIC (the default) or AIC.}
+\item{\code{\link{backtest_suite,fEGarch_risk-method}}:}{runs a selection of functions
+for backtesting VaR and ES.}
 }
 }
 
@@ -112,6 +115,11 @@ The package is distributed under the General Public License v3
 \itemize{
 \item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
 Theory and Application. Forthcoming preprint, Paderborn University.}
+\item{Baillie, R., Bollerslev, T., & Mikkelsen, H. O. (1996). Fractionally integrated generalized autoregressive conditional heteroskedasticity.
+Journal of Econometrics,
+74(1), 3-30. DOI: 10.1016/S0304-4076(95)01749-6.}
+\item{Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity.
+Journal of Econometrics, 31(3): 307-327. DOI: 10.1016/0304-4076(86)90063-1.}
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
 73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
 \item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
@@ -123,6 +131,8 @@ of the long memory GARCH process. Economics Letters, 90(1):
 \item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
 and a new model. Journal of Empirical Finance, 1(1):
 83-106. DOI: 10.1016/0927-5398(93)90006-D.}
+\item{Engle, R. F. (1982). Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation.
+Econometrica, 50(4): 987-1007. DOI: 10.2307/1912773.}
 \item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
 Working Papers CIE No. 137, Paderborn University, Center for International Economics.
 URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
@@ -136,6 +146,9 @@ URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
 with short- or long-memory in volatility. Unpublished working paper at Paderborn University.}
 \item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 57-61. DOI: 10.1080/07474938608800088.}
+\item{Glosten, L. R., Jagannathan, R., & Runkle, D. E. (1993). On The Relation between The Expected Value and The
+Volatility of Nominal Excess Return on stocks. Journal of Finance 48(5), 1779-1801.
+DOI: 10.1111/j.1540-6261.1993.tb05128.x.}
 \item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of
 long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
 265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
@@ -157,6 +170,8 @@ DOI: 10.1016/0304-4076(87)90017-0}
 \item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
 49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
+\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
+931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 }
 }
 \author{
@@ -167,8 +182,7 @@ Author and Package Creator
 \item Yuanhua Feng (Department of Economics, Paderborn
 University), \cr
 Author
-\item Christian Peitz (Department of Economics, Paderborn
-University), \cr
+\item Christian Peitz (Financial Intelligence Unit, German Government), \cr
 Author
 \item Oliver Kojo Ayensu (Department of Economics, Paderborn
 University), \cr

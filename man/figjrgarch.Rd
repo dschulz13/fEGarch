@@ -223,7 +223,8 @@ mentioned in Bollerslev and Mikkelsen (1996) or Tse (1998), which are however
 sometimes restrictive, or the simultaneously necessary and sufficient conditions
 by Conrad and Haag (2006), which are however complex to implement properly.
 
-See also the reference section for sources on the more general
+See also the reference section for sources on the
+GJR-GARCH (Glosten et al., 1993), the more general
 APARCH (Ding et al., 1993) and the FIAPARCH (Tse, 1998) models.
 
 In the current package version, standard errors of parameter estimates are
@@ -328,6 +329,9 @@ and a new model. Journal of Empirical Finance, 1(1):
 \item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 Trend Stationary Time Series. The R Journal,
 14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+\item{Glosten, L. R., Jagannathan, R., & Runkle, D. E. (1993). On The Relation between The Expected Value and The
+Volatility of Nominal Excess Return on stocks. Journal of Finance 48(5), 1779-1801.
+DOI: 10.1111/j.1540-6261.1993.tb05128.x.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}

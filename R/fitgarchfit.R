@@ -252,7 +252,8 @@ goal_fun_creator_fitgarch <- function(
 #'sometimes restrictive, or the simultaneously necessary and sufficient conditions
 #'by Conrad and Haag (2006), which are however complex to implement properly.
 #'
-#'See also the reference section for sources on the more general
+#'See also the reference section for sources on the
+#'TGARCH model (Zakoian, 1994), the more general
 #'APARCH (Ding et al., 1993) and the FIAPARCH (Tse, 1998) models.
 #'
 #'In the current package version, standard errors of parameter estimates are
@@ -397,6 +398,8 @@ goal_fun_creator_fitgarch <- function(
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 #'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
+#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
+#'931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 #'}
 #'
 fitgarch <- function(rt, orders = c(1, 1),

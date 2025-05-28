@@ -301,6 +301,9 @@ model
 }
 \references{
 \itemize{
+\item{Baillie, R., Bollerslev, T., & Mikkelsen, H. O. (1996). Fractionally integrated generalized autoregressive conditional heteroskedasticity.
+Journal of Econometrics,
+74(1), 3-30. DOI: 10.1016/S0304-4076(95)01749-6.}
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
 memory in stock market volatility. Journal of Econometrics, 73(1):
 151-184. DOI: 10.1016/0304-4076(95)01736-4.}

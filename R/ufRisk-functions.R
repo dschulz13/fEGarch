@@ -1,20 +1,7 @@
-#'Generic for Computing Risk Measures
-#'
-#'A generic for computing risk measures that in itself is currently
-#'without use.
-#'
-#'@param object currently without use.
-#'@param measure currently without use.
-#'@param level currently without use.
-#'@param ... currently without use.
-#'
-#'@return
-#'The generic itself doesn't work and doesn't produce output.
-#'
+
+#'@rdname measure_risk
 #'@export
 #'
-
-
 
 setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), ...) {standardGeneric("measure_risk")})
 
@@ -29,15 +16,22 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'
 #'@param object either an object of class \code{"fEGarch_fit"} returned by the
 #'fitting / estimation functions of this package like returned by for example
-#'\code{\link{fEGarch}} among others, or an object of class \code{"fEGarch_forecast"}
+#'\code{\link{fEGarch}} among others, an object of class \code{"fEGarch_forecast"}
 #'as returned by \code{\link{predict,fEGarch_fit-method}} or
-#'\code{\link{predict_roll,fEGarch_fit-method}}.
+#'\code{\link{predict_roll,fEGarch_fit-method}}, or an object of class \code{"fEGarch_distr_est"} returned by the
+#'distribution fitting functions of this package like returned by for example
+#'\code{\link{find_dist}} among others.
 #'@param measure a character vector with element \code{"VaR"}, \code{"ES"} or both;
 #'indicates, what risk measures should be computed; by default, both VaR and ES
 #'are computed.
 #'@param level a numeric vector of arbitrary length indicating the confidence
 #'levels to compute the VaR and the ES at; by default, the levels
 #'\code{0.975} and \code{0.99}, i.e. 97.5 percent and 99 percent, are considered.
+#'@param test_obs a series of test observations (only required when \code{object} is of class \code{"fEGarch_distr_est"}).
+#'@param sigt a series of forecasted conditional standard deviations for the
+#'same time points as \code{test_obs} (only required when \code{object} is of class \code{"fEGarch_distr_est"}).
+#'@param cmeans a series of forecasted conditional means for the
+#'same time points as \code{test_obs} (only required when \code{object} is of class \code{"fEGarch_distr_est"}).
 #'@param ... currently without use.
 #'
 #'@details
@@ -69,12 +63,30 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'\eqn{f^{-1}_{\eta}(1-\alpha)} returns the quantile of the innovation distribution at level
 #'\eqn{1-\alpha}.
 #'
+#'In some cases, when rolling
+#'one-step forecasts of the conditional standard deviations and the conditional means
+#'were obtained following a nonparametric approach, for example through
+#'neural networks or similar approaches, VaR and ES are not directly to be calculated
+#'because distribution assumptions have not been made. If an \code{object} that
+#'is a fitted distribution to the model's standardized in-sample residuals is provided,
+#'and if also test observations as well as forecasted conditional standard deviations
+#'and conditional means for the test time points are passed to the method, VaR
+#'and ES will be computed using the fitted distribution in \code{object}. Note
+#'that \code{object} must be of class \code{"fEGarch_distr_est"}. A natural
+#'selection of \code{object} is the output of \code{\link{find_dist}}, which returns
+#'the best fitted model among a normal distribution, a \eqn{t}-distribution, a
+#'generalized error distribution, an average Laplace distribution, and their skewed
+#'variants, following either BIC (the default) or AIC. It is recommended to then
+#'set \code{fix_mean = 0} and \code{fix_sdev = 1} in the call to
+#'\code{\link{find_dist}} to reflect the known property that the residuals are assumed
+#'to be estimated from innovations with mean zero and variance one.
+#'
 #'@rdname measure_risk
 #'
 #'@export
 #'
 #'@return
-#'Returns an object of class \code{"fEGarch_risk"} with elements \code{measures},
+#'The S4 methods all return an object of class \code{"fEGarch_risk"} with elements \code{measures},
 #'\code{observations} and \code{model}.
 #'\code{observations} is the observed series at the time points, for which the
 #'risk measures are calculated. \code{measures} is a list with elements
@@ -99,6 +111,32 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'risk2 <- measure_risk(fcast, measure = c("VaR", "ES"), level = c(0.95, 0.975, 0.99))
 #'risk2
 #'
+#'# Use some model to obtain rolling point forecasts of
+#'# the conditional mean and the conditional standard deviation for
+#'# some test period; in practice, this will not be from a GARCH-type
+#'# model, because it is parametric and includes a distribution assumption,
+#'# but instead from some nonparametric model
+#'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+#'rt <- window.zoo(SP500, end = "2005-12-31")
+#'model <- fEGarch(egarch_spec(), rt, n_test = 250)
+#'fc <- model %>% predict_roll()
+#'
+#'test_obs <- model@test_obs   # Test observations
+#'sigt <- fc@sigt              # Conditional volatility forecasts
+#'cmeans <- fc@cmeans          # Conditional mean forecasts
+#'
+#'resids <- model@etat         # In-sample standardized residuals
+#'
+#'# Given 'test_obs', 'sigt', 'cmeans' and 'resids', we can now
+#'# compute the VaR and ES forecasts for the test period
+#'
+#'dist <- find_dist(resids, fix_mean = 0, fix_sdev = 1)
+#'dist
+#'
+#'risk <- dist %>%
+#'  measure_risk(test_obs = test_obs, sigt = sigt, cmeans = cmeans)
+#'
+#'plot(risk, which = 0.975)
 #'
 #'
 #'

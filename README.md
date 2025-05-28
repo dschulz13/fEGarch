@@ -659,77 +659,127 @@ based on VaR and ES. For detailed description of those loss functions,
 see the manual of the package.
 
 ``` r
+# Output suppressed to save space
 risk %>%
   loss_functions(penalty = 1e-04)
-#> $rlf
-#> $rlf$VaR
-#> $rlf$VaR$VaR0.975
-#> [1] 0.0002580637
+```
+
+A better model regarding VaR and ES forecasting for this particular
+example could be implemented and checked as follows.
+
+``` r
+# Fit and check a FILog-GARCH(1, d, 1) with
+# conditional t-distribution
+new_model2 <- filoggarch_spec(cond_dist = "std") %>%
+  fEGarch(rt, n_test = 250)
+
+risk_nm2 <- new_model2 %>%
+  predict_roll() %>%
+  measure_risk()
+
+risk_nm2 %>%
+  backtest_suite()
 #> 
-#> $rlf$VaR$VaR0.99
-#> [1] 9.73463e-05
+#> ***********************
+#> * Traffic light tests *
+#> ***********************
 #> 
+#> VaR results:
+#> ************
 #> 
-#> $rlf$ES
-#> $rlf$ES$ES0.975
-#> [1] 9.414367e-05
+#> Conf. level: 0.975
+#> Breaches: 7
+#> Cumul. prob.: 0.7103
+#> Zone: Green zone
 #> 
-#> $rlf$ES$ES0.99
-#> [1] 2.965087e-05
-#> 
-#> 
-#> 
-#> $flf
-#> $flf$VaR
-#> $flf$VaR$VaR0.975
-#> [1] 0.000615355
-#> 
-#> $flf$VaR$VaR0.99
-#> [1] 0.0005265255
-#> 
-#> 
-#> $flf$ES
-#> $flf$ES$ES0.975
-#> [1] 0.0005254611
-#> 
-#> $flf$ES$ES0.99
-#> [1] 0.0005259177
-#> 
-#> 
-#> 
-#> $alf
-#> $alf$VaR
-#> $alf$VaR$VaR0.975
-#> [1] 0.0006587445
-#> 
-#> $alf$VaR$VaR0.99
-#> [1] 0.0005659922
+#> Conf. level: 0.99
+#> Breaches: 3
+#> Cumul. prob.: 0.7581
+#> Zone: Green zone
 #> 
 #> 
-#> $alf$ES
-#> $alf$ES$ES0.975
-#> [1] 0.0005649277
+#> ES results:
+#> ***********
 #> 
-#> $alf$ES$ES0.99
-#> [1] 0.0005618697
+#> Conf. level: 0.975
+#> Severity of breaches: 3.5922
+#> Cumul. prob.: 0.6281
+#> Zone: Green zone
+#> 
+#> Conf. level: 0.99
+#> Severity of breaches: 0.8655
+#> Cumul. prob.: 0.3362
+#> Zone: Green zone
 #> 
 #> 
 #> 
-#> $clf
-#> $clf$VaR
-#> $clf$VaR$VaR0.975
-#> [1] 0.0005721278
+#> *******************************
+#> * Weighted Absolute Deviation *
+#> *******************************
 #> 
-#> $clf$VaR$VaR0.99
-#> [1] 0.0004793754
+#> Following 99%-VaR, 97.5%-VaR and 97.5%-ES.
+#> 
+#> WAD: 0.4695
 #> 
 #> 
-#> $clf$ES
-#> $clf$ES$ES0.975
-#> [1] 0.000478311
+#> ***************************************
+#> * Unconditional coverage test for VaR *
+#> ***************************************
 #> 
-#> $clf$ES$ES0.99
-#> [1] 0.000475253
+#> H0: true share of covered observations = theoretical share of VaR
+#> 
+#> Conf. level: 0.975
+#> Breaches: 7
+#> Test statistic: 0.0889
+#> p-value: 0.7656
+#> Decision: Do not reject H0
+#> 
+#> Conf. level: 0.99
+#> Breaches: 3
+#> Test statistic: 0.0949
+#> p-value: 0.7580
+#> Decision: Do not reject H0
+#> 
+#> 
+#> *****************************
+#> * Independence test for VaR *
+#> *****************************
+#> 
+#> H0: true share of covered observations independent
+#>     of breach or no breach at previous time point
+#> 
+#> Conf. level: 0.975
+#> Breaches: 7
+#> Test statistic: 0.4050
+#> p-value: 0.5245
+#> Decision: Do not reject H0
+#> 
+#> Conf. level: 0.99
+#> Breaches: 3
+#> Test statistic: 0.0732
+#> p-value: 0.7868
+#> Decision: Do not reject H0
+#> 
+#> 
+#> *************************************
+#> * Conditional coverage test for VaR *
+#> *************************************
+#> 
+#> H0: true share of covered observations simultaneously
+#>     independent of breach or no breach at previous time point
+#>     and equal to theoretical share of VaR
+#> 
+#> Conf. level: 0.975
+#> Breaches: 7
+#> Test statistic: 0.5002
+#> p-value: 0.7787
+#> Decision: Do not reject H0
+#> 
+#> Conf. level: 0.99
+#> Breaches: 3
+#> Test statistic: 0.1722
+#> p-value: 0.9175
+#> Decision: Do not reject H0
 ```
 
 ### Further VaR and ES Computation and Backtesting Capabilities
