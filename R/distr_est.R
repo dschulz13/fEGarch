@@ -107,7 +107,7 @@ nllhood_setup <- function(theta, y, pdf_fun, extra_par, skew_par, mean_par, sdev
 #'
 #'@references
 #'\itemize{
-#'\item{Fernandez, C., & Steel, M. F. J. (1998). MOn Bayesian Modeling of Fat Tails and Skewness.
+#'\item{Fernandez, C., & Steel, M. F. J. (1998). Bayesian Modeling of Fat Tails and Skewness.
 #'Journal of the American Statistical Association,
 #'93(441), 359–371. DOI: 10.1080/01621459.1998.10474117.}
 #'}
@@ -238,7 +238,7 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
   }
 
   if (is.null(fix_sdev)) {
-    SD_x <- sd(x)
+    SD_x <- stats::sd(x)
     start_sdev <- SD_x
     LB_sdev <- SD_x / 4
     UB_sdev <- SD_x * 4
@@ -545,7 +545,7 @@ sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 #'
 #'@details
 #'For information on the method and distributions, we refer the reader to
-#'\code{\link{distribution_estimation}}.
+#'\code{\link{distr_est}}.
 #'
 #'@return
 #'Returns an object of class \code{"fEGarch_distr_est"} with various slots

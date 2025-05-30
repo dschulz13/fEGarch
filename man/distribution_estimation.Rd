@@ -114,7 +114,7 @@ sstd_est(x)
 }
 \references{
 \itemize{
-\item{Fernandez, C., & Steel, M. F. J. (1998). MOn Bayesian Modeling of Fat Tails and Skewness.
+\item{Fernandez, C., & Steel, M. F. J. (1998). Bayesian Modeling of Fat Tails and Skewness.
 Journal of the American Statistical Association,
 93(441), 359–371. DOI: 10.1080/01621459.1998.10474117.}
 }

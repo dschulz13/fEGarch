@@ -44,7 +44,7 @@ either the BIC (the default) or the AIC.
 }
 \details{
 For information on the method and distributions, we refer the reader to
-\code{\link{distribution_estimation}}.
+\code{\link{distr_est}}.
 }
 \examples{
 x <- rnorm(2000) * 2.1 + 10.5
