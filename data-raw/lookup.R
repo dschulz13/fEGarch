@@ -1,38 +1,63 @@
+
 lookup_table <- list(
   fun1 = list(
-    "norm" = function(x, shape, skew) {c(get("pdf_norm_v1", envir = asNamespace("fEGarch"))(x))},
-    "std" = function(x, shape, skew) {c(get("pdf_std_v1", envir = asNamespace("fEGarch"))(x, df = shape))},
-    "ged" = function(x, shape, skew) {c(get("pdf_ged_v1", envir = asNamespace("fEGarch"))(x, shape = shape))},
-    "ald" = function(x, shape, skew) {c(get("pdf_ald_v1", envir = asNamespace("fEGarch"))(x, P = shape))},
-    "snorm" = function(x, shape, skew) {get("pdf_skew_norm_s", envir = asNamespace("fEGarch"))(x, skew = skew)},
-    "sstd" = function(x, shape, skew) {get("pdf_skew_sstd_s", envir = asNamespace("fEGarch"))(x, df = shape, skew = skew)},
-    "sged" = function(x, shape, skew) {get("pdf_skew_sged_s", envir = asNamespace("fEGarch"))(x, shape = shape, skew = skew)},
-    "sald" = function(x, shape, skew) {get("pdf_skew_sald_s", envir = asNamespace("fEGarch"))(x, P = shape, skew = skew)}
+    "norm" = function(x, shape, skew) {
+      c(function(rt) {
+        .Call('_fEGarch_pdf_norm_v1', PACKAGE = 'fEGarch', rt)
+      }(x))
+    },
+    "std" = function(x, shape, skew) {
+      c(function(rt, df) {
+        .Call('_fEGarch_pdf_std_v1', PACKAGE = 'fEGarch', rt, df)
+      }(x, df = shape))
+    },
+    "ged" = function(x, shape, skew) {
+      c(function(rt, shape) {
+        .Call('_fEGarch_pdf_ged_v1', PACKAGE = 'fEGarch', rt, shape)
+      }(x, shape = shape))
+    },
+    "ald" = function(x, shape, skew) {
+      c(function(x, P) {
+        .Call('_fEGarch_pdf_ald_v1', PACKAGE = 'fEGarch', x, P)
+      }(x, P = shape))
+    },
+    "snorm" = function(x, shape, skew) {
+      function(x, skew) {
+        moms <- central_mom_snorm(skew)
+        mom1 <- moms[[1]]
+        mom2 <- sqrt(moms[[2]])
+        fac <- mom2
+        fac * c(pdf_skew_snorm(x * fac + mom1, skew = skew))
+      }(x, skew = skew)
+    },
+    "sstd" = function(x, shape, skew) {getFromNamespace("pdf_skew_sstd_s", ns = "fEGarch")(x, df = shape, skew = skew)},
+    "sged" = function(x, shape, skew) {getFromNamespace("pdf_skew_sged_s", ns = "fEGarch")(x, shape = shape, skew = skew)},
+    "sald" = function(x, shape, skew) {getFromNamespace("pdf_skew_sald_s", ns = "fEGarch")(x, P = shape, skew = skew)}
   ),
   fun2 = list(
     "norm" = function(x, mu, sigt, shape, skew) {
-      c(get("pdf_norm", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt))
+      c(getFromNamespace("pdf_norm", ns = "fEGarch")(x, mu = mu, sigt = sigt))
     },
     "std" = function(x, mu, sigt, shape, skew) {
-      c(get("pdf_std", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, df = shape))
+      c(getFromNamespace("pdf_std", ns = "fEGarch")(x, mu = mu, sigt = sigt, df = shape))
     },
     "ged" = function(x, mu, sigt, shape, skew) {
-      c(get("pdf_ged", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, shape = shape))
+      c(getFromNamespace("pdf_ged", ns = "fEGarch")(x, mu = mu, sigt = sigt, shape = shape))
     },
     "ald" = function(x, mu, sigt, shape, skew) {
-      c(get("pdf_ald", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, P = shape))
+      c(getFromNamespace("pdf_ald", ns = "fEGarch")(x, mu = mu, sigt = sigt, P = shape))
     },
     "snorm" = function(x, mu, sigt, shape, skew) {
-      get("pdf_skew_norm_final", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, skew = skew)
+      getFromNamespace("pdf_skew_norm_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, skew = skew)
     },
     "sstd" = function(x, mu, sigt, shape, skew) {
-      get("pdf_skew_sstd_final", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, df = shape, skew = skew)
+      getFromNamespace("pdf_skew_sstd_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, df = shape, skew = skew)
     },
     "sged" = function(x, mu, sigt, shape, skew) {
-      get("pdf_skew_sged_final", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, shape = shape, skew = skew)
+      getFromNamespace("pdf_skew_sged_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, shape = shape, skew = skew)
     },
     "sald" = function(x, mu, sigt, shape, skew) {
-      get("pdf_skew_sald_final", envir = asNamespace("fEGarch"))(x, mu = mu, sigt = sigt, P = shape, skew = skew)
+      getFromNamespace("pdf_skew_sald_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, P = shape, skew = skew)
     }
   ),
   # starting_par, lower bound, upper bound
@@ -67,14 +92,14 @@ lookup_table <- list(
     "sald" = TRUE
   ),
   sim_funs = list(
-    "norm" = function(x, shape, skew) {get("rnorm_s", envir = asNamespace("fEGarch"))(x)},
-    "std" = function(x, shape, skew) {get("rstd_s", envir = asNamespace("fEGarch"))(x, df = shape)},
-    "ged" = function(x, shape, skew) {get("rged_s", envir = asNamespace("fEGarch"))(x, shape = shape)},
-    "ald" = function(x, shape, skew) {get("rald_s", envir = asNamespace("fEGarch"))(x, P = shape)},
-    "snorm" = function(x, shape, skew) {get("rsnorm_s", envir = asNamespace("fEGarch"))(x, skew = skew)},
-    "sstd" = function(x, shape, skew) {get("rsstd_s", envir = asNamespace("fEGarch"))(x, df = shape, skew = skew)},
-    "sged" = function(x, shape, skew) {get("rsged_s", envir = asNamespace("fEGarch"))(x, shape = shape, skew = skew)},
-    "sald" = function(x, shape, skew) {get("rsald_s", envir = asNamespace("fEGarch"))(x, P = shape, skew = skew)}
+    "norm" = function(x, shape, skew) {getFromNamespace("rnorm_s", ns = "fEGarch")(x)},
+    "std" = function(x, shape, skew) {getFromNamespace("rstd_s", ns = "fEGarch")(x, df = shape)},
+    "ged" = function(x, shape, skew) {getFromNamespace("rged_s", ns = "fEGarch")(x, shape = shape)},
+    "ald" = function(x, shape, skew) {getFromNamespace("rald_s", ns = "fEGarch")(x, P = shape)},
+    "snorm" = function(x, shape, skew) {getFromNamespace("rsnorm_s", ns = "fEGarch")(x, skew = skew)},
+    "sstd" = function(x, shape, skew) {getFromNamespace("rsstd_s", ns = "fEGarch")(x, df = shape, skew = skew)},
+    "sged" = function(x, shape, skew) {getFromNamespace("rsged_s", ns = "fEGarch")(x, shape = shape, skew = skew)},
+    "sald" = function(x, shape, skew) {getFromNamespace("rsald_s", ns = "fEGarch")(x, P = shape, skew = skew)}
   ),
   sim_pars_default = list(
      mu = 0,
@@ -205,13 +230,13 @@ mode_mat[1, 2] <- "log_pow"
 mode_mat[2, 1] <- "pow_log"
 
 sigt_funs_egarch <- list(
-  get("sigt_egarch_short_R", envir = asNamespace("fEGarch")),
-  get("sigt_egarch_long_R", envir = asNamespace("fEGarch"))
+  utils::getFromNamespace("sigt_egarch_short_R", ns = "fEGarch"),
+  utils::getFromNamespace("sigt_egarch_long_R", ns = "fEGarch")
 )
 
 sigt_funs_loggarch <- list(
-  get("sigt_loggarch_short_R", envir = asNamespace("fEGarch")),
-  get("sigt_loggarch_long_R", envir = asNamespace("fEGarch"))
+  utils::getFromNamespace("sigt_loggarch_short_R", ns = "fEGarch"),
+  utils::getFromNamespace("sigt_loggarch_long_R", ns = "fEGarch")
 )
 
 smoots_default <- list(
