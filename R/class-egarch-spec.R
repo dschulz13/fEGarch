@@ -1608,6 +1608,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   # Obtain model orders
   order <- orders(spec)
+  if (order[[2]] > order[[1]]) {
+    warning("For a Log-GARCH-type model, the order q should usually not be greater than the order p; not following this may lead to estimation problems.")
+  }
   p <- order[[1]]
   q <- order[[2]]
   # Conditional distribution
