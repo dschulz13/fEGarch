@@ -58,8 +58,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     message("trunc reduced to n + ", presample, " - 1")
   }
 
-  dfun1 <- lookup_table$fun1[[cond_d]]
-  dfun2 <- lookup_table$fun2[[cond_d]]
+  dfun1 <- fun1_selector(cond_d)
+  dfun2 <- fun2_selector(cond_d)
 
   skew_par <- lookup_table[["skew_par"]][[cond_d]]
   extra_par <- lookup_table[["extra_par"]][[cond_d]]

@@ -1044,8 +1044,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Look up internally saved density functions
   # from "data-raw/lookup.R"
-  dfun1 <- lookup_table[["fun1"]][[cond_d]]
-  dfun2 <- lookup_table[["fun2"]][[cond_d]]
+  dfun1 <- fun1_selector(cond_d)
+  dfun2 <- fun2_selector(cond_d)
 
   # Look up internally saved settings for additional parameters
   # from "data-raw/lookup.R"
@@ -1632,8 +1632,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   # Look up internally saved density functions
   # from "data-raw/lookup.R"
-  dfun1 <- lookup_table[["fun1"]][[cond_d]]
-  dfun2 <- lookup_table[["fun2"]][[cond_d]]
+  dfun1 <- fun1_selector(cond_d)
+  dfun2 <- fun2_selector(cond_d)
 
   # Look up internally saved settings for additional parameters
   # from "data-raw/lookup.R"

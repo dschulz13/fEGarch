@@ -448,7 +448,7 @@ setMethod("trafflight_test", "fEGarch_risk",
 
     et <- (obs - cmeans) / sigt     # standardized residuals
     args <- list(
-      dfun = lookup_table[["fun1"]][[cond_d]],
+      dfun = fun1_selector(cond_d),
       skew = skew,
       shape = shape
     )

@@ -269,7 +269,7 @@ setMethod("goodn_of_fit_test", "fEGarch_fit", function(object, n_bins = c(20, 30
   cond_d <- model@cond_dist
   n_par <- length(pars)
 
-  dfun <- lookup_table[["fun1"]][[cond_d]]
+  dfun <- fun1_selector(cond_d)
 
   args <- list(
     dfun = dfun

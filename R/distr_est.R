@@ -137,7 +137,7 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
 
   dist <- match.arg(dist)
 
-  dfun_s <- lookup_table[["fun1"]][[dist]]
+  dfun_s <- fun1_selector(dist)
   dfun <- function(x, shape, skew, mean, sdev) {
     dfun_s(x = (x - mean) / sdev, shape = shape, skew = skew) / sdev
   }

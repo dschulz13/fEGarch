@@ -1,41 +1,4 @@
-
 lookup_table <- list(
-  fun1 = list(
-    "norm" = function(x, shape, skew) {c(utils::getFromNamespace("pdf_norm_v1", ns = "fEGarch")(x))},
-    "std" = function(x, shape, skew) {c(utils::getFromNamespace("pdf_std_v1", ns = "fEGarch")(x, df = shape))},
-    "ged" = function(x, shape, skew) {c(utils::getFromNamespace("pdf_ged_v1", ns = "fEGarch")(x, shape = shape))},
-    "ald" = function(x, shape, skew) {c(utils::getFromNamespace("pdf_ald_v1", ns = "fEGarch")(x, P = shape))},
-    "snorm" = function(x, shape, skew) {utils::getFromNamespace("pdf_skew_norm_s", ns = "fEGarch")(x, skew = skew)},
-    "sstd" = function(x, shape, skew) {utils::getFromNamespace("pdf_skew_sstd_s", ns = "fEGarch")(x, df = shape, skew = skew)},
-    "sged" = function(x, shape, skew) {utils::getFromNamespace("pdf_skew_sged_s", ns = "fEGarch")(x, shape = shape, skew = skew)},
-    "sald" = function(x, shape, skew) {utils::getFromNamespace("pdf_skew_sald_s", ns = "fEGarch")(x, P = shape, skew = skew)}
-  ),
-  fun2 = list(
-    "norm" = function(x, mu, sigt, shape, skew) {
-      c(utils::getFromNamespace("pdf_norm", ns = "fEGarch")(x, mu = mu, sigt = sigt))
-    },
-    "std" = function(x, mu, sigt, shape, skew) {
-      c(utils::getFromNamespace("pdf_std", ns = "fEGarch")(x, mu = mu, sigt = sigt, df = shape))
-    },
-    "ged" = function(x, mu, sigt, shape, skew) {
-      c(utils::getFromNamespace("pdf_ged", ns = "fEGarch")(x, mu = mu, sigt = sigt, shape = shape))
-    },
-    "ald" = function(x, mu, sigt, shape, skew) {
-      c(utils::getFromNamespace("pdf_ald", ns = "fEGarch")(x, mu = mu, sigt = sigt, P = shape))
-    },
-    "snorm" = function(x, mu, sigt, shape, skew) {
-      utils::getFromNamespace("pdf_skew_norm_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, skew = skew)
-    },
-    "sstd" = function(x, mu, sigt, shape, skew) {
-      utils::getFromNamespace("pdf_skew_sstd_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, df = shape, skew = skew)
-    },
-    "sged" = function(x, mu, sigt, shape, skew) {
-      utils::getFromNamespace("pdf_skew_sged_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, shape = shape, skew = skew)
-    },
-    "sald" = function(x, mu, sigt, shape, skew) {
-      utils::getFromNamespace("pdf_skew_sald_final", ns = "fEGarch")(x, mu = mu, sigt = sigt, P = shape, skew = skew)
-    }
-  ),
   # starting_par, lower bound, upper bound
   vals = list(
     "norm" = list(NULL, NULL, NULL),
@@ -66,16 +29,6 @@ lookup_table <- list(
     "sstd" = TRUE,
     "sged" = TRUE,
     "sald" = TRUE
-  ),
-  sim_funs = list(
-    "norm" = function(x, shape, skew) {utils::getFromNamespace("rnorm_s", ns = "fEGarch")(x)},
-    "std" = function(x, shape, skew) {utils::getFromNamespace("rstd_s", ns = "fEGarch")(x, df = shape)},
-    "ged" = function(x, shape, skew) {utils::getFromNamespace("rged_s", ns = "fEGarch")(x, shape = shape)},
-    "ald" = function(x, shape, skew) {utils::getFromNamespace("rald_s", ns = "fEGarch")(x, P = shape)},
-    "snorm" = function(x, shape, skew) {utils::getFromNamespace("rsnorm_s", ns = "fEGarch")(x, skew = skew)},
-    "sstd" = function(x, shape, skew) {utils::getFromNamespace("rsstd_s", ns = "fEGarch")(x, df = shape, skew = skew)},
-    "sged" = function(x, shape, skew) {utils::getFromNamespace("rsged_s", ns = "fEGarch")(x, shape = shape, skew = skew)},
-    "sald" = function(x, shape, skew) {utils::getFromNamespace("rsald_s", ns = "fEGarch")(x, P = shape, skew = skew)}
   ),
   sim_pars_default = list(
      mu = 0,
@@ -204,16 +157,6 @@ mode_mat[1, 1] <- "log_log"
 mode_mat[2, 2] <- "pow_pow"
 mode_mat[1, 2] <- "log_pow"
 mode_mat[2, 1] <- "pow_log"
-
-sigt_funs_egarch <- list(
-  utils::getFromNamespace("sigt_egarch_short_R", ns = "fEGarch"),
-  utils::getFromNamespace("sigt_egarch_long_R", ns = "fEGarch")
-)
-
-sigt_funs_loggarch <- list(
-  utils::getFromNamespace("sigt_loggarch_short_R", ns = "fEGarch"),
-  utils::getFromNamespace("sigt_loggarch_long_R", ns = "fEGarch")
-)
 
 smoots_default <- list(
   Mcf = "NP",
@@ -476,4 +419,4 @@ start_pars_and_restr <- list(
   }
 )
 
-#usethis::use_data(lookup_table, exp_funs, mode_mat, sigt_funs_egarch, sigt_funs_loggarch, smoots_default, esemifar_default, start_pars_and_restr, internal = TRUE, overwrite = TRUE)
+#usethis::use_data(lookup_table, exp_funs, mode_mat, smoots_default, esemifar_default, start_pars_and_restr, internal = TRUE, overwrite = TRUE)

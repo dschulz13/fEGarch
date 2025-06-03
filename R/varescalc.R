@@ -14,7 +14,7 @@
 #
 #
 baseVaR_calc <- function(level = 0.95, cond_dist, shape, skew) {
-  dFUN <- lookup_table$fun1[[cond_dist]]
+  dFUN <- fun1_selector(cond_dist)
   vapply(
     X = 1 - level,
     FUN = function(.x, dfun, shape, skew) {
@@ -28,7 +28,7 @@ baseVaR_calc <- function(level = 0.95, cond_dist, shape, skew) {
 baseES_calc <- function(level = 0.95, cond_dist, shape, skew) {
 
   q <- baseVaR_calc(level = level, cond_dist = cond_dist, shape = shape, skew = skew)
-  dfun <- lookup_table[["fun1"]][[cond_dist]]
+  dfun <- fun1_selector(cond_dist)
   int_fun <- function(x, dfun, shape, skew) {
     x * dfun(x = x, shape = shape, skew = skew)
   }

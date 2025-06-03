@@ -164,7 +164,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   powers <- object@powers
   modulus <- object@modulus
 
-  dfun <- lookup_table[["fun1"]][[cond_dist]]
+  dfun <- fun1_selector(cond_dist)
 
   pow1 <- powers[[1]]
   pow1g0 <- pow1 > 0
@@ -300,7 +300,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   pqg0 <- mean_specs$pqg0
   lm_arma <- mean_specs$lm_arma
 
-  dfun <- lookup_table[["fun1"]][[cond_dist]]
+  dfun <- fun1_selector(cond_dist)
 
   int_fun <- function(x, shape, skew, dfun) {
     log(x^2) * dfun(x, shape = shape, skew = skew)
@@ -423,7 +423,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
   pqg0 <- mean_specs$pqg0
   lm_arma <- mean_specs$lm_arma
 
-  dfun <- lookup_table[["fun1"]][[cond_dist]]
+  dfun <- fun1_selector(cond_dist)
 
   int_fun <- function(x, gamma_i, delta, shape, skew, dfun) {
     (abs(x) - gamma_i * x)^delta * dfun(x, shape = shape, skew = skew)
@@ -534,7 +534,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
     numeric(0)
   }
 
-  dfun <- lookup_table[["fun1"]][[cond_dist]]
+  dfun <- fun1_selector(cond_dist)
   int_fun <- function(x, skew, shape, gamma, delta, dfun) {
     (abs(x) - gamma * x)^delta * dfun(x, shape = shape, skew = skew)
   }
