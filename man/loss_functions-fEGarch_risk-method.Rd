@@ -15,6 +15,13 @@ by the model fitting functions of this package, for example
 
 \item{...}{currently without use.}
 }
+\value{
+Returns a list with the four elements \code{rlf}, \code{flf},
+\code{alf} and \code{clf}, each lists with numeric vector
+elements \code{VaR} and \code{ES}. The four elements correspond
+to the regulatory loss function, the firm's loss function,
+the adjusted loss function and the corrected loss function.
+}
 \description{
 Compute loss function values given log-returns and corresponding
 value at risk (VaR) and expected shortfall (ES) series.
@@ -54,4 +61,23 @@ of \eqn{l_{t,2} = \Omega |\text{RM}_t - r_t|}.
 
 The corrected loss function (Feng, forthcoming) (\code{clf}) has
 \eqn{l_{t,3} = \Omega \text{min}\left(|\text{RM}_t - r_t|, |\text{RM}_t|\right)}.
+}
+\examples{
+window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
+rt <- window.zoo(SP500, end = "2002-12-31")
+model <- fEGarch(egarch_spec(), rt, n_test = 250)
+fcast <- predict_roll(model)
+risk <- measure_risk(fcast, measure = c("VaR", "ES"), level = c(0.95, 0.975, 0.99))
+loss_functions(risk)
+
+}
+\references{
+\itemize{
+\item{Abad, P., Muela, S. B., & Martín, C. L. (2015). The role of
+the loss function in value-at-risk comparisons. The Journal of Risk
+Model Validation, 9(1): 1-19. DOI: 10.21314/JRMV.2015.132.}
+\item{Sarma, M., Thomas, S., & Shah, A. (2003). Selection of Value-at-Risk
+models. Journal of Forecasting,
+22(4): 337-358. DOI: 10.1002/for.868.}
+}
 }

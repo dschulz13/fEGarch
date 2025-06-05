@@ -95,6 +95,7 @@ Collate:
   'test-functions.R'
   'class-fEGarch_distr_est.R'  
   'distr_est.R'
+  'popular-methods.R'
 Depends: 
     R (>= 3.5),
     methods

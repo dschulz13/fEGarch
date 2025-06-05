@@ -2129,6 +2129,10 @@ setMethod(
 #'\code{\link{garchm_estim}}, \code{predict} (for \code{sigt} and \code{cmeans})
 #'or \code{predict_roll} (for \code{sigt} and \code{cmeans}).
 #'
+#'As alternatives for \code{sigt}, \code{cmeans} and \code{etat}, see also
+#'\code{\link{sigma,fEGarch_fit-method}}, \code{\link{fitted,fEGarch_fit-method}}
+#'and \code{\link{residuals,fEGarch_fit-method}}.
+#'
 #'@return
 #'The element within the input object of the same name as the method
 #'is returned. Depending on the element that can be a numeric vector,
@@ -2154,6 +2158,15 @@ setMethod(
 #'zoo::plot.zoo(
 #'  cbind("Approach 1" = sigt1, "Approach 2" = sigt2)
 #')
+#'
+#'# Other methods
+#'cmeans(est)
+#'etat(est)
+#'inf_criteria(est)
+#'llhood(est)
+#'pars(est)
+#'se(est)
+#'vcov_mat(est)
 #'
 setMethod("sigt", "fEGarch_fit", function(x) {x@sigt})
 #'@export

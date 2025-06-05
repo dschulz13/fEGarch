@@ -56,6 +56,10 @@ objects that inherit from class \code{"fEGarch_fit"}, which covers
 objects returned by either \code{\link{fEGarch}},
 \code{\link{garchm_estim}}, \code{predict} (for \code{sigt} and \code{cmeans})
 or \code{predict_roll} (for \code{sigt} and \code{cmeans}).
+
+As alternatives for \code{sigt}, \code{cmeans} and \code{etat}, see also
+\code{\link{sigma,fEGarch_fit-method}}, \code{\link{fitted,fEGarch_fit-method}}
+and \code{\link{residuals,fEGarch_fit-method}}.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
@@ -72,5 +76,14 @@ sigt2 <- sigt(est)
 zoo::plot.zoo(
  cbind("Approach 1" = sigt1, "Approach 2" = sigt2)
 )
+
+# Other methods
+cmeans(est)
+etat(est)
+inf_criteria(est)
+llhood(est)
+pars(est)
+se(est)
+vcov_mat(est)
 
 }

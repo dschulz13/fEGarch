@@ -287,7 +287,10 @@ possible.
 Estimation objects returned by `fEGarch()` contain several elements.
 They can be either accessed through the operator `@` or via specific
 accessor functions named after the corresponding elements in the output
-object.
+object. To access the fitted conditional standard deviations, the fitted
+conditional means and the standardized residuals, the package also
+alternatively provides methods `sigma()`, `fitted()` and `residuals()`,
+respectively.
 
 ``` r
 sigt1 <- sigt(model1)
