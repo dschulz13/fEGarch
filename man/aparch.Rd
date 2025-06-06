@@ -166,7 +166,7 @@ testing following \code{n_test}.}
 }
 \description{
 Fit an APARCH model under the six
-most common conditional distributions to observed data
+most common and further conditional distributions to observed data
 using quasi maximum-likelihood estimation.
 }
 \details{

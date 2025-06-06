@@ -172,7 +172,7 @@ testing following \code{n_test}.}
 }
 \description{
 Fit a fractionally integrated APARCH model under the six
-most common conditional distributions to observed data
+most common and further conditional distributions to observed data
 using quasi maximum-likelihood estimation.
 }
 \details{
@@ -203,7 +203,8 @@ all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}}
 are replaced by the in-sample arithmetic mean of
 \deqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
-\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{\delta_0}}, where
+\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{\delta_0},}
+where
 \eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 mean of \eqn{r_t^{*}}. Initial values
 for \eqn{\gamma_0} and

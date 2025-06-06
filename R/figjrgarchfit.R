@@ -227,7 +227,8 @@ goal_fun_creator_figjrgarch <- function(
 #'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{2}}
 #'are replaced by the in-sample arithmetic mean of
 #'\deqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
-#'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{2}}, where
+#'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{2},}
+#'where
 #'\eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 #'mean of \eqn{r_t^{*}}. An initial value
 #'for \eqn{\gamma_0} as initial guess for \eqn{\gamma} is obtained
