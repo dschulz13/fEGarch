@@ -43,7 +43,7 @@ semiparametric volatility model.
 \details{
 Assume that a time series \eqn{\{r_t\}}, \eqn{t=1,\dots,n}, follows
 \deqn{r_t = \mu + \sigma_t \eta_t,}
-where \eqn{\mu = E(r_t)} and \eqn{\eta_t} are independent but identically
+where \eqn{\mu = E(r_t)} and \eqn{\eta_t} are independent and identically
 distributed random variables with mean zero and variance one. \eqn{\sigma_t > 0}
 are total volatilities composed of \eqn{s(x_t)}, a smooth, deterministic
 scale function in the unconditional variance over time (with \eqn{x_t} being

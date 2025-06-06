@@ -197,7 +197,7 @@ goal_fun_creator_gjrgarch <- function(
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
 #'\deqn{\sigma_t^{2}=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right)^{2} + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}^{2}.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
-#'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
+#'\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 #'deviations in \eqn{r_t}.
 #'Moreover, \eqn{\beta_j}, \eqn{j=1,2,\dots, q}, \eqn{\phi_i}, \eqn{i=1,2,\dots, p},

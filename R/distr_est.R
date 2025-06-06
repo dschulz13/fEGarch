@@ -49,7 +49,7 @@ nllhood_setup <- function(theta, y, pdf_fun, extra_par, skew_par, mean_par, sdev
 #'MLE for Distribution Fitting
 #'
 #'Given a vector of values assumed to stem from
-#'independent but identically distributed (iid) random variables, fit a selection
+#'independent and identically distributed (iid) random variables, fit a selection
 #'of distributions, from the normal distribution, the \eqn{t}-distribution, the
 #'generalized error distribution (GED), the average Laplace distribution (ALD), and
 #'their skewed variants, to the data using maximum-likelihood estimation (MLE).
@@ -525,7 +525,7 @@ sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 
 #'Optimal Distribution Fitting to IID Data
 #'
-#'Given a series supposed to be from independent but identically distributed (iid)
+#'Given a series supposed to be from independent and identically distributed (iid)
 #'random variables, fit all eight distributions of this package to the data
 #'using maximum-likelihood estimation (MLE) and select the best one following
 #'either the BIC (the default) or the AIC.

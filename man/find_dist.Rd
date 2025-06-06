@@ -37,7 +37,7 @@ Returns an object of class \code{"fEGarch_distr_est"} with various slots
 representing the estimation results of the selected fitted distribution.
 }
 \description{
-Given a series supposed to be from independent but identically distributed (iid)
+Given a series supposed to be from independent and identically distributed (iid)
 random variables, fit all eight distributions of this package to the data
 using maximum-likelihood estimation (MLE) and select the best one following
 either the BIC (the default) or the AIC.

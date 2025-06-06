@@ -62,7 +62,7 @@ Returns a list with the following elements.
 }
 \description{
 Given a vector of values assumed to stem from
-independent but identically distributed (iid) random variables, fit a selection
+independent and identically distributed (iid) random variables, fit a selection
 of distributions, from the normal distribution, the \eqn{t}-distribution, the
 generalized error distribution (GED), the average Laplace distribution (ALD), and
 their skewed variants, to the data using maximum-likelihood estimation (MLE).

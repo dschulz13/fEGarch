@@ -175,7 +175,7 @@ time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
 \deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\varepsilon_t^2.}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
-\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
+\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 deviations in \eqn{r_t}.
 Moreover, \eqn{B} is the backshift operator and

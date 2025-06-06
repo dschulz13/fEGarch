@@ -59,7 +59,7 @@ time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\sigma_t \eta_t \text{ with } \eta_t \sim \text{IID}(0,1), \text{ where}}
 \deqn{\ln\left(\sigma_t^2\right)=\omega_{\sigma}+\theta(B)g(\eta_{t-1}).}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
-\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
+\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 deviations in \eqn{r_t}. Note that \eqn{\ln\left(\cdot\right)} denotes the natural logarithm.
 Moreover, \eqn{B} is the backshift operator and

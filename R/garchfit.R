@@ -188,7 +188,7 @@ goal_fun_creator_garch <- function(
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
 #'\deqn{\sigma_t^{2}=\omega+\sum_{i=1}^{p}\phi_i \varepsilon_{t-i}^2 + \sum_{j=1}^{q}\beta_j \sigma_{t-j}^2.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
-#'\eqn{\eta_t} are independent but identically distributed (iid) with mean zero
+#'\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
 #'deviations in \eqn{r_t}.
 #'\eqn{\phi_i}, \eqn{i=1,2,\dots, p}, and \eqn{\beta_j}, \eqn{j = 1, \dots, q},
