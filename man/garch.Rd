@@ -252,10 +252,11 @@ or Letmathe et al. (2023) for more information on the semiparametric extension
 of volatility models.
 
 The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
-is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
-\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
-\phi_1,\dots,\phi_p, \beta_1, \dots, \beta_{q}, \text{shape parameter},
-\text{skewness parameter}}. Depending on the exact model specification,
+is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
+\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega},
+\eqn{\phi_1,\dots,\phi_p}, \eqn{\beta_1, \dots, \beta_{q}},
+shape parameter,
+skewness parameter. Depending on the exact model specification,
 parameters irrelevant for the specification at hand should be dropped
 in \code{start_pars}, \code{LB} and \code{UB}.
 }

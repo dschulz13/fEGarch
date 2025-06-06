@@ -194,7 +194,7 @@ goal_fun_creator_aparch <- function(
 #'conditional variance are initialized by zero).
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
-#'@param fix_delta let the parameter \eqn{delta} be either free (\code{fix_delta = NA}),
+#'@param fix_delta let the parameter \eqn{\delta} be either free (\code{fix_delta = NA}),
 #'fix it to 1 (\code{fix_delta = 1}) or to 2 (\code{fix_delta = 2}); the latter
 #'two are specific submodels of a FIAPARCH.
 #'
@@ -289,11 +289,12 @@ goal_fun_creator_aparch <- function(
 #'of volatility models.
 #'
 #'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
-#'is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
-#'\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
-#'\phi_1,\dots,\phi_p, \beta_1, \dots, \beta_{q}, \gamma_1,
-#'\dots,\gamma_p, \delta, \text{shape parameter},
-#'\text{skewness parameter}}. Depending on the exact model specification,
+#'is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
+#'\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega},
+#'\eqn{\phi_1,\dots,\phi_p}, \eqn{\beta_1, \dots, \beta_{q}},
+#'\eqn{\gamma_1,\dots,\gamma_p}, \eqn{\delta},
+#'shape parameter,
+#'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
 #'in \code{start_pars}, \code{LB} and \code{UB}.
 #'

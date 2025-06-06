@@ -267,14 +267,16 @@ the automated bandwidth selection is skipped and the provided bandwidth in \code
 is used.
 
 The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
-is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
-\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega_{\sigma},
-\phi_1,\dots,\phi_p, \psi_1, \dots, \psi_{q-1}, \kappa, \gamma, d, \text{shape parameter},
-\text{skewness parameter}} for Type I models (see \code{\link{fEGarch_spec}}). For Type
-II models, we have \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
-\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega_{\sigma},
-\phi_1,\dots,\phi_p, \psi_1, \dots, \psi_{q}, d, \text{shape parameter},
-\text{skewness parameter}}. Depending on the exact model specification,
+is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
+\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega_{\sigma}},
+\eqn{\phi_1,\dots,\phi_p}, \eqn{\psi_1, \dots, \psi_{q-1}}, \eqn{\kappa}, \eqn{\gamma},
+\eqn{d}, \eqn{\text{shape parameter}},
+\eqn{\text{skewness parameter}} for Type I models (see \code{\link{fEGarch_spec}}). For Type
+II models, we have \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
+\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega_{\sigma}},
+\eqn{\phi_1,\dots,\phi_p}, \eqn{\psi_1, \dots, \psi_{q}}, \eqn{d},
+shape parameter,
+skewness parameter. Depending on the exact model specification,
 parameters irrelevant for the specification at hand should be dropped
 in \code{start_pars}, \code{LB} and \code{UB}.
 }

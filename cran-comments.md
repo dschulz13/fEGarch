@@ -13,7 +13,7 @@ There were no warnings.
 There were two NOTEs:
 
 * checking installed package size ... NOTE
-  installed size is  9.8Mb
+  installed size is  9.9Mb
   sub-directories of 1Mb or more:
     libs   8.3Mb
 
@@ -29,3 +29,25 @@ This is indeed a new package submission.
 
 
 Other mentions of the win-builder include a couple of potentially misspelled words, which were rechecked to be spelled correctly, and the mention of (possibly) invalid URLs in the documentation of the object `SP500`, which were also rechecked to be correct.
+
+## Addressing Comments on Initial Submission
+
+The first submission of the package underwent a manual inspection by a CRAN
+member and was rejected with further comments. Find here the list of
+comments by the CRAN member and how the issues were addressed.
+
+One comment received:
+
+* Please add \value to .Rd files regarding exported methods and explain
+  the functions results in the documentation. Please write about the
+  structure of the output (class) and also what the output means. (If a
+  function does not return a value, please document that too, e.g.
+  \value{No return value, called for side effects} or similar)
+  For more details:
+  <https://contributor.r-project.org/cran-cookbook/docs_issues.html#missing-value-tags-in-.rd-files>
+  Missing Rd-tags:
+      loss_functions-fEGarch_risk-method.Rd: \value
+
+A "Value" section was added to the documentation of
+"loss_functions-fEGarch_risk-method" explaining the output
+of the method.

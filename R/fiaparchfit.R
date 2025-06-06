@@ -201,7 +201,7 @@ goal_fun_creator_fiaparch <- function(
 #'conditional variance are initialized by zero).
 #'@param Prange a two-element vector that indicates the search boundaries for
 #'the parameter \eqn{P} in a (skewed) average Laplace distribution.
-#'@param fix_delta let the parameter \eqn{delta} be either free (\code{fix_delta = NA}),
+#'@param fix_delta let the parameter \eqn{\delta} be either free (\code{fix_delta = NA}),
 #'fix it to 1 (\code{fix_delta = 1}) or to 2 (\code{fix_delta = 2}); the latter
 #'two are specific submodels of a FIAPARCH.
 #'
@@ -232,7 +232,7 @@ goal_fun_creator_fiaparch <- function(
 #'
 #'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{\delta}}
 #'are replaced by the in-sample arithmetic mean of
-#'\eqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
+#'\deqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
 #'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{\delta_0}}, where
 #'\eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 #'mean of \eqn{r_t^{*}}. Initial values
@@ -334,10 +334,11 @@ goal_fun_creator_fiaparch <- function(
 #'of volatility models.
 #'
 #'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
-#'is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
-#'\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
-#'\phi, \beta, \gamma, \delta, d, \text{shape parameter},
-#'\text{skewness parameter}}. Depending on the exact model specification,
+#'is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
+#'\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega},
+#'\eqn{\phi}, \eqn{\beta}, \eqn{\gamma}, \eqn{\delta}, \eqn{d},
+#'shape parameter,
+#'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
 #'in \code{start_pars}, \code{LB} and \code{UB}.
 #'

@@ -4,8 +4,9 @@
 #'fitting various short- and long-memory models from a broad family of
 #'exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models.
 #'For the purpose of comparison, a FIAPARCH (fractionally integrated
-#'asymmetric power ARCH) and a FIGARCH (fractionally integrated GARCH)
-#'can be implemented as well among others.
+#'asymmetric power ARCH), a FIGARCH (fractionally integrated GARCH),
+#'a FITGARCH, a FIGJR-GARCH and their short-memory variants
+#'can be implemented as well.
 #'
 #'@details
 #'\code{fEGarch} is an R package for estimating a broad family of
@@ -36,8 +37,11 @@
 #'model can be fitted as well using \code{\link{fiaparch}}. The
 #'corresponding documentation page also includes further information
 #'on the model. Similarly, \code{\link{figarch}} can be utilized for
-#'fitting FIGARCH models. A general function for estimation additional
-#'GARCH-type models, including FIAPARCH and FIGARCH among others, is
+#'fitting FIGARCH models, \code{\link{fitgarch}} for fitting
+#'FITGARCH models and \code{\link{figjrgarch}} for fitting
+#'FIGJR-GARCH models. A general function for the estimation of additional
+#'GARCH-type models, including the aforementioned additional models
+#'as well as their short-memory variants, is
 #'\code{\link{garchm_estim}}.
 #'
 #'In addition, the package provides functionalities in order to

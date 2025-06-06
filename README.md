@@ -23,11 +23,12 @@ conditional distributions. Overall, the EGARCH family models are a
 strong competition to well-established GARCH-type models and provide new
 ways to estimate conditional volatilities, while making the prominent
 EGARCH and fractionally integrated EGARCH (FIEGARCH) available as
-special cases. For convenience and the purpose of comparison, a
-fractionally integrated asymmetric power ARCH (FIAPARCH), a fractionally
-integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH) and
-fractionally integrated GARCH (FIGARCH) models are available as well as
-their short-memory variants. Throughout, the estimation method is
+special cases. For convenience and the purpose of comparison,
+fractionally integrated asymmetric power ARCH (FIAPARCH), fractionally
+integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH), fractionally
+integrated threshold GARCH (FITGARCH) and fractionally integrated GARCH
+(FIGARCH) models are available as well as their short-memory variants
+(APARCH, GJR-GARCH, TGARCH, GARCH). Throughout, the estimation method is
 quasi-maximum-likelihood estimation (conditioned on presample values).
 
 ## Installation
@@ -139,7 +140,7 @@ spec10 <- megarch_spec(orders = c(2, 1), cond_dist = "std")
 ```
 
 They can all be used in `fEGarch()`. In the following, the previously
-created model specification `spec9` is considered for the log-returns.
+created model specification `spec10` is considered for the log-returns.
 The other specifications can be applied analogously.
 
 ``` r

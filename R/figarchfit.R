@@ -312,10 +312,10 @@ goal_fun_creator_figarch <- function(
 #'of volatility models.
 #'
 #'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
-#'is crucial. The correct order is: \eqn{\mu, \text{ar}_1,\dots,\text{ar}_{p^{*}},
-#'\text{ma}_1,\dots,\text{ma}_{q^{*}},D,\omega,
-#'\phi, \beta, d, \text{shape parameter},
-#'\text{skewness parameter}}. Depending on the exact model specification,
+#'is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
+#'\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega},
+#'\eqn{\phi}, \eqn{\beta}, \eqn{d}, shape parameter,
+#'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
 #'in \code{start_pars}, \code{LB} and \code{UB}.
 #'
