@@ -110,14 +110,6 @@ model1
 #> AIC: -6.4945, BIC: -6.4880
 ```
 
-Using the model description in the documentation of `fEGarch_spec()`,
-the fitted model following the previous estimation results is
-$$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
-$$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
-$$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
-
 A convenient way to implement various specific model specifications is
 available via a selection of wrappers for `fEGarch_spec()`. They all
 only have the function arguments `orders` and `cond_dist` from
@@ -672,10 +664,10 @@ A better model regarding VaR and ES forecasting for this particular
 example could be implemented and checked as follows.
 
 ``` r
-# Fit and check a FILog-GARCH(1, d, 1) with
+# Fit and check an ARMA(1, 0)-FILog-GARCH(1, d, 1) with
 # conditional t-distribution
 new_model2 <- filoggarch_spec(cond_dist = "std") %>%
-  fEGarch(rt, n_test = 250)
+  fEGarch(rt, n_test = 250, meanspec = mean_spec(orders = c(1, 0)))
 
 risk_nm2 <- new_model2 %>%
   predict_roll() %>%
@@ -692,13 +684,13 @@ risk_nm2 %>%
 #> ************
 #> 
 #> Conf. level: 0.975
-#> Breaches: 7
-#> Cumul. prob.: 0.7103
+#> Breaches: 8
+#> Cumul. prob.: 0.8229
 #> Zone: Green zone
 #> 
 #> Conf. level: 0.99
-#> Breaches: 3
-#> Cumul. prob.: 0.7581
+#> Breaches: 4
+#> Cumul. prob.: 0.8922
 #> Zone: Green zone
 #> 
 #> 
@@ -706,13 +698,13 @@ risk_nm2 %>%
 #> ***********
 #> 
 #> Conf. level: 0.975
-#> Severity of breaches: 3.5922
-#> Cumul. prob.: 0.6281
+#> Severity of breaches: 4.3408
+#> Cumul. prob.: 0.8024
 #> Zone: Green zone
 #> 
 #> Conf. level: 0.99
-#> Severity of breaches: 0.8655
-#> Cumul. prob.: 0.3362
+#> Severity of breaches: 0.9460
+#> Cumul. prob.: 0.3691
 #> Zone: Green zone
 #> 
 #> 
@@ -723,7 +715,7 @@ risk_nm2 %>%
 #> 
 #> Following 99%-VaR, 97.5%-VaR and 97.5%-ES.
 #> 
-#> WAD: 0.4695
+#> WAD: 1.2691
 #> 
 #> 
 #> ***************************************
@@ -733,15 +725,15 @@ risk_nm2 %>%
 #> H0: true share of covered observations = theoretical share of VaR
 #> 
 #> Conf. level: 0.975
-#> Breaches: 7
-#> Test statistic: 0.0889
-#> p-value: 0.7656
+#> Breaches: 8
+#> Test statistic: 0.4624
+#> p-value: 0.4965
 #> Decision: Do not reject H0
 #> 
 #> Conf. level: 0.99
-#> Breaches: 3
-#> Test statistic: 0.0949
-#> p-value: 0.7580
+#> Breaches: 4
+#> Test statistic: 0.7691
+#> p-value: 0.3805
 #> Decision: Do not reject H0
 #> 
 #> 
@@ -753,15 +745,15 @@ risk_nm2 %>%
 #>     of breach or no breach at previous time point
 #> 
 #> Conf. level: 0.975
-#> Breaches: 7
-#> Test statistic: 0.4050
-#> p-value: 0.5245
+#> Breaches: 8
+#> Test statistic: 0.5312
+#> p-value: 0.4661
 #> Decision: Do not reject H0
 #> 
 #> Conf. level: 0.99
-#> Breaches: 3
-#> Test statistic: 0.0732
-#> p-value: 0.7868
+#> Breaches: 4
+#> Test statistic: 0.1306
+#> p-value: 0.7178
 #> Decision: Do not reject H0
 #> 
 #> 
@@ -774,15 +766,15 @@ risk_nm2 %>%
 #>     and equal to theoretical share of VaR
 #> 
 #> Conf. level: 0.975
-#> Breaches: 7
-#> Test statistic: 0.5002
-#> p-value: 0.7787
+#> Breaches: 8
+#> Test statistic: 1.0081
+#> p-value: 0.6041
 #> Decision: Do not reject H0
 #> 
 #> Conf. level: 0.99
-#> Breaches: 3
-#> Test statistic: 0.1722
-#> p-value: 0.9175
+#> Breaches: 4
+#> Test statistic: 0.9120
+#> p-value: 0.6338
 #> Decision: Do not reject H0
 ```
 

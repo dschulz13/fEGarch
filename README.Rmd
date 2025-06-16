@@ -73,13 +73,6 @@ model1 <- spec1 %>%
 model1
 ```
 
-Using the model description in the documentation of `fEGarch_spec()`, the fitted model following the previous estimation results is
-$$r_t = 0.0003 + \sigma_t\eta_t \hspace{3mm} \text{with} \hspace{3mm} \eta_t \sim N(0,1), \hspace{3mm} \text{where}$$
-$$\ln\left(\sigma_t^2\right)=-8.6600 + (1-0.8680 B)^{-1}(1-B)^{-0.2754}g\left(\eta_{t-1}\right) \hspace{3mm}\text{with}$$
-$$g\left(\eta_{t-1}\right)=-0.2363\left[g_a\left(\eta_{t-1}\right)-E\left[g_a\left(\eta_{t-1}\right)\right]\right] + 0.3194\left[g_m\left(\eta_{t-1}\right)-E\left[g_m\left(\eta_{t-1}\right)\right]\right], \hspace{3mm}\text{where}$$
-$$g_a\left(\eta_{t-1}\right)=\text{sgn}\left(\eta_{t-1}\right)\ln\left(\left|\eta_{t-1}\right|+1\right)\hspace{3mm}\text{and}$$
-$$g_m\left(\eta_{t-1}\right)=\ln\left(\left|\eta_{t-1}\right|+1\right).$$
-
 A convenient way to implement various specific model specifications is available via a selection of wrappers for `fEGarch_spec()`. They all only have the function arguments `orders` and `cond_dist` from `fEGarch_spec()`.
 
 ```{r}
@@ -294,10 +287,10 @@ risk %>%
 A better model regarding VaR and ES forecasting for this particular example could be implemented and checked as follows.
 
 ```{r}
-# Fit and check a FILog-GARCH(1, d, 1) with
+# Fit and check an ARMA(1, 0)-FILog-GARCH(1, d, 1) with
 # conditional t-distribution
 new_model2 <- filoggarch_spec(cond_dist = "std") %>%
-  fEGarch(rt, n_test = 250)
+  fEGarch(rt, n_test = 250, meanspec = mean_spec(orders = c(1, 0)))
 
 risk_nm2 <- new_model2 %>%
   predict_roll() %>%
