@@ -286,8 +286,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
     numeric(0)
   }
 
-  mu <- if (exists("mu", where = as.list(model_pars)) && !is.null(object@nonpar_model)) {
-    model_pars[["mu"]]
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    if (!is.null(object@nonpar_model)) {
+      0
+    } else {
+      model_pars[["mu"]]
+    }
   } else {
     0
   }
@@ -409,8 +413,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_aparch",
     numeric(0)
   }
 
-  mu <- if (exists("mu", where = as.list(model_pars))&& !is.null(object@nonpar_model)) {
-    model_pars[["mu"]]
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    if (!is.null(object@nonpar_model)) {
+      0
+    } else {
+      model_pars[["mu"]]
+    }
   } else {
     0
   }
@@ -497,8 +505,12 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
 
   d <- model_pars[["d"]]
 
-  mu <- if (exists("mu", where = as.list(model_pars))&& !is.null(object@nonpar_model)) {
-    model_pars[["mu"]]
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    if (!is.null(object@nonpar_model)) {
+      0
+    } else {
+      model_pars[["mu"]]
+    }
   } else {
     0
   }
