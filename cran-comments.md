@@ -1,3 +1,36 @@
+# Check for new package version 1.0.1
+
+## Test environments
+* local Windows install, R 4.4.2
+* win-builder (oldrelease, release and devel)
+* macOS builder
+* R-hub (linux, m1-san, macos, macos-arm64, windows, atlas, c23, clang-asan, clang-ubsan, clang16, clang17, clang18, clang19, donttest, gcc-asan, gcc13, gcc14, gcc15, mkl, nold, noremap, nosuggests, ubuntu-clang, ubuntu-gcc12, ubuntu-next, ubuntu-release)
+
+## R CMD check results
+
+There were no errors.
+
+There were no warnings.
+
+There was two NOTEs:
+
+* checking CRAN incoming feasibility ... [12s] NOTE
+  Maintainer: 'Dominik Schulz <dominik.schulz@uni-paderborn.de>'
+
+  Days since last update: 6
+
+An important bug for one of the main parts of the package was found that
+affects volatility forecasts. Please excuse this quick patch.
+
+* checking installed package size ... NOTE
+  installed size is 10.0Mb
+  sub-directories of 1Mb or more:
+    libs   8.3Mb
+
+This was caused only by the macOS builder. The package heavily relies on the usage of C++ for time efficiency and therefore has a larger size.
+
+# Checks for old package version 1.0.0
+
 ## Test environments
 * local Windows install, R 4.4.2
 * win-builder (oldrelease, release and devel)

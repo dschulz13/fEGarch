@@ -9,11 +9,11 @@ test_that("fEGarch forecast in mean works as intended", {
       est <- loggarch_spec() %>%
         fEGarch(rt, n_test = 250)
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
       est <- loggarch_spec() %>%
         fEGarch(rt, n_test = 250)
-      est@pars[["mu"]]
+      rep(est@pars[["mu"]], 250)
     })
 
 
@@ -21,29 +21,29 @@ test_that("fEGarch forecast in mean works as intended", {
       est <- egarch_spec() %>%
         fEGarch(rt, n_test = 250)
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
       est <- egarch_spec() %>%
         fEGarch(rt, n_test = 250)
-      est@pars[["mu"]]
+      rep(est@pars[["mu"]], 250)
     })
 
     expect_equal({
       est <- suppressWarnings(aparch(rt, n_test = 250))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
       est <- suppressWarnings(aparch(rt, n_test = 250))
-      est@pars[["mu"]]
+      rep(est@pars[["mu"]], 250)
     })
 
     expect_equal({
       est <- suppressWarnings(fiaparch(rt, n_test = 250))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
       est <- suppressWarnings(fiaparch(rt, n_test = 250))
-      est@pars[["mu"]]
+      rep(est@pars[["mu"]], 250)
     })
 
     # Parametric models without mean
@@ -52,9 +52,9 @@ test_that("fEGarch forecast in mean works as intended", {
       est <- loggarch_spec() %>%
         fEGarch(rt, n_test = 250, meanspec = mean_spec(include_mean = FALSE))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      0
+      rep(0, 250)
     })
 
 
@@ -62,25 +62,25 @@ test_that("fEGarch forecast in mean works as intended", {
       est <- egarch_spec() %>%
         fEGarch(rt, n_test = 250, meanspec = mean_spec(include_mean = FALSE))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      0
+      rep(0, 250)
     })
 
     expect_equal({
       est <- suppressWarnings(aparch(rt, n_test = 250, meanspec = mean_spec(include_mean = FALSE)))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      0
+      rep(0, 250)
     })
 
     expect_equal({
       est <- suppressWarnings(fiaparch(rt, n_test = 250, meanspec = mean_spec(include_mean = FALSE)))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      0
+      rep(0, 250)
     })
 
     # Semiparametric models
@@ -89,9 +89,9 @@ test_that("fEGarch forecast in mean works as intended", {
       est <- loggarch_spec() %>%
         fEGarch(rt, n_test = 250, use_nonpar = TRUE)
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      mean(utils::head(rt, -250))
+      rep(mean(utils::head(rt, -250)), 250)
     })
 
 
@@ -99,25 +99,25 @@ test_that("fEGarch forecast in mean works as intended", {
       est <- egarch_spec() %>%
         fEGarch(rt, n_test = 250, use_nonpar = TRUE)
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      mean(utils::head(rt, -250))
+      rep(mean(utils::head(rt, -250)), 250)
     })
 
     expect_equal({
       est <- suppressWarnings(aparch(rt, n_test = 250, use_nonpar = TRUE))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      mean(utils::head(rt, -250))
+      rep(mean(utils::head(rt, -250)), 250)
     })
 
     expect_equal({
       est <- suppressWarnings(fiaparch(rt, n_test = 250, use_nonpar = TRUE))
       fcast <- predict_roll(est)
-      fcast@cmeans[[1]]
+      zoo::coredata(fcast@cmeans)
     }, {
-      mean(utils::head(rt, -250))
+      rep(mean(utils::head(rt, -250)), 250)
     })
 
 })
