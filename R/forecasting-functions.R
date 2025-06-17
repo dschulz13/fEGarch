@@ -853,7 +853,12 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       test_obs <- (object@test_obs - mu_h) / scale_h
       object2@rt <- zoo::coredata((object2@rt - object2@cmeans) / object2@scale_fun)
       object2@sigt <- zoo::coredata(object2@sigt / object2@scale_fun)
-      object2@cmeans <- rep(0, length(object2@rt))
+      check_mu <- "mu" %in% names(object2@pars)
+      object2@cmeans <- if (!check_mu) {
+        rep(0, length(object2@rt))
+      } else {
+        rep(object2@pars[["mu"]], length(object2@rt))
+      }
       object2@scale_fun <- NULL
       object2@nonpar_model <- NULL
 
@@ -928,7 +933,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     if (np_check) {
       sigt_out <- sigt_out * scale_h
-      cmeans_out <- cmeans_out + mu_h
+      cmeans_out <- cmeans_out - cmeans_out + mu_h
     }
 
     fEGarch_forecast(
