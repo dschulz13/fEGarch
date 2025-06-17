@@ -1,4 +1,4 @@
-# Check for new package version 1.0.1
+# Check for new package version patch 1.0.1
 
 ## Test environments
 * local Windows install, R 4.4.2
@@ -23,7 +23,7 @@ An important bug for one of the main parts of the package was found that
 affects volatility forecasts. Please excuse this quick patch.
 
 * checking installed package size ... NOTE
-  installed size is 10.0Mb
+  installed size is 9.9Mb
   sub-directories of 1Mb or more:
     libs   8.3Mb
 
