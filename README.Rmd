@@ -335,6 +335,30 @@ risk_obj %>%
 # Inclusion of the output is omitted here to save space.
 ```
 
+### Model options for non-return data
+
+The package allows for the implementation of dual long-memory models (long-memory in mean together with long-memory in volatility), which can be useful for applications to non-return data as well. In the following, a FARIMA($1,d,0$)-FIMLog-GARCH($1,d,1$) model (with conditional skewed average Laplace distribution) is applied to the data `UKinflation`, which contains monthly UK inflation rates over time and which is provided in the package.
+
+```{r}
+xt <- UKinflation
+dual_lm_model <- fimloggarch_spec(cond_dist = "sald") %>%
+  fEGarch(xt, meanspec = mean_spec(orders = c(1, 0), long_memo = TRUE))
+dual_lm_model
+
+oldpar <- par(no.readonly = TRUE)
+par(mfrow = c(2, 1), cex = 1, mar = c(4, 4, 3, 2) + 0.1)
+
+ts.plot(xt, fitted(dual_lm_model), col = c("grey64", "red"),
+        xlab = "Year", ylab = "Inflation rate", 
+        main = "UK inflation rate together with conditional means")
+plot.ts(sigma(dual_lm_model), xlab = "Year",
+        ylab = "Conditional standard deviation",
+        main = "Conditional volatility of UK inflation")
+
+par(oldpar)
+```
+
+
 ## Main functions
 
 The main functions of the package are:
@@ -380,7 +404,7 @@ The package, however, provides many other useful functions to discover.
 
 ## Datasets
 
-The package contains an example time series `SP500`, namely the Standard and Poor's 500 daily log-return series from January 04, 2000, until November 30, 2024, obtained from Yahoo Finance. The series is formatted as a time series object of class `"zoo"`.
+The package contains an example time series `SP500`, namely the Standard and Poor's 500 daily log-return series from January 04, 2000, until November 30, 2024, obtained from Yahoo Finance. The series is formatted as a time series object of class `"zoo"`. Furthermore, it contains the dataset `UKinflation` with the monthly inflation rate of the UK from January 1965 to December 2000. This second series is formatted as a time series of class `"ts"`. 
 
 ## Authors
 

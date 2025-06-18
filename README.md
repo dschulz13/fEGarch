@@ -845,6 +845,72 @@ risk_obj %>%
 # Inclusion of the output is omitted here to save space.
 ```
 
+### Model options for non-return data
+
+The package allows for the implementation of dual long-memory models
+(long-memory in mean together with long-memory in volatility), which can
+be useful for applications to non-return data as well. In the following,
+a FARIMA($1,d,0$)-FIMLog-GARCH($1,d,1$) model (with conditional skewed
+average Laplace distribution) is applied to the data `UKinflation`,
+which contains monthly UK inflation rates over time and which is
+provided in the package.
+
+``` r
+xt <- UKinflation
+dual_lm_model <- fimloggarch_spec(cond_dist = "sald") %>%
+  fEGarch(xt, meanspec = mean_spec(orders = c(1, 0), long_memo = TRUE))
+dual_lm_model
+#> *************************************
+#> *     Fitted EGARCH Family Model    *
+#> *************************************
+#>  
+#> Type: egarch
+#> Orders: (1, 1)
+#> Modulus: (TRUE, TRUE)
+#> Powers: (0, 0)
+#> Long memory: TRUE
+#> Cond. distribution: sald
+#>  
+#> ARMA orders (cond. mean): (1, 0)
+#> Long memory (cond. mean): TRUE
+#> 
+#> Scale estimation: FALSE
+#>  
+#> Fitted parameters:
+#> 
+#>               par     se     tval   pval
+#> mu         0.4038 0.0435   9.2930 0.0000
+#> ar1       -0.0054 0.0024  -2.2281 0.0259
+#> D          0.2323 0.0076  30.5330 0.0000
+#> omega_sig -1.4809 0.0944 -15.6941 0.0000
+#> phi1       0.7217 0.1246   5.7909 0.0000
+#> kappa      0.3393 0.0989   3.4293 0.0006
+#> gamma      0.0331 0.1021   0.3243 0.7457
+#> d          0.1576 0.1315   1.1986 0.2307
+#> P          1.0000     NA       NA     NA
+#> skew       1.2916 0.0690  18.7077 0.0000
+#>  
+#> Information criteria (parametric part):
+#> AIC: 1.3413, BIC: 1.4208
+
+oldpar <- par(no.readonly = TRUE)
+par(mfrow = c(2, 1), cex = 1, mar = c(4, 4, 3, 2) + 0.1)
+
+ts.plot(xt, fitted(dual_lm_model), col = c("grey64", "red"),
+        xlab = "Year", ylab = "Inflation rate", 
+        main = "UK inflation rate together with conditional means")
+plot.ts(sigma(dual_lm_model), xlab = "Year",
+        ylab = "Conditional standard deviation",
+        main = "Conditional volatility of UK inflation")
+```
+
+<img src="man/figures/README-unnamed-chunk-25-1.png" width="100%" />
+
+``` r
+
+par(oldpar)
+```
+
 ## Main functions
 
 The main functions of the package are:
@@ -904,7 +970,10 @@ The package, however, provides many other useful functions to discover.
 The package contains an example time series `SP500`, namely the Standard
 and Poor’s 500 daily log-return series from January 04, 2000, until
 November 30, 2024, obtained from Yahoo Finance. The series is formatted
-as a time series object of class `"zoo"`.
+as a time series object of class `"zoo"`. Furthermore, it contains the
+dataset `UKinflation` with the monthly inflation rate of the UK from
+January 1965 to December 2000. This second series is formatted as a time
+series of class `"ts"`.
 
 ## Authors
 

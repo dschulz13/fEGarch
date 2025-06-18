@@ -12,3 +12,6 @@
 - a bug was fixed in the computation of the hessian matrix, where now
   it is caught if a hessian is not invertible through solve() and
   the fitting functions therefore now don't stop due to an error anymore
+- an additional dataset `UKinflation` was added to the package to show
+  applications of the package beyond return data
+- some examples in the README were adjusted / added

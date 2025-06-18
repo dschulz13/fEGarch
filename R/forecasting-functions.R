@@ -216,10 +216,11 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
       horizon = n.ahead
     ))
   } else {
-    # Use AR-representation
+    # Use MA-representation
     coef_inf_garch <- ma_infty(
       ar = phi, ma = psi_2, d = d, max_i = trunc - 1
     )
+
     c(sigt_egarch_forecast_longCpp(
       et = zoo::coredata(object@etat),
       coef_inf = coef_inf_garch,

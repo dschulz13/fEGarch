@@ -229,9 +229,9 @@ loggarch_type_spec <- function(
 #'\eqn{g\left(\cdot\right)} can be defined in different ways.
 #'Following a type I specification (\code{model_type = "egarch"}), we have
 #'\deqn{g\left(\eta_t\right)=\kappa \left\{g_a\left(\eta_t\right) - E\left[g_a\left(\eta_t\right)\right] \right\} + \gamma\left\{g_m\left(\eta_t\right)-E\left[ g_m\left(\eta_t\right)\right]\right\}}
-#'with \eqn{g_a\left(\eta_t\right)=g_m\left(\eta_t\right)=\eta_t} and consequently
+#'with \eqn{g_a\left(\eta_t\right)=\eta_t} and \eqn{g_m\left(\eta_t\right)= \left|\eta_t\right|} and consequently
 #'\eqn{E\left[g_a\left(\eta_t\right)\right] = E\left(\eta_t\right) = 0} and
-#'\eqn{E\left[\left|g_m\left( \eta_t \right)\right|\right] = E\left(\left| \eta_t\right|\right)},
+#'\eqn{E\left[g_m\left( \eta_t \right)\right] = E\left(\left| \eta_t\right|\right)},
 #'where \eqn{\kappa} and \eqn{\gamma} are two additional real-valued
 #'parameters. Nonetheless, the functions \eqn{g_a\left(\cdot\right)} and
 #'\eqn{g_m\left(\cdot\right)} can be any suitable transformation of

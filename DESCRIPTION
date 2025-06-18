@@ -1,6 +1,6 @@
 Package: fEGarch
 Type: Package
-Title: Estimation of a Broad Family of EGARCH Models & GARCH Comparisons
+Title: Estimation of EGARCH Family / GARCH Models & VaR and ES Backtesting
 Version: 1.0.1
 Authors@R:
     c(person(given = "Dominik",
@@ -46,8 +46,8 @@ Description: Implement and fit a variety of models from a very broad family of e
   and semiparametric volatility model extensions.
   Parametric models and parametric model parts are fitted through
   quasi-maximum-likelihood estimation.
-  Furthermore, common forecasting and backtesting functions for value-at-risk and
-  expected shortfall based on the package's models are provided. 
+  Furthermore, common forecasting and backtesting functions for value-at-risk (VaR) and
+  expected shortfall (ES) based on the package's models are provided.
 License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
