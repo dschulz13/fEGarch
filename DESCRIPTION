@@ -1,6 +1,6 @@
 Package: fEGarch
 Type: Package
-Title: Estimation of EGARCH Family / GARCH Models & VaR and ES Backtesting
+Title: EGARCH Family / GARCH Estimation & VaR and ES Backtesting
 Version: 1.0.1
 Authors@R:
     c(person(given = "Dominik",
