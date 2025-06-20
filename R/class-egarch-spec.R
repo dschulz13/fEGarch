@@ -1304,13 +1304,21 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
     }
 
+    fdfun1 <- dfun1_P
+
+  } else {
+
+    fdfun1 <- dfun1
+
   }
 
+
   # Compute the conditional standard deviations at the optimum
+
   final_series <- sigt_fun_adj(
     theta = unname(pars),
     x = rt_core,
-    dfun = dfun1,
+    dfun = fdfun1,
     p = p,
     q = q,
     p_ar = p_ar,
@@ -1872,13 +1880,19 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
     }
 
+    fdfun1 <- dfun1_P
+
+  } else {
+
+    fdfun1 <- dfun1
+
   }
 
   # Compute the conditional standard deviations at the optimum
   final_series <- sigt_fun_adj(
     theta = unname(pars),
     x = rt_core,
-    dfun = dfun1,
+    dfun = fdfun1,
     p = p,
     q = q,
     p_ar = p_ar,
