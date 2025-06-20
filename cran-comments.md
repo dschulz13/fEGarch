@@ -14,16 +14,16 @@ There were no warnings.
 
 There was two NOTEs:
 
-* checking CRAN incoming feasibility ... [12s] NOTE
+* checking CRAN incoming feasibility ... [25s] NOTE
   Maintainer: 'Dominik Schulz <dominik.schulz@uni-paderborn.de>'
 
-  Days since last update: 6
-
-An important bug for one of the main parts of the package was found that
-affects volatility forecasts. Please excuse this quick patch.
+This is due to the quick patch after the first submission of the
+package. An important bug for one of the main parts of the package was found that
+affects volatility forecasts. Please excuse this quick but urgent
+patch.
 
 * checking installed package size ... NOTE
-  installed size is 9.9Mb
+  installed size is 10.0Mb
   sub-directories of 1Mb or more:
     libs   8.3Mb
 
