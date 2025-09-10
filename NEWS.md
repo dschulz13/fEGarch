@@ -1,3 +1,11 @@
+# fEGarch 1.0.2
+- a bug was fixed, where for the nonparametric scale estimation always the
+  automated bandwidth selection under long-memory errors was employed
+- a safety measure was included to avoid that the log-likelihood can
+  become -Inf
+- math formulas were fully removed from the README, because they were not
+  displayed properly on CRAN
+
 # fEGarch 1.0.1
 - a bug was fixed, where for most models except for EGARCH-type models the
   mean estimate was not considered properly in volatility forecasts

@@ -11,8 +11,6 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
-
-
 ```
 
 # fEGarch <img src="man/figures/fEGarch_logo.png" align="right" height="139" alt="" />
@@ -24,7 +22,7 @@ knitr::opts_chunk$set(
 `r badger::badge_license(color = "yellow")`
 <!-- badges: end -->
 
-The goal of `fEGarch` is to provide easy access to a broad family of exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models both with either short or long memory. The six most common conditional distributions, i.e. a normal distribution, a $t$-distribution, a generalized error distribution, and the skewed variants of those three, are available. Furthermore, we introduce the average Laplace distribution and its skewed variant as newly selectable conditional distributions. Overall, the EGARCH family models are a strong competition to well-established GARCH-type models and provide new ways to estimate conditional volatilities, while making the prominent EGARCH and fractionally integrated EGARCH (FIEGARCH) available as special cases. For convenience and the purpose of comparison, fractionally integrated asymmetric power ARCH (FIAPARCH), fractionally integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH), fractionally integrated threshold GARCH (FITGARCH) and fractionally integrated GARCH (FIGARCH) models are available as well as their short-memory variants (APARCH, GJR-GARCH, TGARCH, GARCH). Throughout, the estimation method is quasi-maximum-likelihood estimation (conditioned on presample values).
+The goal of `fEGarch` is to provide easy access to a broad family of exponential generalized autoregressive conditional heteroskedasticity (EGARCH) models both with either short or long memory. The six most common conditional distributions, i.e. a normal distribution, a t-distribution, a generalized error distribution, and the skewed variants of those three, are available. Furthermore, we introduce the average Laplace distribution and its skewed variant as newly selectable conditional distributions. Overall, the EGARCH family models are a strong competition to well-established GARCH-type models and provide new ways to estimate conditional volatilities, while making the prominent EGARCH and fractionally integrated EGARCH (FIEGARCH) available as special cases. For convenience and the purpose of comparison, fractionally integrated asymmetric power ARCH (FIAPARCH), fractionally integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH), fractionally integrated threshold GARCH (FITGARCH) and fractionally integrated GARCH (FIGARCH) models are available as well as their short-memory variants (APARCH, GJR-GARCH, TGARCH, GARCH). Throughout, the estimation method is quasi-maximum-likelihood estimation (conditioned on presample values).
 
 ## Installation
 
@@ -174,7 +172,7 @@ plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
 
 ### Alternatives
 
-The `fEGarch` package also allows for the estimation of FIAPARCH and FIGARCH models, however, currently only with fixed model orders $p=q=1$. For these two models, there are two fitting functions `figarch()` and `fiaparch()` available without any preceding model specification steps. Model specifications can be made via arguments within these functions directly. Alternatively, the wrapper `garchm_estim()` can be used to select and fit a GARCH-type model (not belonging to the EGARCH family).
+The `fEGarch` package also allows for the estimation of FIAPARCH and FIGARCH models, however, currently only with fixed model orders p = q = 1. For these two models, there are two fitting functions `figarch()` and `fiaparch()` available without any preceding model specification steps. Model specifications can be made via arguments within these functions directly. Alternatively, the wrapper `garchm_estim()` can be used to select and fit a GARCH-type model (not belonging to the EGARCH family).
 
 ```{r}
 model_fiaparch <- rt %>%
@@ -337,7 +335,7 @@ risk_obj %>%
 
 ### Model options for non-return data
 
-The package allows for the implementation of dual long-memory models (long-memory in mean together with long-memory in volatility), which can be useful for applications to non-return data as well. In the following, a FARIMA($1,d,0$)-FIMLog-GARCH($1,d,1$) model (with conditional skewed average Laplace distribution) is applied to the data `UKinflation`, which contains monthly UK inflation rates over time and which is provided in the package.
+The package allows for the implementation of dual long-memory models (long-memory in mean together with long-memory in volatility), which can be useful for applications to non-return data as well. In the following, a FARIMA(1, d ,0)-FIMLog-GARCH(1, d, 1) model (with conditional skewed average Laplace distribution) is applied to the data `UKinflation`, which contains monthly UK inflation rates over time and which is provided in the package.
 
 ```{r}
 xt <- UKinflation
