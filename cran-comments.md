@@ -1,4 +1,34 @@
-# Check for new package version patch 1.0.1
+# Check for new package version patch 1.0.2
+
+## Test environments
+* local Windows install, R 4.4.2
+* win-builder (oldrelease, release and devel)
+* macOS builder
+* R-hub (linux, m1-san, macos, macos-arm64, windows, atlas, c23, clang-asan, clang-ubsan, clang16, clang17, clang18, clang19, donttest, gcc-asan, gcc13, gcc14, gcc15, mkl, nold, noremap, nosuggests, ubuntu-clang, ubuntu-gcc12, ubuntu-next, ubuntu-release)
+
+## R CMD check results
+
+There were no errors.
+
+There were no warnings.
+
+There was one INFO:
+
+* checking installed package size ... INFO
+  installed size is 10.0Mb
+  sub-directories of 1Mb or more:
+    libs   8.3Mb
+
+This was caused only by the macOS builder. The package heavily relies on the usage of C++ for time efficiency and therefore has a larger size.
+
+There was one NOTE:
+
+* checking CRAN incoming feasibility ... [112s] NOTE
+  Maintainer: 'Dominik Schulz <dominik.schulz@uni-paderborn.de>'
+  
+Dominik Schulz with that email address is indeed the correct maintainer of the package.
+
+# Checks for old package version 1.0.1
 
 ## Test environments
 * local Windows install, R 4.4.2
