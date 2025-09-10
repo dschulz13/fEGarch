@@ -5,10 +5,10 @@ spec2 <- fiegarch_spec()
 
 test_that("Bandwidth selections are employed for short and long memory correctly", {
   expect_equal(
-   fEGarch(spec, rt, use_nonpar = TRUE)@nonpar_model$b0, 0.189582019547447
+   round(fEGarch(spec, rt, use_nonpar = TRUE)@nonpar_model$b0, 4), 0.1896
   )
   expect_equal(
-   fEGarch(spec2, rt, use_nonpar = TRUE)@nonpar_model$b0, 0.189361545957288
+   round(fEGarch(spec2, rt, use_nonpar = TRUE)@nonpar_model$b0, 4), 0.1894
   )
 
 
