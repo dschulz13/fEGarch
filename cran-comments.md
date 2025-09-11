@@ -1,10 +1,19 @@
 # Check for new package version patch 1.0.2
 
+## Addressing WARNING from previous submission try on September 10, 2025
+
+* checking whether package ‘fEGarch’ can be installed ... [83s/83s] WARNING
+  Found the following significant warnings:
+  /home/hornik/lib/R/Library/4.6/x86_64-linux-gnu/RcppArmadillo/include/RcppArmadillo/version/arma.h:71:17: warning: Using fallback compilation with Armadillo 14.6.3. Please consider defining -DARMA_USE_CURRENT. See GitHub issue #475 for more. [-W#pragma-messages]
+  See ‘/srv/hornik/tmp/CRAN_pretest/fEGarch.Rcheck/00install.out’ for details.
+
+This was addressed by including -DARMA_USE_CURRENT in the Makevars-files.
+
 ## Test environments
-* local Windows install, R 4.4.2
+* local Windows install, R 4.5.1
 * win-builder (oldrelease, release and devel)
 * macOS builder
-* R-hub (linux, m1-san, macos, macos-arm64, windows, atlas, c23, clang-asan, clang-ubsan, clang16, clang17, clang18, clang19, gcc-asan, gcc13, gcc14, gcc15, mkl, nold, noremap, nosuggests, ubuntu-clang, ubuntu-gcc12, ubuntu-next, ubuntu-release)
+* R-hub (linux, m1-san, macos, macos-arm64, windows, clang-asan, clang-ubsan, clang20, gcc-asan, gcc13, gcc14, gcc15, mkl, nosuggests, ubuntu-clang, ubuntu-next, ubuntu-release)
 
 ## R CMD check results
 

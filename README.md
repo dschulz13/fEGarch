@@ -973,7 +973,7 @@ and Poor’s 500 daily log-return series from January 04, 2000, until
 November 30, 2024, obtained from Yahoo Finance. The series is formatted
 as a time series object of class `"zoo"`. Furthermore, it contains the
 dataset `UKinflation` with the monthly inflation rate of the UK from
-January 1965 to December 2000. This second series is formatted as a time
+January 1956 to December 2000. This second series is formatted as a time
 series of class `"ts"`.
 
 ## Authors
@@ -1001,5 +1001,6 @@ If you are using this software for your publication, please consider
 citing
 
 - Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch:
-  Estimation of a Broad Family of EGARCH Models. R package version
-  1.0.0. URL: <https://CRAN.R-project.org/package=fEGarch>.
+  SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions. R
+  package version 1.0.2. URL:
+  <https://CRAN.R-project.org/package=fEGarch>.
