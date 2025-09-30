@@ -3,11 +3,11 @@ lookup_table <- list(
   vals = list(
     "norm" = list(NULL, NULL, NULL),
     "std" = list(10, 2, Inf),
-    "ged" = list(2, 1, Inf),
+    "ged" = list(1.8, 1, Inf),
     "ald" = list(NULL, NULL, NULL),   # even though SM-distribution has an additional parameter, it is a non-negative integer that we circle through
     "snorm" = list(NULL, NULL, NULL),
     "sstd" = list(10, 2, Inf),
-    "sged" = list(2, 1, Inf),
+    "sged" = list(1.8, 1, Inf),
     "sald" = list(NULL, NULL, NULL)
   ),
   extra_par = list(
