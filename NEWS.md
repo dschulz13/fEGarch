@@ -1,3 +1,9 @@
+# fEGarch 1.0.3 (2025-10-07)
+- numerical stability of estimators improved regarding parameter mu in cases
+  with strong outliers
+- typos in the documentation for `trafflight_test,fEGarch_risk-method` were
+  fixed
+
 # fEGarch 1.0.2 (2025-09-11)
 - required package update for RcppArmadillo update to Armadillo 15.0.*
 - a bug was fixed, where for the nonparametric scale estimation always the

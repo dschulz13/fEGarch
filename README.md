@@ -99,12 +99,12 @@ model1
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0003 0.0000  20.1198 0.0000
-#> omega_sig -8.6600 0.1272 -68.0884 0.0000
-#> phi1       0.8680 0.0228  38.1357 0.0000
-#> kappa     -0.2363 0.0146 -16.1636 0.0000
-#> gamma      0.3194 0.0209  15.2975 0.0000
-#> d          0.2754 0.0378   7.2889 0.0000
+#> mu         0.0003 0.0000  23.9025 0.0000
+#> omega_sig -8.6599 0.1271 -68.1095 0.0000
+#> phi1       0.8680 0.0227  38.1874 0.0000
+#> kappa     -0.2362 0.0146 -16.1675 0.0000
+#> gamma      0.3194 0.0209  15.2989 0.0000
+#> d          0.2754 0.0377   7.3053 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.4945, BIC: -6.4880
@@ -158,13 +158,13 @@ model10
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.0004 0.0001   6.3085 0.0000
-#> omega_sig -9.4106 0.1013 -92.8804 0.0000
-#> phi1       0.9762 0.0719  13.5787 0.0000
-#> phi2      -0.0000 0.0708  -0.0000 1.0000
-#> kappa     -0.2941 0.0265 -11.0976 0.0000
-#> gamma      0.1652 0.0151  10.9712 0.0000
-#> df         7.0893 0.6038  11.7406 0.0000
+#> mu         0.0004 0.0001   4.6921 0.0000
+#> omega_sig -9.4107 0.1175 -80.1024 0.0000
+#> phi1       0.9635 0.0719  13.4011 0.0000
+#> phi2       0.0126 0.0708   0.1777 0.8590
+#> kappa     -0.2975 0.0266 -11.1945 0.0000
+#> gamma      0.1664 0.0151  11.0414 0.0000
+#> df         7.0661 0.6024  11.7306 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.5391, BIC: -6.5316
@@ -205,13 +205,13 @@ model11
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> mu         0.0003 0.0001    5.7159 0.0000
-#> ar1        0.2451 0.0103   23.7215 0.0000
-#> ma1       -0.2946 0.0100  -29.3872 0.0000
-#> omega_sig -9.1719 0.0667 -137.5959 0.0000
-#> phi1       0.9719 0.0027  358.9273 0.0000
-#> kappa     -0.1333 0.0078  -17.1031 0.0000
-#> gamma      0.1608 0.0124   12.9568 0.0000
+#> mu         0.0003 0.0000    8.2161 0.0000
+#> ar1        0.2448 0.0081   30.2679 0.0000
+#> ma1       -0.2944 0.0080  -36.6457 0.0000
+#> omega_sig -9.1718 0.0641 -142.9765 0.0000
+#> phi1       0.9719 0.0027  360.0481 0.0000
+#> kappa     -0.1333 0.0078  -17.1069 0.0000
+#> gamma      0.1608 0.0124   12.9549 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.4975, BIC: -6.4899
@@ -228,6 +228,10 @@ algorithms for short-memory and long-memory errors.
 ``` r
 model12 <- fiegarch_spec(cond_dist = "std") %>%
   fEGarch(rt, use_nonpar = TRUE)
+#> Warning in min(rt_core - mean_rt): kein nicht-fehlendes Argument für min; gebe
+#> Inf zurück
+#> Warning in max(rt_core - mean_rt): kein nicht-fehlendes Argument für max; gebe
+#> -Inf zurück
 model12
 #> *************************************
 #> *     Fitted EGARCH Family Model    *
@@ -367,11 +371,11 @@ model_figarch
 #> 
 #>          par     se    tval   pval
 #> mu    0.0008 0.0001  8.3454 0.0000
-#> omega 0.0000 0.0000  3.3310 0.0009
+#> omega 0.0000 0.0000  3.3311 0.0009
 #> phi1  0.0261 0.0328  0.7945 0.4269
 #> beta1 0.6088 0.0557 10.9287 0.0000
 #> d     0.6437 0.0571 11.2683 0.0000
-#> df    6.4693 0.4858 13.3160 0.0000
+#> df    6.4693 0.4858 13.3159 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.5033, BIC: -6.4968
@@ -428,12 +432,12 @@ new_model
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> mu         0.0003 0.0001    2.5776 0.0099
-#> ar1       -0.0498 0.0155   -3.2039 0.0014
-#> omega_sig -9.1674 0.0805 -113.8398 0.0000
-#> phi1       0.9719 0.0028  351.6744 0.0000
-#> kappa     -0.1353 0.0081  -16.7884 0.0000
-#> gamma      0.1600 0.0125   12.8447 0.0000
+#> mu         0.0003 0.0000    9.8430 0.0000
+#> ar1       -0.0498 0.0028  -17.8415 0.0000
+#> omega_sig -9.1675 0.0627 -146.2110 0.0000
+#> phi1       0.9719 0.0027  361.8563 0.0000
+#> kappa     -0.1353 0.0077  -17.4673 0.0000
+#> gamma      0.1600 0.0124   12.9295 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.4976, BIC: -6.4911
@@ -482,12 +486,12 @@ new_model
 #> Fitted parameters:
 #> 
 #>               par     se      tval   pval
-#> mu         0.0003 0.0001    2.7544 0.0059
-#> ar1       -0.0516 0.0135   -3.8141 0.0001
-#> omega_sig -9.1587 0.0800 -114.4478 0.0000
-#> phi1       0.9727 0.0027  355.1351 0.0000
-#> kappa     -0.1359 0.0080  -16.9467 0.0000
-#> gamma      0.1591 0.0126   12.5921 0.0000
+#> mu         0.0003 0.0000    7.3108 0.0000
+#> ar1       -0.0516 0.0021  -24.1269 0.0000
+#> omega_sig -9.1588 0.0659 -139.0742 0.0000
+#> phi1       0.9727 0.0027  363.9059 0.0000
+#> kappa     -0.1359 0.0079  -17.2996 0.0000
+#> gamma      0.1591 0.0126   12.6411 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: -6.4792, BIC: -6.4726
@@ -571,12 +575,12 @@ risk %>%
 #> ***********
 #> 
 #> Conf. level: 0.975
-#> Severity of breaches: 6.9710
+#> Severity of breaches: 6.9709
 #> Cumul. prob.: 0.9964
 #> Zone: Yellow zone
 #> 
 #> Conf. level: 0.99
-#> Severity of breaches: 5.0002
+#> Severity of breaches: 5.0001
 #> Cumul. prob.: 1.0000
 #> Zone: Red zone
 #> 
@@ -699,13 +703,13 @@ risk_nm2 %>%
 #> ***********
 #> 
 #> Conf. level: 0.975
-#> Severity of breaches: 4.3408
-#> Cumul. prob.: 0.8024
+#> Severity of breaches: 3.7564
+#> Cumul. prob.: 0.6706
 #> Zone: Green zone
 #> 
 #> Conf. level: 0.99
-#> Severity of breaches: 0.9460
-#> Cumul. prob.: 0.3691
+#> Severity of breaches: 0.7684
+#> Cumul. prob.: 0.2982
 #> Zone: Green zone
 #> 
 #> 
@@ -716,7 +720,7 @@ risk_nm2 %>%
 #> 
 #> Following 99%-VaR, 97.5%-VaR and 97.5%-ES.
 #> 
-#> WAD: 1.2691
+#> WAD: 1.0821
 #> 
 #> 
 #> ***************************************
@@ -814,7 +818,7 @@ opt_dist
 #> 
 #>         par     se    tval   pval
 #> P    2.0000     NA      NA     NA
-#> skew 0.8580 0.0142 60.4752 0.0000
+#> skew 0.8580 0.0142 60.4713 0.0000
 #>  
 #> Information criteria:
 #> AIC: 2.7878, BIC: 2.7900
@@ -880,16 +884,16 @@ dual_lm_model
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.4038 0.0435   9.2930 0.0000
-#> ar1       -0.0054 0.0024  -2.2281 0.0259
-#> D          0.2323 0.0076  30.5330 0.0000
-#> omega_sig -1.4809 0.0944 -15.6941 0.0000
-#> phi1       0.7217 0.1246   5.7909 0.0000
-#> kappa      0.3393 0.0989   3.4293 0.0006
-#> gamma      0.0331 0.1021   0.3243 0.7457
-#> d          0.1576 0.1315   1.1986 0.2307
+#> mu         0.4038 0.0427   9.4655 0.0000
+#> ar1       -0.0053 0.0020  -2.7070 0.0068
+#> D          0.2322 0.0076  30.5667 0.0000
+#> omega_sig -1.4809 0.0937 -15.7988 0.0000
+#> phi1       0.7216 0.1245   5.7950 0.0000
+#> kappa      0.3394 0.0990   3.4293 0.0006
+#> gamma      0.0330 0.1021   0.3235 0.7463
+#> d          0.1576 0.1313   1.1998 0.2302
 #> P          1.0000     NA       NA     NA
-#> skew       1.2916 0.0690  18.7077 0.0000
+#> skew       1.2916 0.0690  18.7151 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: 1.3413, BIC: 1.4208
@@ -1002,5 +1006,5 @@ citing
 
 - Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch:
   SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions. R
-  package version 1.0.2. URL:
+  package version 1.0.3. URL:
   <https://CRAN.R-project.org/package=fEGarch>.
