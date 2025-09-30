@@ -1,6 +1,8 @@
 # fEGarch 1.0.3 (2025-10-07)
 - numerical stability of estimators improved regarding parameter mu in cases
   with strong outliers
+- some parameter default starting values were adjusted slightly to further
+  increase numerical stability
 - typos in the documentation for `trafflight_test,fEGarch_risk-method` were
   fixed
 
