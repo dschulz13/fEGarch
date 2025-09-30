@@ -855,7 +855,7 @@ risk_obj %>%
 The package allows for the implementation of dual long-memory models
 (long-memory in mean together with long-memory in volatility), which can
 be useful for applications to non-return data as well. In the following,
-a FARIMA(1, d ,0)-FIMLog-GARCH(1, d, 1) model (with conditional skewed
+a FARIMA(0, d ,0)-FIMLog-GARCH(1, d, 1) model (with conditional skewed
 average Laplace distribution) is applied to the data `UKinflation`,
 which contains monthly UK inflation rates over time and which is
 provided in the package.
@@ -863,7 +863,7 @@ provided in the package.
 ``` r
 xt <- UKinflation
 dual_lm_model <- fimloggarch_spec(cond_dist = "sald") %>%
-  fEGarch(xt, meanspec = mean_spec(orders = c(1, 0), long_memo = TRUE))
+  fEGarch(xt, meanspec = mean_spec(orders = c(0, 0), long_memo = TRUE))
 dual_lm_model
 #> *************************************
 #> *     Fitted EGARCH Family Model    *
@@ -876,7 +876,7 @@ dual_lm_model
 #> Long memory: TRUE
 #> Cond. distribution: sald
 #>  
-#> ARMA orders (cond. mean): (1, 0)
+#> ARMA orders (cond. mean): (0, 0)
 #> Long memory (cond. mean): TRUE
 #> 
 #> Scale estimation: FALSE
@@ -884,19 +884,18 @@ dual_lm_model
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.4045 0.0804   5.0291 0.0000
-#> ar1        0.0021 0.0530   0.0392 0.9687
-#> D          0.2288 0.0355   6.4395 0.0000
-#> omega_sig -1.4806 0.1280 -11.5698 0.0000
-#> phi1       0.7224 0.1285   5.6213 0.0000
-#> kappa      0.3436 0.1056   3.2554 0.0011
-#> gamma      0.0314 0.1059   0.2966 0.7668
-#> d          0.1509 0.1457   1.0356 0.3004
+#> mu         0.4041 0.0804   5.0240 0.0000
+#> D          0.2298 0.0267   8.5938 0.0000
+#> omega_sig -1.4809 0.1282 -11.5520 0.0000
+#> phi1       0.7222 0.1284   5.6227 0.0000
+#> kappa      0.3425 0.1008   3.3981 0.0007
+#> gamma      0.0318 0.1049   0.3037 0.7613
+#> d          0.1527 0.1380   1.1067 0.2684
 #> P          1.0000     NA       NA     NA
-#> skew       1.2912 0.0755  17.1116 0.0000
+#> skew       1.2913 0.0753  17.1479 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: 1.3414, BIC: 1.4208
+#> AIC: 1.3376, BIC: 1.4092
 
 oldpar <- par(no.readonly = TRUE)
 par(mfrow = c(2, 1), cex = 1, mar = c(4, 4, 3, 2) + 0.1)
