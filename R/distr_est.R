@@ -218,7 +218,7 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
   }
 
   if (skew_par) {
-    start_skew <- 1
+    start_skew <- 0.98
     LB_skew <- 0.3
     UB_skew <- 3
     name_skew <- "skew"
