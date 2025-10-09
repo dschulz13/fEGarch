@@ -1132,8 +1132,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
     mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
-    min_rt <- list(NULL, 0.2 * min(rt_core - mean_rt) + mean_rt)[[incl_mean + 1]]
-    max_rt <- list(NULL, 0.2 * max(rt_core - mean_rt) + mean_rt)[[incl_mean + 1]]
+    min_rt <- list(NULL, suppressWarnings(0.2 * min(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
+    max_rt <- list(NULL, suppressWarnings(0.2 * max(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
     skew_start <- list(NULL, 0.98)[[skew_par + 1]]
     skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
     skew_up <- list(NULL, Inf)[[skew_par + 1]]
@@ -1710,8 +1710,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
     mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
-    min_rt <- list(NULL, 0.2 * min(rt_core - mean_rt) + mean_rt)[[incl_mean + 1]]
-    max_rt <- list(NULL, 0.2 * max(rt_core - mean_rt) + mean_rt)[[incl_mean + 1]]
+    min_rt <- list(NULL, suppressWarnings(0.2 * min(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
+    max_rt <- list(NULL, suppressWarnings(0.2 * max(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
     skew_start <- list(NULL, 0.98)[[skew_par + 1]]
     skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
     skew_up <- list(NULL, Inf)[[skew_par + 1]]
