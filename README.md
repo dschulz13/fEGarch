@@ -228,10 +228,6 @@ algorithms for short-memory and long-memory errors.
 ``` r
 model12 <- fiegarch_spec(cond_dist = "std") %>%
   fEGarch(rt, use_nonpar = TRUE)
-#> Warning in min(rt_core - mean_rt): kein nicht-fehlendes Argument für min; gebe
-#> Inf zurück
-#> Warning in max(rt_core - mean_rt): kein nicht-fehlendes Argument für max; gebe
-#> -Inf zurück
 model12
 #> *************************************
 #> *     Fitted EGARCH Family Model    *
@@ -884,15 +880,15 @@ dual_lm_model
 #> Fitted parameters:
 #> 
 #>               par     se     tval   pval
-#> mu         0.4041 0.0804   5.0240 0.0000
-#> D          0.2298 0.0267   8.5938 0.0000
-#> omega_sig -1.4809 0.1282 -11.5520 0.0000
-#> phi1       0.7222 0.1284   5.6227 0.0000
-#> kappa      0.3425 0.1008   3.3981 0.0007
-#> gamma      0.0318 0.1049   0.3037 0.7613
+#> mu         0.4041 0.0804   5.0242 0.0000
+#> D          0.2298 0.0267   8.6032 0.0000
+#> omega_sig -1.4809 0.1282 -11.5522 0.0000
+#> phi1       0.7222 0.1284   5.6230 0.0000
+#> kappa      0.3425 0.1008   3.3982 0.0007
+#> gamma      0.0318 0.1049   0.3037 0.7614
 #> d          0.1527 0.1380   1.1067 0.2684
 #> P          1.0000     NA       NA     NA
-#> skew       1.2913 0.0753  17.1479 0.0000
+#> skew       1.2913 0.0753  17.1492 0.0000
 #>  
 #> Information criteria (parametric part):
 #> AIC: 1.3376, BIC: 1.4092
