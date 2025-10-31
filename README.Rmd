@@ -335,12 +335,12 @@ risk_obj %>%
 
 ### Model options for non-return data
 
-The package allows for the implementation of dual long-memory models (long-memory in mean together with long-memory in volatility), which can be useful for applications to non-return data as well. In the following, a FARIMA(0, d ,0)-FIMLog-GARCH(1, d, 1) model (with conditional skewed average Laplace distribution) is applied to the data `UKinflation`, which contains monthly UK inflation rates over time and which is provided in the package.
+The package allows for the implementation of dual long-memory models (long-memory in mean together with long-memory in volatility), which can be useful for applications to non-return data as well. In the following, a FARIMA(0, d ,1)-FIMLog-GARCH(1, d, 1) model (with conditional skewed average Laplace distribution) is applied to the data `UKinflation`, which contains monthly UK inflation rates over time and which is provided in the package.
 
 ```{r}
 xt <- UKinflation
 dual_lm_model <- fimloggarch_spec(cond_dist = "sald") %>%
-  fEGarch(xt, meanspec = mean_spec(orders = c(0, 0), long_memo = TRUE))
+  fEGarch(xt, meanspec = mean_spec(orders = c(0, 1), long_memo = TRUE))
 dual_lm_model
 
 oldpar <- par(no.readonly = TRUE)
