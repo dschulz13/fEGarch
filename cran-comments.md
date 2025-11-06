@@ -4,7 +4,7 @@
 * local Windows install, R 4.5.1
 * win-builder (oldrelease, release and devel)
 * macOS builder
-* R-hub (linux, m1-san, macos, macos-arm64, windows, clang-asan, clang-ubsan, clang20, gcc-asan, gcc13, gcc14, gcc15, mkl, nosuggests, ubuntu-clang, ubuntu-next, ubuntu-release)
+* R-hub (linux, m1-san, macos, macos-arm64, windows)
 
 ## R CMD check results
 
