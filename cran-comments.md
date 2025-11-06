@@ -4,7 +4,7 @@
 * local Windows install, R 4.5.1
 * win-builder (oldrelease, release and devel)
 * macOS builder
-* R-hub (linux, m1-san, macos, macos-arm64, windows)
+* R-hub (linux, m1-san, macos, macos-arm64, windows, ubuntu-release)
 
 ## R CMD check results
 
