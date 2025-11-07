@@ -1,4 +1,4 @@
-# fEGarch 1.0.3 (2025-11-06)
+# fEGarch 1.0.3 (2025-11-07)
 - numerical stability of estimators improved regarding parameter mu in cases
   with strong outliers
 - some parameter default starting values were adjusted slightly to further
