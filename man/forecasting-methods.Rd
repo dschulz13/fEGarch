@@ -7,7 +7,14 @@
 \usage{
 \S4method{predict}{fEGarch_fit}(object, n.ahead = 10, trunc = NULL, ...)
 
-\S4method{predict_roll}{fEGarch_fit}(object, step_size = 1, trunc = NULL, ...)
+\S4method{predict_roll}{fEGarch_fit}(
+  object,
+  step_size = 1,
+  trunc = NULL,
+  refit_after = 25,
+  steady_window = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{an object of class \code{"fEGarch_fit"},

@@ -4,7 +4,14 @@
 \alias{predict_roll}
 \title{Generics for Forecasts}
 \usage{
-predict_roll(object, step_size = 1, trunc = NULL, ...)
+predict_roll(
+  object,
+  step_size = 1,
+  trunc = NULL,
+  refit_after = 25,
+  steady_window = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{the generics are currently without use.}
