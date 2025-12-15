@@ -750,6 +750,15 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'@param parallel a logical, indicating whether the models and forecasts
 #'should be produced in parallel for a speed boost.
 #'@param ncores the number of cores to use for parallel computations.
+#'@param presample for refitting: the presample length.
+#'@param Prange for refitting: the range of shape parameters to check for
+#'a conditional ALD.
+#'@param drange the range of the fractional differencing parameter \eqn{d}
+#'in the volatility part to check for a long-memory model in the variance part.
+#'@param Drange the range of the fractional differencing parameter \eqn{D}
+#'in the mean part to check for a long-memory model in the mean part.
+#'@param fitting_args a list with further fitting arguments for any of the
+#'main fitting functions from this package.
 #'@param ... currently without use and included for compatibility
 #'with generics.
 #'
@@ -956,23 +965,42 @@ methods::setMethod("predict_roll_internal", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), ...) {
+  function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_args = list(), ...) {
 
+    fitting_args[["parallel"]] <- FALSE
+    fitting_args[["skip_vcov"]] <- TRUE
+
+    # Get nonparametric settings
     if (!is.null(object@nonpar_model)) {
-
+      bwidth <- object@nonpar_model$b0
+      polyord <- object@nonmpar_model$p
+      kernord <- object@nonpar_model$mu
+      bound_meth <- object@nonpar_model$bb
+      bound_meth <- ifelse(bound_meth == 1, "extend", "shorten")
+      np_spec <- locpol_spec(poly_order = polyord, kernel_order = kernord,
+                             boundary_method = "extend", bwidth = bwidth)
+      use_nonpar <- TRUE
+    } else { # irrelevant settings
+      np_spec <- locpol_spec(poly_order = 1, kernel_order = 1,
+                             boundary_method = "extend", bwidth = 0.2)
+      use_nonpar <- FALSE
     }
+    fitting_args[["nonparspec"]] <- np_spec
+    fitting_args[["use_nonpar"]] <- use_nonpar
 
     train <- est@rt
     test <- est@test_obs
 
-    # if (inherits(train, "zoo")) {
-    #   tp_all <- c(c(time(train)), c(time(test)))
-    # } else if (inherits(train, "ts")) {
-    #   tp_all <-
-    # }
-
     n_train <- length(train)
     n_test <- length(test)
+
+    # If no refitting is needed, run internal predict roll function once
+    # and return result
+    if (is.null(refit_after) || refit_after >= n_test) {
+
+      return(predict_roll_internal(object, step_size = step_size, trunc = trunc))
+
+    }
 
     splits <- seq(from = n_train, to = n_train + n_test, by = refit_after)
 
@@ -1000,20 +1028,76 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       pwers <- object@powers
       modu <- object@modulus
     }
+    trunc_setting <- object@trunc
 
     test_sizes <- diff(obs_end)
 
+    # force needed arguments not used yet
+    force(step_size)
+    force(trunc)
+
+
     fc_fun <- list(
-      "fEGarch_fit_egarch" = function(rt, n_test) {fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu) %>% fEGarch(rt = rt, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_loggarch" = function(rt, n_test) {fEGarch_spec(model_type = "loggarch", orders = m_order, long_memo = lmemo, cond_dist = cdist) %>% fEGarch(rt = rt, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_aparch" = function(rt, n_test) {aparch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_fiaparch" = function(rt, n_test) {fiaparch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_garch" = function(rt, n_test) {garch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_figarch" = function(rt, n_test) {figarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_tgarch" = function(rt, n_test) {tgarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_fitgarch" = function(rt, n_test) {fitgarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_gjrgarch" = function(rt, n_test) {gjrgarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
-      "fEGarch_fit_figjrgarch" = function(rt, n_test) {figjrarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()}
+      "fEGarch_fit_egarch" = function(rt, n_test) {
+        fitting_args[["spec"]] <- fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu)
+        fitting_args[["rt"]] <- rt
+        fitting_args["n_test"] <- n_test
+        do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
+      },
+      "fEGarch_fit_loggarch" = function(rt, n_test) {
+        fitting_args[["spec"]] <- fEGarch_spec(model_type = "loggarch", orders = m_order, long_memo = lmemo, cond_dist = cdist)
+        fitting_args[["rt"]] <- rt
+        fitting_args["n_test"] <- n_test
+        do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
+      },
+      "fEGarch_fit_aparch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(aparch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_fiaparch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(fiaparch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_garch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(garch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_figarch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(figarch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_tgarch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(tgarch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_fitgarch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(fitgarch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_gjrgarch" = function(rt, n_test) {
+                fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(gjrgarch, fitting_args) %>% predict_roll_internal()
+      },
+      "fEGarch_fit_figjrgarch" = function(rt, n_test) {
+        fitting_args[["rt"]] <- rt
+        fitting_args[["n_test"]] <- n_test
+        fitting_args[["cond_dist"]] <- cdist
+        do.call(figjrgarch, fitting_args) %>% predict_roll_internal()
+      }
     )[[class(object)]]
 
     # Set up parallel computations

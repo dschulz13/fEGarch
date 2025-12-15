@@ -117,6 +117,7 @@ setGeneric("predict_roll_internal", function(object, step_size = 1, trunc = NULL
 #'@param steady_window the generics are currently without use.
 #'@param parallel the generics are currently without use.
 #'@param ncores the generics are currently without use.
+#'@param fitting_args the generics are currently without use.
 #'@param ... the generics are currently without use.
 #'
 #'@return
@@ -127,7 +128,7 @@ setGeneric("predict_roll_internal", function(object, step_size = 1, trunc = NULL
 #'
 #'@rdname forecasting-generics
 #'
-setGeneric("predict_roll", function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), ...) {standardGeneric("predict_roll")})
+setGeneric("predict_roll", function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_args = list(), ...) {standardGeneric("predict_roll")})
 
 #====================================================#
 #'Generics for Accessing Model Estimation Output Elements
