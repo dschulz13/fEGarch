@@ -10,6 +10,8 @@ predict_roll(
   trunc = NULL,
   refit_after = 25,
   steady_window = FALSE,
+  parallel = TRUE,
+  ncores = max(1, future::availableCores() - 1),
   ...
 )
 }
@@ -19,6 +21,14 @@ predict_roll(
 \item{step_size}{the generics are currently without use.}
 
 \item{trunc}{the generics are currently without use.}
+
+\item{refit_after}{the generics are currently without use.}
+
+\item{steady_window}{the generics are currently without use.}
+
+\item{parallel}{the generics are currently without use.}
+
+\item{ncores}{the generics are currently without use.}
 
 \item{...}{the generics are currently without use.}
 }

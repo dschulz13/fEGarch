@@ -13,6 +13,8 @@
   trunc = NULL,
   refit_after = 25,
   steady_window = FALSE,
+  parallel = TRUE,
+  ncores = max(1, future::availableCores() - 1),
   ...
 )
 }
@@ -38,6 +40,20 @@ with generics.}
 forecasts; by default, \code{step_size = 1} is employed,
 i.e. for the immediately subsequent observation time
 point for the entire test set.}
+
+\item{refit_after}{the number of observations of the test
+set, after which the model should be refitted regularly.}
+
+\item{steady_window}{a logical; if \code{FALSE}, the refitting
+will use all observations back to the first observation time point;
+for \code{TRUE}, the number of training observations is held constant,
+so that the window of training observations is shifted at every
+refitting.}
+
+\item{parallel}{a logical, indicating whether the models and forecasts
+should be produced in parallel for a speed boost.}
+
+\item{ncores}{the number of cores to use for parallel computations.}
 }
 \value{
 Returns an object of class \code{"fEGarch_forecast"} that has the

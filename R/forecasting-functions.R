@@ -740,6 +740,16 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'@param trunc the truncation setting for the infinite-order
 #'polynomial of long-memory model parts; the default uses
 #'the setting from the fitted input object \code{object}.
+#'@param refit_after the number of observations of the test
+#'set, after which the model should be refitted regularly.
+#'@param steady_window a logical; if \code{FALSE}, the refitting
+#'will use all observations back to the first observation time point;
+#'for \code{TRUE}, the number of training observations is held constant,
+#'so that the window of training observations is shifted at every
+#'refitting.
+#'@param parallel a logical, indicating whether the models and forecasts
+#'should be produced in parallel for a speed boost.
+#'@param ncores the number of cores to use for parallel computations.
 #'@param ... currently without use and included for compatibility
 #'with generics.
 #'
@@ -946,7 +956,7 @@ methods::setMethod("predict_roll_internal", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, ...) {
+  function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), ...) {
 
     if (!is.null(object@nonpar_model)) {
 
@@ -955,11 +965,11 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     train <- est@rt
     test <- est@test_obs
 
-    if (inherits(train, "zoo")) {
-      tp_all <- c(c(time(train)), c(time(test)))
-    } else if (inherits(train, "ts")) {
-      tp_all <-
-    }
+    # if (inherits(train, "zoo")) {
+    #   tp_all <- c(c(time(train)), c(time(test)))
+    # } else if (inherits(train, "ts")) {
+    #   tp_all <-
+    # }
 
     n_train <- length(train)
     n_test <- length(test)
@@ -994,19 +1004,72 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     test_sizes <- diff(obs_end)
 
     fc_fun <- list(
-      "fEGarch_fit_egarch" = function(rt, n_test) {fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu) %>% fEGarch(rt = rt, n_test = n_test)} %>% predict_roll_internal(),
-      "fEGarch_fit_loggarch" = ,
-      "fEGarch_fit_aparch" = ,
-      "fEGarch_fit_fiaparch" = ,
-      "fEGarch_fit_garch" = ,
-      "fEGarch_fit_figarch" = ,
-      "fEGarch_fit_tgarch" = ,
-      "fEGarch_fit_fitgarch" = ,
-      "fEGarch_fit_gjrgarch" = ,
-      "fEGarch_fit_figjrgarch" =
+      "fEGarch_fit_egarch" = function(rt, n_test) {fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu) %>% fEGarch(rt = rt, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_loggarch" = function(rt, n_test) {fEGarch_spec(model_type = "loggarch", orders = m_order, long_memo = lmemo, cond_dist = cdist) %>% fEGarch(rt = rt, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_aparch" = function(rt, n_test) {aparch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_fiaparch" = function(rt, n_test) {fiaparch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_garch" = function(rt, n_test) {garch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_figarch" = function(rt, n_test) {figarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_tgarch" = function(rt, n_test) {tgarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_fitgarch" = function(rt, n_test) {fitgarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_gjrgarch" = function(rt, n_test) {gjrgarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()},
+      "fEGarch_fit_figjrgarch" = function(rt, n_test) {figjrarch(rt = rt, orders = m_order, cond_dist = cdist, n_test = n_test, parallel = FALSE, skip_vcov = TRUE) %>% predict_roll_internal()}
+    )[[class(object)]]
+
+    # Set up parallel computations
+    oldplan <- future::plan()
+    if (parallel) {
+      future::plan(future::multisession, workers = ncores)
+
+      on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
+    }
+
+    # Fit models in parallel and obtain the rolling forecasts
+    out <- furrr::future_map2(obs_sets, test_sizes, function(.x, .y, fc_fun) {
+      fc_fun(rt = .x, n_test = .y)
+    }, fc_fun = fc_fun, .options = furrr::furrr_options(seed = NULL), .progress = FALSE)
+
+    future::plan(oldplan)
+
+    sigmas <- lapply(
+      out,
+      function(.x) {
+        unclass(.x@sigt)
+      }
+    ) %>%
+      unlist()
+
+    means <- lapply(
+      out,
+      function(.x) {
+        unclass(.x@cmeans)
+      }
+    ) %>%
+      unlist()
+
+    models <- lapply(
+      out,
+      function(.x) {
+        .x@model
+      }
     )
 
+    series_out <- format_applier_ts(
+      rt = test,
+      list_of_ts = list(
+        "cmeans" = means,
+        "sigt" = sigmas
+      )
+    )
 
+    cmeans_out <- series_out$cmeans
+    sigt_out <- series_out$sigt
+
+    fEGarch_forecast(
+      cmeans = cmeans_out,
+      sigt = sigt_out,
+      model = models
+    )
 
   }
 )
