@@ -824,11 +824,7 @@ methods::setMethod("predict", "fEGarch_fit",
   }
 )
 
-#'@export
-#'
-#'@rdname forecasting-methods
-#'
-methods::setMethod("predict_roll", "fEGarch_fit",
+methods::setMethod("predict_roll_internal", "fEGarch_fit",
   function(object, step_size = 1, trunc = NULL, ...) {
 
     # Get truncation for long-memory models from fitted object
@@ -942,6 +938,76 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       sigt = sigt_out,
       model = object
     )
+
+})
+
+#'@export
+#'
+#'@rdname forecasting-methods
+#'
+methods::setMethod("predict_roll", "fEGarch_fit",
+  function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, ...) {
+
+    if (!is.null(object@nonpar_model)) {
+
+    }
+
+    train <- est@rt
+    test <- est@test_obs
+
+    if (inherits(train, "zoo")) {
+      tp_all <- c(c(time(train)), c(time(test)))
+    } else if (inherits(train, "ts")) {
+      tp_all <-
+    }
+
+    n_train <- length(train)
+    n_test <- length(test)
+
+    splits <- seq(from = n_train, to = n_train + n_test, by = refit_after)
+
+    obs_all <- c(train, test)
+    n_all <- length(obs_all)
+
+    if (utils::tail(splits, 1) == n_all) {
+
+      splits <- splits[-length(splits)]
+
+    }
+
+
+    obs_end <- c(splits, n_all)
+    obs_sets <- vector(mode = "list", length = length(splits))
+    for (i in 1:length(splits)) {
+      obs_sets[[i]] <- obs_all[1:obs_end[[i + 1]]]
+    }
+
+    cdist <- object@cond_dist
+    m_order <- object@orders
+    mspec <- object@meanspec
+    lmemo <- object@long_memo
+
+    if (inherits(object, "fEGarch_fit_egarch")) {
+      pwers <- object@powers
+      modu <- object@modulus
+    }
+
+    test_sizes <- diff(obs_end)
+
+    fc_fun <- list(
+      "fEGarch_fit_egarch" = function(rt, n_test) {fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu) %>% fEGarch(rt = rt, n_test = n_test)} %>% predict_roll_internal(),
+      "fEGarch_fit_loggarch" = ,
+      "fEGarch_fit_aparch" = ,
+      "fEGarch_fit_fiaparch" = ,
+      "fEGarch_fit_garch" = ,
+      "fEGarch_fit_figarch" = ,
+      "fEGarch_fit_tgarch" = ,
+      "fEGarch_fit_fitgarch" = ,
+      "fEGarch_fit_gjrgarch" = ,
+      "fEGarch_fit_figjrgarch" =
+    )
+
+
 
   }
 )

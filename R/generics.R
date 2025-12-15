@@ -101,6 +101,8 @@ setGeneric("fEGarch_predict", function(object, n.ahead = 10, trunc = NULL, ...) 
 
 #@rdname forecasting-generics
 setGeneric("predict_internal", function(object, n.ahead = 10, trunc = NULL, ...) {standardGeneric("predict_internal")})
+setGeneric("predict_roll_internal", function(object, step_size = 1, trunc = NULL, ...) {standardGeneric("predict_roll_internal")})
+
 
 #====================================================#
 
