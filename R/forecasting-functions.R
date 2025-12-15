@@ -975,7 +975,6 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     }
 
-
     obs_end <- c(splits, n_all)
     obs_sets <- vector(mode = "list", length = length(splits))
     for (i in 1:length(splits)) {
