@@ -15,6 +15,7 @@
   steady_window = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
+  fitting_args = list(),
   ...
 )
 }
@@ -54,6 +55,10 @@ refitting.}
 should be produced in parallel for a speed boost.}
 
 \item{ncores}{the number of cores to use for parallel computations.}
+
+\item{fitting_args}{a list with further fitting arguments for any of the
+main fitting functions from this package; useful in the refitting, when
+other settings than the default need to be implemented.}
 }
 \value{
 Returns an object of class \code{"fEGarch_forecast"} that has the
@@ -62,8 +67,10 @@ forecasted conditional standard deviations and conditional
 means, respectively. If the training series saved in \code{object}
 has a special time series formatting like \code{"zoo"} or \code{"ts"},
 the formatting is adopted accordingly to these numeric
-output series. A third slot \code{@model} is the fitted model
-input object \code{object}.
+output series. A third slot \code{@model} is either the fitted model
+input object \code{object} (when refitting is disabled) or a list as a
+collection of fitted model objects of class \code{"fEGarch_fit"}
+(when refitting is enabled).
 }
 \description{
 Given a fitted model object from this package, conduct
@@ -91,7 +98,17 @@ example \code{step_size = 10} computes ten-step rolling point
 forecasts (starting at the tenth test time point).
 
 Refitting of models during the rolling point forecast procedure
-is currently not yet available.
+is available with package version 1.0.4. \code{refit_after} defines,
+after how many test observations the model should be refitted every time.
+\code{steady_window} addresses whether in refitting models the training
+observations should always start at the very first observation time
+point available, i.e. \code{steady_window = FALSE}, or whether the initial
+number of training observations should be kept throughout when refitting, so
+that the window width of training observations is kept but shifted when
+refitting, i.e. \code{steady_window = TRUE}. The behavior of
+\code{predict_roll} from package version 1.0.3 or earlier, i.e. obtaining
+rolling forecasts without model refitting, can be reproduced
+by setting \code{refit_after = NULL}.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
@@ -103,8 +120,10 @@ fcast1 <- predict(model1, n.ahead = 10)
 fcast1
 
 # Rolling one-step forecasts (EGARCH with cond. normal distr.)
+# (Parallel computation disabled for better compatibility with
+# CRAN checks)
 model2 <- fEGarch(spec = egarch_spec(), rt, n_test = 250)
-fcast2 <- predict_roll(model2, step_size = 1)
+fcast2 <- predict_roll(model2, step_size = 1, parallel = FALSE)
 fcast2
 
 }

@@ -12,6 +12,7 @@ predict_roll(
   steady_window = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
+  fitting_args = list(),
   ...
 )
 }
@@ -29,6 +30,8 @@ predict_roll(
 \item{parallel}{the generics are currently without use.}
 
 \item{ncores}{the generics are currently without use.}
+
+\item{fitting_args}{the generics are currently without use.}
 
 \item{...}{the generics are currently without use.}
 }

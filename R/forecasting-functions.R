@@ -750,15 +750,9 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'@param parallel a logical, indicating whether the models and forecasts
 #'should be produced in parallel for a speed boost.
 #'@param ncores the number of cores to use for parallel computations.
-#'@param presample for refitting: the presample length.
-#'@param Prange for refitting: the range of shape parameters to check for
-#'a conditional ALD.
-#'@param drange the range of the fractional differencing parameter \eqn{d}
-#'in the volatility part to check for a long-memory model in the variance part.
-#'@param Drange the range of the fractional differencing parameter \eqn{D}
-#'in the mean part to check for a long-memory model in the mean part.
 #'@param fitting_args a list with further fitting arguments for any of the
-#'main fitting functions from this package.
+#'main fitting functions from this package; useful in the refitting, when
+#'other settings than the default need to be implemented.
 #'@param ... currently without use and included for compatibility
 #'with generics.
 #'
@@ -781,7 +775,18 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'forecasts (starting at the tenth test time point).
 #'
 #'Refitting of models during the rolling point forecast procedure
-#'is currently not yet available.
+#'is available with package version 1.0.4 for GARCH-type models.
+#'\code{refit_after} defines,
+#'after how many test observations the model should be refitted every time.
+#'\code{steady_window} addresses whether in refitting models the training
+#'observations should always start at the very first observation time
+#'point available, i.e. \code{steady_window = FALSE}, or whether the initial
+#'number of training observations should be kept throughout when refitting, so
+#'that the window width of training observations is kept but shifted when
+#'refitting, i.e. \code{steady_window = TRUE}. The behavior of
+#'\code{predict_roll} from package version 1.0.3 or earlier, i.e. obtaining
+#'rolling forecasts without model refitting, can be reproduced
+#'by setting \code{refit_after = NULL}.
 #'
 #'@return
 #'Returns an object of class \code{"fEGarch_forecast"} that has the
@@ -790,8 +795,10 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'means, respectively. If the training series saved in \code{object}
 #'has a special time series formatting like \code{"zoo"} or \code{"ts"},
 #'the formatting is adopted accordingly to these numeric
-#'output series. A third slot \code{@model} is the fitted model
-#'input object \code{object}.
+#'output series. A third slot \code{@model} is either the fitted model
+#'input object \code{object} (when refitting is disabled) or a list as a
+#'collection of fitted model objects of class \code{"fEGarch_fit"}
+#'(when refitting is enabled).
 #'
 #'@export
 #'
@@ -807,8 +814,10 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'fcast1
 #'
 #'# Rolling one-step forecasts (EGARCH with cond. normal distr.)
+#'# (Parallel computation disabled for better compatibility with
+#'# CRAN checks)
 #'model2 <- fEGarch(spec = egarch_spec(), rt, n_test = 250)
-#'fcast2 <- predict_roll(model2, step_size = 1)
+#'fcast2 <- predict_roll(model2, step_size = 1, parallel = FALSE)
 #'fcast2
 #'
 methods::setMethod("predict", "fEGarch_fit",
@@ -967,13 +976,27 @@ methods::setMethod("predict_roll_internal", "fEGarch_fit",
 methods::setMethod("predict_roll", "fEGarch_fit",
   function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_args = list(), ...) {
 
+    stopifnot("step_size must be an integer that is at least 1." =
+                !is.na(step_size) && is.numeric(step_size) && step_size >= 1)
+    stopifnot("trunc must be a positive integer or NULL" =
+                is.null(trunc) || (!is.na(trunc) && is.numeric(trunc) && trunc >= 1))
+    stopifnot("refit_after must be a positive integer or NULL" =
+                is.null(refit_after) || (!is.na(refit_after) && is.numeric(refit_after) && refit_after >= 1))
+    stopifnot("steady_window must be a logical value" =
+                !is.na(steady_window) && is.logical(steady_window))
+    stopifnot("parallel must be a logical value" =
+                !is.na(parallel) && is.logical(parallel))
+    stopifnot("ncores must be a positive integer" =
+                !is.na(ncores) && is.numeric(ncores) && ncores >= 1)
+
+
     fitting_args[["parallel"]] <- FALSE
     fitting_args[["skip_vcov"]] <- TRUE
 
     # Get nonparametric settings
     if (!is.null(object@nonpar_model)) {
       bwidth <- object@nonpar_model$b0
-      polyord <- object@nonmpar_model$p
+      polyord <- object@nonpar_model$p
       kernord <- object@nonpar_model$mu
       bound_meth <- object@nonpar_model$bb
       bound_meth <- ifelse(bound_meth == 1, "extend", "shorten")
@@ -1002,27 +1025,30 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     }
 
-    splits <- seq(from = n_train, to = n_train + n_test, by = refit_after)
+    # Ends of sub-training + test obs.
+    splits_test <- seq(from = n_train + step_size - 1, to = n_train + n_test, by = refit_after)
 
     obs_all <- c(train, test)
     n_all <- length(obs_all)
 
-    if (utils::tail(splits, 1) == n_all) {
+    if (utils::tail(splits_test, 1) >= n_all) {
 
-      splits <- splits[-length(splits)]
+      splits_test <- splits_test[-length(splits_test)]
 
     }
 
-    obs_end <- c(splits, n_all)
-    obs_sets <- vector(mode = "list", length = length(splits))
-    for (i in 1:length(splits)) {
-      obs_sets[[i]] <- obs_all[1:obs_end[[i + 1]]]
+
+    obs_end <- c(splits_test, n_all)
+    obs_sets <- vector(mode = "list", length = length(splits_test))
+    for (i in 1:length(splits_test)) {
+      obs_sets[[i]] <- obs_all[(1 + (i - 1) * refit_after * steady_window):obs_end[[i + 1]]]
     }
 
     cdist <- object@cond_dist
     m_order <- object@orders
     mspec <- object@meanspec
     lmemo <- object@long_memo
+    fitting_args[["meanspec"]] <- mspec
 
     if (inherits(object, "fEGarch_fit_egarch")) {
       pwers <- object@powers
@@ -1032,69 +1058,65 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     test_sizes <- diff(obs_end)
 
-    # force needed arguments not used yet
-    force(step_size)
-    force(trunc)
-
-
+    # Select the proper fitting and forecasting function
     fc_fun <- list(
       "fEGarch_fit_egarch" = function(rt, n_test) {
         fitting_args[["spec"]] <- fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu)
         fitting_args[["rt"]] <- rt
-        fitting_args["n_test"] <- n_test
+        fitting_args["n_test"] <- n_test + step_size - 1
         do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
       },
       "fEGarch_fit_loggarch" = function(rt, n_test) {
         fitting_args[["spec"]] <- fEGarch_spec(model_type = "loggarch", orders = m_order, long_memo = lmemo, cond_dist = cdist)
         fitting_args[["rt"]] <- rt
-        fitting_args["n_test"] <- n_test
+        fitting_args["n_test"] <- n_test + step_size - 1
         do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
       },
       "fEGarch_fit_aparch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(aparch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_fiaparch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(fiaparch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_garch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(garch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_figarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(figarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_tgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(tgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_fitgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(fitgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_gjrgarch" = function(rt, n_test) {
                 fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(gjrgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_figjrgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test
+        fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(figjrgarch, fitting_args) %>% predict_roll_internal()
       }
@@ -1115,22 +1137,30 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     future::plan(oldplan)
 
+    # Get forecasted values
     sigmas <- lapply(
       out,
       function(.x) {
-        unclass(.x@sigt)
+        na.omit(unclass(.x@sigt))
       }
     ) %>%
       unlist()
+    if (step_size >= 2) {
+      sigmas <- c(rep(NA, step_size - 1), sigmas)
+    }
 
     means <- lapply(
       out,
       function(.x) {
-        unclass(.x@cmeans)
+        na.omit(unclass(.x@cmeans))
       }
     ) %>%
       unlist()
+    if (step_size >= 2) {
+      means <- c(rep(NA, step_size - 1), means)
+    }
 
+    # Get individual models for the various sections
     models <- lapply(
       out,
       function(.x) {
@@ -1138,6 +1168,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       }
     )
 
+    # Format output series
     series_out <- format_applier_ts(
       rt = test,
       list_of_ts = list(
@@ -1149,6 +1180,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     cmeans_out <- series_out$cmeans
     sigt_out <- series_out$sigt
 
+    # Return object
     fEGarch_forecast(
       cmeans = cmeans_out,
       sigt = sigt_out,

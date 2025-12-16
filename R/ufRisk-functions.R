@@ -107,7 +107,9 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
 #'model2 <- fEGarch(egarch_spec(), rt, n_test = 250)
-#'fcast <- predict_roll(model2)
+#'# parallel = FALSE only for better compatibility with CRAN checks;
+#'# should be set to TRUE for speed boost
+#'fcast <- predict_roll(model2, parallel = FALSE)
 #'risk2 <- measure_risk(fcast, measure = c("VaR", "ES"), level = c(0.95, 0.975, 0.99))
 #'risk2
 #'
@@ -119,7 +121,9 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2005-12-31")
 #'model <- fEGarch(egarch_spec(), rt, n_test = 250)
-#'fc <- model %>% predict_roll()
+#'# parallel = FALSE only for better compatibility with CRAN checks;
+#'# should be set to TRUE for speed boost
+#'fc <- model %>% predict_roll(parallel = FALSE)
 #'
 #'test_obs <- model@test_obs   # Test observations
 #'sigt <- fc@sigt              # Conditional volatility forecasts
@@ -212,15 +216,118 @@ setMethod("measure_risk", "fEGarch_fit",
 setMethod("measure_risk", "fEGarch_forecast",
   function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), ...) {
 
-    object2 <- object@model
-    object2@sigt <- object@sigt
-    object2@cmeans <- object@cmeans
+    # Number of fitted models
+    n_fits <- length(object@model)
 
-    func <- methods::selectMethod("measure_risk", "fEGarch_fit")
-    out <- func(object = object2, measure = measure, level = level, ...)
-    out@observations <- object2@test_obs
-    out@sigt <- object2@sigt
-    out@cmeans <- object2@cmeans
+    if (n_fits == 1) {
+
+      object2 <- object@model
+      object2@sigt <- object@sigt
+      object2@cmeans <- object@cmeans
+
+      func <- methods::selectMethod("measure_risk", "fEGarch_fit")
+      out <- func(object = object2, measure = measure, level = level, ...)
+      out@observations <- object2@test_obs
+      out@model <- object@model
+
+
+    } else if (n_fits >= 2) {
+
+      # Get length of test series for each submodel
+      len_sub <- vapply(
+        object@model,
+        function(.x) {
+          length(.x@test_obs)
+        },
+        FUN.VALUE = numeric(1)
+      )
+
+
+      out_s <- lapply(
+        1:n_fits,
+        function(.x, len_sub, level, measure) {
+          model <- object@model[[.x]]
+          idx_l <- (.x - 1) * len_sub[[1]] + 1
+          idx_u <- (.x - 1) * len_sub[[1]] + len_sub[[.x]]
+          sigmas <- unclass(object@sigt)[idx_l:idx_u]
+          means <- unclass(object@cmeans)[idx_l:idx_u]
+
+          model@sigt <- sigmas
+          model@cmeans <- means
+          func <- methods::selectMethod("measure_risk", "fEGarch_fit")
+          out <- func(object = model, measure = measure, level = level, ...)
+          out@observations <- model@test_obs
+          out
+        },
+        len_sub = len_sub, level = level, measure = measure
+      )
+
+    # As formatting reference
+    sigmas <- object@sigt
+
+    test_obs <- lapply(
+      out_s, function(.x) {unclass(.x@observations)}
+    ) %>%
+      unlist()
+
+    form <- format_applier_ts(
+      rt = sigmas,
+      list_of_ts = list(
+        "test_obs" = test_obs
+      )
+    )
+
+    test_obs <- form$test_obs
+
+    VaR <- vector(mode = "list", length = length(level))
+    names(VaR) <- paste0("VaR", level)
+
+    ES <- vector(mode = "list", length = length(level))
+    names(ES) <- paste0("ES", level)
+
+    for (i in 1:length(level)) {
+
+      lvl <- level[[i]]
+      nam_var <- paste0("VaR", lvl)
+      nam_es <- paste0("ES", lvl)
+
+      VaR_i <- lapply(out_s, function(.x, nam_var) {
+        unclass(.x@measures$VaR[[nam_var]])
+      }, nam_var = nam_var) %>%
+        unlist()
+
+      ES_i <- lapply(out_s, function(.x, nam_es) {
+        unclass(.x@measures$ES[[nam_es]])
+      }, nam_es = nam_es) %>%
+        unlist()
+
+      form <- format_applier_ts(
+        rt = sigmas,
+        list_of_ts = list(
+          "VaR" = VaR_i,
+          "ES" = ES_i
+        )
+      )
+
+      VaR[[nam_var]] <- form$VaR
+      ES[[nam_es]] <- form$ES
+
+    }
+
+      measures <- list(
+        VaR = VaR,
+        ES = ES
+      )
+
+      out <- out_s[[1]]
+      out@measures <- measures
+      out@observations <- test_obs
+      out@model <- object@model
+
+    }
+
+    out@sigt <- object@sigt
+    out@cmeans <- object@cmeans
     out
   }
 )
