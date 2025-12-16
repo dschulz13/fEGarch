@@ -1028,7 +1028,9 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     # Ends of sub-training + test obs.
     splits_test <- seq(from = n_train + step_size - 1, to = n_train + n_test, by = refit_after)
 
-    obs_all <- c(train, test)
+
+    obs_all <- c(unclass(train), unclass(test))
+
     n_all <- length(obs_all)
 
     if (utils::tail(splits_test, 1) >= n_all) {

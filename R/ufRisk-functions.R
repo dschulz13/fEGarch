@@ -508,17 +508,17 @@ setMethod("trafflight_test", "fEGarch_risk",
     "ald" = "P",
     "sald" = "P"
   )
-  shape <- if (cond_d %in% c("norm", "snorm")) {
-    0
-  } else {
-    object@model@pars[[par_name]]
-  }
-
-  skew <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
-    object@model@pars[["skew"]]
-  } else {
-    0
-  }
+  # shape <- if (cond_d %in% c("norm", "snorm")) {
+  #   0
+  # } else {
+  #   object@model@pars[[par_name]]
+  # }
+  #
+  # skew <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
+  #   object@model@pars[["skew"]]
+  # } else {
+  #   0
+  # }
 
   VaR_names <- names(object@measures$VaR)
   ES_names <- names(object@measures$ES)
@@ -550,42 +550,61 @@ setMethod("trafflight_test", "fEGarch_risk",
 
   if (n_ES > 0 && n_VaR > 0) {
 
-    cmeans <- object@cmeans
-    sigt <- object@sigt
+    cmeans <- unclass(object@cmeans)
+    sigt <- unclass(object@sigt)
 
-    et <- (obs - cmeans) / sigt     # standardized residuals
+    et <- (unclass(obs) - cmeans) / sigt     # standardized residuals
+
     args <- list(
-      dfun = fun1_selector(cond_d),
-      skew = skew,
-      shape = shape
+      dfun = fun1_selector(cond_d)
     )
-
 
     names(list_ES) <- ES_names
     for (i in 1:n_ES) {
       conf_lvl <- as.numeric(substring(ES_names[[i]], 3))
+      alpha <- conf_lvl
       check_VaR <- paste0("VaR", conf_lvl)
       if (!(check_VaR %in% VaR_names)) {
         message(paste0(ES_names, "cannot be analyzed because ", check_VaR, "is missing from input object"))
         next
       }
 
-      pot_idx <- obs < object@measures$VaR[[check_VaR]]
-      alpha <- conf_lvl
-      sum_severity <- if (sum(pot_idx) > 0) {
-        et_sub <- zoo::coredata(et[pot_idx])
-        args[["x"]] <- et_sub
-        nprobs <- do.call(what = cdf_fun, args = args)
-        probs <- 1 - nprobs
+      sum_severity <- 0   # default
 
-        sum((probs - alpha) / (1 - alpha))
-      } else {
-        0
+      for (j in 1:length(object@model)) {
+
+          shape <- if (cond_d %in% c("norm", "snorm")) {
+            0
+          } else {
+            object@model@pars[[par_name]]
+          }
+
+          skew <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
+            object@model@pars[["skew"]]
+          } else {
+            0
+          }
+
+          args[["skew"]] <- skew
+          args[["shape"]] <- shape
+
+          pot_idx <- unclass(obs)[] < unclass(object@measures$VaR[[check_VaR]])[]
+
+          if (sum(pot_idx) > 0) {
+            et_sub <- zoo::coredata(et[pot_idx])
+            args[["x"]] <- et_sub
+            nprobs <- do.call(what = cdf_fun, args = args)
+            probs <- 1 - nprobs
+
+            sum_severity <- sum_severity + sum((probs - alpha) / (1 - alpha))
+          }
+
       }
-        mean_ES <- 0.5 * (1 - alpha) * n
-        var_ES <- n * (1 - alpha) * ((1 + 3 * alpha) / 12)
 
-        prob <- pnorm(q = sum_severity, mean = mean_ES, sd = sqrt(var_ES))
+      mean_ES <- 0.5 * (1 - alpha) * n
+      var_ES <- n * (1 - alpha) * ((1 + 3 * alpha) / 12)
+
+      prob <- pnorm(q = sum_severity, mean = mean_ES, sd = sqrt(var_ES))
 
       list_ES[[i]] <- list(
         conf_lvl = conf_lvl,
