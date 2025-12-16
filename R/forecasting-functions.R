@@ -1011,8 +1011,8 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     fitting_args[["nonparspec"]] <- np_spec
     fitting_args[["use_nonpar"]] <- use_nonpar
 
-    train <- est@rt
-    test <- est@test_obs
+    train <- object@rt
+    test <- object@test_obs
 
     n_train <- length(train)
     n_test <- length(test)
@@ -1036,7 +1036,6 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       splits_test <- splits_test[-length(splits_test)]
 
     }
-
 
     obs_end <- c(splits_test, n_all)
     obs_sets <- vector(mode = "list", length = length(splits_test))
@@ -1109,7 +1108,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
         do.call(fitgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_gjrgarch" = function(rt, n_test) {
-                fitting_args[["rt"]] <- rt
+        fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
         do.call(gjrgarch, fitting_args) %>% predict_roll_internal()
@@ -1130,10 +1129,12 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       on.exit(expr = {future::plan(oldplan)}, add = TRUE, after = TRUE)
     }
 
+
     # Fit models in parallel and obtain the rolling forecasts
     out <- furrr::future_map2(obs_sets, test_sizes, function(.x, .y, fc_fun) {
       fc_fun(rt = .x, n_test = .y)
     }, fc_fun = fc_fun, .options = furrr::furrr_options(seed = NULL), .progress = FALSE)
+
 
     future::plan(oldplan)
 
