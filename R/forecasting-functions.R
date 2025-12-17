@@ -1169,7 +1169,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     sigmas <- lapply(
       out,
       function(.x) {
-        na.omit(unclass(.x@sigt))
+        stats::na.omit(unclass(.x@sigt))
       }
     ) %>%
       unlist()
@@ -1180,7 +1180,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     means <- lapply(
       out,
       function(.x) {
-        na.omit(unclass(.x@cmeans))
+        stats::na.omit(unclass(.x@cmeans))
       }
     ) %>%
       unlist()
