@@ -8,7 +8,7 @@ predict_roll(
   object,
   step_size = 1,
   trunc = NULL,
-  refit_after = 25,
+  refit_after = NULL,
   steady_window = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),

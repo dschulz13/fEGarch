@@ -200,7 +200,7 @@ plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 
 ### Forecasting
 
-The package provides the two commands `predict()` and `predict_roll()` to compute, given a fitted model from the package, either multistep out-of-sample point forecasts of the conditional standard deviation (and of the conditional mean) or rolling point forecasts (of arbitrarily selectable step size) of the conditional standard deviation (and of the conditional mean) over some reserved test sample.
+The package provides the two commands `predict()` and `predict_roll()` to compute, given a fitted model from the package, either multistep out-of-sample point forecasts of the conditional standard deviation (and of the conditional mean) or rolling point forecasts (of arbitrarily selectable step size) of the conditional standard deviation (and of the conditional mean) over some reserved test sample. Setting `refit_after` to a positive integer in `predict_roll()` forces refitting of the model after that number of observations before continuing with the rolling forecasts. 
 
 For multistep forecasts into the future, consider `predict` and its argument `n.ahead`.
 
@@ -236,7 +236,7 @@ new_model <- egarch_spec() %>%
   fEGarch(rt, meanspec = mean_spec(orders = c(1, 0)), n_test = 250) 
 new_model
 fc2 <- new_model %>%
-  predict_roll()
+  predict_roll(refit_after = 25)
 plot(
   cbind(
     "Return" = new_model@test_obs,
@@ -282,16 +282,16 @@ risk %>%
   loss_functions(penalty = 1e-04)
 ```
 
-A better model regarding VaR and ES forecasting for this particular example could be implemented and checked as follows.
+A slightly better model regarding VaR and ES forecasting for this particular example could be implemented and checked as follows.
 
 ```{r}
-# Fit and check an ARMA(1, 0)-FILog-GARCH(1, d, 1) with
-# conditional t-distribution
-new_model2 <- filoggarch_spec(cond_dist = "std") %>%
-  fEGarch(rt, n_test = 250, meanspec = mean_spec(orders = c(1, 0)))
+# Fit and check an Semi-Log-GARCH(1, d, 1) with
+# conditional skew-t-distribution
+new_model2 <- loggarch_spec(cond_dist = "sstd") %>%
+  fEGarch(rt, n_test = 250, use_nonpar = TRUE)
 
 risk_nm2 <- new_model2 %>%
-  predict_roll() %>%
+  predict_roll(refit_after = 25) %>%
   measure_risk()
 
 risk_nm2 %>%
@@ -423,4 +423,4 @@ Schulz via [dominik.schulz@uni-paderborn.de](mailto:dominik.schulz@uni-paderborn
 
 If you are using this software for your publication, please consider citing
 
-- Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch: SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions. R package version 1.0.3. URL: [https://CRAN.R-project.org/package=fEGarch](https://CRAN.R-project.org/package=fEGarch).
+- Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch: SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions. R package version 1.0.4. URL: [https://CRAN.R-project.org/package=fEGarch](https://CRAN.R-project.org/package=fEGarch).

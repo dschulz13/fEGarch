@@ -740,8 +740,10 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'@param trunc the truncation setting for the infinite-order
 #'polynomial of long-memory model parts; the default uses
 #'the setting from the fitted input object \code{object}.
-#'@param refit_after the number of observations of the test
-#'set, after which the model should be refitted regularly.
+#'@param refit_after a positive integer indicatinmg the number
+#'of observations of the test
+#'set, after which the model should be refitted regularly; for the
+#'default \code{NULL} no refitting is done.
 #'@param steady_window a logical; if \code{FALSE}, the refitting
 #'will use all observations back to the first observation time point;
 #'for \code{TRUE}, the number of training observations is held constant,
@@ -817,7 +819,8 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'# (Parallel computation disabled for better compatibility with
 #'# CRAN checks)
 #'model2 <- fEGarch(spec = egarch_spec(), rt, n_test = 250)
-#'fcast2 <- predict_roll(model2, step_size = 1, parallel = FALSE)
+#'fcast2 <- predict_roll(model2, step_size = 1, refit_after = 50,
+#'                       parallel = FALSE)
 #'fcast2
 #'
 methods::setMethod("predict", "fEGarch_fit",
@@ -974,7 +977,7 @@ methods::setMethod("predict_roll_internal", "fEGarch_fit",
 #'@rdname forecasting-methods
 #'
 methods::setMethod("predict_roll", "fEGarch_fit",
-  function(object, step_size = 1, trunc = NULL, refit_after = 25, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_args = list(), ...) {
+  function(object, step_size = 1, trunc = NULL, refit_after = NULL, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_args = list(), ...) {
 
     stopifnot("step_size must be an integer that is at least 1." =
                 !is.na(step_size) && is.numeric(step_size) && step_size >= 1)
@@ -993,6 +996,12 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     fitting_args[["parallel"]] <- FALSE
     fitting_args[["skip_vcov"]] <- TRUE
 
+    train <- object@rt
+    test <- object@test_obs
+
+    n_train <- length(train)
+    n_test <- length(test)
+
     # Get nonparametric settings
     if (!is.null(object@nonpar_model)) {
       bwidth <- object@nonpar_model$b0
@@ -1001,21 +1010,17 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       bound_meth <- object@nonpar_model$bb
       bound_meth <- ifelse(bound_meth == 1, "extend", "shorten")
       np_spec <- locpol_spec(poly_order = polyord, kernel_order = kernord,
-                             boundary_method = "extend", bwidth = bwidth)
+                             boundary_method = bound_meth, bwidth = bwidth)
       use_nonpar <- TRUE
+      bwidth_abs <- n_train * bwidth
     } else { # irrelevant settings
       np_spec <- locpol_spec(poly_order = 1, kernel_order = 1,
                              boundary_method = "extend", bwidth = 0.2)
       use_nonpar <- FALSE
+      bwidth_abs <- 5   # irrelevant
     }
-    fitting_args[["nonparspec"]] <- np_spec
+
     fitting_args[["use_nonpar"]] <- use_nonpar
-
-    train <- object@rt
-    test <- object@test_obs
-
-    n_train <- length(train)
-    n_test <- length(test)
 
     # If no refitting is needed, run internal predict roll function once
     # and return result
@@ -1065,60 +1070,80 @@ methods::setMethod("predict_roll", "fEGarch_fit",
         fitting_args[["spec"]] <- fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu)
         fitting_args[["rt"]] <- rt
         fitting_args["n_test"] <- n_test + step_size - 1
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
       },
       "fEGarch_fit_loggarch" = function(rt, n_test) {
         fitting_args[["spec"]] <- fEGarch_spec(model_type = "loggarch", orders = m_order, long_memo = lmemo, cond_dist = cdist)
         fitting_args[["rt"]] <- rt
         fitting_args["n_test"] <- n_test + step_size - 1
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
       },
       "fEGarch_fit_aparch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(aparch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_fiaparch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(fiaparch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_garch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(garch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_figarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(figarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_tgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(tgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_fitgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(fitgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_gjrgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(gjrgarch, fitting_args) %>% predict_roll_internal()
       },
       "fEGarch_fit_figjrgarch" = function(rt, n_test) {
         fitting_args[["rt"]] <- rt
         fitting_args[["n_test"]] <- n_test + step_size - 1
         fitting_args[["cond_dist"]] <- cdist
+        np_spec@bwidth <- bwidth_abs / length(rt)
+        fitting_args[["nonparspec"]] <- np_spec
         do.call(figjrgarch, fitting_args) %>% predict_roll_internal()
       }
     )[[class(object)]]

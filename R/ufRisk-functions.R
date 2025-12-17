@@ -123,7 +123,7 @@ setGeneric("measure_risk", function(object, measure = c("VaR", "ES"), level = c(
 #'model <- fEGarch(egarch_spec(), rt, n_test = 250)
 #'# parallel = FALSE only for better compatibility with CRAN checks;
 #'# should be set to TRUE for speed boost
-#'fc <- model %>% predict_roll(parallel = FALSE)
+#'fc <- model %>% predict_roll(refit_after = 50, parallel = FALSE)
 #'
 #'test_obs <- model@test_obs   # Test observations
 #'sigt <- fc@sigt              # Conditional volatility forecasts
@@ -476,7 +476,9 @@ zone_selector <- function(p) {
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
 #'model <- fEGarch(egarch_spec(), rt, n_test = 250)
-#'fcast <- predict_roll(model)
+#'# parallel = FALSE for better compatibility with CRAN checks;
+#'# should be set to TRUE for speed boost
+#'fcast <- predict_roll(model, refit_after = 50, parallel = FALSE)
 #'risk <- measure_risk(fcast, measure = c("VaR", "ES"), level = c(0.95, 0.975, 0.99))
 #'trafflight_test(risk)
 #'cov_tests(risk)
@@ -488,14 +490,17 @@ setMethod("trafflight_test", "fEGarch_risk",
   obs <- object@observations
   n <- length(obs)
 
-  slotnames <- methods::slotNames(object@model)
+  if (!is.list(object@model)) {object@model <- list(object@model)}
+  slotnames <- methods::slotNames(object@model[[1]])
+  n_te_base <- length(object@model[[1]]@test_obs)
   cond_d <- if ("cond_dist" %in% slotnames) {
-    object@model@cond_dist
+    object@model[[1]]@cond_dist
   } else if ("dist" %in% slotnames) {
-    object@model@dist
+    object@model[[1]]@dist
   } else {
     stop("Neither slot @cond_dist nor @dist to be found in model.")
   }
+
 
   par_name <- switch(
     cond_d,
@@ -508,17 +513,6 @@ setMethod("trafflight_test", "fEGarch_risk",
     "ald" = "P",
     "sald" = "P"
   )
-  # shape <- if (cond_d %in% c("norm", "snorm")) {
-  #   0
-  # } else {
-  #   object@model@pars[[par_name]]
-  # }
-  #
-  # skew <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
-  #   object@model@pars[["skew"]]
-  # } else {
-  #   0
-  # }
 
   VaR_names <- names(object@measures$VaR)
   ES_names <- names(object@measures$ES)
@@ -576,11 +570,11 @@ setMethod("trafflight_test", "fEGarch_risk",
           shape <- if (cond_d %in% c("norm", "snorm")) {
             0
           } else {
-            object@model@pars[[par_name]]
+            object@model[[j]]@pars[[par_name]]
           }
 
           skew <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {
-            object@model@pars[["skew"]]
+            object@model[[j]]@pars[["skew"]]
           } else {
             0
           }
@@ -588,10 +582,14 @@ setMethod("trafflight_test", "fEGarch_risk",
           args[["skew"]] <- skew
           args[["shape"]] <- shape
 
-          pot_idx <- unclass(obs)[] < unclass(object@measures$VaR[[check_VaR]])[]
+          n_te <- length(object@model[[j]]@test_obs)
+          idx_lo <- (j - 1) * n_te_base + 1
+          idx_up <- (j - 1) * n_te_base + n_te
+
+          pot_idx <- unclass(obs)[idx_lo:idx_up] < unclass(object@measures$VaR[[check_VaR]])[idx_lo:idx_up]
 
           if (sum(pot_idx) > 0) {
-            et_sub <- zoo::coredata(et[pot_idx])
+            et_sub <- zoo::coredata(et[idx_lo:idx_up][pot_idx])
             args[["x"]] <- et_sub
             nprobs <- do.call(what = cdf_fun, args = args)
             probs <- 1 - nprobs

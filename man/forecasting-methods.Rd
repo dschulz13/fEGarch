@@ -11,7 +11,7 @@
   object,
   step_size = 1,
   trunc = NULL,
-  refit_after = 25,
+  refit_after = NULL,
   steady_window = FALSE,
   parallel = TRUE,
   ncores = max(1, future::availableCores() - 1),
@@ -42,8 +42,10 @@ forecasts; by default, \code{step_size = 1} is employed,
 i.e. for the immediately subsequent observation time
 point for the entire test set.}
 
-\item{refit_after}{the number of observations of the test
-set, after which the model should be refitted regularly.}
+\item{refit_after}{a positive integer indicatinmg the number
+of observations of the test
+set, after which the model should be refitted regularly; for the
+default \code{NULL} no refitting is done.}
 
 \item{steady_window}{a logical; if \code{FALSE}, the refitting
 will use all observations back to the first observation time point;
@@ -98,7 +100,8 @@ example \code{step_size = 10} computes ten-step rolling point
 forecasts (starting at the tenth test time point).
 
 Refitting of models during the rolling point forecast procedure
-is available with package version 1.0.4. \code{refit_after} defines,
+is available with package version 1.0.4 for GARCH-type models.
+\code{refit_after} defines,
 after how many test observations the model should be refitted every time.
 \code{steady_window} addresses whether in refitting models the training
 observations should always start at the very first observation time
@@ -123,7 +126,8 @@ fcast1
 # (Parallel computation disabled for better compatibility with
 # CRAN checks)
 model2 <- fEGarch(spec = egarch_spec(), rt, n_test = 250)
-fcast2 <- predict_roll(model2, step_size = 1, parallel = FALSE)
+fcast2 <- predict_roll(model2, step_size = 1, refit_after = 50,
+                      parallel = FALSE)
 fcast2
 
 }
