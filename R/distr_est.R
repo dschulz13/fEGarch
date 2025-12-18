@@ -588,7 +588,7 @@ find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd",
 #'@export
 
 setMethod("measure_risk", "fEGarch_distr_est",
-  function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), test_obs, sigt, cmeans, refit_after = NULL, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_args = list(), ...) {
+  function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), test_obs, sigt, cmeans, refit_after = NULL, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_fun = find_dist, fitting_args = list(), ...) {
 
   # check inheritance of time series formatting
   inp_list <- list(

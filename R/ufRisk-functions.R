@@ -314,6 +314,13 @@ setMethod("measure_risk", "fEGarch_forecast",
 
     }
 
+    if (!("VaR" %in% measure)) {
+      VaR <- list()
+    }
+    if (!("ES" %in% measure)) {
+      ES <- list()
+    }
+
       measures <- list(
         VaR = VaR,
         ES = ES

@@ -1064,89 +1064,72 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     test_sizes <- diff(obs_end)
 
+    # Get selector for corresponding fitting subclass
+    selector <- vapply(
+      c("fEGarch_fit_egarch", "fEGarch_fit_loggarch", "fEGarch_fit_aparch",
+        "fEGarch_fit_fiaparch", "fEGarch_fit_garch", "fEGarch_fit_figarch",
+        "fEGarch_fit_tgarch", "fEGarch_fit_fitgarch", "fEGarch_fit_gjrgarch",
+        "fEGarch_fit_figjrgarch"),
+      FUN = function(.class, object) {
+        inherits(object, what = .class)
+      },
+      FUN.VALUE = logical(1),
+      object = object
+    )
+
+    adj_fitting_args <- function(rt, n_test, fitting_args) {
+      fitting_args[["rt"]] <- rt
+      fitting_args["n_test"] <- n_test + step_size - 1
+      np_spec@bwidth <- bwidth_abs / length(rt)
+      fitting_args[["nonparspec"]] <- np_spec
+      fitting_args
+    }
+
+    fc_fun_fegarch <- function(rt, n_test, mtype) {
+      fitting_args <- adj_fitting_args(rt = rt, n_test = n_test, fitting_args = fitting_args)
+      fitting_args[["spec"]] <- fEGarch_spec(model_type = mtype, orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu)
+      do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
+    }
+
+    fc_fun_other_garch <- function(rt, n_test, fit_fun) {
+      fitting_args <- adj_fitting_args(rt = rt, n_test = n_test, fitting_args = fitting_args)
+      fitting_args[["cond_dist"]] <- cdist
+      do.call(fit_fun, fitting_args) %>% predict_roll_internal()
+    }
+
     # Select the proper fitting and forecasting function
     fc_fun <- list(
       "fEGarch_fit_egarch" = function(rt, n_test) {
-        fitting_args[["spec"]] <- fEGarch_spec(model_type = "egarch", orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu)
-        fitting_args[["rt"]] <- rt
-        fitting_args["n_test"] <- n_test + step_size - 1
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
+        fc_fun_fegarch(rt = rt, n_test = n_test, mtype = "egarch")
       },
       "fEGarch_fit_loggarch" = function(rt, n_test) {
-        fitting_args[["spec"]] <- fEGarch_spec(model_type = "loggarch", orders = m_order, long_memo = lmemo, cond_dist = cdist)
-        fitting_args[["rt"]] <- rt
-        fitting_args["n_test"] <- n_test + step_size - 1
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
+        fc_fun_fegarch(rt = rt, n_test = n_test, mtype = "loggarch")
       },
       "fEGarch_fit_aparch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(aparch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = aparch)
       },
       "fEGarch_fit_fiaparch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(fiaparch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = fiaparch)
       },
       "fEGarch_fit_garch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(garch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = garch)
       },
       "fEGarch_fit_figarch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(figarch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = figarch)
       },
       "fEGarch_fit_tgarch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(tgarch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = tgarch)
       },
       "fEGarch_fit_fitgarch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(fitgarch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = fitarch)
       },
       "fEGarch_fit_gjrgarch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(gjrgarch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = gjrgarch)
       },
       "fEGarch_fit_figjrgarch" = function(rt, n_test) {
-        fitting_args[["rt"]] <- rt
-        fitting_args[["n_test"]] <- n_test + step_size - 1
-        fitting_args[["cond_dist"]] <- cdist
-        np_spec@bwidth <- bwidth_abs / length(rt)
-        fitting_args[["nonparspec"]] <- np_spec
-        do.call(figjrgarch, fitting_args) %>% predict_roll_internal()
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = figjrgarch)
       }
-    )[[class(object)]]
+    )[selector][[1]]
 
     # Set up parallel computations
     oldplan <- future::plan()
