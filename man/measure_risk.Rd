@@ -20,6 +20,12 @@ measure_risk(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), ...)
   test_obs,
   sigt,
   cmeans,
+  refit_after = NULL,
+  steady_window = FALSE,
+  parallel = TRUE,
+  ncores = max(1, future::availableCores() - 1),
+  fitting_fun = find_dist,
+  fitting_args = list(),
   ...
 )
 }

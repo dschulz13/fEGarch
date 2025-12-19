@@ -69,6 +69,8 @@ nllhood_setup <- function(theta, y, pdf_fun, extra_par, skew_par, mean_par, sdev
 #'therefore excluded from the estimation itself.
 #'@param Prange a two-element numeric vector, giving the boundaries of the search space
 #'for the shape parameter \eqn{P} in an ALD or its skewed variant.
+#'@param skip_vcov a logical indicating whether or not the computation of the
+#'variance-covariance matrix should be skipped.
 #'
 #'@details
 #'
@@ -130,7 +132,7 @@ nllhood_setup <- function(theta, y, pdf_fun, extra_par, skew_par, mean_par, sdev
 #'
 
 distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
-                      fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
+                      fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), skip_vcov = FALSE) {
 
   x_orig <- x
   x <- zoo::coredata(x)
@@ -360,8 +362,12 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
        )
       }
     }
-    hess <- numDeriv::hessian(nllhood, x = par, y = x)
-    vcov <- solve(hess)
+    if (!skip_vcov) {
+      hess <- numDeriv::hessian(nllhood, x = par, y = x)
+      vcov <- solve(hess)
+    } else {
+      vcov <- matrix(NA, ncol = length(par), nrow = length(par))
+    }
     serror <- sqrt(diag(vcov))
     if (any(is.nan(serror))) {
       warning("Unable to compute standard errors.")
@@ -439,10 +445,10 @@ distr_est <- function(x, dist = c("norm", "std", "ged", "ald", "snorm", "sstd", 
 
 #'@export
 #'@rdname distribution_estimation
-norm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
+norm_est <- function(x, fix_mean = NULL, fix_sdev = NULL, skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "norm", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = c(1, 5))
+            Prange = c(1, 5), skip_vcov = skip_vcov)
 
 }
 
@@ -450,10 +456,10 @@ norm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
 #'@export
 #'@rdname distribution_estimation
-std_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
+std_est <- function(x, fix_mean = NULL, fix_sdev = NULL, skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "std", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = c(1, 5))
+            Prange = c(1, 5), skip_vcov = skip_vcov)
 
 }
 
@@ -461,10 +467,10 @@ std_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
 #'@export
 #'@rdname distribution_estimation
-ged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
+ged_est <- function(x, fix_mean = NULL, fix_sdev = NULL, skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "ged", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = c(1, 5))
+            Prange = c(1, 5), skip_vcov = skip_vcov)
 
 }
 
@@ -472,10 +478,10 @@ ged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
 #'@export
 #'@rdname distribution_estimation
-ald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
+ald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "ald", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = Prange)
+            Prange = Prange, skip_vcov = skip_vcov)
 
 }
 
@@ -483,10 +489,10 @@ ald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 
 #'@export
 #'@rdname distribution_estimation
-snorm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
+snorm_est <- function(x, fix_mean = NULL, fix_sdev = NULL, skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "snorm", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = c(1, 5))
+            Prange = c(1, 5), skip_vcov = skip_vcov)
 
 }
 
@@ -494,10 +500,10 @@ snorm_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
 #'@export
 #'@rdname distribution_estimation
-sstd_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
+sstd_est <- function(x, fix_mean = NULL, fix_sdev = NULL, skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "sstd", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = c(1, 5))
+            Prange = c(1, 5), skip_vcov = skip_vcov)
 
 }
 
@@ -505,10 +511,10 @@ sstd_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
 #'@export
 #'@rdname distribution_estimation
-sged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
+sged_est <- function(x, fix_mean = NULL, fix_sdev = NULL, skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "sged", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = c(1, 5))
+            Prange = c(1, 5), skip_vcov = skip_vcov)
 
 }
 
@@ -516,10 +522,10 @@ sged_est <- function(x, fix_mean = NULL, fix_sdev = NULL) {
 
 #'@export
 #'@rdname distribution_estimation
-sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
+sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), skip_vcov = FALSE) {
 
   distr_est(x = x, dist = "sald", fix_mean = fix_mean, fix_sdev = fix_sdev,
-            Prange = Prange)
+            Prange = Prange, skip_vcov = skip_vcov)
 
 }
 
@@ -542,6 +548,8 @@ sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 #'\eqn{P} of the (skewed) average Laplace distribution.
 #'@param criterion either \code{"bic"} or \code{"aic"} to use BIC or AIC as
 #'the final selection criterion; by default \code{"bic"} is implemented.
+#'@param skip_vcov a logical indicating whether or not the computation of the
+#'variance-covariance matrix should be skipped.
 #'
 #'@details
 #'For information on the method and distributions, we refer the reader to
@@ -557,16 +565,16 @@ sald_est <- function(x, fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5)) {
 #'x <- rnorm(2000) * 2.1 + 10.5
 #'find_dist(x)
 #'
-find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"), fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), criterion = c("bic", "aic")) {
+find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"), fix_mean = NULL, fix_sdev = NULL, Prange = c(1, 5), criterion = c("bic", "aic"), skip_vcov = FALSE) {
 
   criterion <- match.arg(criterion)
 
   ests <- lapply(
     X = dists,
-    FUN = function(.y, x, fix_mean, fix_sdev, Prange) {
-      suppressWarnings(distr_est(x = x, dist = .y, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange))
+    FUN = function(.y, x, fix_mean, fix_sdev, Prange, skip_vcov) {
+      suppressWarnings(distr_est(x = x, dist = .y, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange, skip_vcov = skip_vcov))
     },
-    x = x, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange
+    x = x, fix_mean = fix_mean, fix_sdev = fix_sdev, Prange = Prange, skip_vcov = skip_vcov
   )
 
   bics <- vapply(
@@ -588,7 +596,7 @@ find_dist <- function(x, dists = c("norm", "std", "ged", "ald", "snorm", "sstd",
 #'@export
 
 setMethod("measure_risk", "fEGarch_distr_est",
-  function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), test_obs, sigt, cmeans, refit_after = NULL, steady_window = FALSE, parallel = TRUE, ncores = max(1, future::availableCores() - 1), fitting_fun = find_dist, fitting_args = list(), ...) {
+  function(object, measure = c("VaR", "ES"), level = c(0.975, 0.99), test_obs, sigt, cmeans, ...) {
 
   # check inheritance of time series formatting
   inp_list <- list(
