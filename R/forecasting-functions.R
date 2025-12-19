@@ -778,7 +778,7 @@ methods::setMethod("predict_internal", "fEGarch_fit",
 #'
 #'Refitting of models during the rolling point forecast procedure
 #'is available with package version 1.0.4 for GARCH-type models.
-#'\code{refit_after} defines,
+#'\code{refit_after} defines
 #'after how many test observations the model should be refitted every time.
 #'\code{steady_window} addresses whether in refitting models the training
 #'observations should always start at the very first observation time
@@ -1121,7 +1121,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
         fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = tgarch)
       },
       "fEGarch_fit_fitgarch" = function(rt, n_test) {
-        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = fitarch)
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = fitgarch)
       },
       "fEGarch_fit_gjrgarch" = function(rt, n_test) {
         fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = gjrgarch)

@@ -101,7 +101,7 @@ forecasts (starting at the tenth test time point).
 
 Refitting of models during the rolling point forecast procedure
 is available with package version 1.0.4 for GARCH-type models.
-\code{refit_after} defines,
+\code{refit_after} defines
 after how many test observations the model should be refitted every time.
 \code{steady_window} addresses whether in refitting models the training
 observations should always start at the very first observation time
