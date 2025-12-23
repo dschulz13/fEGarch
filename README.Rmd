@@ -61,7 +61,7 @@ spec1 <- fEGarch_spec(
 
 ```
 
-Afterwards, use the model specification returned by `fEGarch_spec()` together with your data object and apply the estimation function `fEGarch()` to them. As can be seen, the package also imports and exports the pipe operator `%>%` of the `magrittr` package for a simplified coding workflow.
+Afterwards, use the model specification returned by `fEGarch_spec()` together with your data object and apply the estimation function `fEGarch()` to them. As can be seen, the package also imports and exports the pipe operator `%>%` of the `magrittr` package for a simplified coding workflow. Note that the object `SP500` in the package is already formatted as an object of class `"zoo"`, which also already contains information about the observation time points. This will later on automate the x-axis formatting in automated plots created with the package.
 
 ```{r}
 ### 2. Use specification to fit model to data
