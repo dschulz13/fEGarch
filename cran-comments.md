@@ -1,4 +1,34 @@
-# Check for new package version patch 1.0.3
+# Check for new package version patch 1.0.4
+
+## Test environments
+* local Windows install, R 4.5.1
+* win-builder (oldrelease, release and devel)
+* macOS builder
+* R-hub (linux, m1-san, macos, macos-arm64, windows, ubuntu-release)
+
+## R CMD check results
+
+There were no errors.
+
+There were no warnings.
+
+There was one INFO:
+
+* checking installed package size ... INFO
+  installed size is 10.0Mb
+  sub-directories of 1Mb or more:
+    libs   8.3Mb
+
+This was caused only by the macOS builder. The package heavily relies on the usage of C++ for time efficiency and therefore has a larger size.
+
+There was one NOTE:
+
+* checking CRAN incoming feasibility ... [112s] NOTE
+  Maintainer: 'Dominik Schulz <dominik.schulz@uni-paderborn.de>'
+  
+Dominik Schulz with that email address is indeed the correct maintainer of the package.
+
+# Check for old package version 1.0.3
 
 ## Test environments
 * local Windows install, R 4.5.1

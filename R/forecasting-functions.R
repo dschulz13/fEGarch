@@ -1059,6 +1059,9 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     if (inherits(object, "fEGarch_fit_egarch")) {
       pwers <- object@powers
       modu <- object@modulus
+    } else if (inherits(object, "fEGarch_fit_loggarch")) { # irrelevant settings
+      pwers <- c(0, 0)
+      modu <- c(FALSE, FALSE)
     }
     trunc_setting <- object@trunc
 
@@ -1079,8 +1082,8 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     adj_fitting_args <- function(rt, n_test, fitting_args) {
       fitting_args[["rt"]] <- rt
-      fitting_args["n_test"] <- n_test + step_size - 1
-      np_spec@bwidth <- bwidth_abs / length(rt)
+      fitting_args[["n_test"]] <- n_test + step_size - 1
+      np_spec@bwidth <- bwidth_abs / (length(rt) - fitting_args[["n_test"]])
       fitting_args[["nonparspec"]] <- np_spec
       fitting_args
     }

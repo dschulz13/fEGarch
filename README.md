@@ -72,7 +72,11 @@ Afterwards, use the model specification returned by `fEGarch_spec()`
 together with your data object and apply the estimation function
 `fEGarch()` to them. As can be seen, the package also imports and
 exports the pipe operator `%>%` of the `magrittr` package for a
-simplified coding workflow.
+simplified coding workflow. Note that the object `SP500` in the package
+is already formatted as an object of class `"zoo"`, which also already
+contains information about the observation time points. This will later
+on automate the x-axis formatting in automated plots created with the
+package.
 
 ``` r
 ### 2. Use specification to fit model to data
@@ -702,13 +706,13 @@ risk_nm2 %>%
 #> ***********
 #> 
 #> Conf. level: 0.975
-#> Severity of breaches: 4.2899
-#> Cumul. prob.: 0.7924
+#> Severity of breaches: 4.2807
+#> Cumul. prob.: 0.7905
 #> Zone: Green zone
 #> 
 #> Conf. level: 0.99
-#> Severity of breaches: 1.3102
-#> Cumul. prob.: 0.5264
+#> Severity of breaches: 1.3067
+#> Cumul. prob.: 0.5248
 #> Zone: Green zone
 #> 
 #> 
@@ -719,7 +723,7 @@ risk_nm2 %>%
 #> 
 #> Following 99%-VaR, 97.5%-VaR and 97.5%-ES.
 #> 
-#> WAD: 1.0128
+#> WAD: 1.0098
 #> 
 #> 
 #> ***************************************
@@ -798,9 +802,11 @@ standard deviation for the same test period and the one-step rolling
 point forecasts of the conditional mean for the same test period,
 respectively. Furthermore, also assume that they were not obtained
 through a parametric (or semiparametric) GARCH-type model but through
-some fully nonparametric idea like for example a neural network. Given
-those series, the `fEGarch` package provides a simple way to compute and
-backtest VaR and ES even for such nonparametric approaches.
+some fully nonparametric idea like for example a neural network. To be
+precise, the forecasts would need to be obtained without model
+refitting. Given those series, the `fEGarch` package provides a simple
+way to compute and backtest VaR and ES even for such nonparametric
+approaches (without model refitting).
 
 ``` r
 opt_dist <- resids %>%

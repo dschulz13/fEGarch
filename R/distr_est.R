@@ -36,7 +36,9 @@ nllhood_setup <- function(theta, y, pdf_fun, extra_par, skew_par, mean_par, sdev
   }
 
   # Return negative log-likelihood
-  -sum(log(pdf_fun(x = y, shape = shape, skew = skew, mean = mean, sdev = sdev)))
+  lhoods <- pdf_fun(x = y, shape = shape, skew = skew, mean = mean, sdev = sdev)
+  lhoods[lhoods == 0] <- 1e-25   # safety measure to avoid -Inf llhood
+  -sum(log(lhoods))
 
 }
 
