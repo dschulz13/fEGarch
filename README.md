@@ -550,7 +550,11 @@ simplified formatting of the x-axis.
 
 Moreover, a test suite consisting of traffic light tests for VaR and ES
 and of coverage and independence tests can be applied using
-`backtest_suite` on the output of `measure_risk`.
+`backtest_suite` on the output of `measure_risk`. Note that test results
+(rejecting or not rejecting the null hypothesis) for the coverage and
+independence tests are stated under consideration of a 5-percent
+significance level; however, other significance levels can be considered
+as well via the also given p-values for each of these tests.
 
 ``` r
 risk %>%
