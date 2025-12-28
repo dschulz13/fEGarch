@@ -488,3 +488,66 @@ test_that("fEGarch rolling forecast output correctly formatted", {
   expect_s4_class(suppressWarnings(fiaparch(rt, n_test = 250)) %>% predict_roll(), "fEGarch_forecast")
 
 })
+
+test_that("fEGarch rolling forecast works as intended for semiparametric models", {
+
+    expect_equal({
+      est <- egarch_spec() %>%
+        fEGarch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, refit_after = 100, parallel = FALSE)
+      c(
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+        c(0.00658390688108184, 0.00609032406826754, 0.00689595712887946,
+        0.00733303750618234, 0.00786394670990562, 0.0262324769291835,
+        0.0261135579790234, 0.0256021324543382,  0.0276263000537599,
+        0.0271606675070345, 0.0348847219378428, 0.0352535716784695,
+        0.0353867998187214, 0.0366814723704593, 0.0360883735619)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- egarch_spec() %>%
+        fEGarch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, refit_after = NULL, parallel = FALSE)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5)
+      )
+    }, {
+        rep(-0.0004435214, 15)
+    }, tolerance = 1e-06)
+
+    expect_equal({
+      est <- suppressWarnings(aparch(rt, n_test = 250, use_nonpar = TRUE))
+      fcast <- predict_roll(est, refit_after = 100, parallel = FALSE)
+      c(
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+        c(0.00692989096402155, 0.00658123733303244, 0.00734095285505457,
+          0.00759265545800982, 0.0080062076387606,
+          0.024379877019696, 0.0235379094738339, 0.0222659856219241,
+          0.0247630431377694, 0.0233514042687065, 0.0268816541547651,
+          0.0270505627951306, 0.0267399069011834, 0.0285635715857611,
+          0.0273526311191019)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- suppressWarnings(aparch(rt, n_test = 250, use_nonpar = TRUE))
+      fcast <- predict_roll(est, refit_after = NULL, parallel = FALSE)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5)
+      )
+    }, {
+        rep(-0.0004435214, 15)
+    }, tolerance = 1e-06)
+
+})
