@@ -1,4 +1,4 @@
-# fEGarch 1.0.4 (2025-12-28)
+# fEGarch 1.0.4 (2026-01-07)
 - the method `predict_roll()` now allows for refitting of the underlying
   model via the new argument `refit_after` during the test period.
 - `measure_risk()` and backtest functions take into account the potential
