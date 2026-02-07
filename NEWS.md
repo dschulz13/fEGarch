@@ -14,7 +14,7 @@
 # fEGarch 1.0.5 (2026-02-02)
 - a bug in the backtesting functions for output of 
   `measure_risk,fEGarch_distr_est-method` was fixed that was introduced
-  with package version 1.0.4; this did not affect the `measure_risk`.
+  with package version 1.0.4; this did not affect the `measure_risk` function.
 - step size different from 1 in rolling volatility forecasts under model
   refitting now available for GARCH-type models different from the exponential
   GARCH family (was already and is available for exponential GARCH family
