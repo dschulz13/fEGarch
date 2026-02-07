@@ -105,7 +105,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
       sigd_init <- stats::sd(mean_res)^delta0
       rt_dm <-  mean_res - mean(mean_res)
-      etransf_init <- mean(abs(rt_dm ) - gamma0 *  rt_dm)^delta0
+      etransf_init <- mean((abs(rt_dm ) - gamma0 *  rt_dm)^delta0)
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "tgarch" = {
@@ -113,7 +113,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
       sigd_init <- stats::sd(mean_res)^delta0
       rt_dm <- mean_res - mean(mean_res)
-      etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
+      etransf_init <- mean((abs(rt_dm) - gamma0 * rt_dm)^delta0)
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "aparch" = {
@@ -121,7 +121,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
       sigd_init <- stats::sd(mean_res)^delta0
       rt_dm <- mean_res - mean(mean_res)
-      etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
+      etransf_init <- mean((abs(rt_dm) - gamma0 * rt_dm)^delta0)
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "figarch" = {
@@ -143,7 +143,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       delta0 <- 2
       gamma0 <- est_s@pars[["gamma1"]]
       rt_dm <- mean_res - mean(mean_res)
-      list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
+      list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0))
     },
     "fitgarch" = {
       est_s <- suppressWarnings(tgarch(
@@ -161,7 +161,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       delta0 <- 1
       gamma0 <- est_s@pars[["gamma1"]]
       rt_dm <- mean_res - mean(mean_res)
-      list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
+      list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0))
     },
     "fiaparch" = {
       est_s <- suppressWarnings(aparch(
@@ -179,7 +179,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       delta0 <- est_s@pars[["delta"]]
       gamma0 <- est_s@pars[["gamma1"]]
       rt_dm <- mean_res - mean(mean_res)
-      list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
+      list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0))
     }
   )
 
