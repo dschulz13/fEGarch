@@ -1,3 +1,9 @@
+# fEGarch 1.0.6
+- ARMA-GARCH, ARMA-GJR-GARCH, ARMA-TGARCH, ARMA-APARCH and their
+  long-memory variants have been stabilized by selecting more suitable
+  pre-sample values for the conditional volatility equations from
+  the residuals of a preliminary ARMA model fit.
+
 # fEGarch 1.0.5 (2026-02-02)
 - a bug in the backtesting functions for output of 
   `measure_risk,fEGarch_distr_est-method` was fixed that was introduced

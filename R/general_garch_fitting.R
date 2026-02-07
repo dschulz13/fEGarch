@@ -89,35 +89,43 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     presample = presample
   )
 
+  mean_req <- lm_arma || (meanspec@orders[[1]] > 0 || meanspec@orders[[2]])
+  mean_res <- if (mean_req) {   # run an initial ARMA to get better pre-sample values for the volatility step
+    init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    init_arma$residuals
+  } else {
+    rt_core
+  }
+
   extra_args <- switch(
     model_type,
-    "garch" = list(sig2_init = 1),
+    "garch" = list(sig2_init = stats::var(mean_res)),
     "gjrgarch" = {
       delta0 <- 2    # use delta0 = 2
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-      sigd_init <- stats::sd(rt_core)^delta0
-      rt_dm <- rt_core - mean(rt_core)
-      etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
+      sigd_init <- stats::sd(mean_res)^delta0
+      rt_dm <-  mean_res - mean(mean_res)
+      etransf_init <- mean(abs(rt_dm ) - gamma0 *  rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "tgarch" = {
       delta0 <- 1    # use delta0 = 1
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-      sigd_init <- stats::sd(rt_core)^delta0
-      rt_dm <- rt_core - mean(rt_core)
+      sigd_init <- stats::sd(mean_res)^delta0
+      rt_dm <- mean_res - mean(mean_res)
       etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "aparch" = {
       delta0 <- 2    # use delta0 = 2
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
-      sigd_init <- stats::sd(rt_core)^delta0
-      rt_dm <- rt_core - mean(rt_core)
+      sigd_init <- stats::sd(mean_res)^delta0
+      rt_dm <- mean_res - mean(mean_res)
       etransf_init <- mean(abs(rt_dm) - gamma0 * rt_dm)^delta0
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "figarch" = {
-      list(presample_val = var(rt_core))
+      list(presample_val = var(mean_res))
     },
     "figjrgarch" = {
       est_s <- suppressWarnings(gjrgarch(
@@ -134,7 +142,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       ))
       delta0 <- 2
       gamma0 <- est_s@pars[["gamma1"]]
-      rt_dm <- rt_core - mean(rt_core)
+      rt_dm <- mean_res - mean(mean_res)
       list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
     },
     "fitgarch" = {
@@ -152,7 +160,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       ))
       delta0 <- 1
       gamma0 <- est_s@pars[["gamma1"]]
-      rt_dm <- rt_core - mean(rt_core)
+      rt_dm <- mean_res - mean(mean_res)
       list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
     },
     "fiaparch" = {
@@ -170,7 +178,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       ))
       delta0 <- est_s@pars[["delta"]]
       gamma0 <- est_s@pars[["gamma1"]]
-      rt_dm <- rt_core - mean(rt_core)
+      rt_dm <- mean_res - mean(mean_res)
       list(presample_val = mean(abs(rt_dm) - gamma0 * rt_dm)^delta0)
     }
   )
