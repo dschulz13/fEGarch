@@ -1,4 +1,6 @@
 # fEGarch 1.0.6
+- GJR-GARCH, TGARCH, APARCH, FIGJR-GARCH, FITGARCH and FIAPARCH 
+  pre-sample values have been stabilized slightly.
 - ARMA-GARCH, ARMA-GJR-GARCH, ARMA-TGARCH, ARMA-APARCH, FARIMA-GARCH,
   FARIMA-GJR-GARCH, FARIMA-TGARCH, FARIMA-APARCH and their
   long-memory variants (for the variance parts) have been stabilized 
@@ -16,7 +18,7 @@
 - step size different from 1 in rolling volatility forecasts under model
   refitting now available for GARCH-type models different from the exponential
   GARCH family (was already and is available for exponential GARCH family
-  models)
+  models).
 
 # fEGarch 1.0.4 (2026-01-07)
 - the method `predict_roll()` now allows for refitting of the underlying
