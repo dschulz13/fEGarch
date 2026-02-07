@@ -1,8 +1,13 @@
 # fEGarch 1.0.6
-- ARMA-GARCH, ARMA-GJR-GARCH, ARMA-TGARCH, ARMA-APARCH and their
-  long-memory variants have been stabilized by selecting more suitable
-  pre-sample values for the conditional volatility equations from
-  the residuals of a preliminary ARMA model fit.
+- ARMA-GARCH, ARMA-GJR-GARCH, ARMA-TGARCH, ARMA-APARCH, FARIMA-GARCH,
+  FARIMA-GJR-GARCH, FARIMA-TGARCH, FARIMA-APARCH and their
+  long-memory variants (for the variance parts) have been stabilized 
+  by selecting more suitable pre-sample values for the conditional
+  volatility equations from the residuals of a preliminary ARMA model
+  fit (EGF models were and are still stable in this regard).
+- fixed a bug in `garch_sim`, where the simulation failed, if no
+  setting of `phi` in the list for argument `pars` was provided
+  manually.
 
 # fEGarch 1.0.5 (2026-02-02)
 - a bug in the backtesting functions for output of 
