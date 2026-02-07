@@ -1013,7 +1013,7 @@ Mr. Dominik Schulz via <dominik.schulz@uni-paderborn.de>.
 If you are using this software for your publication, please consider
 citing
 
-- Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2025). fEGarch:
+- Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2026). fEGarch:
   SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions. R
-  package version 1.0.5. URL:
+  package version 1.0.6. URL:
   <https://CRAN.R-project.org/package=fEGarch>.
