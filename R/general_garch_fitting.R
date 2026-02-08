@@ -89,10 +89,19 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     presample = presample
   )
 
-  mean_req <- lm_arma || (meanspec@orders[[1]] > 0 || meanspec@orders[[2]])
-  mean_res <- if (mean_req) {   # run an initial ARMA to get better pre-sample values for the volatility step
+  mean_req_1 <- (!lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
+  mean_req_2 <- lm_arma
+  mean_res <- if (mean_req_1) {   # run an initial ARMA to get better pre-sample values for the volatility step
     init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     init_arma$residuals
+  } else if (mean_req_2) {
+    init_farima <- tryCatch({
+      suppressWarnings(prelim_farima(x = rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
+    },
+    error = {
+      suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    })
+    init_farima$residuals
   } else {
     rt_core
   }

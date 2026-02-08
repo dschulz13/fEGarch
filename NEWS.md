@@ -1,12 +1,13 @@
 # fEGarch 1.0.6
 - GJR-GARCH, TGARCH, APARCH, FIGJR-GARCH, FITGARCH and FIAPARCH 
   pre-sample values have been stabilized slightly.
-- ARMA-GARCH, ARMA-GJR-GARCH, ARMA-TGARCH, ARMA-APARCH, FARIMA-GARCH,
-  FARIMA-GJR-GARCH, FARIMA-TGARCH, FARIMA-APARCH and their
-  long-memory variants (for the variance parts) have been stabilized 
-  by selecting more suitable pre-sample values for the conditional
-  volatility equations from the residuals of a preliminary ARMA model
-  fit (EGF models were and are still stable in this regard).
+- In dual models, where for some models in the volatility part pre-sample
+  quantities are set through empirical values, a preliminary
+  ARMA or FARIMA estimation step has been implemented to obtain their
+  residuals and subsequently obtain the pre-sample values based on those
+  residuals; this stabilizes estimated conditional standard deviations
+  at the beginning of the training period; dual models with
+  long-memory EGF part for the variance model stay fully unaffected.
 - fixed a bug in `garch_sim`, where the simulation failed, if no
   setting of `phi` in the list for argument `pars` was provided
   manually.

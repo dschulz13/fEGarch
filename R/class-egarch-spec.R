@@ -1090,7 +1090,23 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   mode <- mode_mat[pow_asy_check, pow_mag_check]
 
   # Initialize ln(sig_t^2) with some reasonable, fixed value
-  lnsig2_init <- log(var(rt_core))
+  mean_req_1 <- (!lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
+  mean_req_2 <- lm_arma
+  mean_res <- if (!lm && mean_req_1) {   # run an initial ARMA to get better pre-sample values for the volatility step
+    init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    init_arma$residuals
+  } else if (!lm && mean_req_2) {
+    init_farima <- tryCatch({
+      suppressWarnings(prelim_farima(x = rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
+    },
+    error = {
+      suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    })
+    init_farima$residuals
+  } else {
+    rt_core
+  }
+  lnsig2_init <- log(var(mean_res))
 
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
@@ -1671,7 +1687,24 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   }
 
   # Initialize ln(sig_t^2) with some reasonable, fixed value
-  lnsig2_init <- log(var(rt_core))
+  # Initialize ln(sig_t^2) with some reasonable, fixed value
+  mean_req_1 <- (!lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
+  mean_req_2 <- lm_arma
+  mean_res <- if (!lm && mean_req_1) {   # run an initial ARMA to get better pre-sample values for the volatility step
+    init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    init_arma$residuals
+  } else if (!lm && mean_req_2) {
+    init_farima <- tryCatch({
+      suppressWarnings(prelim_farima(x = rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
+    },
+    error = {
+      suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    })
+    init_farima$residuals
+  } else {
+    rt_core
+  }
+  lnsig2_init <- log(var(mean_res))
 
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
