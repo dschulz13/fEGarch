@@ -1,4 +1,25 @@
-# Check for new package version patch 1.0.5
+# Check for new package version patch 1.0.6
+
+## Test environments
+* local Windows install, R 4.5.1
+* win-builder (oldrelease, release and devel)
+* R-hub (linux, windows, ubuntu-clang, ubuntu-release)
+
+## R CMD check results
+
+There were no errors.
+
+There were no warnings.
+
+There was one NOTE:
+
+* checking CRAN incoming feasibility ... [112s] NOTE
+  Maintainer: 'Dominik Schulz <dominik.schulz@uni-paderborn.de>'
+  
+Dominik Schulz with that email address is indeed the correct maintainer of the package.
+
+
+# Check for old package version 1.0.5
 
 ## Test environments
 * local Windows install, R 4.5.1

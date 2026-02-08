@@ -1,4 +1,4 @@
-# fEGarch 1.0.6
+# fEGarch 1.0.6 (2026-02-09)
 - GJR-GARCH, TGARCH, APARCH, FIGJR-GARCH, FITGARCH and FIAPARCH 
   pre-sample values have been stabilized slightly.
 - In dual models, where for some models in the volatility part pre-sample
