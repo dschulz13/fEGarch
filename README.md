@@ -267,7 +267,7 @@ plot(cbind("Standardized" = (rt - mean(rt)) / sd(rt),
      main = "Standardized log-returns and their scale-adjusted version")
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 The estimated volatility is then the product of the estimated scale
 function and the estimated conditional standard deviation both obtained
@@ -307,7 +307,7 @@ returned object, also to the estimated conditional standard deviations.
 plot(TS, xlab = "Year", main = "Example application")
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 Furthermore, also the conditional means of the previously estimated
 `model11` object can be obtained.
@@ -332,7 +332,7 @@ plot.zoo(obj, screens = c(1, 1, 2), col = c(1, 2, 1),
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ### Alternatives
 
@@ -395,7 +395,7 @@ TS2 <- cbind(
 plot(TS2, xlab = "Year", main = "Another example application", nc = 1)
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 ### Forecasting
 
@@ -460,7 +460,7 @@ plot(
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
 
 Rolling point forecasts can be computed using `predict_roll`, if
 previously in the model estimation step observations were reserved for
@@ -512,7 +512,7 @@ plot(
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
 
 ### Backtesting
 
@@ -540,7 +540,7 @@ risk %>%
   plot(which = 0.975, xlab = "Month")
 ```
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-17-1.png" width="100%" />
 
 As can be seen, the breaches of the VaR are automatically highlighted
 through the colors red and purple. Breaches of the ES (and therefore
@@ -796,7 +796,7 @@ risk_nm2 %>%
 resids <- new_model@etat
 test_obs <- new_model@test_obs
 sigt <- fc2@sigt
-cmeans <- fc2@cmeans
+cmeans <- fc2@cmeans 
 ```
 
 Assume now that the objects `resids`, `test_obs`, `sigt` and `cmeans`
@@ -918,7 +918,7 @@ plot.ts(sigma(dual_lm_model), xlab = "Year",
         main = "Conditional volatility of UK inflation")
 ```
 
-<img src="man/figures/README-unnamed-chunk-25-1.png" alt="" width="100%" />
+<img src="man/figures/README-unnamed-chunk-25-1.png" width="100%" />
 
 ``` r
 
