@@ -796,7 +796,7 @@ risk_nm2 %>%
 resids <- new_model@etat
 test_obs <- new_model@test_obs
 sigt <- fc2@sigt
-cmeans <- fc2@cmeans 
+cmeans <- fc2@cmeans
 ```
 
 Assume now that the objects `resids`, `test_obs`, `sigt` and `cmeans`

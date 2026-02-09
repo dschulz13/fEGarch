@@ -306,7 +306,7 @@ risk_nm2 %>%
 resids <- new_model@etat
 test_obs <- new_model@test_obs
 sigt <- fc2@sigt
-cmeans <- fc2@cmeans 
+cmeans <- fc2@cmeans
 ```
 
 Assume now that the objects `resids`, `test_obs`, `sigt` and `cmeans` reflect the in-sample standardized residuals obtained from some model, the test returns, one-step rolling point forecasts of the conditional standard deviation for the same test period and the one-step rolling point forecasts of the conditional mean for the same test period, respectively. Furthermore, also assume that they were not obtained through a parametric (or semiparametric) GARCH-type model but through some fully nonparametric idea like for example a neural network. To be precise, the forecasts would need to be obtained without model refitting. Given those series, the `fEGarch` package provides a simple way to compute and backtest VaR and ES even for such nonparametric approaches (without model refitting).
