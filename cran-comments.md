@@ -1,5 +1,9 @@
 # Check for new package version patch 1.0.6
 
+Please excuse the early patch after version 1.0.5. I found
+a bug in the `garch_sim()` simulation function and need to
+fix it urgently.
+
 ## Test environments
 * local Windows install, R 4.5.1
 * win-builder (oldrelease, release and devel)
