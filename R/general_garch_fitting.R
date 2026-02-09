@@ -213,7 +213,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   # using internally saved table function
   pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
   list2env(pars_and_restr, envir = environment())
-  suppressWarnings(rm(pars_and_restr))
+  suppressWarnings(rm("pars_and_restr", envir = environment()))
 
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
