@@ -145,6 +145,6 @@ Results are omitted to avoid repetition. Aside from the initial estimation, all 
 
 # Further capabilities
 
-Residual tests of fitted models can be implmented via `fit_test_suite()`. It includes a Ljung-Box test for the simple and the squared residuals, a sign-bias test and an adjusted Pearson goodness-of-fit test.
+Residual tests of fitted models can be implemented via `fit_test_suite()`. It includes a Ljung-Box test for the simple and the squared residuals, a sign-bias test and an adjusted Pearson goodness-of-fit test.
 
 Furthermore, if conditional means and conditional standard deviations have been obtained externally using some other method, one can implement a simple VaR and ES backtesting procedure (without model refitting) using the pipeline `find_dist() %>% measure_risk() %>% backtest_suite()`. `find_dist()` fits the best distribution to a residual series, `measure_risk()` then again (by also supplying it with the mean and volatility forecasts) produces VaR and ES forecasts, and `backtest_suite()` runs the backtests.
