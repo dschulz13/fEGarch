@@ -148,19 +148,33 @@ fEGarch_sim <- function(spec = egarch_spec(),
 
   # Then we can integrate numerically over those function and thus
   # follow the definition of an expectation
-  E_asy <- stats::integrate(
-    f = Func_a, lower = -Inf, upper = Inf,
+  E_asy_low <- stats::integrate(
+    f = Func_a, lower = -Inf, upper = 0,
     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
     stop.on.error = FALSE, pow = pow_a, dfun = PDF, shape = shape,
     skew = skew
   )[[1]]
+  E_asy_up <- stats::integrate(
+    f = Func_a, lower = 0, upper = Inf,
+    subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+    stop.on.error = FALSE, pow = pow_a, dfun = PDF, shape = shape,
+    skew = skew
+  )[[1]]
+  E_asy <- E_asy_low + E_asy_up
 
-  E_mag <- stats::integrate(
-    f = Func_m, lower = -Inf, upper = Inf,
+  E_mag_low <- stats::integrate(
+    f = Func_m, lower = -Inf, upper = 0,
     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
     stop.on.error = FALSE, pow = pow_m, dfun = PDF, shape = shape,
     skew = skew
   )[[1]]
+  E_mag_up <- stats::integrate(
+    f = Func_m, lower = 0, upper = Inf,
+    subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+    stop.on.error = FALSE, pow = pow_m, dfun = PDF, shape = shape,
+    skew = skew
+  )[[1]]
+  E_mag <- E_mag_low + E_mag_up
 
   mode <- mode_mat[log_a, log_m]
   if (lm) {
@@ -196,12 +210,19 @@ fEGarch_sim <- function(spec = egarch_spec(),
       log(x^2) * dfun(x, shape = shape, skew = skew)
     }
 
-    E_const <- stats::integrate(
-      f = Func, lower = -Inf, upper = Inf,
+    E_const_low <- stats::integrate(
+      f = Func, lower = -Inf, upper = 0,
       subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
       stop.on.error = FALSE, dfun = PDF, shape = shape,
       skew = skew
     )[[1]]
+    E_const_up <- stats::integrate(
+      f = Func, lower = 0, upper = Inf,
+      subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+      stop.on.error = FALSE, dfun = PDF, shape = shape,
+      skew = skew
+    )[[1]]
+    E_const <- E_const_low + E_const_up
 
     if (lm) {
 

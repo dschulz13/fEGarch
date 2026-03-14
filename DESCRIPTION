@@ -1,7 +1,7 @@
 Package: fEGarch
 Type: Package
 Title: SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions
-Version: 1.0.6
+Version: 1.0.7
 Authors@R:
     c(person(given = "Dominik",
         family = "Schulz",
@@ -128,5 +128,8 @@ Imports:
     cli,
     numDeriv
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr

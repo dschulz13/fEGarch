@@ -791,15 +791,23 @@ farima_grab_pars <- function(theta, incl_mean, pg0, qg0, p, q) {
 
 # Calculate the two constants (i.e. the expectations) in the EGARCH formula
 expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows) {
-  E_asy <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  E_asy_low <- stats::integrate(f = int_fun_asy, lower = -Inf, upper = 0, shape = shape, skew = skew,
                   dfun = dfun, pow = pows[[1]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
-  E_mag <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  E_mag_low <- stats::integrate(f = int_fun_mag, lower = -Inf, upper = 0, shape = shape, skew = skew,
                   dfun = dfun, pow = pows[[2]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
-  list("E_asy" = E_asy, "E_mag" = E_mag)
+  E_asy_up <- stats::integrate(f = int_fun_asy, lower = 0, upper = Inf, shape = shape, skew = skew,
+                  dfun = dfun, pow = pows[[1]],
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+  E_mag_up <- stats::integrate(f = int_fun_mag, lower = 0, upper = Inf, shape = shape, skew = skew,
+                  dfun = dfun, pow = pows[[2]],
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+  list("E_asy" = E_asy_low + E_asy_up, "E_mag" = E_mag_low + E_mag_up)
 }
 
 # Given parameters, observations, etc., calculate conditional standard
@@ -1474,10 +1482,16 @@ sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  Elneta2_low <- stats::integrate(f = int_fun, lower = -Inf, upper = 0, shape = shape, skew = skew,
                   dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
+  Elneta2_up <- stats::integrate(f = int_fun, lower = 0, upper = Inf, shape = shape, skew = skew,
+                  dfun = dfun,
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+
+  Elneta2 <- Elneta2_low + Elneta2_up
 
   omega <- omega_sig * (1 - sum(phi))
   l <- max(p, q)
@@ -1523,10 +1537,16 @@ sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
   shape <- all_pars$shape
   skew <- all_pars$skew
 
-  Elneta2 <- stats::integrate(f = int_fun, lower = -Inf, upper = Inf, shape = shape, skew = skew,
+  Elneta2_low <- stats::integrate(f = int_fun, lower = -Inf, upper = 0, shape = shape, skew = skew,
                   dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
+  Elneta2_up <- stats::integrate(f = int_fun, lower = 0, upper = Inf, shape = shape, skew = skew,
+                  dfun = dfun,
+                  subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
+                  stop.on.error = FALSE)[[1]]
+
+  Elneta2 <- Elneta2_low + Elneta2_up
 
   n <- length(x)
   coef_inf <- ma_infty(ar = phi, ma = psi, d = d,

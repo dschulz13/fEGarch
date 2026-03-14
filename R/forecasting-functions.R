@@ -170,20 +170,28 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_egarch",
   pow1g0 <- pow1 > 0
   mod1 <- modulus[[1]]
   fun_asy <- exp_funs[["asy"]][[mod1 + 1]][[pow1g0 + 1]]
-  E_asy <- stats::integrate(fun_asy, lower = -Inf, upper = Inf,
+  E_asy_low <- stats::integrate(fun_asy, lower = -Inf, upper = 0,
                             subdivisions = 1000L, rel.tol = 1e-6,
                             abs.tol = 1e-6,
                             pow = pow1, shape = shape, skew = skew, dfun = dfun)[[1]]
-
+  E_asy_up <- stats::integrate(fun_asy, lower = 0, upper = Inf,
+                            subdivisions = 1000L, rel.tol = 1e-6,
+                            abs.tol = 1e-6,
+                            pow = pow1, shape = shape, skew = skew, dfun = dfun)[[1]]
+  E_asy <- E_asy_low + E_asy_up
   pow2 <- powers[[2]]
   pow2g0 <- pow2 > 0
   mod2 <- modulus[[2]]
   fun_mag <- exp_funs[["mag"]][[mod2 + 1]][[pow2g0 + 1]]
-  E_mag <- stats::integrate(fun_mag, lower = -Inf, upper = Inf,
+  E_mag_low <- stats::integrate(fun_mag, lower = -Inf, upper = 0,
                             subdivisions = 1000L, rel.tol = 1e-6,
                             abs.tol = 1e-6,
                             pow = pow2, shape = shape, skew = skew, dfun = dfun)[[1]]
-
+  E_mag_up <- stats::integrate(fun_mag, lower = 0, upper = Inf,
+                            subdivisions = 1000L, rel.tol = 1e-6,
+                            abs.tol = 1e-6,
+                            pow = pow2, shape = shape, skew = skew, dfun = dfun)[[1]]
+  E_mag <- E_mag_low + E_mag_up
   Elnsig2 <- model_pars[["omega_sig"]]
 
   # ARMA / FARIMA point forecasts of cond. mean
@@ -311,11 +319,17 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
     log(x^2) * dfun(x, shape = shape, skew = skew)
   }
 
-  Elneta2 <- stats::integrate(
-    int_fun, lower = -Inf, upper = Inf,
+  Elneta2_low <- stats::integrate(
+    int_fun, lower = -Inf, upper = 0,
     subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
     shape = shape, skew = skew, dfun = dfun
   )[[1]]
+  Elneta2_up <- stats::integrate(
+    int_fun, lower = 0, upper = Inf,
+    subdivisions = 1000L, rel.tol = 1e-6, abs.tol = 1e-6,
+    shape = shape, skew = skew, dfun = dfun
+  )[[1]]
+  Elneta2 <- Elneta2_low + Elneta2_up
 
   Elnsig2 <- model_pars[["omega_sig"]]
 
