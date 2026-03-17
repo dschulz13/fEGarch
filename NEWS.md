@@ -1,10 +1,4 @@
-# fEGarch 1.0.7 (2026-03-14)
-- Previously, in rare instances an error could occur with the internal
-  numerical integration of transformed innovations of EGF models; 
-  this bug has been fixed by running numerical integration to the left and
-  right of potential numerical singularities separately.
-- Bounds on the `kappa` and `gamma` parameters in Type-I EGF models
-  have been relaxed slightly.
+# fEGarch 1.0.7 (2026-03-17)
 - A vignette "Introduction to fEGarch" has been added to the package.
 
 # fEGarch 1.0.6 (2026-02-10)

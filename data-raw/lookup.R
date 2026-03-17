@@ -193,8 +193,8 @@ start_pars_and_restr <- list(
       omega_low = -10,
       omega_up = 10,
       add_pars_start = c(-0.25, 0.2),
-      add_low = c(-2, -2),
-      add_up = c(2, 2)
+      add_low = c(-1, -1),
+      add_up = c(1, 1)
     )
   },
     "egarch" = function(drange, p, q) {
@@ -213,8 +213,8 @@ start_pars_and_restr <- list(
       omega_low = -10,
       omega_up = 10,
       add_pars_start = c(-0.25, 0.2),
-      add_low = c(-2, -2),
-      add_up = c(2, 2)
+      add_low = c(-1, -1),
+      add_up = c(1, 1)
     )
   },
     "loggarch" = function(drange, p, q) {
