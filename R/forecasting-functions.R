@@ -306,7 +306,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_loggarch",
   dfun <- fun1_selector(cond_dist)
 
   int_fun <- function(x, shape, skew, dfun) {
-    log(x^2) * dfun(x, shape = shape, skew = skew)
+    2 * log(abs(x)) * dfun(x, shape = shape, skew = skew)
   }
 
   Elneta2 <- stats::integrate(

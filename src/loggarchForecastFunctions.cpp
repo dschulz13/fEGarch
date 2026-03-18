@@ -22,7 +22,7 @@ arma::vec sigt_loggarch_forecast_short(
 
   const arma::vec eta_i = et.subvec(n - l, n - 1);
 
-  const arma::vec transf = arma::log(arma::pow(eta_i, 2.0)) - Elneta2;
+  const arma::vec transf = 2.0 * arma::log(arma::abs(eta_i)) - Elneta2;
 
   arma::vec et_fun = arma::zeros<arma::vec>(Hl);
   et_fun.subvec(0, l - 1) = transf;
@@ -58,7 +58,7 @@ arma::vec sigt_loggarch_forecast_long(const arma::vec& et,
   const int n = et.size();
   arma::vec lnsig2 = arma::vec(horizon);
   arma::vec g_fun = arma::zeros<arma::vec>(n + horizon);
-  g_fun.subvec(0, n - 1) = arma::log(arma::pow(et, 2.0)) - Elneta2;
+  g_fun.subvec(0, n - 1) = 2.0 * arma::log(arma::abs(et)) - Elneta2;
 
   const arma::vec coef_inf_r = arma::reverse(coef_inf);
 
