@@ -29,7 +29,7 @@ The goal of `fEGarch` is to provide easy access to a broad family of exponential
 You can install the current version of the package from CRAN with: 
 
 ``` {r, message = FALSE, eval = FALSE, echo = TRUE}
-install.packages("fEGarch")
+install.packages("fEGarch") 
 ```
 
 ## Examples
@@ -41,7 +41,7 @@ This is a basic example which shows you how to fit a model of the EGARCH family 
 At first, specify a model from the EGARCH family using `fEGarch_spec()`.
 
 ```{r example, message = FALSE, fig.height = 8, warning = FALSE}
-library(fEGarch)
+library(fEGarch) 
 
 ### 1. Set model specification via "fEGarch_spec()"
 spec1 <- fEGarch_spec(
