@@ -36,7 +36,7 @@ quasi-maximum-likelihood estimation (conditioned on presample values).
 You can install the current version of the package from CRAN with:
 
 ``` r
-install.packages("fEGarch")
+install.packages("fEGarch") 
 ```
 
 ## Examples
@@ -49,7 +49,7 @@ family to the Standard and Poor’s 500 daily log-returns.
 At first, specify a model from the EGARCH family using `fEGarch_spec()`.
 
 ``` r
-library(fEGarch)
+library(fEGarch) 
 
 ### 1. Set model specification via "fEGarch_spec()"
 spec1 <- fEGarch_spec(
