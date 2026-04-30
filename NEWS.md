@@ -13,6 +13,8 @@
   (AFIAPARCH) and a few of its special cases. They are available from the
   functions `afiaparch`, `agjrgarch` and the general fitter `garch_estim`. The
   usual forecasting and backtesting pipelines are applicable to these models.
+- Change in maintainer email address from dominik.schulz@uni-paderborn.de to
+  dominik.schulz.r@gmail.com; the maintainer is, however, still the same person.
 
 # fEGarch 1.0.6 (2026-02-10)
 - GJR-GARCH, TGARCH, APARCH, FIGJR-GARCH, FITGARCH and FIAPARCH 
