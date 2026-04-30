@@ -3,7 +3,7 @@
   packageStartupMessage("                       Welcome to the package 'fEGarch'!")
   packageStartupMessage("********************************************************************************")
   packageStartupMessage("")
-  packageStartupMessage("Please report any possible errors and bugs to dominik.schulz@uni-paderborn.de.")
+  packageStartupMessage("Please report any possible errors and bugs to dominik.schulz.r@gmail.com.")
   packageStartupMessage("")
   packageStartupMessage("If you are using this package for your publication, please consider citing")
   packageStartupMessage('this software as indicated by the command citation("fEGarch").')

@@ -1087,14 +1087,17 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     }
 
     fc_fun_fegarch <- function(rt, n_test, mtype) {
+      fitting_args[["trunc"]] <- trunc_setting
       fitting_args <- adj_fitting_args(rt = rt, n_test = n_test, fitting_args = fitting_args)
       fitting_args[["spec"]] <- fEGarch_spec(model_type = mtype, orders = m_order, long_memo = lmemo, cond_dist = cdist, powers = pwers, modulus = modu)
       do.call(what = fEGarch, args = fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
     }
 
     fc_fun_other_garch <- function(rt, n_test, fit_fun) {
-      fitting_args <- adj_fitting_args(rt = rt, n_test = n_test, fitting_args = fitting_args)
+      fitting_args[["orders"]] <- m_order
       fitting_args[["cond_dist"]] <- cdist
+      fitting_args[["trunc"]] <- trunc_setting
+      fitting_args <- adj_fitting_args(rt = rt, n_test = n_test, fitting_args = fitting_args)
       do.call(fit_fun, fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
     }
 

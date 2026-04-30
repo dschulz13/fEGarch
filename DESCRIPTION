@@ -6,8 +6,8 @@ Authors@R:
     c(person(given = "Dominik",
         family = "Schulz",
         role = c("aut", "cre"),
-        email = "dominik.schulz@uni-paderborn.de",
-        comment = "Paderborn University, Germany"),
+        email = "dominik.schulz.r@gmail.com",
+        comment = "formerly Paderborn University, Germany"),
       person(given = "Yuanhua",
         family = "Feng",
         role = "aut",
@@ -31,8 +31,8 @@ Authors@R:
       person(given = "Shujie",
         family = "Li",
         role = "ctb",
-        comment = "Paderborn University, Germany"))             
-Maintainer: Dominik Schulz <dominik.schulz@uni-paderborn.de>
+        comment = "formerly Paderborn University, Germany"))             
+Maintainer: Dominik Schulz <dominik.schulz.r@gmail.com>
 Description: Implement and fit a variety of short-memory (SM) and long-memory
   (LM) models from a very broad family of exponential generalized autoregressive
   conditional heteroskedasticity (EGARCH) models, such as a MEGARCH (modified

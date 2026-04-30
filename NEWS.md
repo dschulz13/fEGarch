@@ -1,5 +1,18 @@
-# fEGarch 1.0.7 (2026-03-17)
+# fEGarch 1.0.7 (2026-04-30)
 - A vignette "Introduction to fEGarch" has been added to the package.
+- Fixed a bug in `predict_roll`, where for non-EGF models the volatility model
+  orders of the input object were not copied properly under model refitting, if
+  they were different from (1, 1). A workaround was so far to pass the correct
+  model orders to the argument `fitting_args` in `predict_roll`, but this
+  workaround is no longer needed.
+- Adjusted `predict_roll`, so that for long-memory models the truncation
+  is also read in from the input object for model refitting. If different from
+  the default `"none"`, the setting had to be passed explicitly to
+  `fitting_args` in previous versions.
+- We introduced a set of new GARCH-type models, namely the adjusted FIAPARCH
+  (AFIAPARCH) and a few of its special cases. They are available from the
+  functions `afiaparch`, `agjrgarch` and the general fitter `garch_estim`. The
+  usual forecasting and backtesting pipelines are applicable to these models.
 
 # fEGarch 1.0.6 (2026-02-10)
 - GJR-GARCH, TGARCH, APARCH, FIGJR-GARCH, FITGARCH and FIAPARCH 
