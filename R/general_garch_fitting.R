@@ -14,11 +14,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   q <- orders[[2]]
 
   cond_d <- match.arg(cond_dist)
-  lm <- (model_type %in% c("figarch", "figjrgarch", "fiaparch", "fitgarch"))
+  lm <- (model_type %in% c("figarch", "figjrgarch", "fiaparch", "fitgarch", "afiaparch"))
 
   if (lm && !all(orders == c(1, 1))) {
     orders <- c(1, 1)
-    message("Only orders p=1 with q=1 are currently supported for FIGARCH, FITGARCH, FIGJR-GARCH and FIAPARCH models.")
+    message("Only orders p=1 with q=1 are currently supported for FIGARCH, FITGARCH, FIGJR-GARCH, FIAPARCH and AFIAPARCH models.")
   }
 
   if (use_nonpar) {
@@ -73,7 +73,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "figarch" = goal_fun_creator_figarch,
     "figjrgarch" = goal_fun_creator_figjrgarch,
     "fitgarch" = goal_fun_creator_fitgarch,
-    "fiaparch" = goal_fun_creator_fiaparch
+    "fiaparch" = goal_fun_creator_fiaparch,
+    "afiaparch" = goal_fun_creator_afiaparch
   )
 
   base_args <- list(
@@ -147,7 +148,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         parallel = parallel,
         ncores = ncores,
         Prange = Prange,
-        n_test = n_test
+        n_test = n_test,
+        skip_vcov = TRUE
       ))
       delta0 <- 2
       gamma0 <- est_s@pars[["gamma1"]]
@@ -165,7 +167,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         parallel = parallel,
         ncores = ncores,
         Prange = Prange,
-        n_test = n_test
+        n_test = n_test,
+        skip_vcov = TRUE
       ))
       delta0 <- 1
       gamma0 <- est_s@pars[["gamma1"]]
@@ -183,12 +186,45 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         parallel = parallel,
         ncores = ncores,
         Prange = Prange,
-        n_test = n_test
+        n_test = n_test,
+        skip_vcov = TRUE
       ))
       delta0 <- est_s@pars[["delta"]]
       gamma0 <- est_s@pars[["gamma1"]]
       rt_dm <- mean_res - mean(mean_res)
       list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0))
+    },
+    "afiaparch" = {
+      # Initial APARCH fit to obtain guesses of relevant parameters
+      est_s <- suppressWarnings(aparch(
+        rt = rt,
+        orders = orders,
+        cond_dist = cond_dist,
+        meanspec = meanspec,
+        use_nonpar = use_nonpar,
+        nonparspec = nonparspec,
+        parallel = parallel,
+        ncores = ncores,
+        Prange = Prange,
+        n_test = n_test,
+        skip_vcov = TRUE
+      ))
+      # For AFIAPARCH we need all distribution parameters to obtain
+      # presample values due to the rescaling
+      delta0 <- est_s@pars[["delta"]]
+      gamma0 <- est_s@pars[["gamma1"]]
+      shape_nam <- c("norm" = "NULL", "snorm" = "NULL", "std" = "df", "sstd" = "df",
+                     "ged" = "shape", "sged" = "shape" , "ald" = "P", "sald" = "P")[[cond_dist]]
+      shape0 <- ifelse(cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald"),
+                       est_s@pars[[shape_nam]], NULL)
+      skew0 <- ifelse(cond_dist %in% c("snorm", "sstd", "sged", "sald"), est_s@pars[["skew"]], NULL)
+      C0 <- comp_C_zd(shape = shape0, skew = skew0, gamma = gamma0, delta = delta0, dens_fun = dfun1)
+      rt_dm <- afiaparch_adjust_returns(mean_res - mean(mean_res), gamma = gamma0,
+                                        delta = delta0, Czd = C0)
+      # Additionally, also pass the innovation density to the goal function
+      # for AFIAPARCH, as it is required for the computation of the constant
+      list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0),
+           dens_fun = dfun1)
     }
   )
 
@@ -298,7 +334,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       "figarch" = 1,
       "figjrgarch" = 2,
       "fitgarch" = 2,
-      "fiaparch" = 3
+      "fiaparch" = 3,
+      "afiaparch" = 3
     )
 
     d_idx <- up_beta + add_s
@@ -518,7 +555,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "figarch" = 2,
     "figjrgarch" = 2,
     "fitgarch" = 1,
-    "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]]
+    "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
+    "afiaparch" = pars[[n_arma_pars + 2 * p + q + 2]]
   )
 
   sc_delta <- scale_const^delta
@@ -581,7 +619,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "figarch" = fEGarch_fit_figarch,
     "figjrgarch" = fEGarch_fit_figjrgarch,
     "fitgarch" = fEGarch_fit_fitgarch,
-    "fiaparch" = fEGarch_fit_fiaparch
+    "fiaparch" = fEGarch_fit_fiaparch,
+    "afiaparch" = fEGarch_fit_afiaparch,
   )
 
   list_out <- construct_fun(

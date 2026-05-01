@@ -417,7 +417,7 @@ The package contains an example time series `SP500`, namely the Standard and Poo
 ## Contact
 
 For questions, bug reports, etc., please contact the maintainer Mr. Dominik 
-Schulz via [dominik.schulz@uni-paderborn.de](mailto:dominik.schulz@uni-paderborn.de).
+Schulz via [dominik.schulz.r@gmail.com](mailto:dominik.schulz.r@gmail.com).
 
 ## Citation
 
