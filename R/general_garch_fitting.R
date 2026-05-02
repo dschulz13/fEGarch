@@ -76,7 +76,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "fiaparch" = goal_fun_creator_fiaparch,
     "afiaparch" = goal_fun_creator_afiaparch,
     "afigjrgarch" = goal_fun_creator_afigjrgarch,
-    "afitgarch" = goal_fun_creator_afitgarch
+    "afitgarch" = goal_fun_creator_afitgarch,
+    "ngarch" = goal_fun_creator_ngarch
   )
 
   base_args <- list(
@@ -122,6 +123,14 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     },
     "tgarch" = {
       delta0 <- 1    # use delta0 = 1
+      gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
+      sigd_init <- stats::sd(mean_res)^delta0
+      rt_dm <- mean_res - mean(mean_res)
+      etransf_init <- mean((abs(rt_dm) - gamma0 * rt_dm)^delta0)
+      list(sigd_init = sigd_init, etransf_init = etransf_init)
+    },
+    "ngarch" = {
+      delta0 <- 2    # use delta0 = 1
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
       sigd_init <- stats::sd(mean_res)^delta0
       rt_dm <- mean_res - mean(mean_res)
@@ -438,7 +447,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
           sum(phi) + sum(beta)
         }
-      } else if (model_type %in% c("gjrgarch", "tgarch", "aparch")) {
+      } else if (model_type %in% c("gjrgarch", "tgarch", "aparch", "ngarch")) {
         ineqLB_vol <- NULL
         ineqUB_vol <- NULL
 
@@ -559,7 +568,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   )
 
 
-  delta_name <- if (model_type %in% c("aparch", "fiaparch", "afiaparch")) {
+  delta_name <- if (model_type %in% c("aparch", "fiaparch", "afiaparch", "ngarch")) {
     "delta"
   } else {
     character(0)
@@ -634,7 +643,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "fitgarch" = 1,
     "afitgarch" = 1,
     "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
-    "afiaparch" = pars[[n_arma_pars + 2 * p + q + 2]]
+    "afiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
+    "ngarch" = pars[[n_arma_pars + 2 + p + q]]
   )
 
   sc_delta <- scale_const^delta
@@ -700,7 +710,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "fiaparch" = fEGarch_fit_fiaparch,
     "afiaparch" = fEGarch_fit_afiaparch,
     "afigjrgarch" = fEGarch_fit_afigjrgarch,
-    "afitgarch" = fEGarch_fit_afitgarch
+    "afitgarch" = fEGarch_fit_afitgarch,
+    "ngarch" = fEGarch_fit_ngarch
   )
 
   list_out <- if (model_type %in% c("afiaparch", "afigjrgarch", "afitgarch")) {

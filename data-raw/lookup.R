@@ -317,6 +317,26 @@ start_pars_and_restr <- list(
       add_up = rep(1 - 1e-4, p)
     )
   },
+    "ngarch" = function(drange, p, q) {
+    list(
+      d_low = numeric(0),
+      d_up = numeric(0),
+      d_spar = numeric(0),
+      d_name = character(0),
+      phi_start = rep(0.05 / p, p),
+      psi_start = rep(0.9 / q, q),
+      phi_low = rep(0, p),
+      psi_low = rep(0, q),
+      phi_up = rep(1 - 1e-6, p),
+      psi_up = rep(1 - 1e-6, q),
+      omega_start = 1,
+      omega_low = 1e-10,
+      omega_up = 10,
+      add_pars_start = 2,
+      add_low = 0.3,
+      add_up = 3
+    )
+  },
     "tgarch" = function(drange, p, q) {
     list(
       d_low = numeric(0),
