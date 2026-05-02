@@ -11,12 +11,12 @@ compute_abs_eta_delta_integr <- function(shape, skew, delta, dens_fun) {
                               subdivisions = 1000L, rel.tol = 1e-06,
                               abs.tol = 1e-06, stop.on.error = FALSE,
                               shape = shape, skew = skew, delta = delta,
-                              interm_fun = interm_fun)[[1]] / p_n
+                              dens_fun = dens_fun)[[1]]
   pp_exp_bg0 <- stats::integrate(integr_fun, lower = 0, upper = Inf,
                               subdivisions = 1000L, rel.tol = 1e-06,
                               abs.tol = 1e-06, stop.on.error = FALSE,
                               shape = shape, skew = skew, delta = delta,
-                              interm_fun = interm_fun)[[1]] / p_p
+                              dens_fun = dens_fun)[[1]]
 
   list("pn_exp_sm0" = pn_exp_sm0, "pp_exp_bg0" = pp_exp_bg0)
 
@@ -26,7 +26,7 @@ compute_abs_eta_delta_integr <- function(shape, skew, delta, dens_fun) {
 
 comp_C_zd <- function(shape, skew, gamma, delta, dens_fun) {
   integrals <- compute_abs_eta_delta_integr(
-    cond_dist = cond_dist,
+    dens_fun = dens_fun,
     shape = shape,
     skew = skew,
     delta = delta
@@ -41,7 +41,7 @@ comp_C_zd <- function(shape, skew, gamma, delta, dens_fun) {
 # Compute the adjusted return (adjusted by the constant C)
 
 afiaparch_adjust_returns <- function(rt, gamma, delta, Czd) {
-  S <- ifelse(eps < 0, 1, -1)
+  S <- ifelse(rt < 0, 1, -1)
   ((1 + S * gamma) * abs(rt))^delta / Czd
 }
 
@@ -84,7 +84,7 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
 
   coef_inf <- ar_infty(
     ar = phi,
-    ma = -beta,
+    ma = beta,
     d = d,
     max_i = trunc
   )
@@ -100,7 +100,7 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     dens_fun = dens_fun   # !!! Check later that this works out
   )
 
-  z_sc <- my_afiaparch_z_t(
+  z_sc <- afiaparch_adjust_returns(
     rt = x_dm,
     gamma = gamma,
     delta = delta,
@@ -150,7 +150,7 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     mu = mu,
     skew = skew,
     shape = shape,
-    cmeans = rep(mu, length(sigt_sc)),
+    cmeans = rep(mu, length(conv_part)),
     # inside_sc = inside_sc,
     # z_sc = z_sc,
     # coef_inf = coef_inf,
@@ -525,11 +525,11 @@ afiaparch <- function(rt, orders = c(1, 1),
   inp_args[["fix_delta"]] <- NULL
 
   mt <- if (is.na(fix_delta)) {
-    "fiaparch"
+    "afiaparch"
   } else if (fix_delta == 1) {
-    "fitgarch"
+    "afitgarch"
   } else if (fix_delta == 2) {
-    "figjrgarch"
+    "afigjrgarch"
   }
 
   inp_args[["model_type"]] <- mt
@@ -593,15 +593,23 @@ setMethod(
     "Fitted parameters:\n"
   )
 
+  part1_2 <- paste0(
+    " \n",
+    "Scaling constant at optimal solution:\n",
+    "Cz: ", sprintf("%.4f", unname(x@Cz))
+  )
+
   part2 <- paste0(
     " \n",
     "Information criteria (parametric part):\n",
-    "AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
+    "LLH: ", sprintf("%.4f", unname(x@llhood) / length(x@rt)),
+    ", AIC: ", sprintf("%.4f", unname(x@inf_criteria[[1]])),
     ", BIC: ", sprintf("%.4f", unname(x@inf_criteria[[2]]))
   )
 
   cat(part1, fill = TRUE)
   print(df)
+  cat(part1_2, fill = TRUE)
   cat(part2, fill = TRUE)
   }
 )

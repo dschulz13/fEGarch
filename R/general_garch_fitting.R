@@ -214,10 +214,10 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       delta0 <- est_s@pars[["delta"]]
       gamma0 <- est_s@pars[["gamma1"]]
       shape_nam <- c("norm" = "NULL", "snorm" = "NULL", "std" = "df", "sstd" = "df",
-                     "ged" = "shape", "sged" = "shape" , "ald" = "P", "sald" = "P")[[cond_dist]]
-      shape0 <- ifelse(cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald"),
-                       est_s@pars[[shape_nam]], NULL)
-      skew0 <- ifelse(cond_dist %in% c("snorm", "sstd", "sged", "sald"), est_s@pars[["skew"]], NULL)
+                     "ged" = "shape", "sged" = "shape" , "ald" = "P", "sald" = "P")[[cond_d]]
+      shape0 <- ifelse(cond_d %in% c("std", "sstd", "ged", "sged", "ald", "sald"),
+                       est_s@pars[[shape_nam]], 0)
+      skew0 <- ifelse(cond_d %in% c("snorm", "sstd", "sged", "sald"), est_s@pars[["skew"]], 0)
       C0 <- comp_C_zd(shape = shape0, skew = skew0, gamma = gamma0, delta = delta0, dens_fun = dfun1)
       rt_dm <- afiaparch_adjust_returns(mean_res - mean(mean_res), gamma = gamma0,
                                         delta = delta0, Czd = C0)
@@ -453,7 +453,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       }
     )
 
-
   }
 
 
@@ -483,13 +482,13 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   )
 
 
-  delta_name <- if (model_type %in% c("aparch", "fiaparch")) {
+  delta_name <- if (model_type %in% c("aparch", "fiaparch", "afiaparch")) {
     "delta"
   } else {
     character(0)
   }
 
-  gamma_name <- if (model_type %in% c("fiaparch", "figjrgarch", "fitgarch")) {
+  gamma_name <- if (model_type %in% c("fiaparch", "figjrgarch", "fitgarch", "afiaparch")) {
     "gamma"
   } else if (model_type %in% c("aparch", "gjrgarch", "tgarch")) {
     paste0("gamma", 1:p)
@@ -623,25 +622,48 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "afiaparch" = fEGarch_fit_afiaparch,
   )
 
-  list_out <- construct_fun(
-    pars = pars,
-    se = serrors,
-    vcov_mat = vcov_mat,
-    rt = train_obs,
-    sigt = sigt,
-    cmeans = cmeans,
-    scale_fun = NULL,
-    etat = etat,
-    llhood = llhood,
-    inf_criteria = c("aic" = aic, "bic" = bic),
-    cond_dist = cond_d,
-    orders = orders,
-    long_memo = lm,
-    meanspec = meanspec,
-    test_obs = test_obs,
-    nonpar_model = NULL,
-    trunc = trunc_i
-  )
+  list_out <- if (model_type %in% c("afiaparch")) {
+    construct_fun(
+      pars = pars,
+      se = serrors,
+      vcov_mat = vcov_mat,
+      rt = train_obs,
+      sigt = sigt,
+      cmeans = cmeans,
+      scale_fun = NULL,
+      etat = etat,
+      llhood = llhood,
+      inf_criteria = c("aic" = aic, "bic" = bic),
+      cond_dist = cond_d,
+      orders = orders,
+      long_memo = lm,
+      meanspec = meanspec,
+      test_obs = test_obs,
+      nonpar_model = NULL,
+      trunc = trunc_i,
+      Cz = final_series$Czd
+    )
+  } else {
+    construct_fun(
+      pars = pars,
+      se = serrors,
+      vcov_mat = vcov_mat,
+      rt = train_obs,
+      sigt = sigt,
+      cmeans = cmeans,
+      scale_fun = NULL,
+      etat = etat,
+      llhood = llhood,
+      inf_criteria = c("aic" = aic, "bic" = bic),
+      cond_dist = cond_d,
+      orders = orders,
+      long_memo = lm,
+      meanspec = meanspec,
+      test_obs = test_obs,
+      nonpar_model = NULL,
+      trunc = trunc_i
+    )
+  }
 
 
   if (use_nonpar) {
