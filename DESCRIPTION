@@ -97,6 +97,7 @@ Collate:
   'afigjrgarchfit.R'
   'afitgarchfit.R'
   'ngarchfit.R'
+  'afingarchfit.R'
   'garch_estim.R'
   'varescalc.R'
   'datasets.R'

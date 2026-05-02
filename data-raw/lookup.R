@@ -457,6 +457,26 @@ start_pars_and_restr <- list(
       add_up = 1 - 1e-4
     )
   },
+    "afingarch" = function(drange, p, q) {
+    list(
+      d_low = drange[[1]],
+      d_up = drange[[2]],
+      d_spar = 0.25,
+      d_name = "d",
+      phi_start = rep(0.2 / p, p),
+      psi_start = rep(0.4 / q, q),
+      phi_low = rep(0, p),
+      psi_low = rep(-1 + 1e-6, q),
+      phi_up = rep(2, p),
+      psi_up = rep(1 - 1e-6, q),
+      omega_start = 5,
+      omega_low = 1e-10,
+      omega_up = 20,
+      add_pars_start = 2,
+      add_low = 0.3,
+      add_up = 3
+    )
+  },
     "afitgarch" = function(drange, p, q) {
     list(
       d_low = drange[[1]],
