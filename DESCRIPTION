@@ -94,6 +94,8 @@ Collate:
   'fitgarchfit.R'
   'figarchfit.R'
   'afiaparchfit.R'
+  'afigjrgarchfit.R'
+  'afitgarchfit.R'
   'garch_estim.R'
   'varescalc.R'
   'datasets.R'
