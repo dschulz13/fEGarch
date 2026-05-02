@@ -223,8 +223,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                                         delta = delta0, Czd = C0)
       # Additionally, also pass the innovation density to the goal function
       # for AFIAPARCH, as it is required for the computation of the constant
-      list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0),
-           dens_fun = dfun1)
+      list(presample_val = mean(rt_dm), dens_fun = dfun1)
     }
   )
 
