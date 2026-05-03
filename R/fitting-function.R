@@ -178,7 +178,7 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'The combined model defined through \link[fEGarch]{mean_spec} and
 #'\link[fEGarch]{fEGarch_spec} is the specified model. It can be thought of
 #'as the model described in \link[fEGarch]{mean_spec} with \eqn{\left\{r_t\right\}}
-#'therein being governed by a model from the EGARCH family (see for example Feng et al., 2025) as described in
+#'therein being governed by a model from the EGARCH family (see for example Peitz et al., 2026) as described in
 #'\link[fEGarch]{fEGarch_spec}, however with mean of \eqn{\left\{r_t\right\}} fixed
 #'to zero.
 #'
@@ -315,8 +315,8 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'\item{Feng, Y., Gries, T., & Letmathe, S. (2023). FIEGARCH, modulus asymmetric FILog-GARCH
 #'and trend-stationary dual long memory time series. Working Papers CIE No. 156, Paderborn University.
 #'URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
-#'\item{Feng, Y., Peitz, C., & Siddiqui, S. (2025). A few useful members of the EGARCH-family
-#'with short- or long-memory in volatility. Unpublished working paper at Paderborn University.}
+#'\item{Peitz, C., Feng, Y., & Siddiqui, S. (2026). Extending the EGARCH Family: Modulus and Long-Memory
+#'Log-Volatility Models. Unpublished working paper at Paderborn University.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'57-61. DOI: 10.1080/07474938608800088.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
@@ -327,6 +327,9 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'59(2), 347–370. DOI: 10.2307/2938260.}
 #'\item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'71-74. DOI: 10.1080/07474938608800089.}
+#'\item{Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2026). Estimating, Forecasting and Backtesting a Family of
+#'Exponential and Other GARCH Models Using the fEGarch Package. CIE Working Paper 171, Paderborn University.
+#'URL: https://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP171.pdf.}
 #'}
 
 fEGarch <- function(spec = egarch_spec(),

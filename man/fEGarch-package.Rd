@@ -11,11 +11,12 @@ exponential generalized autoregressive conditional heteroskedasticity (EGARCH) m
 For the purpose of comparison, a FIAPARCH (fractionally integrated
 asymmetric power ARCH), a FIGARCH (fractionally integrated GARCH),
 a FITGARCH, a FIGJR-GARCH and their short-memory variants
-can be implemented as well.
+can be implemented as well. With version 1.0.7, models from the adjusted
+FIAPARCH class can be implemented as well.
 }
 \details{
 \code{fEGarch} is an R package for estimating a broad family of
-EGARCH models (Feng et al., 2025; Ayensu et al., 2025)
+EGARCH models (Peitz et al., 2026; Ayensu et al., 2026; Schulz et al., 2026)
 including both short- and long-memory as well as a
 selection of varying transformations for the asymmetry and the
 magnitude term in such a model, for example in form of the
@@ -25,7 +26,7 @@ The six most common conditional distributions are supported, namely
 a normal distribution, a \eqn{t}- distribution, a generalized error
 distribution, as well as the skewed variants of these three
 distributions. Furthermore, as a novelty, an average Laplace (AL)
-distribution (see for example Feng et al., 2025) and its skewed
+distribution (see for example Feng et al., 2026) and its skewed
 version are provided as well.
 The main functions to implement these models are
 \code{\link{fEGarch_spec}} in combination with
@@ -43,11 +44,14 @@ model can be fitted as well using \code{\link{fiaparch}}. The
 corresponding documentation page also includes further information
 on the model. Similarly, \code{\link{figarch}} can be utilized for
 fitting FIGARCH models, \code{\link{fitgarch}} for fitting
-FITGARCH models and \code{\link{figjrgarch}} for fitting
-FIGJR-GARCH models. A general function for the estimation of additional
-GARCH-type models, including the aforementioned additional models
-as well as their short-memory variants, is
-\code{\link{garchm_estim}}.
+FITGARCH models, \code{\link{figjrgarch}} for fitting
+FIGJR-GARCH models, and \code{\link{fingarch}} for fitting
+FINGARCH models. Additionally, submodels of the adjusted FIAPARCH class
+by Feng et al. (2026) can be implemented using \code{\link{afigjrgarch}},
+\code{\link{afitgarch}}, \code{\link{afingarch}} and \code{\link{afiaparch}}.
+A general pipeline for fitting short-memory or long-memory APARCH-type
+models can be implemented through a combination of \code{\link{fAParch_spec}}
+and \code{\link{fAParch}}.
 
 In addition, the package provides functionalities in order to
 simultaneously model the conditional mean (using either autoregressive
@@ -59,7 +63,7 @@ passed to \code{\link{fEGarch}} alongside the result of either
 \code{\link{fEGarch_spec}} or one of its wrappers.
 
 Further options include the specification of semiparametric
-volatility models (see also Ayensu et al., 2025), where a smooth, nonparametric scale function
+volatility models (see also Ayensu et al., 2026), where a smooth, nonparametric scale function
 is at first estimated and removed from an observed series, before
 estimating a parametric model. The scale estimation is currently
 done through automated local polynomial regression with designated
@@ -75,8 +79,11 @@ a model from the broader EGARCH family,}
 the conditional mean,}
 \item{\code{\link{fEGarch}}:}{fitting a model from the broad family of EGARCH
 models given a model specification and an observation series,}
-\item{\code{\link{garchm_estim}}:}{fitting a GARCH-type model selectable from a standard GARCH,
-a GJR-GARCH, a TGARCH, an APARCH, a FIGARCH, a FIGJR-GARCH, a FITGARCH and a FIAPARCH,}
+\item{\code{\link{fAParch_spec}}:}{specify a model from a wider class of
+short-memory and (unadjusted and adjusted) long-memory APARCH models,}
+\item{\code{\link{fAParch}}:}{fit a model from a wider class of
+short-memory and (unadjusted and adjusted) long-memory APARCH models given
+a model specification,}
 \item{\code{\link{fEGarch_sim}}:}{simulating from an EGARCH family model,}
 \item{\code{\link{fiaparch_sim}}:}{simulating from a FIAPARCH model,}
 \item{\code{\link{figarch_sim}}:}{simulating from a FIGARCH model,}
@@ -118,8 +125,9 @@ The package is distributed under the General Public License v3
 
 \references{
 \itemize{
-\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
-Theory and Application. Forthcoming preprint, Paderborn University.}
+\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2026). Well-known and recent
+long-memory GARCH models and their semiparametric extensions. Forthcoming
+preprint, Paderborn University.}
 \item{Baillie, R., Bollerslev, T., & Mikkelsen, H. O. (1996). Fractionally integrated generalized autoregressive conditional heteroskedasticity.
 Journal of Econometrics,
 74(1), 3-30. DOI: 10.1016/S0304-4076(95)01749-6.}
@@ -138,6 +146,8 @@ and a new model. Journal of Empirical Finance, 1(1):
 83-106. DOI: 10.1016/0927-5398(93)90006-D.}
 \item{Engle, R. F. (1982). Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation.
 Econometrica, 50(4): 987-1007. DOI: 10.2307/1912773.}
+\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with finite \eqn{2\delta}th moment
+and long memory in volatility implemented in R. Unpublished manuscript at Paderborn University.}
 \item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
 Working Papers CIE No. 137, Paderborn University, Center for International Economics.
 URL: http://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP137.pdf.}
@@ -147,8 +157,8 @@ Trend Stationary Time Series. The R Journal,
 \item{Feng, Y., Gries, T., & Letmathe, S. (2023). FIEGARCH, modulus asymmetric FILog-GARCH
 and trend-stationary dual long memory time series. Working Papers CIE No. 156, Paderborn University.
 URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
-\item{Feng, Y., Peitz, C., & Siddiqui, S. (2025). A few useful members of the EGARCH-family
-with short- or long-memory in volatility. Unpublished working paper at Paderborn University.}
+\item{Peitz, C., Feng, Y., & Siddiqui, S. (2026). Extending the EGARCH Family: Modulus and Long-Memory
+Log-Volatility Models. Unpublished working paper at Paderborn University.}
 \item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 57-61. DOI: 10.1080/07474938608800088.}
 \item{Glosten, L. R., Jagannathan, R., & Runkle, D. E. (1993). On The Relation between The Expected Value and The
@@ -171,7 +181,10 @@ models. Journal of Time Series Analysis,
 \item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 71-74. DOI: 10.1080/07474938608800089.}
 \item{Tse, Y. K. (1987). A Note On Sargan Densities. Journal of Econometrics, 34(3): 349-354.
-DOI: 10.1016/0304-4076(87)90017-0}
+DOI: 10.1016/0304-4076(87)90017-0.}
+\item{Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2026). Estimating, Forecasting and Backtesting a Family of
+Exponential and Other GARCH Models Using the fEGarch Package. CIE Working Paper 171, Paderborn University.
+URL: https://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP171.pdf.}
 \item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
 49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}

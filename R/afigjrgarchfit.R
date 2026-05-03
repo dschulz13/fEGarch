@@ -62,7 +62,7 @@ sigt_afigjrgarch_R <- function(theta, x, p, q, p_ar, q_ma,
   # }
 
   lc <- length(coef_inf)
-  np2 <- fEGarch:::nextpow2(2 * n - 1)
+  np2 <- nextpow2(2 * n - 1)
   c_adj <- c(coef_inf, rep(0, np2 - lc))
   x_adj <- c(rep(presample_val, presample), z_sc, rep(0, np2 - n))
 

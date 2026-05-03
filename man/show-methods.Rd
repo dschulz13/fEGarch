@@ -2,8 +2,8 @@
 % Please edit documentation in R/class-egarch-spec.R, R/aparchfit.R,
 %   R/gjrgarchfit.R, R/tgarchfit.R, R/garchfit.R, R/fiaparchfit.R,
 %   R/figjrgarchfit.R, R/fitgarchfit.R, R/figarchfit.R, R/afiaparchfit.R,
-%   R/afigjrgarchfit.R, R/afitgarchfit.R, R/ngarchfit.R, R/rugarch-wrappers.R,
-%   R/class-fEGarch_distr_est.R
+%   R/afigjrgarchfit.R, R/afitgarchfit.R, R/fingarchfit.R, R/ngarchfit.R,
+%   R/afingarchfit.R, R/rugarch-wrappers.R, R/class-fEGarch_distr_est.R
 \name{show,fEGarch_fit_egarch-method}
 \alias{show,fEGarch_fit_egarch-method}
 \alias{show,fEGarch_fit_loggarch-method}
@@ -30,8 +30,12 @@
 \alias{show,fEgarch_fit_afigjrgarch-method}
 \alias{show,fEGarch_fit_afitgarch-method}
 \alias{show,fEgarch_fit_afitgarch-method}
+\alias{show,fEGarch_fit_fingarch-method}
+\alias{show,fEgarch_fit_fingarch-method}
 \alias{show,fEGarch_fit_ngarch-method}
 \alias{show,fEgarch_fit_ngarch-method}
+\alias{show,fEGarch_fit_afingarch-method}
+\alias{show,fEgarch_fit_afingarch-method}
 \alias{show,fEGarch_fit_rugarch_wrapper-method}
 \alias{show,fEgarch_fit_rugarch_wrapper-method}
 \alias{show,fEGarch_distr_est-method}
@@ -64,7 +68,11 @@
 
 \S4method{show}{fEGarch_fit_afitgarch}(object)
 
+\S4method{show}{fEGarch_fit_fingarch}(object)
+
 \S4method{show}{fEGarch_fit_ngarch}(object)
+
+\S4method{show}{fEGarch_fit_afingarch}(object)
 
 \S4method{show}{fEGarch_fit_rugarch_wrapper}(object)
 

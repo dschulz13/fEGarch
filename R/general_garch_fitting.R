@@ -14,12 +14,14 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   q <- orders[[2]]
 
   cond_d <- match.arg(cond_dist)
-  lm <- (model_type %in% c("figarch", "figjrgarch", "fiaparch", "fitgarch", "afiaparch", "afigjrgarch", "afitgarch", "afingarch"))
+  lm <- (model_type %in% c("figarch", "figjrgarch", "fiaparch", "fitgarch", "afiaparch", "afigjrgarch", "afitgarch", "fingarch", "afingarch"))
+
 
   if (lm && !all(orders == c(1, 1))) {
     orders <- c(1, 1)
-    message("Only orders p=1 with q=1 are currently supported for FIGARCH, FITGARCH, FIGJR-GARCH, FIAPARCH, AFIAPARCH, AFIGJR-GARCH, AFITGARCH and AFINGARCH models.")
+    message("Only orders p=1 with q=1 are currently supported for FIGARCH, FITGARCH, FIGJR-GARCH, FIAPARCH, FINGARCH, AFIAPARCH, AFIGJR-GARCH, AFITGARCH and AFINGARCH models.")
   }
+
 
   if (use_nonpar) {
 
@@ -78,7 +80,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "afigjrgarch" = goal_fun_creator_afigjrgarch,
     "afitgarch" = goal_fun_creator_afitgarch,
     "ngarch" = goal_fun_creator_ngarch,
-    "afingarch" = goal_fun_creator_afingarch
+    "afingarch" = goal_fun_creator_afingarch,
+    "fingarch" = goal_fun_creator_fingarch
   )
 
   base_args <- list(
@@ -165,6 +168,25 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       ))
       delta0 <- 2
       gamma0 <- est_s@pars[["gamma1"]]
+      rt_dm <- mean_res - mean(mean_res)
+      list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0))
+    },
+    "fingarch" = {
+      est_s <- suppressWarnings(ngarch(
+        rt = rt,
+        orders = orders,
+        cond_dist = cond_dist,
+        meanspec = meanspec,
+        use_nonpar = use_nonpar,
+        nonparspec = nonparspec,
+        parallel = parallel,
+        ncores = ncores,
+        Prange = Prange,
+        n_test = n_test,
+        skip_vcov = TRUE
+      ))
+      delta0 <- est_s@pars[["delta"]]
+      gamma0 <- 0  # fixed for NGARCH-type
       rt_dm <- mean_res - mean(mean_res)
       list(presample_val = mean((abs(rt_dm) - gamma0 * rt_dm)^delta0))
     },
@@ -441,6 +463,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       "fitgarch" = 2,
       "afitgarch" = 2,
       "afingarch" = 2,
+      "fingarch" = 2,
       "fiaparch" = 3,
       "afiaparch" = 3
     )
@@ -541,26 +564,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2)
     }
 
-    # result <- tryCatch(
-    #   expr = {
-    #     suppressWarnings(Rsolnp::solnp(
-    #       pars = start_pars,
-    #       fun = goal_fun,
-    #       LB = LB,
-    #       UB = UB,
-    #       control = control,
-    #       ineqfun = constr_fun,
-    #       ineqLB = ineqLB,
-    #       ineqUB = ineqUB,
-    #       rt = rt_core
-    #     ))
-    #   },
-    #   error = function(e1) {
-    #     stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-    #   }
-    # )
-
-    result <- Rsolnp::solnp(
+    result <- tryCatch(
+      expr = {
+        suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
           fun = goal_fun,
           LB = LB,
@@ -570,7 +576,24 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
           ineqLB = ineqLB,
           ineqUB = ineqUB,
           rt = rt_core
-        )
+        ))
+      },
+      error = function(e1) {
+        stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      }
+    )
+
+    # result <- Rsolnp::solnp(
+    #       pars = start_pars,
+    #       fun = goal_fun,
+    #       LB = LB,
+    #       UB = UB,
+    #       control = control,
+    #       ineqfun = constr_fun,
+    #       ineqLB = ineqLB,
+    #       ineqUB = ineqUB,
+    #       rt = rt_core
+    #     )
 
   }
 
@@ -601,7 +624,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   )
 
 
-  delta_name <- if (model_type %in% c("aparch", "fiaparch", "afiaparch", "ngarch", "afingarch")) {
+  delta_name <- if (model_type %in% c("aparch", "fiaparch", "afiaparch", "ngarch", "afingarch", "fingarch")) {
     "delta"
   } else {
     character(0)
@@ -678,7 +701,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
     "afiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
     "ngarch" = pars[[n_arma_pars + 2 + p + q]],
-    "afingarch" = pars[[n_arma_pars + 2 + p + q]]
+    "afingarch" = pars[[n_arma_pars + 2 + p + q]],
+    "fingarch" = pars[[n_arma_pars + 2 + p + q]],
   )
 
   sc_delta <- scale_const^delta
@@ -746,7 +770,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "afigjrgarch" = fEGarch_fit_afigjrgarch,
     "afitgarch" = fEGarch_fit_afitgarch,
     "ngarch" = fEGarch_fit_ngarch,
-    "afingarch" = fEGarch_fit_afingarch
+    "afingarch" = fEGarch_fit_afingarch,
+    "fingarch" = fEGarch_fit_fingarch
   )
 
   list_out <- if (model_type %in% c("afiaparch", "afigjrgarch", "afitgarch", "afingarch")) {

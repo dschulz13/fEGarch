@@ -144,7 +144,7 @@ adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
             model_type = c("garch", "figarch", "aparch", "fiaparch", "gjrgarch",
                       "figjrgarch", "loggarch", "filoggarch", "egarch", "fiegarch",
                       "tgarch", "fitgarch", "afiaparch", "afitgarch", "afingarch",
-                      "afigjrgarch", "ngarch")) {
+                      "afigjrgarch", "ngarch", "fingarch")) {
 
   check <- pg0 || qg0 || lm_arma
 
@@ -169,7 +169,8 @@ adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
     "afigjrgarch" = sigt_afigjrgarch_R,
     "afitgarch" = sigt_afigjrgarch_R,
     "ngarch" = sigt_ngarch_R,
-    "afingarch" = sigt_afingarch_R
+    "afingarch" = sigt_afingarch_R,
+    "fingarch" = sigt_fingarch_R
   )
 
   sigt_fun_adj <- if (check) {

@@ -2,6 +2,7 @@ Package: fEGarch
 Type: Package
 Title: SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions
 Version: 1.0.7
+Date: 2026-05-03
 Authors@R:
     c(person(given = "Dominik",
         family = "Schulz",
@@ -80,6 +81,7 @@ Collate:
   'class-locpol_spec.R'
   'class-fEGarch_fit.R'
   'class-egarch-spec.R'
+  'class-fAParch-spec.R'
   'fitting-function.R'
   'sim-functions.R'
   'nonparametric-step.R'
@@ -96,6 +98,7 @@ Collate:
   'afiaparchfit.R'
   'afigjrgarchfit.R'
   'afitgarchfit.R'
+  'fingarchfit.R'
   'ngarchfit.R'
   'afingarchfit.R'
   'garch_estim.R'
@@ -113,6 +116,7 @@ Collate:
   'class-fEGarch_distr_est.R'  
   'distr_est.R'
   'popular-methods.R'
+  'fEGarch-deprecated.R'
 Depends: 
     R (>= 3.5),
     methods

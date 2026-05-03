@@ -13,6 +13,10 @@
   (AFIAPARCH) and a few of its special cases. They are available from the
   functions `afiaparch`, `agjrgarch` and the general fitter `garch_estim`. The
   usual forecasting and backtesting pipelines are applicable to these models.
+- `garchm_estim` is now deprecated and will be removed in a future package version.
+  Users are advised to switch to the new pipeline implemented through combining
+  `fAParch_spec` and `fAParch` for fitting short- and long-memory APARCH models,
+  including the adjusted long-memory models by Feng et al. (2026).
 - The printed output to the R console for all fitted models now also shows
   LLH as the obtained log-likelihood (divided by the number of training
   observations) for the estimated parameters in addition to the AIC and the BIC.

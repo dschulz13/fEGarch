@@ -26,10 +26,14 @@ EGARCH and fractionally integrated EGARCH (FIEGARCH) available as
 special cases. For convenience and the purpose of comparison,
 fractionally integrated asymmetric power ARCH (FIAPARCH), fractionally
 integrated Glosten-Jagannathan-Runkle GARCH (FIGJR-GARCH), fractionally
-integrated threshold GARCH (FITGARCH) and fractionally integrated GARCH
-(FIGARCH) models are available as well as their short-memory variants
-(APARCH, GJR-GARCH, TGARCH, GARCH). Throughout, the estimation method is
-quasi-maximum-likelihood estimation (conditioned on presample values).
+integrated threshold GARCH (FITGARCH), fractionally integrated nonlinear
+GARCH (FINGARCH), and fractionally integrated GARCH (FIGARCH) models are
+available as well as their short-memory variants (APARCH, GJR-GARCH,
+TGARCH, NGARCH, GARCH). Additionally, new models in form of the adjusted
+FIAPARCH (AFIAPARCH) and its sub-cases (AFIGJR-GARCH, AFITGARCH,
+AFINGARCH) are available with package version 1.0.7. Throughout, the
+estimation method is quasi-maximum-likelihood estimation (conditioned on
+presample values).
 
 ## Installation
 
@@ -111,7 +115,7 @@ model1
 #> d          0.2754 0.0377   7.3053 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.4945, BIC: -6.4880
+#> LLH: 3.2482, AIC: -6.4945, BIC: -6.4880
 ```
 
 A convenient way to implement various specific model specifications is
@@ -171,7 +175,7 @@ model10
 #> df         7.0906 0.6071  11.6790 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.5391, BIC: -6.5316
+#> LLH: 3.2707, AIC: -6.5391, BIC: -6.5316
 ```
 
 As a further extension, dual-models with autoregressive moving-average
@@ -218,7 +222,7 @@ model11
 #> gamma      0.1608 0.0124   12.9570 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.4975, BIC: -6.4899
+#> LLH: 3.2498, AIC: -6.4975, BIC: -6.4899
 ```
 
 Yet another alternative is the fitting of semiparametric extensions of
@@ -260,7 +264,7 @@ model12
 #> df         7.5375 0.6688  11.2706 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: 2.4655, BIC: 2.4719
+#> LLH: -1.2318, AIC: 2.4655, BIC: 2.4719
 plot(cbind("Standardized" = (rt - mean(rt)) / sd(rt), 
            "Scale-adjusted" = (rt - mean(rt)) / model12@scale_fun),
      xlab = "Year",
@@ -341,15 +345,17 @@ FIGARCH models, however, currently only with fixed model orders p = q
 = 1. For these two models, there are two fitting functions `figarch()`
 and `fiaparch()` available without any preceding model specification
 steps. Model specifications can be made via arguments within these
-functions directly. Alternatively, the wrapper `garchm_estim()` can be
-used to select and fit a GARCH-type model (not belonging to the EGARCH
-family).
+functions directly. Alternatively, the pipeline
+`fAParch_spec() %>% fAParch()` can be used to select and fit a
+GARCH-type model (not belonging to the EGARCH family). (Note in the
+following that `adjust = FALSE` implements the original FIAPARCH.)
 
 ``` r
 model_fiaparch <- rt %>%
   fiaparch(orders = c(1, 1), cond_dist = "std")
-model_fiaparch2 <- rt %>%
-  garchm_estim(model = "fiaparch", orders = c(1, 1), cond_dist = "std")
+model_fiaparch2 <- fAParch_spec(model_type = "aparch", orders = c(1, 1), 
+                                cond_dist = "std", adjust = FALSE) %>%
+  fAParch(rt)
 model_figarch <- rt %>%
   figarch(orders = c(1, 1), cond_dist = "std")
 model_figarch
@@ -378,7 +384,7 @@ model_figarch
 #> df    6.4693 0.4858 13.3159 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.5033, BIC: -6.4968
+#> LLH: 3.2526, AIC: -6.5033, BIC: -6.4968
 ```
 
 ``` r
@@ -443,7 +449,7 @@ new_model
 #> gamma      0.1600 0.0124   12.9308 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.4976, BIC: -6.4911
+#> LLH: 3.2497, AIC: -6.4976, BIC: -6.4911
 fc <- new_model %>%
   predict(n.ahead = 20)
 plot(
@@ -497,7 +503,7 @@ new_model
 #> gamma      0.1591 0.0126   12.5910 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: -6.4792, BIC: -6.4725
+#> LLH: 3.2406, AIC: -6.4792, BIC: -6.4725
 fc2 <- new_model %>%
   predict_roll(refit_after = 25)
 plot(
@@ -905,7 +911,7 @@ dual_lm_model
 #> skew       1.2916 0.0690  18.7204 0.0000
 #>  
 #> Information criteria (parametric part):
-#> AIC: 1.3413, BIC: 1.4208
+#> LLH: -0.6521, AIC: 1.3413, BIC: 1.4208
 
 oldpar <- par(no.readonly = TRUE)
 par(mfrow = c(2, 1), cex = 1, mar = c(4, 4, 3, 2) + 0.1)
@@ -933,9 +939,12 @@ The main functions of the package are:
 
 - `fEGarch()`: fitting function for models of the broader EGARCH family,
 
-- `garchm_estim()`: GARCH-type model fitting selectable from standard
-  GARCH, GJR-GARCH, TGARCH, APARCH, FIGARCH, FIGJR-GARCH, FITGARCH and
-  FIAPARCH.
+- `fAParch_spec()`: model specification from a wider class of
+  short-memory and (unadjusted and adjusted) long-memory APARCH models,
+
+- `fAParch()`: model fitting from a wider class of short-memory and
+  (unadjusted and adjusted) long-memory APARCH models given a
+  corresponding model specification,
 
 - `fEGarch_sim()`: EGARCH family simulation,
 
@@ -991,8 +1000,8 @@ series of class `"ts"`.
 
 ## Authors
 
-- Dominik Schulz (Department Economics, Paderborn University, Germany)
-  (Author, Maintainer)
+- Dominik Schulz (formerly Department Economics, Paderborn University,
+  Germany) (Author, Maintainer)
 
 - Yuanhua Feng (Department Economics, Paderborn University, Germany)
   (Author)
@@ -1006,7 +1015,7 @@ series of class `"ts"`.
 ## Contact
 
 For questions, bug reports, etc., please contact the maintainer
-Mr. Dominik Schulz via <dominik.schulz@uni-paderborn.de>.
+Mr. Dominik Schulz via <dominik.schulz.r@gmail.com>.
 
 ## Citation
 

@@ -6,8 +6,9 @@
 \usage{
 garchm_estim(
   rt,
-  model = c("garch", "gjrgarch", "tgarch", "aparch", "figarch", "figjrgarch", "fitgarch",
-    "fiaparch"),
+  model = c("garch", "gjrgarch", "tgarch", "ngarch", "aparch", "figarch", "figjrgarch",
+    "fitgarch", "fingarch", "fiaparch", "afigjrgarch", "afitgarch", "afingarch",
+    "afiaparch"),
   orders = c(1, 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   drange = c(0, 1),
@@ -36,8 +37,9 @@ a numeric vector, a \code{"zoo"} class time series object, or a
 \code{"ts"} class time series object.}
 
 \item{model}{any character object among \code{"garch"}, \code{"gjrgarch"},
-\code{"aparch"}, \code{"tgarch"}, \code{"figarch"}, \code{"figjrgarch"},
-\code{"fitgarch"}and \code{"fiaparch"}.}
+\code{"aparch"}, \code{"tgarch"}, \code{"ngarch"}, \code{"figarch"}, \code{"figjrgarch"},
+\code{"fitgarch"}, \code{"fiaparch"}, \code{"fingarch"}, \code{"afigjrgarch"},
+\code{"afitgarch"}, \code{"afiaparch"} and \code{"afingarch"}.}
 
 \item{orders}{a two-element numeric vector containing the two model
 orders \eqn{p} and \eqn{q} (see Details for more information); currently,
@@ -118,7 +120,8 @@ distribution, i.e.
 if \code{cond_dist} in \code{spec} is set to \code{cond_dist = "ald"} or
 \code{cond_dist = "sald"}; \code{parallel} is a logical value indicating whether
 or not the slices for the positive integer-valued parameter of the SM
-distribution should be fitted in parallel for a speed boost.}
+distribution should be fitted in parallel for a potential speed boost; on some
+laptops, \code{parallel = FALSE} may work faster.}
 
 \item{ncores}{only relevant for a (skewed) average Laplace (AL)
 distribution, i.e.
@@ -148,7 +151,10 @@ also standard error computation.}
 An object of S4-class \code{"fEGarch_fit_garch"}, \code{"fEGarch_fit_gjrgarch"},
 \code{"fEGarch_fit_tgarch"},
 \code{"fEGarch_fit_aparch"}, \code{"fEGarch_fit_figarch"}, \code{"fEGarch_fit_figjrgarch"},
-\code{"fEGarch_fit_fitgarch"} or \code{"fEGarch_fit_fiaparch"}
+\code{"fEGarch_fit_fitgarch"}, \code{"fEGarch_fit_fiaparch"},
+\code{"fEGarch_fit_fingarch"}, \code{"fEGarch_fit_afigjrgarch"},
+\code{"fEGarch_fit_afitgarch"}, \code{"fEGarch_fit_afiaparch"} or
+\code{"fEGarch_fit_afingarch"}
 is returned depending on the selected input for the argument
 \code{model}. The object then contains the following elements.
 \describe{
@@ -176,6 +182,11 @@ testing following \code{n_test}.}
 \item{\code{nonpar_model}:}{the estimation object returned by \code{\link[smoots]{tsmooth}} or \code{\link[esemifar]{tsmoothlm}} for
 \code{use_nonpar = TRUE}.}
 \item{\code{trunc}:}{the input argument \code{trunc}.}
+\item{\code{C_z}:}{the obtained constant \eqn{C_z} for the estimated model; helpful in
+analyzing further properties of the fitted model; note that this element is only returned
+for objects of class \code{"fEGarch_fit_afigjrgarch"},
+\code{"fEGarch_fit_afitgarch"}, \code{"fEGarch_fit_afiaparch"} or
+\code{"fEGarch_fit_afingarch"}; otherwise, it does not exist in the output object.}
 }
 }
 \description{
@@ -186,9 +197,17 @@ of the extended EGARCH family.
 \details{
 See the documentation on \code{\link{garch}}, \code{\link{gjrgarch}},
 \code{\link{tgarch}}, \code{\link{aparch}}, \code{\link{figarch}},
-\code{\link{figjrgarch}}, \code{\link{fitgarch}} and \code{\link{fiaparch}} for more detailed
+\code{\link{figjrgarch}}, \code{\link{fitgarch}}, \code{\link{fiaparch}},
+\code{\link{fingarch}}, \code{\link{afigjrgarch}}, \code{\link{afitgarch}},
+\code{\link{afiaparch}} and \code{\link{afingarch}} for more detailed
 information on the corresponding models and functions selectable through this
 wrapper function.
+
+Note: As of package version 1.0.7, this function is deprecated and will
+be removed in a future version of the package. Users should switch to
+the \code{\link{fAParch_spec}} / \code{\link{fAParch}} pipeline, which gives
+the same results but is more in alignment with the workflow idea of this
+package.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
