@@ -167,7 +167,7 @@ adj_sigt_fun <- function(p_ar, q_ma, pg0, qg0, lm_arma, incl_mean, n_arma_pars,
     "fiegarch" = sigt_egarch_long_R,
     "afiaparch" = sigt_afiaparch_R,
     "afigjrgarch" = sigt_afigjrgarch_R,
-    "afitgarch" = sigt_afigjrgarch_R,
+    "afitgarch" = sigt_afitgarch_R,
     "ngarch" = sigt_ngarch_R,
     "afingarch" = sigt_afingarch_R,
     "fingarch" = sigt_fingarch_R

@@ -96,7 +96,7 @@ sigt_afitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
   # }
 
   list(
-    sigt = (omega_sig + conv_part)^(1 / delta),
+    sigt = omega_sig + conv_part,
     mu = mu,
     skew = skew,
     shape = shape,

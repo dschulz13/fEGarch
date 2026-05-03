@@ -100,6 +100,8 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     dens_fun = dens_fun   # !!! Check later that this works out
   )
 
+  cat(Czd, fill = T)
+
   z_sc <- afiaparch_adjust_returns(
     rt = x_dm,
     gamma = gamma,
