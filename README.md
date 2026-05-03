@@ -354,7 +354,8 @@ following that `adjust = FALSE` implements the original FIAPARCH.)
 model_fiaparch <- rt %>%
   fiaparch(orders = c(1, 1), cond_dist = "std")
 model_fiaparch2 <- fAParch_spec(model_type = "aparch", orders = c(1, 1), 
-                                cond_dist = "std", adjust = FALSE) %>%
+                                cond_dist = "std", adjust = FALSE,
+                                long_memo = TRUE) %>%
   fAParch(rt)
 model_figarch <- rt %>%
   figarch(orders = c(1, 1), cond_dist = "std")
