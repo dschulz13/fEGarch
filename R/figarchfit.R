@@ -466,12 +466,6 @@ setMethod(
     "Fitted parameters:\n"
   )
 
-  part1_2 <- paste0(
-    " \n",
-    "Scaling constant at optimal solution:\n",
-    "Cz: ", sprintf("%.4f", unname(x@Cz))
-  )
-
   part2 <- paste0(
     " \n",
     "Information criteria (parametric part):\n",
@@ -482,7 +476,6 @@ setMethod(
 
   cat(part1, fill = TRUE)
   print(df)
-  cat(part1_2, fill = TRUE)
   cat(part2, fill = TRUE)
   }
 )

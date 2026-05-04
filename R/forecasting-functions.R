@@ -590,6 +590,116 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
   }
 )
 
+# For FIAPARCH-type
+#@rdname forecasting-model-methods
+methods::setMethod("fEGarch_predict", "fEGarch_fit_afiaparch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+  garch_orders <- object@orders
+  p <- garch_orders[[1]]
+  q <- garch_orders[[2]]
+
+  n <- length(object@rt)
+
+  model_pars <- object@pars
+  names_phi <- paste0("phi", 1:p)
+  phi <- model_pars[names_phi]
+
+  names_beta <- paste0("beta", 1:q)
+  beta <- -model_pars[names_beta]   # change sign to use esemifar::farima_to_ar function correctly later
+
+  omega <- model_pars[["omega"]]
+  gamma <- model_pars[["gamma"]]
+  delta <- model_pars[["delta"]]
+
+  d <- model_pars[["d"]]
+
+  mu <- if (exists("mu", where = as.list(model_pars))) {
+    if (!is.null(object@nonpar_model)) {
+      0
+    } else {
+      model_pars[["mu"]]
+    }
+  } else {
+    0
+  }
+
+  # ARMA / FARIMA specifications
+  mean_specs <- fetch_arma_pars_fit(object)
+  ar <- mean_specs$ar
+  ma <- mean_specs$ma
+  D <- mean_specs$D
+  pqg0 <- mean_specs$pqg0
+  lm_arma <- mean_specs$lm_arma
+
+  cond_dist <- object@cond_dist
+
+  skew <- if (cond_dist %in% c("snorm", "sstd", "sged", "sald")) {
+    model_pars[["skew"]]
+  } else {
+    numeric(0)
+  }
+
+  shape <- if (cond_dist %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {
+    sel_word <- switch(
+      cond_dist,
+      "std" = "df",
+      "sstd" = "df",
+      "ged" = "shape",
+      "sged" = "shape",
+      "ald" = "P",
+      "sald" = "P"
+    )
+    model_pars[[sel_word]]
+  } else  {
+    numeric(0)
+  }
+
+  dfun <- fun1_selector(cond_dist)
+  int_fun <- function(x, skew, shape, gamma, delta, dfun) {
+    (abs(x) - gamma * x)^delta * dfun(x, shape = shape, skew = skew)
+  }
+  E_const <- if (n.ahead >= 2) {
+    stats::integrate(
+      int_fun, lower = -Inf, upper = Inf,
+      abs.tol = 1e-6, rel.tol = 1e-6,
+      subdivisions = 1000L, skew = skew, shape = shape,
+      dfun = dfun, gamma = gamma, delta = delta
+    )[[1]]
+  } else {
+    0
+  }
+
+
+  # ARMA / FARIMA point forecasts of cond. mean
+  mean_fc <- arma_farima_forecasts(ar = ar, ma = ma, D = D, pqg0 = pqg0,
+                                   lm_arma = lm_arma, mu = mu,
+                                   x = zoo::coredata(object@rt),
+                                   innov = zoo::coredata(object@rt - object@cmeans),
+                                   n.ahead = n.ahead, trunc = trunc)
+
+  # FIAPARCH point forecasts of cond. volatility
+
+  coef_inf_garch <- ar_infty(ar = phi, ma = beta, d = d,
+                                     max_i = trunc)[-1]
+
+  sigt_fc <- c(sigt_fiaparch_forecast(
+      rt = zoo::coredata(object@rt - object@cmeans),
+      coef_inf = coef_inf_garch,
+      omega = omega,
+      gamma = gamma,
+      delta = delta,
+      E_const = E_const,
+      horizon = n.ahead))
+
+  list(
+    cmeans = mean_fc,
+    sigt = sigt_fc
+  )
+
+  }
+)
+
 # For GJR-GARCH-type
 #@rdname forecasting-model-methods
 methods::setMethod("fEGarch_predict", "fEGarch_fit_gjrgarch",

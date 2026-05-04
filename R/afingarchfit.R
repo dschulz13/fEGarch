@@ -449,8 +449,9 @@ goal_fun_creator_afingarch <- function(
 #'
 #'@references
 #'\itemize{
-#'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
-#'Theory and Application. Forthcoming preprint, Paderborn University.}
+#'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2026). Well-known and recent
+#'long-memory GARCH models and their semiparametric extensions. Forthcoming
+#'preprint, Paderborn University.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
 #'memory in stock market volatility. Journal of Econometrics, 73(1),
 #'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
