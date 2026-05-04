@@ -193,7 +193,7 @@ fEGarch_sim <- function(spec = egarch_spec(),
   } else if (model_type == "logGARCH") {
 
     Func <- function(x, shape, skew, dfun) {
-      2 * log(abs(x)) * dfun(x, shape = shape, skew = skew)
+      log(x^2) * dfun(x, shape = shape, skew = skew)
     }
 
     E_const <- stats::integrate(

@@ -35,7 +35,7 @@ arma::vec sigt_loggarch_long(const arma::vec& x, const double mu,
 
     sigt(j) = std::exp(lnsig2(il) / 2.0);
     eta_i = x_cent(j) / sigt(j);
-    epst(il) = 2.0 * std::log(std::abs(eta_i)) - Elneta2;
+    epst(il) = std::log(std::pow(eta_i, 2.0)) - Elneta2;
 
   }
 
@@ -102,7 +102,7 @@ arma::vec sigt_loggarch_short(const arma::vec& x, const double mu,
 
     sigt(i) = std::exp(lnsig2(il) / 2.0);
     eta_i = x_cent(i) / sigt(i);
-    series_innov(il) = 2.0 * std::log(std::abs(eta_i)) - Elneta2;
+    series_innov(il) = std::log(std::pow(eta_i, 2.0)) - Elneta2;
 
   }
 
@@ -133,7 +133,7 @@ Rcpp::List loggarch_shortmemo_type_sim(const arma::vec& innov, const double omeg
   const arma::vec ma_rev = arma::reverse(ma_coef);
 
   arma::vec xi = arma::zeros<arma::vec>(n_all);
-  xi.subvec(l, n_all - 1) = 2.0 * arma::log(arma::abs(innov)) - Econst;
+  xi.subvec(l, n_all - 1) = arma::log(arma::pow(innov, 2.0)) - Econst;
 
   const double omega = omega_sig * (1 - arma::accu(ar_coef));
   const int lar = l - n_ar;
@@ -170,7 +170,7 @@ Rcpp::List loggarch_longmemo_type_sim(const arma::vec& innov, const double omega
   const int n = innov.size();
   const int l = coef_inf.size();
 
-  const arma::vec i_transf = 2.0 * arma::log(arma::abs(innov)) - Econst;
+  const arma::vec i_transf = arma::log(arma::pow(innov, 2.0)) - Econst;
 
   arma::vec e_adj = arma::zeros<arma::vec>(np2);
   arma::vec c_adj = arma::zeros<arma::vec>(np2);

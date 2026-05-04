@@ -1682,7 +1682,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # numerical optimization; quantity depends on parameter
   # settings for everything but a standard normal distribution
   int_fun <- function(x, shape, skew, dfun) {
-    2 * log(abs(x)) * dfun(x, shape = shape, skew = skew)
+    log(x^2) * dfun(x, shape = shape, skew = skew)
   }
 
   # Initialize ln(sig_t^2) with some reasonable, fixed value

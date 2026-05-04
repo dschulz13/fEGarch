@@ -257,7 +257,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                                         delta = delta0, Czd = C0)
       # Additionally, also pass the innovation density to the goal function
       # for AFIAPARCH, as it is required for the computation of the constant
-      list(presample_val = mean(rt_dm), dens_fun = dfun1)
+      list(presample_val = mean(rt_dm))
     },
     "afitgarch" = {
       # Initial APARCH fit to obtain guesses of relevant parameters
@@ -288,7 +288,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                                         delta = delta0, Czd = C0)
       # Additionally, also pass the innovation density to the goal function
       # for AFIAPARCH, as it is required for the computation of the constant
-      list(presample_val = mean(rt_dm), dens_fun = dfun1)
+      list(presample_val = mean(rt_dm))
     },
     "afingarch" = {
       # Initial APARCH fit to obtain guesses of relevant parameters
@@ -319,7 +319,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                                         delta = delta0, Czd = C0)
       # Additionally, also pass the innovation density to the goal function
       # for AFIAPARCH, as it is required for the computation of the constant
-      list(presample_val = mean(rt_dm), dens_fun = dfun1)
+      list(presample_val = mean(rt_dm))
     },
     "afigjrgarch" = {
       # Initial APARCH fit to obtain guesses of relevant parameters
@@ -350,22 +350,37 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
                                         delta = delta0, Czd = C0)
       # Additionally, also pass the innovation density to the goal function
       # for AFIAPARCH, as it is required for the computation of the constant
-      list(presample_val = mean(rt_dm), dens_fun = dfun1)
+      list(presample_val = mean(rt_dm))
     }
   )
 
-  goal_fun_s <- function(theta, rt, dfun1, dfun2) {
+  goal_fun_s <- if (model_type %in% c("afiaparch", "afingarch", "afigjrgarch", "afitgarch")) {
+      function(theta, rt, dfun1, dfun2) {
 
-    do.call(
-      what = creator_fun,
-      args = c(
-        list(x = rt, theta = theta, pdf_fun2 = dfun2),
-        base_args,
-        extra_args
-      )
-    )
+        do.call(
+          what = creator_fun,
+          args = c(
+            list(x = rt, theta = theta, pdf_fun2 = dfun2, dens_fun = dfun1),
+            base_args,
+            extra_args
+          )
+        )
 
-  }
+      }
+    } else {
+      function(theta, rt, dfun1, dfun2) {
+
+        do.call(
+          what = creator_fun,
+          args = c(
+            list(x = rt, theta = theta, pdf_fun2 = dfun2),
+            base_args,
+            extra_args
+          )
+        )
+
+      }
+    }
 
   # Get cond. distribution restrictions and starting values
   # as objects sval, lval and uval in the environment
@@ -560,9 +575,16 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
     P_sel <- NULL
 
-    goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2)
+    goal_fun <- if (model_type %in% c("afiaparch", "afigjrgarch", "afitgarch", "afingarch")) {
+      function(theta, rt) {
+        goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
+      }
+    } else {
+      function(theta, rt) {
+        goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2)
+      }
     }
+
 
     result <- tryCatch(
       expr = {
@@ -655,6 +677,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   if (cond_d %in% c("ald", "sald")) {
 
+    # Fix dfun1
+    dfun1_P <- function(x, mu, sigt, shape, skew) {
+      dfun1(x = x, shape = P_sel, skew = skew)
+    }
+
     # Fix dfun2
     dfun2_P <- function(x, mu, sigt, shape, skew) {
       dfun2(x = x, mu = mu, sigt = sigt, shape = P_sel, skew = skew)
@@ -663,15 +690,12 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     # Fix the final goal function to optimize over
     # using dfun1_P and dfun2_P
     goal_fun <- function(theta, rt) {
-      goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2_P)
+      goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1_P, dfun2 = dfun2_P)
     }
 
   }
 
-  # Compute the conditional standard deviations at the optimum
-  final_series <- do.call(
-    sigt_fun_adj,
-    args = c(list(
+  fargs <- c(list(
       theta = unname(pars),
       x = rt_core,
       dfun = dfun1,
@@ -685,6 +709,17 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       trunc = trunc,
       presample = presample
     ), extra_args)
+
+  if (cond_d %in% c("ald", "sald")) {
+    fargs[["dens_fun"]] <- dfun1_P
+  } else {
+    fargs[["dens_fun"]] <- dfun1
+  }
+
+  # Compute the conditional standard deviations at the optimum
+  final_series <- do.call(
+    sigt_fun_adj,
+    args = fargs
   )
 
   delta <- switch(
