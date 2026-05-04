@@ -7,7 +7,7 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
                           const arma::vec& coef_inf,
                           const double gamma, const double delta,
                           const int n_out,
-                          const double mu) {
+                          const double mu, const double Cz) {
 
   const int n = innov.size();
 
@@ -33,7 +33,7 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
     sigt(j) = std::pow(sigd, onedivdelta);
 
     rt(j) = innov(j) * sigt(j);
-    eps2_transf(j) = std::pow(std::abs(rt(j)) - gamma * rt(j), delta);
+    eps2_transf(j) = std::pow(std::abs(rt(j)) - gamma * rt(j), delta) / Cz;
 
   }
 
@@ -45,7 +45,7 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
     sigt(i) = std::pow(sigd, onedivdelta);
 
     rt(i) = innov(i) * sigt(i);
-    eps2_transf(i) = std::pow(std::abs(rt(i)) - gamma * rt(i), delta);
+    eps2_transf(i) = std::pow(std::abs(rt(i)) - gamma * rt(i), delta) / Cz;
 
   }
 

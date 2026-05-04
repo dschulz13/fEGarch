@@ -89,8 +89,8 @@ sigt_fiaparch_forecast <- function(rt, coef_inf, omega, gamma, delta, E_const, h
     .Call('_fEGarch_sigt_fiaparch_forecast', PACKAGE = 'fEGarch', rt, coef_inf, omega, gamma, delta, E_const, horizon)
 }
 
-fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu) {
-    .Call('_fEGarch_fiaparch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, gamma, delta, n_out, mu)
+fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu, Cz) {
+    .Call('_fEGarch_fiaparch_sim_Cpp', PACKAGE = 'fEGarch', innov, omega, coef_inf, gamma, delta, n_out, mu, Cz)
 }
 
 sigt_garch_Cpp <- function(x, mu, phi, beta, omega, sig2_init) {
