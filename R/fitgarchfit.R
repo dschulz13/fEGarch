@@ -383,13 +383,13 @@ goal_fun_creator_fitgarch <- function(
 #'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
 #'Theory and Application. Forthcoming preprint, Paderborn University.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
-#'memory in stock market volatility. Journal of Econometrics, 73(1):
+#'memory in stock market volatility. Journal of Econometrics, 73(1),
 #'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
 #'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
+#'integrated GARCH model. Journal of Financial Econometrics, 4(3),
 #'413-449. DOI: 10.1093/jjfinec/nbj015.}
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-#'and a new model. Journal of Empirical Finance, 1(1):
+#'and a new model. Journal of Empirical Finance, 1(1),
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
@@ -401,9 +401,9 @@ goal_fun_creator_fitgarch <- function(
 #'computation of ARCH(\eqn{\infty}) models. Journal of Time Series Analysis,
 #'42(3), 338-354. DOI: 10.1111/jtsa.12570.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
-#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
+#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5),
 #'931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 #'}
 #'
@@ -482,6 +482,12 @@ setMethod(
     "Fitted parameters:\n"
   )
 
+  part1_2 <- paste0(
+    " \n",
+    "Scaling constant at optimal solution:\n",
+    "Cz: ", sprintf("%.4f", unname(x@Cz))
+  )
+
   part2 <- paste0(
     " \n",
     "Information criteria (parametric part):\n",
@@ -492,6 +498,7 @@ setMethod(
 
   cat(part1, fill = TRUE)
   print(df)
+  cat(part1_2, fill = TRUE)
   cat(part2, fill = TRUE)
   }
 )

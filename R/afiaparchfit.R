@@ -310,12 +310,12 @@ goal_fun_creator_afiaparch <- function(
 #'An AFIAPARCH(\eqn{p, d, q}) is defined as follows. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t^{\delta}=\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| r_t \right|\right]^{\delta}.}
+#'\deqn{\sigma_t^{\delta}=\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{\delta}.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent and identically distributed (iid) innovations with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
-#'deviations in \eqn{r_t}. \eqn{S_t=1} for \eqn{r_t < 0} and \eqn{S_t=-1} for
-#'\eqn{r_t \geq 0}, and
+#'deviations in \eqn{r_t}. \eqn{S_t=1} for \eqn{\varepsilon_t < 0} and \eqn{S_t=-1} for
+#'\eqn{\varepsilon_t \geq 0}, and
 #'\deqn{C_z=p_n (1 + \gamma)^{\delta} E\left(|\eta_t|^{\delta} \mid \eta_t < 0\right) + p_p (1 - \gamma)^{\delta} E\left(|\eta_t|^{\delta} \mid \eta_t \geq 0\right),}
 #'where \eqn{p_n = \text{Pr}(S_t = 1)} and \eqn{p_p = 1 - p_n}. As we can see, the theoretical
 #'process has no volatility intercept. However, since in practice a finite-length truncation is
@@ -333,14 +333,14 @@ goal_fun_creator_afiaparch <- function(
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
 #'real-valued parameter and \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,1]} as the
 #'parameter for the level of integration. With \eqn{d = 0} the model reduces
-#'to a short-memory APARCH, for \eqn{d=1} we have a full integration, and for
+#'to a short-memory model, for \eqn{d=1} we have a full integration, and for
 #'\eqn{d\in(0, 1)}, we have fractional integration, where \eqn{d\in(0, 0.5)} is
 #'considered to describe a long-memory process. It is assumed that
 #'all elements of the infinite-length polynomial are non-negative. For further information
 #'on this model and its theoretical advantages, we refer the reader to
 #'Feng et al. (2026).
 #'
-#'The pre-sample values of \eqn{C_{z}^{-1}\left[\left(1 + S_t \gamma\right)\left| r_t \right|\right]^{\delta}}
+#'The pre-sample values of \eqn{C_{z}^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{\delta}}
 #'are replaced by the in-sample arithmetic mean of
 #'\deqn{C_{z,0}^{-1}\left[\left(1 + S_t \gamma_0\right)\left| r_t^{*} -  \bar{r}_t^{*}\right|\right]^{\delta_0}}
 #'where
@@ -502,6 +502,9 @@ goal_fun_creator_afiaparch <- function(
 #'
 #'@references
 #'\itemize{
+#'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2026). Well-known and recent
+#'long-memory GARCH models and their semiparametric extensions. Forthcoming
+#'preprint, Paderborn University.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
 #'memory in stock market volatility. Journal of Econometrics, 73(1):
 #'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
@@ -516,13 +519,13 @@ goal_fun_creator_afiaparch <- function(
 #'Unpublished manuscript at Paderborn University.}
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
-#'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'14(1): 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 #'in R. Communications in Statistics - Theory and Methods,
-#'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
+#'53(22): 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient computation of ARCH(\eqn{\infty})
 #'models. Journal of Time Series Analysis,
-#'42(3), 338–354. DOI: 10.1111/jtsa.12570.}
+#'42(3): 338–354. DOI: 10.1111/jtsa.12570.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
 #'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}

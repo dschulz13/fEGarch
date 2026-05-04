@@ -809,7 +809,26 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "fingarch" = fEGarch_fit_fingarch
   )
 
-  list_out <- if (model_type %in% c("afiaparch", "afigjrgarch", "afitgarch", "afingarch")) {
+  final_Cz <- if (model_type %in% c("afiaparch", "afigjrgarch", "afitgarch", "afingarch")) {
+    final_series$Czd
+  } else if (model_type %in% c("fiaparch", "figjrgarch", "fitgarch", "fingarch")) {
+    shape_o <- if (cond_d %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {pars[[extra_par_name]]} else {0}
+    skew_o <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {pars[["skew"]]} else {0}
+    delta_o <- if (model_type %in% c("fiaparch", "fingarch")) {
+      pars[["delta"]]
+    } else if (model_type == "fitgarch") {
+      1
+    } else if (model_type == "figjrgarch") {
+      2
+    }
+    gamma_o <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch")) {pars[["gamma"]]} else {0}
+
+    comp_C_zd(shape = shape_o, skew = skew_o, gamma = gamma_o, delta = delta_o, dens_fun = dfun1)
+  } else {
+    0
+  }
+
+  list_out <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch", "fingarch", "afiaparch", "afitgarch", "afigjrgarch", "afingarch")) {
     construct_fun(
       pars = pars,
       se = serrors,
@@ -828,7 +847,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       test_obs = test_obs,
       nonpar_model = NULL,
       trunc = trunc_i,
-      Cz = final_series$Czd
+      Cz = final_Cz
     )
   } else {
     construct_fun(

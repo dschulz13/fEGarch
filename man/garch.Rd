@@ -275,7 +275,7 @@ model
 \references{
 \itemize{
 \item{Bollerslev, T. (1986). Generalized autoregressive conditional
-heteroskedasticity. Journal of Econometrics, 31(3):
+heteroskedasticity. Journal of Econometrics, 31(3),
 307-327. DOI: 10.1016/0304-4076(86)90063-1.}
 \item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 Trend Stationary Time Series. The R Journal,

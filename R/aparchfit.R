@@ -351,7 +351,7 @@ goal_fun_creator_aparch <- function(
 #'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
 #'}
 #'

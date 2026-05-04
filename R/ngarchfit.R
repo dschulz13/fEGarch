@@ -104,7 +104,7 @@ goal_fun_creator_ngarch <- function(
 
 #'NGARCH Model Fitting
 #'
-#'Fit a TGARCH model under the six
+#'Fit an NGARCH model under the six
 #'most common and further conditional distributions to observed data
 #'using quasi maximum-likelihood estimation.
 #'
@@ -199,7 +199,7 @@ goal_fun_creator_ngarch <- function(
 #'Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t=\omega+\sum_{i=1}^{p}\phi_i\left(\left|\varepsilon_{t-i}\right|-\gamma_{i}\varepsilon_{t-i}\right) + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}.}
+#'\deqn{\sigma_t^{\delta}=\omega+\sum_{i=1}^{p}\phi_i\left|\varepsilon_{t-i}\right|^{\delta} + \sum_{j=1}^{j} \beta_{j}\sigma_{t-j}^{\delta}.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -209,11 +209,11 @@ goal_fun_creator_ngarch <- function(
 #'and \eqn{q} are the model orders definable through the argument \code{orders},
 #'where \eqn{p} is the first element and \eqn{q} is the second element in the
 #'argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
-#'real-valued parameter and \eqn{\gamma \in (-1,1)}. \eqn{\omega > 0} is the intercept. It is assumed that
+#'real-valued parameter and \eqn{\delta > 0}. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 #'
 #'See also the reference section for sources on the
-#'TGARCH model (Zakoian, 1994), the more general
+#'NGARCH model (Higgins and Bera, 1992), the more general
 #'APARCH (Ding et al., 1993)
 #'and the FIAPARCH (Tse, 1998) models.
 #'
@@ -239,7 +239,7 @@ goal_fun_creator_ngarch <- function(
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
 #'
-#'An ARMA-TGARCH or a FARIMA-TGARCH can be fitted by adjusting the
+#'An ARMA-NGARCH or a FARIMA-NGARCH can be fitted by adjusting the
 #'argument \code{meanspec} correspondingly.
 #'
 #'As an alternative, a semiparametric extension of the pure models
@@ -291,7 +291,7 @@ goal_fun_creator_ngarch <- function(
 #'is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
 #'\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega},
 #'\eqn{\phi_1,\dots,\phi_p}, \eqn{\beta_1, \dots, \beta_{q}},
-#'\eqn{\gamma_1,\dots,\gamma_p}, shape parameter,
+#'\eqn{\delta}, shape parameter,
 #'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
 #'in \code{start_pars}, \code{LB} and \code{UB}.
@@ -299,7 +299,7 @@ goal_fun_creator_ngarch <- function(
 #'@export
 #'
 #'@return
-#'An object of S4-class \code{"fEGarch_fit_tgarch"}
+#'An object of S4-class \code{"fEGarch_fit_ngarch"}
 #'is returned. It contains the following elements.
 #'\describe{
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
@@ -331,25 +331,25 @@ goal_fun_creator_ngarch <- function(
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
-#'model <- tgarch(rt)
+#'model <- ngarch(rt)
 #'model
 #'
 #'@references
 #'\itemize{
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-#'and a new model. Journal of Empirical Finance, 1(1):
+#'and a new model. Journal of Empirical Finance, 1(1),
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Higgins, M. L., & Bera, A. K. (1992). A Class of Nonlinear ARCH Models.
+#'International Economic Review, 33(1), 137–158. DOI: 10.2307/2526988.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 #'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
-#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
-#'931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 #'}
 #'
 ngarch <- function(rt, orders = c(1, 1),

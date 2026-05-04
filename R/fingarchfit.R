@@ -204,11 +204,11 @@ goal_fun_creator_fingarch <- function(
 #'also standard error computation.
 #'
 #'@details
-#'Consider a FITGARCH(\eqn{p, d, q}) (Ayensu et al., 2025) with constant asymmetry term \eqn{\gamma} regardless
+#'Consider a FINGARCH(\eqn{p, d, q}) model with asymmetry term zero regardless
 #'of the lag. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows
 #'\deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-#'\deqn{\sigma_t=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right).}
+#'\deqn{\sigma_t^{\delta}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left|\varepsilon_t\right|^{\delta}.}
 #'Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
 #'\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
 #'and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
@@ -228,15 +228,14 @@ goal_fun_creator_fingarch <- function(
 #'considered to describe a long-memory process. \eqn{\omega > 0} is the intercept. It is assumed that
 #'all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
 #'
-#'The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)}
+#'The pre-sample values of \eqn{\left|\varepsilon_t\right|^{\delta}}
 #'are replaced by the in-sample arithmetic mean of
-#'\deqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
-#'\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right),}
+#'\deqn{|r_t^{*} - \bar{r}_t^{*}\right|^{\delta_0},}
 #'where
 #'\eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 #'mean of \eqn{r_t^{*}}. An initial value
-#'for \eqn{\gamma_0} as initial guess for \eqn{\gamma} is obtained
-#'from a previous fitting of a short-memory TGARCH.
+#'for \eqn{\delta_0} as an initial guess for \eqn{\delta} is obtained
+#'from a previous fitting of a short-memory NGARCH.
 #'
 #'The truncated infinite order polynomial is computed following the idea
 #'by Nielsen
@@ -258,7 +257,7 @@ goal_fun_creator_fingarch <- function(
 #'by Conrad and Haag (2006), which are however complex to implement properly.
 #'
 #'See also the reference section for sources on the
-#'TGARCH model (Zakoian, 1994), the more general
+#'NGARCH model (Higgins and Bera, 1992), the more general
 #'APARCH (Ding et al., 1993) and the FIAPARCH (Tse, 1998) models.
 #'
 #'In the current package version, standard errors of parameter estimates are
@@ -283,7 +282,7 @@ goal_fun_creator_fingarch <- function(
 #'not obtained and the ones obtained for the remaining estimates do not account
 #'for \eqn{\hat{P}}.
 #'
-#'An ARMA-FITGARCH or a FARIMA-FITGARCH can be fitted by adjusting the
+#'An ARMA-FINGARCH or a FARIMA-FINGARCH can be fitted by adjusting the
 #'argument \code{meanspec} correspondingly.
 #'
 #'As an alternative, a semiparametric extension of the pure models
@@ -335,7 +334,7 @@ goal_fun_creator_fingarch <- function(
 #'The order for manual settings of \code{start_pars}, \code{LB} and \code{UB}
 #'is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
 #'\eqn{\text{ma}_1,\dots,\text{ma}_{q^{*}}},\eqn{D},\eqn{\omega},
-#'\eqn{\phi}, \eqn{\beta}, \eqn{\gamma}, \eqn{d},
+#'\eqn{\phi}, \eqn{\beta}, \eqn{\delta}, \eqn{d},
 #'shape parameter,
 #'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
@@ -344,7 +343,7 @@ goal_fun_creator_fingarch <- function(
 #'@export
 #'
 #'@return
-#'An object of S4-class \code{"fEGarch_fit_fitgarch"}
+#'An object of S4-class \code{"fEGarch_fit_fingarch"}
 #'is returned. It contains the following elements.
 #'\describe{
 #'\item{\code{pars}:}{a named numeric vector with the parameter estimates.}
@@ -371,12 +370,14 @@ goal_fun_creator_fingarch <- function(
 #'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 #'\code{use_nonpar = TRUE}.}
 #'\item{\code{trunc}:}{the input argument \code{trunc}.}
+#'\item{\code{C_z}:}{the obtained constant \eqn{C_z} for the estimated model; helpful in
+#'analyzing further properties of the fitted model}
 #'}
 #'
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 #'rt <- window.zoo(SP500, end = "2002-12-31")
-#'model <- fitgarch(rt)
+#'model <- fingarch(rt)
 #'model
 #'
 #'@references
@@ -384,17 +385,19 @@ goal_fun_creator_fingarch <- function(
 #'\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
 #'Theory and Application. Forthcoming preprint, Paderborn University.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
-#'memory in stock market volatility. Journal of Econometrics, 73(1):
+#'memory in stock market volatility. Journal of Econometrics, 73(1),
 #'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
 #'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
+#'integrated GARCH model. Journal of Financial Econometrics, 4(3),
 #'413-449. DOI: 10.1093/jjfinec/nbj015.}
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-#'and a new model. Journal of Empirical Finance, 1(1):
+#'and a new model. Journal of Empirical Finance, 1(1),
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Higgins, M. L., & Bera, A. K. (1992). A Class of Nonlinear ARCH Models.
+#'International Economic Review, 33(1), 137–158. DOI: 10.2307/2526988.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 #'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
@@ -402,10 +405,8 @@ goal_fun_creator_fingarch <- function(
 #'computation of ARCH(\eqn{\infty}) models. Journal of Time Series Analysis,
 #'42(3), 338-354. DOI: 10.1111/jtsa.12570.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
-#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
-#'931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 #'}
 #'
 fingarch <- function(rt, orders = c(1, 1),
@@ -483,6 +484,12 @@ setMethod(
     "Fitted parameters:\n"
   )
 
+  part1_2 <- paste0(
+    " \n",
+    "Scaling constant at optimal solution:\n",
+    "Cz: ", sprintf("%.4f", unname(x@Cz))
+  )
+
   part2 <- paste0(
     " \n",
     "Information criteria (parametric part):\n",
@@ -493,6 +500,7 @@ setMethod(
 
   cat(part1, fill = TRUE)
   print(df)
+  cat(part1_2, fill = TRUE)
   cat(part2, fill = TRUE)
   }
 )

@@ -168,23 +168,40 @@ testing following \code{n_test}.}
 \item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 \code{use_nonpar = TRUE}.}
 \item{\code{trunc}:}{the input argument \code{trunc}.}
+\item{\code{C_z}:}{the obtained constant \eqn{C_z} for the estimated model; helpful in
+analyzing further properties of the fitted model.}
 }
 }
 \description{
-Fit a fractionally integrated GJR-GARCH model under the six
+Fit an adjusted  fractionally integrated GJR-GARCH model under the six
 most common and further conditional distributions to observed data
 using quasi maximum-likelihood estimation.
 }
 \details{
-Consider a FIGJR-GARCH(\eqn{p, d, q}) (Ayensu et al., 2025) with constant asymmetry term \eqn{\gamma} regardless
-of the lag. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
+Consider an adjusted FIGJR-GARCH(\eqn{p, d, q}), an AFIGJR-GARCH(\eqn{p, d, q}) for short,
+with constant asymmetry term \eqn{\gamma} regardless
+of the lag. The model was introduced by Feng et al. (2026) and is an adjusted version
+of the FIGJR-GARCH by Ayensu et al. (2026) and a special case of the
+AFIAPARCH by Feng et al. (2026).The FIGJR-GARCH is usually not well defined
+overall, and it is usually not weakly stationary (Feng et al., 2026).
+
+An AFIGJR-GARCH(\eqn{p, d, q}) is defined as follows. Let \eqn{\left\{r_t\right\}},
+with \eqn{t \in \mathbb{Z}} as the
 time index, be a theoretical time series that follows
 \deqn{r_t=\mu+\varepsilon_t \text{ with } \varepsilon_t=\sigma_t \eta_t \text{ and } \eta_t \sim \text{IID}(0,1), \text{ where}}
-\deqn{\sigma_t^{2}=\omega+\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{2}.}
+\deqn{\sigma_t^{2}=\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{2}.}
 Here, \eqn{\eta_t\sim\text{IID}(0,1)} means that the innovations
-\eqn{\eta_t} are independent and identically distributed (iid) with mean zero
+\eqn{\eta_t} are independent and identically distributed (iid) innovations with mean zero
 and variance one, whereas \eqn{\sigma_t > 0} are the conditional standard
-deviations in \eqn{r_t}.
+deviations in \eqn{r_t}. \eqn{S_t=1} for \eqn{\varepsilon_t < 0} and \eqn{S_t=-1} for
+\eqn{\varepsilon_t \geq 0}, and
+\deqn{C_z=p_n (1 + \gamma)^{2} E\left(|\eta_t|^{2} \mid \eta_t < 0\right) + p_p (1 - \gamma)^{2} E\left(|\eta_t|^{2} \mid \eta_t \geq 0\right),}
+where \eqn{p_n = \text{Pr}(S_t = 1)} and \eqn{p_p = 1 - p_n}. As we can see, the theoretical
+process has no volatility intercept. However, since in practice a finite-length truncation is
+considered for the infinite-length polynomial \eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]},
+the practical implementation does indeed consider a volatility intercept \eqn{\omega > 0}. While
+\eqn{\omega} is in theory not a free parameter then, we still simply include it as a parameter
+to optimize over in the estimation routine.
 Moreover, \eqn{B} is the backshift operator and
 \eqn{\beta(B) = 1 - \sum_{j=1}^{q}\beta_j B^{j}}, where
 \eqn{\beta_j}, \eqn{j=1,2,\dots, q}, are real-valued coefficients. Furthermore,
@@ -195,20 +212,28 @@ where \eqn{p} is the first element and \eqn{q} is the second element in the
 argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
 real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,1]} as the
 parameter for the level of integration. With \eqn{d = 0} the model reduces
-to a short-memory GJR-GARCH, for \eqn{d=1} we have a full integration, and for
+to a short-memory model, for \eqn{d=1} we have a full integration, and for
 \eqn{d\in(0, 1)}, we have fractional integration, where \eqn{d\in(0, 0.5)} is
-considered to describe a long-memory process. \eqn{\omega > 0} is the intercept. It is assumed that
-all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.
+considered to describe a long-memory process. \eqn{\omega > 0} is the intercept.
+It is assumed that all elements of the infinite-length polynomial are
+non-negative. For further information
+on this model and its theoretical advantages, we refer the reader to
+Feng et al. (2026).
 
-The pre-sample values of \eqn{\left(\left|\varepsilon_t\right|-\gamma\varepsilon_t\right)^{2}}
+The pre-sample values of \eqn{C_{z}^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{2}}
 are replaced by the in-sample arithmetic mean of
-\deqn{\left(\left|r_t^{*} - \bar{r}_t^{*}\right|-
-\gamma_0\left(r_t^{*}-\bar{r}_t^{*}\right)\right)^{2},}
+\deqn{C_{z,0}^{-1}\left[\left(1 + S_t \gamma_0\right)\left| r_t^{*} -  \bar{r}_t^{*}\right|\right]^{2}}
 where
 \eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 mean of \eqn{r_t^{*}}. An initial value
-for \eqn{\gamma_0} as initial guess for \eqn{\gamma} is obtained
-from a previous fitting of a short-memory GJR-GARCH.
+for \eqn{\gamma_0} as an initial guess for \eqn{\gamma} is obtained
+from a previous fitting of a short-memory GJR-GARCH. Analogously, an initial value
+of \eqn{C_z} denoted by \eqn{C_{z,0}} is also obtained from that initial fit by
+replacing \eqn{\gamma} in the formula of \eqn{C_z} by
+\eqn{\gamma_0}, and by obtaining \eqn{p_n E(|\eta_t|^{2} \mid \eta_t < 0)}
+and \eqn{p_p E(|\eta_t|^{2} \mid \eta_t \geq 0)} numerically via the
+\code{integrate} function using the fitted
+parameters from the initial fit.
 
 The truncated infinite order polynomial is computed following the idea
 by Nielsen
@@ -255,7 +280,7 @@ estimates of the continuous parameters. A standard error for \eqn{\hat{P}} is th
 not obtained and the ones obtained for the remaining estimates do not account
 for \eqn{\hat{P}}.
 
-An ARMA-FIGJR-GARCH or a FARIMA-FIGJR-GARCH can be fitted by adjusting the
+An ARMA-AFIGJR-GARCH or a FARIMA-AFIGJR-GARCH can be fitted by adjusting the
 argument \code{meanspec} correspondingly.
 
 As an alternative, a semiparametric extension of the pure models
@@ -316,23 +341,27 @@ in \code{start_pars}, \code{LB} and \code{UB}.
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
-model <- figjrgarch(rt)
+model <- afigjrgarch(rt)
 model
 
 }
 \references{
 \itemize{
-\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2025). Recent Extensions of Exponential GARCH Models:
-Theory and Application. Forthcoming preprint, Paderborn University.}
+\item{Ayensu, O. K., Feng, Y., & Schulz, D. (2026). Well-known and recent
+long-memory GARCH models and their semiparametric extensions. Forthcoming
+preprint, Paderborn University.}
 \item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
-memory in stock market volatility. Journal of Econometrics, 73(1):
+memory in stock market volatility. Journal of Econometrics, 73(1),
 151-184. DOI: 10.1016/0304-4076(95)01736-4.}
 \item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-integrated GARCH model. Journal of Financial Econometrics, 4(3):
+integrated GARCH model. Journal of Financial Econometrics, 4(3),
 413-449. DOI: 10.1093/jjfinec/nbj015.}
 \item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-and a new model. Journal of Empirical Finance, 1(1):
+and a new model. Journal of Empirical Finance, 1(1),
 83-106. DOI: 10.1016/0927-5398(93)90006-D.}
+\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with
+finite \eqn{2\delta}th moment and long memory in volatility implemented in R.
+Unpublished manuscript at Paderborn University.}
 \item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 Trend Stationary Time Series. The R Journal,
 14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
@@ -342,11 +371,11 @@ DOI: 10.1111/j.1540-6261.1993.tb05128.x.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
-\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient
-computation of ARCH(\eqn{\infty}) models. Journal of Time Series Analysis,
-42(3), 338-354. DOI: 10.1111/jtsa.12570.}
+\item{Nielsen, M. O., & Noel, A. L. (2021). To infinity and beyond: Efficient computation of ARCH(\eqn{\infty})
+models. Journal of Time Series Analysis,
+42(3), 338–354. DOI: 10.1111/jtsa.12570.}
 \item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
 }
 }

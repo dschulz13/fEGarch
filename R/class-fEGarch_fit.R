@@ -57,17 +57,17 @@ setClass("fEGarch_fit_loggarch",
 )
 
 setClass("fEGarch_fit_fiaparch",
-  contains = "fEGarch_fit"
-)
-
-setClass("fEGarch_fit_afiaparch",
-  contains = "fEGarch_fit_fiaparch",
+  contains = "fEGarch_fit",
   slots = c(
     Cz = "numeric"
   ),
   prototype = list(
     Cz = numeric(1)
   )
+)
+
+setClass("fEGarch_fit_afiaparch",
+  contains = "fEGarch_fit_fiaparch"
 )
 
 setClass("fEGarch_fit_afigjrgarch",
@@ -87,11 +87,11 @@ setClass("fEGarch_fit_aparch",
 )
 
 setClass("fEGarch_fit_figjrgarch",
-  contains = "fEGarch_fit"
+  contains = "fEGarch_fit_fiaparch"
 )
 
 setClass("fEGarch_fit_fingarch",
-  contains = "fEGarch_fit"
+  contains = "fEGarch_fit_fiaparch"
 )
 
 setClass("fEGarch_fit_gjrgarch",
@@ -103,7 +103,7 @@ setClass("fEGarch_fit_ngarch",
 )
 
 setClass("fEGarch_fit_fitgarch",
-  contains = "fEGarch_fit"
+  contains = "fEGarch_fit_fiaparch"
 )
 
 setClass("fEGarch_fit_tgarch",
@@ -237,7 +237,8 @@ fEGarch_fit_fiaparch <- function(
     test_obs,
     scale_fun,
     nonpar_model,
-    trunc
+    trunc,
+    Cz
 ) {
 
   new("fEGarch_fit_fiaparch",
@@ -257,7 +258,8 @@ fEGarch_fit_fiaparch <- function(
     test_obs = test_obs,
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
-    trunc = trunc
+    trunc = trunc,
+    Cz = Cz
   )
 
 }
@@ -497,7 +499,8 @@ fEGarch_fit_figjrgarch <- function(
     test_obs,
     scale_fun,
     nonpar_model,
-    trunc
+    trunc,
+    Cz
 ) {
 
   new("fEGarch_fit_figjrgarch",
@@ -517,7 +520,8 @@ fEGarch_fit_figjrgarch <- function(
     test_obs = test_obs,
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
-    trunc = trunc
+    trunc = trunc,
+    Cz = Cz
   )
 
 }
@@ -581,7 +585,8 @@ fEGarch_fit_fingarch <- function(
     test_obs,
     scale_fun,
     nonpar_model,
-    trunc
+    trunc,
+    Cz
 ) {
 
   new("fEGarch_fit_fingarch",
@@ -601,7 +606,8 @@ fEGarch_fit_fingarch <- function(
     test_obs = test_obs,
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
-    trunc = trunc
+    trunc = trunc,
+    Cz = Cz
   )
 
 }
@@ -623,7 +629,8 @@ fEGarch_fit_fitgarch <- function(
     test_obs,
     scale_fun,
     nonpar_model,
-    trunc
+    trunc,
+    Cz
 ) {
 
   new("fEGarch_fit_fitgarch",
@@ -643,7 +650,8 @@ fEGarch_fit_fitgarch <- function(
     test_obs = test_obs,
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
-    trunc = trunc
+    trunc = trunc,
+    Cz = Cz
   )
 
 }

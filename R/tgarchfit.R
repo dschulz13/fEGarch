@@ -336,7 +336,7 @@ goal_fun_creator_tgarch <- function(
 #'@references
 #'\itemize{
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-#'and a new model. Journal of Empirical Finance, 1(1):
+#'and a new model. Journal of Empirical Finance, 1(1),
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
@@ -345,9 +345,9 @@ goal_fun_creator_tgarch <- function(
 #'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
-#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
+#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5),
 #'931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 #'}
 #'

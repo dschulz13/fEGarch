@@ -121,20 +121,20 @@
 #'Journal of Econometrics,
 #'74(1), 3-30. DOI: 10.1016/S0304-4076(95)01749-6.}
 #'\item{Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity.
-#'Journal of Econometrics, 31(3): 307-327. DOI: 10.1016/0304-4076(86)90063-1.}
+#'Journal of Econometrics, 31(3), 307-327. DOI: 10.1016/0304-4076(86)90063-1.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long memory in stock market volatility. Journal of Econometrics,
 #'73(1), 151–184. DOI: 10.1016/0304-4076(95)01749-6.}
 #'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
+#'integrated GARCH model. Journal of Financial Econometrics, 4(3),
 #'413-449. DOI: 10.1093/jjfinec/nbj015.}
 #'\item{Conrad, C., & Karanasos, M. (2006). The impulse response function
-#'of the long memory GARCH process. Economics Letters, 90(1):
+#'of the long memory GARCH process. Economics Letters, 90(1),
 #'34-41. DOI: 10.1016/j.econlet.2005.07.001.}
 #'\item{Ding, Z., Granger, C. W. J., & Engle, R. F. (1993). A long memory property of stock market returns
-#'and a new model. Journal of Empirical Finance, 1(1):
+#'and a new model. Journal of Empirical Finance, 1(1),
 #'83-106. DOI: 10.1016/0927-5398(93)90006-D.}
 #'\item{Engle, R. F. (1982). Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation.
-#'Econometrica, 50(4): 987-1007. DOI: 10.2307/1912773.}
+#'Econometrica, 50(4), 987-1007. DOI: 10.2307/1912773.}
 #'\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with finite \eqn{2\delta}th moment
 #'and long memory in volatility implemented in R. Unpublished manuscript at Paderborn University.}
 #'\item{Feng, Y., Beran, J., Ghosh, S., & Letmathe, S. (2020). Fractionally integrated Log-GARCH with application to value at risk and expected shortfall.
@@ -146,6 +146,8 @@
 #'\item{Feng, Y., Gries, T., & Letmathe, S. (2023). FIEGARCH, modulus asymmetric FILog-GARCH
 #'and trend-stationary dual long memory time series. Working Papers CIE No. 156, Paderborn University.
 #'URL: https://econpapers.repec.org/paper/pdnciepap/156.htm.}
+#'\item{Higgins, M. L., & Bera, A. K. (1992). A Class of Nonlinear ARCH Models.
+#'International Economic Review, 33(1), 137–158. DOI: 10.2307/2526988.}
 #'\item{Peitz, C., Feng, Y., & Siddiqui, S. (2026). Extending the EGARCH Family: Modulus and Long-Memory
 #'Log-Volatility Models. Unpublished working paper at Paderborn University.}
 #'\item{Geweke, J. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
@@ -154,13 +156,13 @@
 #'Volatility of Nominal Excess Return on stocks. Journal of Finance 48(5), 1779-1801.
 #'DOI: 10.1111/j.1540-6261.1993.tb05128.x.}
 #'\item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of
-#'long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
+#'long-memory GARCH processes. Journal of Time Series Analysis, 25(2),
 #'265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 #'in R. Communications in Statistics - Theory and Methods,
 #'53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}
 #'\item{Milhoj, A. (1987). A Multiplicative Parameterization of ARCH Models. University of Copenhagen, Denmark.}
-#'\item{Missiakoulis, S. (1983). Sargan Densities: Which One?. Journal of Econometrics, 23(2): 223-233.
+#'\item{Missiakoulis, S. (1983). Sargan Densities: Which One?. Journal of Econometrics, 23(2), 223-233.
 #'DOI: 10.1016/0304-4076(93)90078-J}
 #'\item{Nelson, D. B. (1991). Conditional Heteroskedasticity in Asset Returns: A New Approach. Econometrica,
 #'59(2), 347–370. DOI: 10.2307/2938260.}
@@ -169,15 +171,15 @@
 #'42(3), 338–354. DOI: 10.1111/jtsa.12570.}
 #'\item{Pantula, S. G. (1986). Modeling the persistence of conditional variances: A comment. Econometric Reviews, 5(1),
 #'71-74. DOI: 10.1080/07474938608800089.}
-#'\item{Tse, Y. K. (1987). A Note On Sargan Densities. Journal of Econometrics, 34(3): 349-354.
+#'\item{Tse, Y. K. (1987). A Note On Sargan Densities. Journal of Econometrics, 34(3), 349-354.
 #'DOI: 10.1016/0304-4076(87)90017-0.}
 #'\item{Schulz, D., Feng, Y., Peitz, C., & Ayensu, O. K. (2026). Estimating, Forecasting and Backtesting a Family of
 #'Exponential and Other GARCH Models Using the fEGarch Package. CIE Working Paper 171, Paderborn University.
 #'URL: https://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP171.pdf.}
 #'\item{Tse, Y. K. (1998). The conditional heteroskedasticity of the
-#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1):
+#'yen-dollar exchange rate. Journal of Applied Econometrics, 13(1),
 #'49-55. DOI: 10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O.}
-#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5):
+#'\item{Zakoian, J.-M. (1994). Threshold heteroskedastic models. Journal of Economic Dynamics and Control, 18(5),
 #'931-955. DOI: 10.1016/0165-1889(94)90039-6.}
 #'}
 #'

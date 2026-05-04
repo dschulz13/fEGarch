@@ -368,19 +368,19 @@ goal_fun_creator_figarch <- function(
 #'Journal of Econometrics,
 #'74(1), 3-30. DOI: 10.1016/S0304-4076(95)01749-6.}
 #'\item{Bollerslev, T., & Mikkelsen, H. O. (1996). Modeling and pricing long
-#'memory in stock market volatility. Journal of Econometrics, 73(1):
+#'memory in stock market volatility. Journal of Econometrics, 73(1),
 #'151-184. DOI: 10.1016/0304-4076(95)01736-4.}
 #'\item{Conrad, C., & Haag, B. R. (2006). Inequality constraints in the fractionally
-#'integrated GARCH model. Journal of Financial Econometrics, 4(3):
+#'integrated GARCH model. Journal of Financial Econometrics, 4(3),
 #'413-449. DOI: 10.1093/jjfinec/nbj015.}
 #'\item{Conrad, C., & Karanasos, M. (2006). The impulse response function
-#'of the long memory GARCH process. Economics Letters, 90(1):
+#'of the long memory GARCH process. Economics Letters, 90(1),
 #'34-41. DOI: 10.1016/j.econlet.2005.07.001.}
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
 #'\item{Karanasos, M., Psaradakis, Z., & Sola, M. (2004). On the autocorrelation properties of
-#'long-memory GARCH processes. Journal of Time Series Analysis, 25(2):
+#'long-memory GARCH processes. Journal of Time Series Analysis, 25(2),
 #'265-281. DOI: 10.1046/j.0143-9782.2003.00349.x.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 #'in R. Communications in Statistics - Theory and Methods,
@@ -466,6 +466,12 @@ setMethod(
     "Fitted parameters:\n"
   )
 
+  part1_2 <- paste0(
+    " \n",
+    "Scaling constant at optimal solution:\n",
+    "Cz: ", sprintf("%.4f", unname(x@Cz))
+  )
+
   part2 <- paste0(
     " \n",
     "Information criteria (parametric part):\n",
@@ -476,6 +482,7 @@ setMethod(
 
   cat(part1, fill = TRUE)
   print(df)
+  cat(part1_2, fill = TRUE)
   cat(part2, fill = TRUE)
   }
 )
