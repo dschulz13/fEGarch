@@ -403,7 +403,8 @@ fiaparch_sim <- function(pars = list(
 
   sim <- fiaparch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,
-    gamma = gamma, delta = delta, n_out = N, mu = mu, Cz = 1)  # Cz = 1 for standard FIAPARCH-type
+    gamma = gamma, delta = delta, n_out = N, mu = mu, Cz = 1,
+    presample_val = 0)  # Cz = 1 for standard FIAPARCH-type
 
   out <- list(
     "rt" = stats::ts(c(sim[["rt"]])),
@@ -1221,7 +1222,6 @@ afiaparch_sim <- function(pars = list(
                            ar = numeric(0),
                            ma = numeric(0),
                            D = 0,
-                           omega = 0.0004,
                            phi = 0.2,
                            beta = 0.4,
                            gamma = 0.1,
@@ -1251,7 +1251,7 @@ afiaparch_sim <- function(pars = list(
 
   # Extract parameter settings
   mu <- pars_default$mu
-  omega <- pars_default$omega
+  omega <- 0 # fixed
   phi <- pars_default$phi
   beta <- -pars_default$beta      # "-" required to create a polynomial with positive signs
   gamma <- pars_default$gamma
@@ -1307,7 +1307,8 @@ afiaparch_sim <- function(pars = list(
 
   sim <- fiaparch_sim_Cpp(
     innov = innov, omega = omega, coef_inf = coef_inf,
-    gamma = gamma, delta = delta, n_out = N, mu = mu, Cz = Cz)
+    gamma = gamma, delta = delta, n_out = N, mu = mu, Cz = Cz,
+    presample_val = 5e-02)
 
   out <- list(
     "rt" = stats::ts(c(sim[["rt"]])),
@@ -1390,7 +1391,6 @@ afitgarch_sim <- function(pars = list(
                            ar = numeric(0),
                            ma = numeric(0),
                            D = 0,
-                           omega = 0.0004,
                            phi = 0.2,
                            beta = 0.4,
                            gamma = 0.1,
@@ -1458,7 +1458,6 @@ afigjrgarch_sim <- function(pars = list(
                            ar = numeric(0),
                            ma = numeric(0),
                            D = 0,
-                           omega = 0.0004,
                            phi = 0.2,
                            beta = 0.4,
                            gamma = 0.1,
@@ -1526,7 +1525,6 @@ afingarch_sim <- function(pars = list(
                            ar = numeric(0),
                            ma = numeric(0),
                            D = 0,
-                           omega = 0.0004,
                            phi = 0.2,
                            beta = 0.4,
                            delta = 2,

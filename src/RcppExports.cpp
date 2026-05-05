@@ -375,8 +375,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // fiaparch_sim_Cpp
-Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega, const arma::vec& coef_inf, const double gamma, const double delta, const int n_out, const double mu, const double Cz);
-RcppExport SEXP _fEGarch_fiaparch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP CzSEXP) {
+Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega, const arma::vec& coef_inf, const double gamma, const double delta, const int n_out, const double mu, const double Cz, const double presample_val);
+RcppExport SEXP _fEGarch_fiaparch_sim_Cpp(SEXP innovSEXP, SEXP omegaSEXP, SEXP coef_infSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP n_outSEXP, SEXP muSEXP, SEXP CzSEXP, SEXP presample_valSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -388,7 +388,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type n_out(n_outSEXP);
     Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const double >::type Cz(CzSEXP);
-    rcpp_result_gen = Rcpp::wrap(fiaparch_sim_Cpp(innov, omega, coef_inf, gamma, delta, n_out, mu, Cz));
+    Rcpp::traits::input_parameter< const double >::type presample_val(presample_valSEXP);
+    rcpp_result_gen = Rcpp::wrap(fiaparch_sim_Cpp(innov, omega, coef_inf, gamma, delta, n_out, mu, Cz, presample_val));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -680,7 +681,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_egarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_longmemo_type_sim, 13},
     {"_fEGarch_egarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_shortmemo_type_sim, 13},
     {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 7},
-    {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 8},
+    {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 9},
     {"_fEGarch_sigt_garch_Cpp", (DL_FUNC) &_fEGarch_sigt_garch_Cpp, 6},
     {"_fEGarch_pdf_ged", (DL_FUNC) &_fEGarch_pdf_ged, 4},
     {"_fEGarch_pdf_ged_v1", (DL_FUNC) &_fEGarch_pdf_ged_v1, 2},

@@ -5,8 +5,8 @@
 \title{Simulate From AFITGARCH Models}
 \usage{
 afitgarch_sim(
-  pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, omega = 4e-04, phi = 0.2,
-    beta = 0.4, gamma = 0.1, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
+  pars = list(mu = 0, ar = numeric(0), ma = numeric(0), D = 0, phi = 0.2, beta = 0.4,
+    gamma = 0.1, d = 0.25, df = 10, shape = 2, P = 3, skew = 1),
   cond_dist = c("norm", "std", "ged", "ald", "snorm", "sstd", "sged", "sald"),
   n = 1000,
   nstart = 5000,

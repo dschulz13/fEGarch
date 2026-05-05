@@ -7,7 +7,8 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
                           const arma::vec& coef_inf,
                           const double gamma, const double delta,
                           const int n_out,
-                          const double mu, const double Cz) {
+                          const double mu, const double Cz,
+                          const double presample_val) {
 
   const int n = innov.size();
 
@@ -17,7 +18,7 @@ Rcpp::List fiaparch_sim_Cpp(const arma::vec& innov, const double omega,
   const arma::vec coef_rev = arma::reverse(coef_inf);
 
   arma::vec rt = arma::zeros<arma::vec>(n);
-  arma::vec eps2_transf = arma::zeros<arma::vec>(n);
+  arma::vec eps2_transf(n, arma::fill::value(presample_val));
 
   const int lc = coef_inf.size();
 
