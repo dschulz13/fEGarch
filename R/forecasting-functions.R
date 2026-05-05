@@ -1323,7 +1323,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       },
       "fEGarch_fit_afingarch" = function(rt, n_test) {
         fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = afingarch)
-      },
+      }
     )[selector][[1]]
 
     # Set up parallel computations
