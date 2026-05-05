@@ -1241,7 +1241,9 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       c("fEGarch_fit_egarch", "fEGarch_fit_loggarch", "fEGarch_fit_aparch",
         "fEGarch_fit_fiaparch", "fEGarch_fit_garch", "fEGarch_fit_figarch",
         "fEGarch_fit_tgarch", "fEGarch_fit_fitgarch", "fEGarch_fit_gjrgarch",
-        "fEGarch_fit_figjrgarch"),
+        "fEGarch_fit_figjrgarch", "fEGarch_fit_ngarch", "fEGarch_fit_fingarch",
+        "fEGarch_fit_afiaparch", "fEGarch_fit_afitgarch",
+        "fEGarch_fit_afigjrgarch", "fEGarch_fit_afingarch"),
       FUN = function(.class, object) {
         inherits(object, what = .class)
       },
@@ -1303,7 +1305,25 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       },
       "fEGarch_fit_figjrgarch" = function(rt, n_test) {
         fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = figjrgarch)
-      }
+      },
+      "fEGarch_fit_ngarch" = function(rt, n_test) {
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = ngarch)
+      },
+      "fEGarch_fit_fingarch" = function(rt, n_test) {
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = fingarch)
+      },
+      "fEGarch_fit_afiaparch" = function(rt, n_test) {
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = afiaparch)
+      },
+      "fEGarch_fit_afitgarch" = function(rt, n_test) {
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = afitgarch)
+      },
+      "fEGarch_fit_afigjrgarch" = function(rt, n_test) {
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = afigjrgarch)
+      },
+      "fEGarch_fit_afingarch" = function(rt, n_test) {
+        fc_fun_other_garch(rt = rt, n_test = n_test, fit_fun = afingarch)
+      },
     )[selector][[1]]
 
     # Set up parallel computations

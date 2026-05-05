@@ -67,19 +67,43 @@ setClass("fEGarch_fit_fiaparch",
 )
 
 setClass("fEGarch_fit_afiaparch",
-  contains = "fEGarch_fit_fiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_afigjrgarch",
-  contains = "fEGarch_fit_afiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_afitgarch",
-  contains = "fEGarch_fit_afiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_afingarch",
-  contains = "fEGarch_fit_afiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_aparch",
@@ -87,11 +111,23 @@ setClass("fEGarch_fit_aparch",
 )
 
 setClass("fEGarch_fit_figjrgarch",
-  contains = "fEGarch_fit_fiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_fingarch",
-  contains = "fEGarch_fit_fiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_gjrgarch",
@@ -103,7 +139,13 @@ setClass("fEGarch_fit_ngarch",
 )
 
 setClass("fEGarch_fit_fitgarch",
-  contains = "fEGarch_fit_fiaparch"
+  contains = "fEGarch_fit",
+  slots = c(
+    Cz = "numeric"
+  ),
+  prototype = list(
+    Cz = numeric(1)
+  )
 )
 
 setClass("fEGarch_fit_tgarch",
