@@ -85,8 +85,8 @@ egarch_shortmemo_type_sim <- function(innov, omega_sig, ar_coef, ma_coef, kappa,
     .Call('_fEGarch_egarch_shortmemo_type_sim', PACKAGE = 'fEGarch', innov, omega_sig, ar_coef, ma_coef, kappa, gamma, n_out, mu, E_mag, E_asy, powers, modulus, mode)
 }
 
-sigt_fiaparch_forecast <- function(rt, coef_inf, omega, gamma, delta, E_const, horizon) {
-    .Call('_fEGarch_sigt_fiaparch_forecast', PACKAGE = 'fEGarch', rt, coef_inf, omega, gamma, delta, E_const, horizon)
+sigt_fiaparch_forecast <- function(rt, coef_inf, omega, gamma, delta, E_const, Cz, horizon) {
+    .Call('_fEGarch_sigt_fiaparch_forecast', PACKAGE = 'fEGarch', rt, coef_inf, omega, gamma, delta, E_const, Cz, horizon)
 }
 
 fiaparch_sim_Cpp <- function(innov, omega, coef_inf, gamma, delta, n_out, mu, Cz, presample_val) {

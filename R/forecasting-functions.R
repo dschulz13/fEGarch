@@ -580,6 +580,7 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_fiaparch",
       gamma = gamma,
       delta = delta,
       E_const = E_const,
+      Cz = 1,   # fixed for FIAPARCH
       horizon = n.ahead))
 
   list(
@@ -656,19 +657,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_afiaparch",
   }
 
   dfun <- fun1_selector(cond_dist)
-  int_fun <- function(x, skew, shape, gamma, delta, dfun) {
-    (abs(x) - gamma * x)^delta * dfun(x, shape = shape, skew = skew)
-  }
-  E_const <- if (n.ahead >= 2) {
-    stats::integrate(
-      int_fun, lower = -Inf, upper = Inf,
-      abs.tol = 1e-6, rel.tol = 1e-6,
-      subdivisions = 1000L, skew = skew, shape = shape,
-      dfun = dfun, gamma = gamma, delta = delta
-    )[[1]]
-  } else {
-    0
-  }
+
+  Cz <- comp_C_zd(shape = shape, skew = skew, gamma = gamma, delta = delta,
+                       dens_fun = dfun)
 
 
   # ARMA / FARIMA point forecasts of cond. mean
@@ -689,7 +680,8 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_afiaparch",
       omega = omega,
       gamma = gamma,
       delta = delta,
-      E_const = E_const,
+      E_const = Cz,
+      Cz = Cz,
       horizon = n.ahead))
 
   list(
@@ -699,6 +691,47 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_afiaparch",
 
   }
 )
+
+# For AFIGJR-GARCH-type
+#@rdname forecasting-model-methods
+methods::setMethod("fEGarch_predict", "fEGarch_fit_afigjrgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 2
+
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_afiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For AFITGARCH-type
+#@rdname forecasting-model-methods
+methods::setMethod("fEGarch_predict", "fEGarch_fit_afitgarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["delta"]] <- 1
+
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_afiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+
+# For AFINGARCH-type
+#@rdname forecasting-model-methods
+methods::setMethod("fEGarch_predict", "fEGarch_fit_afingarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["gamma"]] <- 0   # Fixed for FINGARCH
+
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_afiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
 
 # For GJR-GARCH-type
 #@rdname forecasting-model-methods
@@ -780,6 +813,34 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_figarch",
 
     object@pars[["delta"]] <- 2
     object@pars[["gamma"]] <- 0
+
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For NGARCH-type
+#@rdname forecasting-model-methods
+methods::setMethod("fEGarch_predict", "fEGarch_fit_ngarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    p <- object@orders[[1]]
+    gamma_nam <- paste0("gamma", 1:p)
+    object@pars[gamma_nam] <- 0
+
+    fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_aparch")
+    fun(object, n.ahead = n.ahead, trunc = trunc, ...)
+
+  }
+)
+
+# For FINGARCH-type
+#@rdname forecasting-model-methods
+methods::setMethod("fEGarch_predict", "fEGarch_fit_fingarch",
+  function(object, n.ahead = 10, trunc = NULL, ...) {
+
+    object@pars[["gamma"]] <- 0   # Fixed for FINGARCH
 
     fun <- methods::selectMethod("fEGarch_predict", "fEGarch_fit_fiaparch")
     fun(object, n.ahead = n.ahead, trunc = trunc, ...)

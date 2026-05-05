@@ -10,12 +10,13 @@ arma::vec sigt_fiaparch_forecast(const arma::vec& rt,
                        const double gamma,
                        const double delta,
                        const double E_const,
+                       const double Cz,
                        const int horizon) {
 
   const int n = rt.size();
   arma::vec sig_delta = arma::vec(horizon);
   arma::vec g_fun = arma::zeros<arma::vec>(n + horizon);
-  g_fun.subvec(0, n - 1) = arma::pow(arma::abs(rt) - gamma * rt, delta);
+  g_fun.subvec(0, n - 1) = arma::pow(arma::abs(rt) - gamma * rt, delta) / Cz;
 
   const arma::vec coef_inf_r = arma::reverse(coef_inf);
 
@@ -40,7 +41,7 @@ arma::vec sigt_fiaparch_forecast(const arma::vec& rt,
 
     }
 
-    g_fun(n + i) = sig_delta(i) * E_const;
+    g_fun(n + i) = sig_delta(i) * E_const / Cz;
 
   }
 

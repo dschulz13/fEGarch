@@ -358,8 +358,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // sigt_fiaparch_forecast
-arma::vec sigt_fiaparch_forecast(const arma::vec& rt, const arma::vec& coef_inf, const double omega, const double gamma, const double delta, const double E_const, const int horizon);
-RcppExport SEXP _fEGarch_sigt_fiaparch_forecast(SEXP rtSEXP, SEXP coef_infSEXP, SEXP omegaSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP E_constSEXP, SEXP horizonSEXP) {
+arma::vec sigt_fiaparch_forecast(const arma::vec& rt, const arma::vec& coef_inf, const double omega, const double gamma, const double delta, const double E_const, const double Cz, const int horizon);
+RcppExport SEXP _fEGarch_sigt_fiaparch_forecast(SEXP rtSEXP, SEXP coef_infSEXP, SEXP omegaSEXP, SEXP gammaSEXP, SEXP deltaSEXP, SEXP E_constSEXP, SEXP CzSEXP, SEXP horizonSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -369,8 +369,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const double >::type E_const(E_constSEXP);
+    Rcpp::traits::input_parameter< const double >::type Cz(CzSEXP);
     Rcpp::traits::input_parameter< const int >::type horizon(horizonSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigt_fiaparch_forecast(rt, coef_inf, omega, gamma, delta, E_const, horizon));
+    rcpp_result_gen = Rcpp::wrap(sigt_fiaparch_forecast(rt, coef_inf, omega, gamma, delta, E_const, Cz, horizon));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -680,7 +681,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fEGarch_sigt_egarch_longCpp", (DL_FUNC) &_fEGarch_sigt_egarch_longCpp, 11},
     {"_fEGarch_egarch_longmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_longmemo_type_sim, 13},
     {"_fEGarch_egarch_shortmemo_type_sim", (DL_FUNC) &_fEGarch_egarch_shortmemo_type_sim, 13},
-    {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 7},
+    {"_fEGarch_sigt_fiaparch_forecast", (DL_FUNC) &_fEGarch_sigt_fiaparch_forecast, 8},
     {"_fEGarch_fiaparch_sim_Cpp", (DL_FUNC) &_fEGarch_fiaparch_sim_Cpp, 9},
     {"_fEGarch_sigt_garch_Cpp", (DL_FUNC) &_fEGarch_sigt_garch_Cpp, 6},
     {"_fEGarch_pdf_ged", (DL_FUNC) &_fEGarch_pdf_ged, 4},
