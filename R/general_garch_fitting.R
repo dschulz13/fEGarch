@@ -555,10 +555,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   if (cond_d %in% c("ald", "sald")) {
 
-    pf <- environment()
-
     # Makes "P_sel" and "result" available
-    tryCatch({ald_fit(
+    out <- tryCatch({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -571,13 +569,15 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       ineqLB = ineqLB,
       ineqUB = ineqUB,
       rt_core = rt_core,
-      control = control,
-      pf = pf
+      control = control
     )}, message = function(m1) {
       if (grepl("Czd is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
         message_occurred <<- TRUE
       }
     })
+
+    result <- out$result
+    P_sel <- out$P_sel
 
   } else {
 

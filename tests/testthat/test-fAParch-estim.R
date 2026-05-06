@@ -148,7 +148,7 @@ test_that("fAParch function works as intended", {
   })
 
   expect_no_error({
-   garch_spec(cond_dist = "sald") %>% fAParch(rt, parallel = FALSE, Prange = c(1, 3))
+   suppressWarnings(garch_spec(cond_dist = "sald") %>% fAParch(rt, parallel = FALSE, Prange = c(1, 3)))
   })
 
   expect_no_error({
@@ -174,5 +174,22 @@ test_that("fAParch function works as intended", {
   expect_no_error({
    garch_spec(cond_dist = "norm", orders = c(1, 2)) %>% fAParch(rt)
   })
+
+  expect_equal({length(is(afitgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(afitgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_afitgarch", "fEGarch_fit"))
+
+  expect_equal({length(is(afiaparch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(afiaparch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_afiaparch", "fEGarch_fit"))
+
+  expect_equal({length(is(afigjrgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(afigjrgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_afigjrgarch", "fEGarch_fit"))
+
+  expect_equal({length(is(afingarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(afingarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_afingarch", "fEGarch_fit"))
+
 
 })

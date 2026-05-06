@@ -1227,10 +1227,8 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (cond_d %in% c("ald", "sald")) {
 
-    pf <- environment()
-
     # Makes "P_sel" and "result" available
-    tryCatch({ald_fit(
+    out <- tryCatch({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -1243,13 +1241,15 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ineqLB = ineqLB,
       ineqUB = ineqUB,
       rt_core = rt_core,
-      control = control,
-      pf = pf
+      control = control
     )}, message = function(m1) {
       if (grepl("E_asy or E_mag are NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
         message_occurred <<- TRUE
       }
     })
+
+    result <- out$result
+    P_sel <- out$P_sel
 
   } else {
 
@@ -1852,10 +1852,8 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   if (cond_d %in% c("ald", "sald")) {
 
-    pf <- environment()
-
     # Makes "P_sel" and "result" available
-    tryCatch({ald_fit(
+    out <- tryCatch({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -1868,13 +1866,15 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ineqLB = ineqLB,
       ineqUB = ineqUB,
       rt_core = rt_core,
-      control = control,
-      pf = pf
+      control = control
     )}, message = function(m1) {
       if (grepl("Elneta2 is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
         message_occurred <<- TRUE
       }
     })
+
+    result <- out$result
+    P_sel <- out$P_sel
 
   } else {
 

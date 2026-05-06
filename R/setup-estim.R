@@ -350,7 +350,7 @@ rescale_estim <- function(pars, rt_core_o, sigt, cmeans, scale_const, n_arma_par
 }
 
 ald_fit <- function(Prange, parallel, ncores, dfun1, dfun2, goal_fun_s, start_pars,
-                    LB, UB, ineqfun, ineqLB, ineqUB, rt_core, control, pf) {
+                    LB, UB, ineqfun, ineqLB, ineqUB, rt_core, control) {
 
   P_range <- Prange   # P-values to consider
   oldplan <- future::plan()    # Save old plan settings
@@ -417,8 +417,7 @@ ald_fit <- function(Prange, parallel, ncores, dfun1, dfun2, goal_fun_s, start_pa
       FUN.VALUE = numeric(1)
     )
 
-    assign("P_sel", value = P_seq[[which.min(coll_nllh)]], pos = pf)
-    assign("result", value = fitted_models[[which.min(coll_nllh)]], pos = pf)
+    list(result = fitted_models[[which.min(coll_nllh)]], P_sel = P_seq[[which.min(coll_nllh)]])
 
 }
 
