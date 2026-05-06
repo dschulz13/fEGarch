@@ -576,6 +576,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       }
     })
 
+    print(out)
+
     result <- out$result
     P_sel <- out$P_sel
 
