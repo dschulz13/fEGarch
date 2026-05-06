@@ -72,7 +72,7 @@ fAParch_spec <- function(model_type = c("garch", "gjrgarch", "tgarch", "ngarch",
   mtype <- match.arg(model_type)
   cond_d <- match.arg(cond_dist)
 
-  if (!long_memo || model_type == "garch") adjust <- FALSE
+  if (!long_memo || mtype == "garch") adjust <- FALSE
   if (long_memo && any(orders > 1)) {   # Adjust orders for long-memory models
     orders <- c(1, 1)
     message("Only orders p=1 with q=1 are currently supported for the models with fractional differencing by fAParch_spec.")

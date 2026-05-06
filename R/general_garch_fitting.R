@@ -550,12 +550,15 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   }
 
+  message_occurred <- FALSE
   if (is.null(control$trace)) {control$trace <- FALSE}
 
   if (cond_d %in% c("ald", "sald")) {
 
+    pf <- environment()
+
     # Makes "P_sel" and "result" available
-    ald_fit(
+    tryCatch({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -568,8 +571,13 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       ineqLB = ineqLB,
       ineqUB = ineqUB,
       rt_core = rt_core,
-      control = control
-    )
+      control = control,
+      pf = pf
+    )}, message = function(m1) {
+      if (grepl("Czd is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
+        message_occurred <<- TRUE
+      }
+    })
 
   } else {
 
@@ -584,7 +592,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         goal_fun_s(theta = theta, rt = rt, dfun1 = NULL, dfun2 = dfun2)
       }
     }
-
 
     result <- tryCatch(
       expr = {
@@ -602,6 +609,11 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       },
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      },
+      message = function(m1) {
+        if (grepl("Czd is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
+          message_occurred <<- TRUE
+        }
       }
     )
 
@@ -619,7 +631,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   }
 
-
+  if (message_occurred) {message("Note: Czd is NA or NaN on some iterations.")}
   if (result$convergence %in% c(1, 2)) {
     warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }

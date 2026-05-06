@@ -10,7 +10,10 @@ sigt_afingarch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
               trunc, presample, ...) {
 
-  list2env(list(...), envir = environment())
+  cur_env <- environment()
+  list2env(list(...), envir = cur_env)
+  stopifnot("No object 'dens_fun' passed to conditional standard deviation function." =
+              (exists("dens_fun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- afingarch_grab_pars(
     theta = theta,
@@ -49,6 +52,10 @@ sigt_afingarch_R <- function(theta, x, p, q, p_ar, q_ma,
     delta = delta,
     dens_fun = dens_fun   # !!! Check later that this works out
   )
+
+  if (is.na(Czd) || is.nan(Czd)) {
+    message("Czd is NA or NaN on some iterations.")
+  }
 
   z_sc <- afiaparch_adjust_returns(
     rt = x_dm,

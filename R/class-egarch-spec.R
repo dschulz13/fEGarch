@@ -798,6 +798,9 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
                   dfun = dfun, pow = pows[[2]],
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
+  if (is.na(E_asy) || is.na(E_mag) || is.nan(E_asy) || is.nan(E_mag)) {
+    message("E_asy or E_mag are NA or NaN on some iterations.")
+  }
   list("E_asy" = E_asy, "E_mag" = E_mag)
 }
 
@@ -807,7 +810,10 @@ sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
-  list2env(list(...), envir = environment())
+  cur_env <- environment()
+  list2env(list(...), envir = cur_env)
+  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
+              (exists("dfun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -867,7 +873,11 @@ sigt_egarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
-  list2env(list(...), envir = environment())
+  # Make ellipsis objects available
+  cur_env <- environment()
+  list2env(list(...), envir = cur_env)
+  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
+              (exists("dfun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -1213,10 +1223,14 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   ineqLB <- rep(1e-6, p_all)
   ineqUB <- rep(Inf, p_all)
 
+  message_occurred <- FALSE
+
   if (cond_d %in% c("ald", "sald")) {
 
+    pf <- environment()
+
     # Makes "P_sel" and "result" available
-    ald_fit(
+    tryCatch({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -1229,8 +1243,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ineqLB = ineqLB,
       ineqUB = ineqUB,
       rt_core = rt_core,
-      control = control
-    )
+      control = control,
+      pf = pf
+    )}, message = function(m1) {
+      if (grepl("E_asy or E_mag are NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
+        message_occurred <<- TRUE
+      }
+    })
 
   } else {
 
@@ -1255,11 +1274,17 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ))},
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      },
+      message = function(m1) {
+        if (grepl("E_asy or E_mag are NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
+          message_occurred <<- TRUE
+        }
       }
     )
 
   }
 
+  if (message_occurred) {message("Note: E_asy or E_mag are NA or NaN on some iterations.")}
   if (result$convergence %in% c(1, 2)) {
     warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }
@@ -1455,7 +1480,11 @@ sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
-  list2env(list(...), envir = environment())
+  # Make ellipsis objects available
+  cur_env <- environment()
+  list2env(list(...), envir = cur_env)
+  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
+              (exists("dfun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1477,6 +1506,10 @@ sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
                   dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
+
+  if (is.na(Elneta2) || is.nan(Elneta2)) {
+    message("Elneta2 is NA or NaN on some iterations.")
+  }
 
   omega <- omega_sig * (1 - sum(phi))
   l <- max(p, q)
@@ -1503,7 +1536,11 @@ sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par, trunc, presample, ...) {
 
   # Make ellipsis objects available
-  list2env(list(...), envir = environment())
+  # Make ellipsis objects available
+  cur_env <- environment()
+  list2env(list(...), envir = cur_env)
+  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
+              (exists("dfun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1526,6 +1563,10 @@ sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
                   dfun = dfun,
                   subdivisions = 1000L, abs.tol = 1e-6, rel.tol = 1e-6,
                   stop.on.error = FALSE)[[1]]
+
+  if (is.na(Elneta2) || is.nan(Elneta2)) {
+    message("Elneta2 is NA or NaN on some iterations.")
+  }
 
   n <- length(x)
   coef_inf <- ma_infty(ar = phi, ma = psi, d = d,
@@ -1807,10 +1848,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   ineqLB <- rep(1e-6, p_all)
   ineqUB <- rep(Inf, p_all)
 
+  message_occurred <- FALSE
+
   if (cond_d %in% c("ald", "sald")) {
 
+    pf <- environment()
+
     # Makes "P_sel" and "result" available
-    ald_fit(
+    tryCatch({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -1823,8 +1868,13 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ineqLB = ineqLB,
       ineqUB = ineqUB,
       rt_core = rt_core,
-      control = control
-    )
+      control = control,
+      pf = pf
+    )}, message = function(m1) {
+      if (grepl("Elneta2 is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
+        message_occurred <<- TRUE
+      }
+    })
 
   } else {
 
@@ -1849,11 +1899,17 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ))},
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
+      },
+      message = function(m1) {
+        if (grepl("Elneta2 is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
+          message_occurred <<- TRUE
+        }
       }
     )
 
   }
 
+  if (message_occurred) {message("Note: Elneta2 is NA or NaN on some iterations.")}
   if (result$convergence %in% c(1, 2)) {
     warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }
