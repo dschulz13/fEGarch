@@ -1161,6 +1161,15 @@ methods::setMethod("predict_roll", "fEGarch_fit",
     stopifnot("ncores must be a positive integer" =
                 !is.na(ncores) && is.numeric(ncores) && ncores >= 1)
 
+    # Check that only one fitting class applies
+    stopifnot("object contains too many fitting classes" =
+                sum(c("fEGarch_fit_egarch", "fEGarch_fit_loggarch", "fEGarch_fit_aparch",
+        "fEGarch_fit_fiaparch", "fEGarch_fit_garch", "fEGarch_fit_figarch",
+        "fEGarch_fit_tgarch", "fEGarch_fit_fitgarch", "fEGarch_fit_gjrgarch",
+        "fEGarch_fit_figjrgarch", "fEGarch_fit_ngarch", "fEGarch_fit_fingarch",
+        "fEGarch_fit_afiaparch", "fEGarch_fit_afitgarch",
+        "fEGarch_fit_afigjrgarch", "fEGarch_fit_afingarch") %in% is(object)) == 1)
+
 
     fitting_args[["parallel"]] <- FALSE
     fitting_args[["skip_vcov"]] <- TRUE
@@ -1170,6 +1179,7 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     n_train <- length(train)
     n_test <- length(test)
+    stopifnot("Test set of length zero specified in model fitting." = (n_test > 0))
 
     # Get nonparametric settings
     if (!is.null(object@nonpar_model)) {
@@ -1236,7 +1246,8 @@ methods::setMethod("predict_roll", "fEGarch_fit",
 
     test_sizes <- diff(obs_end)
 
-    # Get selector for corresponding fitting subclass
+    # Get selector for corresponding fitting subclass; the order is important
+    # here and is reused below
     selector <- vapply(
       c("fEGarch_fit_egarch", "fEGarch_fit_loggarch", "fEGarch_fit_aparch",
         "fEGarch_fit_fiaparch", "fEGarch_fit_garch", "fEGarch_fit_figarch",
@@ -1274,7 +1285,8 @@ methods::setMethod("predict_roll", "fEGarch_fit",
       do.call(fit_fun, fitting_args) %>% predict_roll_internal(step_size = step_size, trunc = trunc)
     }
 
-    # Select the proper fitting and forecasting function
+    # Select the proper fitting and forecasting function; the order is important
+    # here and is used above
     fc_fun <- list(
       "fEGarch_fit_egarch" = function(rt, n_test) {
         fc_fun_fegarch(rt = rt, n_test = n_test, mtype = "egarch")

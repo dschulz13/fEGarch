@@ -18,10 +18,7 @@ available are \code{"garch"}, \code{"gjrgarch"}, \code{"tgarch"},
 \code{"ngarch"} and \code{"aparch"}.}
 
 \item{orders}{a two-element numeric vector with the model
-orders; the first element is the order \eqn{p} for the term based on
-\eqn{\ln\left(\sigma_t^2\right)}, i.e. the log-transformed
-conditional variance, while the second element is the order \eqn{q} for
-the innovation-based term (see Details below for more information).}
+orders.}
 
 \item{long_memo}{a logical value that indicates whether the
 long-memory version of the model should be considered or not.}
