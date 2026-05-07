@@ -182,8 +182,9 @@ Consider an adjusted FIGJR-GARCH(\eqn{p, d, q}), an AFIGJR-GARCH(\eqn{p, d, q}) 
 with constant asymmetry term \eqn{\gamma} regardless
 of the lag. The model was introduced by Feng et al. (2026) and is an adjusted version
 of the FIGJR-GARCH by Ayensu et al. (2026) and a special case of the
-AFIAPARCH by Feng et al. (2026).The FIGJR-GARCH is usually not well defined
-overall, and it is usually not weakly stationary (Feng et al., 2026).
+AFIAPARCH by Feng et al. (2026). Models from the original FIAPARCH class are often
+not well defined overall, and they are usually not weakly stationary
+(Feng et al., 2026). Hence, the adjusted FIAPARCH class is recommended.
 
 An AFIGJR-GARCH(\eqn{p, d, q}) is defined as follows. Let \eqn{\left\{r_t\right\}},
 with \eqn{t \in \mathbb{Z}} as the

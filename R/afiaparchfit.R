@@ -310,9 +310,9 @@ goal_fun_creator_afiaparch <- function(
 #'Consider an adjusted FIAPARCH(\eqn{p, d, q}), an AFIAPARCH(\eqn{p, d, q}) for short,
 #'with constant asymmetry term \eqn{\gamma} regardless
 #'of the lag. The model was introduced by Feng et al. (2026) and is an adjusted version
-#'of the FIAPARCH by Tse (1998). The FIAPARCH can in some settings of the asymmetry
-#'parameter \eqn{\gamma} and the power parameter \eqn{\delta} not be well defined overall,
-#'and it can in many instances not be weakly stationary (Feng et al., 2026).
+#'of the FIAPARCH by Tse (1998). Models from the original FIAPARCH class are often
+#'not well defined overall, and they are usually not weakly stationary
+#'(Feng et al., 2026). Hence, the adjusted FIAPARCH class is recommended.
 #'
 #'An AFIAPARCH(\eqn{p, d, q}) is defined as follows. Let \eqn{\left\{r_t\right\}}, with \eqn{t \in \mathbb{Z}} as the
 #'time index, be a theoretical time series that follows

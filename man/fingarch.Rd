@@ -197,7 +197,7 @@ where \eqn{p} is the first element and \eqn{q} is the second element in the
 argument. In addition, we have \eqn{\mu = E\left(r_t\right)} as a
 real-valued parameter, \eqn{\gamma \in (-1,1)} and \eqn{d \in [0,1]} as the
 parameter for the level of integration. With \eqn{d = 0} the model reduces
-to a short-memory TGARCH, for \eqn{d=1} we have a full integration, and for
+to a short-memory NGARCH, for \eqn{d=1} we have a full integration, and for
 \eqn{d\in(0, 1)}, we have fractional integration, where \eqn{d\in(0, 0.5)} is
 considered to describe a long-memory process. \eqn{\omega > 0} is the intercept. It is assumed that
 all \eqn{\beta_j} and \eqn{\phi_i} are non-negative.

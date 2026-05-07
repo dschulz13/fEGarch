@@ -181,10 +181,9 @@ using quasi maximum-likelihood estimation.
 Consider an adjusted FITGARCH(\eqn{p, d, q}), an AFITGARCH(\eqn{p, d, q}) for short,
 with constant asymmetry term \eqn{\gamma} regardless
 of the lag. The model was introduced by Feng et al. (2026) and is an adjusted version
-of the FITGARCH by Ayensu et al. (2026). The FITGARCH can in some settings of
-the asymmetry parameter \eqn{\gamma} not
-be well defined overall, and it can in many instances not be weakly stationary
-(Feng et al., 2026).
+of the FITGARCH by Ayensu et al. (2026). Models from the original FIAPARCH class are often
+not well defined overall, and they are usually not weakly stationary
+(Feng et al., 2026). Hence, the adjusted FIAPARCH class is recommended.
 
 An AFITGARCH(\eqn{p, d, q}) is defined as follows. Let \eqn{\left\{r_t\right\}},
 with \eqn{t \in \mathbb{Z}} as the
