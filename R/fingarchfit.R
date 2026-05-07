@@ -230,7 +230,7 @@ goal_fun_creator_fingarch <- function(
 #'
 #'The pre-sample values of \eqn{\left|\varepsilon_t\right|^{\delta}}
 #'are replaced by the in-sample arithmetic mean of
-#'\deqn{|r_t^{*} - \bar{r}_t^{*}\right|^{\delta_0},}
+#'\deqn{\left|r_t^{*} - \bar{r}_t^{*}\right|^{\delta_0},}
 #'where
 #'\eqn{r_t^{*}} are considered as the observations and \eqn{\bar{r}_t^{*}} is the sample
 #'mean of \eqn{r_t^{*}}. An initial value
