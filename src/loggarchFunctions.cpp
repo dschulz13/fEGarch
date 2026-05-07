@@ -50,7 +50,7 @@ arma::vec sigt_loggarch_long(const arma::vec& x, const double mu,
 
       sigt(i) = std::exp(lnsig2(il) / 2.0);
       eta_i = x_cent(i) / sigt(i);
-      epst(il) = 2.0 * std::log(std::abs(eta_i)) - Elneta2;
+      epst(il) = std::log(std::pow(eta_i, 2.0)) - Elneta2;
 
     }
 
