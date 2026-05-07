@@ -1,6 +1,6 @@
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
-rt_train <- head(as.numeric(rt), -250)
+rt_train <- utils::head(as.numeric(rt), -250)
 .debug_mode_fEGarch <- TRUE
 
 test_that("fAParch rolling forecast works as intended without refitting", {
@@ -233,7 +233,7 @@ test_that("fAParch rolling forecast works as intended without refitting", {
         utils::tail(zoo::coredata(fcast@sigt), 5)
       )
     }, {
-      c(rep(mean(rt_train, 15)), 0.00782, 0.00723, 0.0077, 0.00834, 0.00858, 0.01295, 0.01226,
+      c(rep(mean(rt_train), 15), 0.00782, 0.00723, 0.0077, 0.00834, 0.00858, 0.01295, 0.01226,
         0.01105, 0.01345, 0.01457, 0.01275, 0.01235, 0.01235, 0.01388, 0.01422)
     }, tolerance = 1e-02)
 
@@ -250,7 +250,7 @@ test_that("fAParch rolling forecast works as intended without refitting", {
         utils::tail(zoo::coredata(fcast@sigt), 5)
       )
     }, {
-      c(rep(mean(rt_train, 15)), 0.0079, 0.00733, 0.00774, 0.00814, 0.00825,
+      c(rep(mean(rt_train), 15), 0.0079, 0.00733, 0.00774, 0.00814, 0.00825,
         0.01236, 0.01161, 0.01054, 0.01367, 0.01474, 0.01251, 0.0121, 0.01192,
         0.01354, 0.01385)
 
@@ -419,3 +419,420 @@ test_that("fAParch rolling forecast works as intended without refitting", {
     }, tolerance = 1e-02)
 
 })
+
+
+test_that("fAParch rolling forecast works as intended with refitting", {
+
+    # Parametric models
+
+    expect_equal({
+      est <- suppressWarnings(afitgarch_spec() %>%
+        fAParch(rt, n_test = 250))
+      fcast <- suppressWarnings(predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125))
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00141, -0.00141, -0.00141, -0.00141, -0.00141, -0.00141,
+        -0.00141, -0.00141, -0.00141, -0.00141, -0.00129,
+        -0.00129, -0.00129, -0.00129, -0.00129, 0.00969, 0.00892,
+        0.00938, 0.00995, 0.01012, 0.0148, 0.01381, 0.01231, 0.01552,
+        0.01701, 0.01476, 0.01445, 0.01374, 0.01512, 0.01419)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- suppressWarnings(afiaparch_spec() %>%
+        fAParch(rt, n_test = 250))
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.0012, -0.0012, -0.0012, -0.0012, -0.0012, -0.0012, -0.0012,
+        -0.0012, -0.0012, -0.0012, -0.0013, -0.0013, -0.0013, -0.0013,
+        -0.0013, 0.00967, 0.00904, 0.0093, 0.00948, 0.00946, 0.01316,
+        0.01225, 0.01116, 0.01545, 0.01667, 0.01294, 0.01238, 0.01208,
+        0.01326, 0.01404)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- afigjrgarch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00107, -0.00107, -0.00107, -0.00107, -0.00107, -0.00107,
+        -0.00107, -0.00107, -0.00107, -0.00107, -0.00129, -0.00129,
+        -0.00129, -0.00129, -0.00129, 0.00964, 0.00915, 0.00925,
+        0.00922, 0.00912, 0.01191, 0.01114, 0.01037, 0.01574, 0.01649,
+        0.0124, 0.01192, 0.01159, 0.01278, 0.01341)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- afingarch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00011, -0.00011, -0.00011, -0.00011, -0.00011, -0.00011,
+        -0.00011, -0.00011, -0.00011, -0.00011, -0.00052, -0.00052,
+        -0.00052, -0.00052, -0.00052, 0.00996, 0.00984, 0.00966, 0.0094,
+        0.0092, 0.01126, 0.01072, 0.01026, 0.01416, 0.01424, 0.01376,
+        0.01323, 0.01281, 0.01302, 0.01316)
+    }, tolerance = 1e-02)
+
+
+
+    expect_equal({
+      est <- fitgarch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00126, -0.00126, -0.00126, -0.00126, -0.00126, -0.00126,
+        -0.00126, -0.00126, -0.00126, -0.00126, -0.00123, -0.00123,
+        -0.00123, -0.00123, -0.00123, 0.00981, 0.00907, 0.00955, 0.0101,
+        0.0103, 0.01464, 0.0137, 0.01224, 0.01542, 0.01663, 0.01333,
+        0.01314, 0.01272, 0.01392, 0.01337)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- suppressWarnings(fiaparch_spec() %>%
+        fAParch(rt, n_test = 250))
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00133, -0.00133, -0.00133, -0.00133, -0.00133, -0.00133,
+        -0.00133, -0.00133, -0.00133, -0.00133, -0.00141, -0.00141,
+        -0.00141, -0.00141, -0.00141, 0.00986, 0.00914, 0.00957, 0.01004,
+        0.01018, 0.01445, 0.0135, 0.01211, 0.01546, 0.01675, 0.01356,
+        0.01301, 0.01272, 0.01388, 0.01469)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- figjrgarch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00128, -0.00128, -0.00128, -0.00128, -0.00128, -0.00128,
+        -0.00128, -0.00128, -0.00128, -0.00128, -0.00142, -0.00142,
+        -0.00142, -0.00142, -0.00142, 0.00949, 0.00905, 0.00914, 0.00902,
+        0.00888, 0.01173, 0.01094, 0.01021, 0.01586, 0.01625, 0.01364,
+        0.01324, 0.01294, 0.01407, 0.01454)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- fingarch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00024, -0.00024, -0.00024, -0.00024, -0.00024, -0.00024,
+        -0.00024, -0.00024, -0.00024, -0.00024, -0.00055, -0.00055,
+        -0.00055, -0.00055, -0.00055, 0.01047, 0.0105, 0.01036, 0.00996,
+        0.0096, 0.0124, 0.01158, 0.01076, 0.01281, 0.01318, 0.01408,
+        0.0135, 0.01304, 0.01323, 0.01344)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- figarch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00015, -0.00015, -0.00015, -0.00015, -0.00015, -0.00015,
+        -0.00015, -0.00015, -0.00015, -0.00015, -0.00056, -0.00056,
+        -0.00056, -0.00056, -0.00056, 0.01024, 0.01018, 0.00998, 0.00963,
+        0.00933, 0.01184, 0.01114, 0.0105, 0.01338, 0.0139, 0.01408,
+        0.01344, 0.01293, 0.01308, 0.01336)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- garch_spec() %>%
+        fAParch(rt, n_test = 250)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00023, -0.00023, -0.00023, -0.00023, -0.00023, -0.00023, -0.00023,
+        -0.00023, -0.00023, -0.00023, -0.00061, -0.00061, -0.00061, -0.00061,
+        -0.00061, 0.01037, 0.01026, 0.01016, 0.0099, 0.00975, 0.01198, 0.01141,
+        0.01093, 0.01362, 0.01279, 0.01236, 0.01189, 0.0114, 0.01198, 0.01157)
+    }, tolerance = 1e-02)
+
+
+    ########
+
+
+    # Semiparametric models
+
+    expect_equal({
+      est <- afitgarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00044, -0.00084, -0.00084,
+        -0.00084, -0.00084, -0.00084, 0.00782, 0.00723, 0.0077, 0.00834,
+        0.00858, 0.01295, 0.01226, 0.01105, 0.01345, 0.01457, 0.01338,
+        0.01295, 0.01294, 0.01392, 0.01449)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- suppressWarnings(afiaparch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE))
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00044, -0.00084, -0.00084,
+        -0.00084, -0.00084, -0.00084, 0.0079, 0.00733, 0.00774, 0.00814,
+        0.00825, 0.01236, 0.01161, 0.01054, 0.01367, 0.01474, 0.01341,
+        0.01298, 0.013, 0.01398, 0.01455)
+
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- afigjrgarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00084, -0.00084, -0.00084, -0.00084,
+        -0.00084, 0.00798, 0.00751, 0.00774, 0.00777, 0.00771, 0.01109, 0.01037,
+        0.00965, 0.0146, 0.01509, 0.01263, 0.01228, 0.01204, 0.013, 0.01345)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- afingarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00084, -0.00084, -0.00084, -0.00084,
+        -0.00084, 0.00872, 0.00874, 0.00862, 0.00844, 0.00829, 0.01052,
+        0.01017, 0.00986, 0.01131, 0.01177, 0.01372, 0.01332, 0.01304, 0.01294,
+        0.01322)
+    }, tolerance = 1e-02)
+
+
+
+    expect_equal({
+      est <- fitgarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00084, -0.00084, -0.00084, -0.00084,
+        -0.00084, 0.00776, 0.00715, 0.00763, 0.00826, 0.00852, 0.0127,
+        0.01201, 0.01078, 0.01319, 0.01428, 0.01304, 0.01259, 0.01257,
+        0.01355, 0.01414)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- suppressWarnings(fiaparch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE))
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00044, -0.00084, -0.00084,
+        -0.00084, -0.00084, -0.00084, 0.00758, 0.00695, 0.0075, 0.00843,
+        0.0089, 0.0131, 0.01259, 0.01122, 0.01285, 0.01379, 0.01313,
+        0.01268, 0.01263, 0.01361, 0.01421)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- figjrgarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00044, -0.00084, -0.00084,
+        -0.00084, -0.00084, -0.00084, 0.008, 0.00761, 0.00781, 0.00779,
+        0.00772, 0.01127, 0.0106, 0.00995, 0.01458, 0.0149, 0.01354,
+        0.01326, 0.01304, 0.01393, 0.01422)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- fingarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00084, -0.00084, -0.00084, -0.00084,
+        -0.00084, 0.00894, 0.00909, 0.00897, 0.00871, 0.00839, 0.01105,
+        0.01047, 0.00984, 0.01061, 0.01158, 0.01356, 0.01325, 0.01303,
+        0.01298, 0.01316)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- figarch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00084, -0.00084, -0.00084, -0.00084,
+        -0.00084, 0.0088, 0.00883, 0.0087, 0.00851, 0.00834, 0.01062, 0.01023,
+        0.00989, 0.01121, 0.01175, 0.0137, 0.01333, 0.01305, 0.01297,
+        0.01322)
+    }, tolerance = 1e-02)
+
+    expect_equal({
+      est <- garch_spec() %>%
+        fAParch(rt, n_test = 250, use_nonpar = TRUE)
+      fcast <- predict_roll(est, parallel = FALSE, steady_window = TRUE, refit_after = 125)
+      c(
+        utils::head(zoo::coredata(fcast@cmeans), 5),
+        zoo::coredata(fcast@cmeans)[101:105],
+        utils::tail(zoo::coredata(fcast@cmeans), 5),
+        utils::head(zoo::coredata(fcast@sigt), 5),
+        zoo::coredata(fcast@sigt)[101:105],
+        utils::tail(zoo::coredata(fcast@sigt), 5)
+      )
+    }, {
+      c(-0.00044, -0.00044, -0.00044, -0.00044, -0.00044, -0.00044,
+        -0.00044, -0.00044, -0.00044, -0.00044, -0.00084, -0.00084,
+        -0.00084, -0.00084, -0.00084, 0.0086, 0.00854, 0.00846, 0.00828,
+        0.00817, 0.00958, 0.00917, 0.00884, 0.01092, 0.01027, 0.01146,
+        0.01114, 0.01084, 0.01126, 0.01101)
+    }, tolerance = 1e-02)
+
+})
+
