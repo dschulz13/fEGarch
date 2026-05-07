@@ -1228,7 +1228,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   if (cond_d %in% c("ald", "sald")) {
 
     # Makes "P_sel" and "result" available
-    out <- tryCatch({ald_fit(
+    out <- withCallingHandlers({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -1245,6 +1245,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
     )}, message = function(m1) {
       if (grepl("E_asy or E_mag are NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
         message_occurred <<- TRUE
+        invokeRestart("muffleMessage")
       }
     })
 
@@ -1260,7 +1261,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- tryCatch(
+    result <- withCallingHandlers({tryCatch(
       expr = {suppressWarnings(Rsolnp::solnp(
         pars = start_pars,
         fun = goal_fun,
@@ -1274,17 +1275,19 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       ))},
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-      },
+      })},
       message = function(m1) {
         if (grepl("E_asy or E_mag are NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
           message_occurred <<- TRUE
+          invokeRestart("muffleMessage")
         }
-      }
-    )
+      })
 
   }
 
-  if (message_occurred) {message("Note: E_asy or E_mag are NA or NaN on some iterations.")}
+  pf <- parent.frame()
+  if (!exists(x = ".debug_mode_fEGarch", envir = pf, inherits = TRUE)) {.debug_mode_fEGarch <- FALSE}
+  if (.debug_mode_fEGarch && message_occurred) {warning("Note: E_asy or E_mag are NA or NaN on some iterations.")}
   if (result$convergence %in% c(1, 2)) {
     warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }
@@ -1853,7 +1856,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   if (cond_d %in% c("ald", "sald")) {
 
     # Makes "P_sel" and "result" available
-    out <- tryCatch({ald_fit(
+    out <- withCallingHandlers({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -1870,6 +1873,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
     )}, message = function(m1) {
       if (grepl("Elneta2 is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
         message_occurred <<- TRUE
+        invokeRestart("muffleMessage")
       }
     })
 
@@ -1885,7 +1889,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       goal_fun_s(theta = theta, rt = rt, dfun1 = dfun1, dfun2 = dfun2)
     }
 
-    result <- tryCatch(
+    result <- withCallingHandlers({tryCatch(
       expr = {suppressWarnings(Rsolnp::solnp(
         pars = start_pars,
         fun = goal_fun,
@@ -1899,17 +1903,19 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       ))},
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-      },
+      })},
       message = function(m1) {
         if (grepl("Elneta2 is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
           message_occurred <<- TRUE
+          invokeRestart("muffleMessage")
         }
-      }
-    )
+      })
 
   }
 
-  if (message_occurred) {message("Note: Elneta2 is NA or NaN on some iterations.")}
+  pf <- parent.frame()
+  if (!exists(x = ".debug_mode_fEGarch", envir = pf, inherits = TRUE)) {.debug_mode_fEGarch <- FALSE}
+  if (.debug_mode_fEGarch && message_occurred) {warning("Note: Elneta2 is NA or NaN on some iterations.")}
   if (result$convergence %in% c(1, 2)) {
     warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }

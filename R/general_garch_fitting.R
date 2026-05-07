@@ -556,7 +556,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   if (cond_d %in% c("ald", "sald")) {
 
     # Makes "P_sel" and "result" available
-    out <- tryCatch({ald_fit(
+    out <- withCallingHandlers({ald_fit(
       Prange = Prange,
       parallel = parallel,
       ncores = ncores,
@@ -573,10 +573,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     )}, message = function(m1) {
       if (grepl("Czd is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
         message_occurred <<- TRUE
+        invokeRestart("muffleMessage")
       }
     })
-
-    print(out)
 
     result <- out$result
     P_sel <- out$P_sel
@@ -595,7 +594,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       }
     }
 
-    result <- tryCatch(
+    result <- withCallingHandlers({tryCatch(
       expr = {
         suppressWarnings(Rsolnp::solnp(
           pars = start_pars,
@@ -611,13 +610,13 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       },
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
-      },
+      })},
       message = function(m1) {
         if (grepl("Czd is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
           message_occurred <<- TRUE
+          invokeRestart("muffleMessage")
         }
-      }
-    )
+      })
 
     # result <- Rsolnp::solnp(
     #       pars = start_pars,
@@ -633,7 +632,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   }
 
-  if (message_occurred) {message("Note: Czd is NA or NaN on some iterations.")}
+  pf <- parent.frame()
+  if (!exists(x = ".debug_mode_fEGarch", envir = pf, inherits = TRUE)) {.debug_mode_fEGarch <- FALSE}
+  if (.debug_mode_fEGarch && message_occurred) {warning("Note: Czd is NA or NaN on some iterations.")}
   if (result$convergence %in% c(1, 2)) {
     warning("Convergence failed. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
   }

@@ -1,5 +1,6 @@
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
+.debug_mode_fEGarch <- TRUE
 
 test_that("fAParch_spec functions work as intended", {
   expect_no_error({
@@ -190,6 +191,51 @@ test_that("fAParch function works as intended", {
   expect_equal({length(is(afingarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
 
   expect_equal({is(afingarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_afingarch", "fEGarch_fit"))
+
+
+  expect_equal({length(is(fitgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(fitgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_fitgarch", "fEGarch_fit"))
+
+  expect_equal({length(is(suppressWarnings(fiaparch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))))}, 2)
+
+  expect_equal({is(suppressWarnings(fiaparch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, c("fEGarch_fit_fiaparch", "fEGarch_fit"))
+
+  expect_equal({length(is(figjrgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(figjrgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_figjrgarch", "fEGarch_fit"))
+
+  expect_equal({length(is(fingarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(fingarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_fingarch", "fEGarch_fit"))
+
+
+
+  expect_equal({length(is(tgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(tgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_tgarch", "fEGarch_fit"))
+
+  expect_equal({length(is(aparch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(aparch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_aparch", "fEGarch_fit"))
+
+  expect_equal({length(is(gjrgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(gjrgarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_gjrgarch", "fEGarch_fit"))
+
+  expect_equal({length(is(ngarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(ngarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_ngarch", "fEGarch_fit"))
+
+
+  expect_equal({length(is(garch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(garch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_garch", "fEGarch_fit"))
+
+  expect_equal({length(is(figarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt)))}, 2)
+
+  expect_equal({is(figarch_spec(cond_dist = "norm", orders = c(1, 1)) %>% fAParch(rt))}, c("fEGarch_fit_figarch", "fEGarch_fit"))
+
 
 
 })

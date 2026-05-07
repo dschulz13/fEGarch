@@ -1,5 +1,6 @@
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
+.debug_mode_fEGarch <- TRUE
 
 test_that("fEGarch rolling forecast works as intended without refitting", {
 

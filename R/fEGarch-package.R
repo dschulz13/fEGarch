@@ -273,3 +273,6 @@ utils::globalVariables(c(
   "dens_fun"
 ))
 
+utils::globalVariables(c(
+  ".debug_mode_fEGarch"
+))

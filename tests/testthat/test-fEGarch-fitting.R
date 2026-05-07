@@ -1,6 +1,7 @@
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
 rt <- window.zoo(SP500, end = "2002-12-31")
 spec <- egarch_spec()
+.debug_mode_fEGarch <- TRUE
 
 test_that("fEGarch function works as intended", {
   expect_no_error({
@@ -98,5 +99,11 @@ test_that("fEGarch function works as intended", {
   expect_no_error({
    fEGarch(egarch_spec(cond_dist = "sged"), rt)
   })
+
+  expect_equal({is(loggarch_spec() %>% fEGarch(rt))}, c("fEGarch_fit_loggarch", "fEGarch_fit"))
+  expect_equal({is(filoggarch_spec() %>% fEGarch(rt))}, c("fEGarch_fit_loggarch", "fEGarch_fit"))
+  expect_equal({is(egarch_spec() %>% fEGarch(rt))}, c("fEGarch_fit_egarch", "fEGarch_fit"))
+  expect_equal({is(fiegarch_spec() %>% fEGarch(rt))}, c("fEGarch_fit_egarch", "fEGarch_fit"))
+
 
 })
