@@ -656,10 +656,9 @@ methods::setMethod("fEGarch_predict", "fEGarch_fit_afiaparch",
     numeric(0)
   }
 
-  dfun <- fun1_selector(cond_dist)
+  #dfun <- fun1_selector(cond_dist)
 
-  Cz <- comp_C_zd(shape = shape, skew = skew, gamma = gamma, delta = delta,
-                       dens_fun = dfun)
+  Cz <- object@Cz
 
 
   # ARMA / FARIMA point forecasts of cond. mean
