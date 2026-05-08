@@ -844,6 +844,23 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   }
 
   list_out <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch", "fingarch", "afiaparch", "afitgarch", "afigjrgarch", "afingarch")) {
+
+    max_c_len <- if (is.null(trunc) || trunc == "none") {
+      presample + length(train_obs) - 1
+    } else {
+      min(trunc, presample + length(train_obs) - 1)
+    }
+    d_coef <- unname(pars[["d"]])
+    phi_coef <- unname(pars[["phi1"]])
+    beta_coef <- -unname(pars[["beta1"]])
+    coef_inf <- ar_infty(ar = phi_coef, ma = beta_coef, d = d_coef, max_i = max_c_len)[-1]
+    C_em <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch", "fingarch")) {
+      final_Cz * sum(coef_inf)
+    } else {
+      sum(coef_inf)
+    }
+
+
     construct_fun(
       pars = pars,
       se = serrors,
@@ -862,7 +879,8 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       test_obs = test_obs,
       nonpar_model = NULL,
       trunc = trunc_i,
-      Cz = final_Cz
+      Cz = final_Cz,
+      Cem = C_em
     )
   } else {
     construct_fun(

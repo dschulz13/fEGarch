@@ -445,8 +445,14 @@ goal_fun_creator_afigjrgarch <- function(
 #'\item{\code{nonpar_model}:}{the estimation object returned by \code{\link[esemifar]{tsmoothlm}} for
 #'\code{use_nonpar = TRUE}.}
 #'\item{\code{trunc}:}{the input argument \code{trunc}.}
-#'\item{\code{C_z}:}{the obtained constant \eqn{C_z} for the estimated model; helpful in
-#'analyzing further properties of the fitted model.}
+#'\item{\code{Cz}:}{the obtained constant \eqn{C_z} for the estimated model; helpful in
+#'analyzing further properties of the theoretical process implied by the fitted model.}
+#'\item{\code{Cem}:}{a further constant \eqn{C_{\text{em}}}, which is the same as
+#'\eqn{C_z \times C_z^{-1} \times \sum_{i=1}^{K}\lambda_i}, where \eqn{K} is the
+#'maximum filter length used in the estimation procedure and where \eqn{\lambda_i} are
+#'the coefficients of \eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]};
+#'\eqn{K} is affected by the input argument \code{trunc}; a model is
+#'well-defined numerically, if and only if \eqn{C_{\text{em}}<1}.}
 #'}
 #'
 #'@examples
@@ -570,6 +576,12 @@ setMethod(
     "Cz: ", sprintf("%.4f", unname(x@Cz))
   )
 
+  part1_3 <- paste0(
+    " \n",
+    "Numerical stability at optimal solution:\n",
+    "Cem: ", sprintf("%.4f", unname(x@Cem))
+  )
+
   part2 <- paste0(
     " \n",
     "Information criteria (parametric part):\n",
@@ -581,6 +593,7 @@ setMethod(
   cat(part1, fill = TRUE)
   print(df)
   cat(part1_2, fill = TRUE)
+  cat(part1_3, fill = TRUE)
   cat(part2, fill = TRUE)
   }
 )

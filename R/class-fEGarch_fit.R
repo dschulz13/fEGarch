@@ -59,50 +59,60 @@ setClass("fEGarch_fit_loggarch",
 setClass("fEGarch_fit_fiaparch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
 setClass("fEGarch_fit_afiaparch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
 setClass("fEGarch_fit_afigjrgarch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
 setClass("fEGarch_fit_afitgarch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
 setClass("fEGarch_fit_afingarch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
@@ -113,20 +123,24 @@ setClass("fEGarch_fit_aparch",
 setClass("fEGarch_fit_figjrgarch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
 setClass("fEGarch_fit_fingarch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
@@ -141,10 +155,12 @@ setClass("fEGarch_fit_ngarch",
 setClass("fEGarch_fit_fitgarch",
   contains = "fEGarch_fit",
   slots = c(
-    Cz = "numeric"
+    Cz = "numeric",
+    Cem = "numeric"
   ),
   prototype = list(
-    Cz = numeric(1)
+    Cz = numeric(1),
+    Cem = numeric(1)
   )
 )
 
@@ -280,7 +296,8 @@ fEGarch_fit_fiaparch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_fiaparch",
@@ -301,7 +318,8 @@ fEGarch_fit_fiaparch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -324,7 +342,8 @@ fEGarch_fit_afiaparch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_afiaparch",
@@ -345,7 +364,8 @@ fEGarch_fit_afiaparch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -368,7 +388,8 @@ fEGarch_fit_afigjrgarch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_afigjrgarch",
@@ -389,7 +410,8 @@ fEGarch_fit_afigjrgarch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -412,7 +434,8 @@ fEGarch_fit_afingarch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_afingarch",
@@ -433,7 +456,8 @@ fEGarch_fit_afingarch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -456,7 +480,8 @@ fEGarch_fit_afitgarch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_afitgarch",
@@ -477,7 +502,8 @@ fEGarch_fit_afitgarch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -542,7 +568,8 @@ fEGarch_fit_figjrgarch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_figjrgarch",
@@ -563,7 +590,8 @@ fEGarch_fit_figjrgarch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -628,7 +656,8 @@ fEGarch_fit_fingarch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_fingarch",
@@ -649,7 +678,8 @@ fEGarch_fit_fingarch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
@@ -672,7 +702,8 @@ fEGarch_fit_fitgarch <- function(
     scale_fun,
     nonpar_model,
     trunc,
-    Cz
+    Cz,
+    Cem
 ) {
 
   new("fEGarch_fit_fitgarch",
@@ -693,7 +724,8 @@ fEGarch_fit_fitgarch <- function(
     scale_fun = scale_fun,
     nonpar_model = nonpar_model,
     trunc = trunc,
-    Cz = Cz
+    Cz = Cz,
+    Cem = Cem
   )
 
 }
