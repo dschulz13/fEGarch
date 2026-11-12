@@ -1022,16 +1022,10 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # entire log-likelihood by a constant and therefore does not affect
   # the shape of the log-likelihood.
 
-  # Makes available
-  # - rt_core_o: pure original obs. of the training set,
-  # - rt_core: pure rescaled obs.,
-  # - scale_const: the scaling constant used,
-  # - test_obs: the test obs. with keeping initial formatting,
-  # - train_obs: the train obs. with keeping initial formatting
-  initial_split(rt, n_test)
+  split_data <- initial_split(rt, n_test)
 
 
-  n <- length(rt_core)
+  n <- length(split_data$rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
 
@@ -1046,11 +1040,11 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
   # environment
-  identify_arma_settings(meanspec = meanspec, Drange = Drange)
+  arma_sets <- identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
-  if ((lm || lm_arma) && is.character(trunc) && trunc == "none") {
+  if ((lm || arma_sets$lm_arma) && is.character(trunc) && trunc == "none") {
     trunc <- n + presample - 1
-  } else if ((lm || lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
+  } else if ((lm || arma_sets$lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
     trunc <- n + presample - 1
     message("trunc reduced to n + ", presample, " - 1")
   }
@@ -1069,10 +1063,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Adjust (if ARMA relevant)
   model_type <- c("egarch", "fiegarch")[[lm + 1]]
   sigt_fun_adj <- adj_sigt_fun(
-    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
-    lm_arma = lm_arma, incl_mean = incl_mean,
-    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
-    arma_fun = cmean_fun,
+    p_ar = arma_sets$p_ar, q_ma = arma_sets$q_ma,
+    pg0 = arma_sets$pg0, qg0 = arma_sets$qg0,
+    lm_arma = arma_sets$lm_arma,
+    incl_mean = arma_sets$incl_mean,
+    n_arma_pars = arma_sets$n_arma_pars,
+    grab_fun = arma_sets$arma_grab_fun,
+    arma_fun = arma_sets$cmean_fun,
     model_type = model_type
   )
 
@@ -1099,23 +1096,24 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   mode <- mode_mat[pow_asy_check, pow_mag_check]
 
   # Initialize ln(sig_t^2) with some reasonable, fixed value
-  mean_req_1 <- (!lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
-  mean_req_2 <- lm_arma
+  mean_req_1 <- (!arma_sets$lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
+  mean_req_2 <- arma_sets$lm_arma
   mean_res <- if (!lm && mean_req_1) {   # run an initial ARMA to get better pre-sample values for the volatility step
-    init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    init_arma <- suppressWarnings(stats::arima(split_data$rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     init_arma$residuals
   } else if (!lm && mean_req_2) {
     init_farima <- tryCatch({
-      suppressWarnings(prelim_farima(x = rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
+      suppressWarnings(prelim_farima(x = split_data$rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
     },
     error = {
-      suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+      suppressWarnings(stats::arima(split_data$rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     })
     init_farima$residuals
   } else {
-    rt_core
+    split_data$rt_core
   }
   lnsig2_init <- log(var(mean_res))
+
 
   # Create the goal function to optimize over
   # (this is intermediate goal function, as dfun1 and dfun2
@@ -1129,9 +1127,9 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       dfun2 = dfun2,
       p = p,
       q = q,
-      p_ar = p_ar,
-      q_ma = q_ma,
-      incl_mean = incl_mean,
+      p_ar = arma_sets$p_ar,
+      q_ma = arma_sets$q_ma,
+      incl_mean = arma_sets$incl_mean,
       extra_par = extra_par,
       skew_par = skew_par,
       int_fun_asy = int_fun_asy,
@@ -1153,62 +1151,60 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # Make further starting parameter values and restrictions available
   # using internally saved table function
   pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
-  list2env(pars_and_restr, envir = environment())
-  suppressWarnings(rm("pars_and_restr", envir = environment()))
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
-    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
-    min_rt <- list(NULL, suppressWarnings(0.2 * min(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
-    max_rt <- list(NULL, suppressWarnings(0.2 * max(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
+    mean_rt <- list(NULL, mean(split_data$rt_core))[[arma_sets$incl_mean + 1]]
+    min_rt <- list(NULL, suppressWarnings(0.2 * min(split_data$rt_core - mean_rt) + mean_rt))[[arma_sets$incl_mean + 1]]
+    max_rt <- list(NULL, suppressWarnings(0.2 * max(split_data$rt_core - mean_rt) + mean_rt))[[arma_sets$incl_mean + 1]]
     skew_start <- list(NULL, 0.98)[[skew_par + 1]]
     skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
     skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
     start_LB_UB <- set_start_LB_UB(
       mean_val = mean_rt,
-      ar_start = ar_start,
-      ma_start = ma_start,
-      D_start = D_start,
-      omega_val = omega_start,
-      phi_start = phi_start,
-      psi_start = psi_start,
-      add_pars_start = add_pars_start,
-      d_start = d_spar,
-      sval = sval,
+      ar_start = arma_sets$ar_start,
+      ma_start = arma_sets$ma_start,
+      D_start = arma_sets$D_start,
+      omega_val = pars_and_restr$omega_start,
+      phi_start = pars_and_restr$phi_start,
+      psi_start = pars_and_restr$psi_start,
+      add_pars_start = pars_and_restr$add_pars_start,
+      d_start = pars_and_restr$d_spar,
+      sval = cond_d_vals$sval,
       skew_start = skew_start,
       mean_low = min_rt,
-      ar_low = ar_lb,
-      ma_low = ma_lb,
-      D_low = D_low,
-      omega_low = omega_low,
-      phi_low = phi_low,
-      psi_low = psi_low,
-      add_low = add_low,
-      d_low = d_low,
-      lval = lval, skew_low = skew_low,
+      ar_low = arma_sets$ar_lb,
+      ma_low = arma_sets$ma_lb,
+      D_low = arma_sets$D_low,
+      omega_low = pars_and_restr$omega_low,
+      phi_low = pars_and_restr$phi_low,
+      psi_low = pars_and_restr$psi_low,
+      add_low = pars_and_restr$add_low,
+      d_low = pars_and_restr$d_low,
+      lval = cond_d_vals$lval, skew_low = skew_low,
       mean_up = max_rt,
-      ar_up = ar_ub, ma_up = ma_ub,
-      D_up = D_up,
-      omega_up = omega_up,
-      phi_up = phi_up, psi_up = psi_up,
-      add_up = add_up,
-      d_up = d_up,
-      uval = uval, skew_up = skew_up,
+      ar_up = arma_sets$ar_ub, ma_up = arma_sets$ma_ub,
+      D_up = arma_sets$D_up,
+      omega_up = pars_and_restr$omega_up,
+      phi_up = pars_and_restr$phi_up, psi_up = pars_and_restr$psi_up,
+      add_up = pars_and_restr$add_up,
+      d_up = pars_and_restr$d_up,
+      uval = cond_d_vals$uval, skew_up = skew_up,
       start_pars = start_pars, LB = LB, UB = UB
     )
 
 
   }
 
-  low_phi <- 2 + n_arma_pars
-  up_phi <- 1 + n_arma_pars + p
+  low_phi <- 2 + arma_sets$n_arma_pars
+  up_phi <- 1 + arma_sets$n_arma_pars + p
 
   # For stationarity, restrict phi / AR values
   constr_fun <- function(theta, rt) {
     phi <- c(1, -theta[low_phi:up_phi])
     c1 <- abs(polyroot(phi)) - 1
-    if (pg0) {
-      ar <- c(1, -theta[low_ar:up_ar])
+    if (arma_sets$pg0) {
+      ar <- c(1, -theta[arma_sets$ar_pos_low:arma_sets$ar_pos_up])
       c2 <- abs(polyroot(ar)) - 1
     } else {
       c2 <- numeric(0)
@@ -1218,7 +1214,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   if (is.null(control$trace)) {control$trace <- FALSE}
 
-  p_all <- p + p_ar
+  p_all <- p + arma_sets$p_ar
 
   ineqLB <- rep(1e-6, p_all)
   ineqUB <- rep(Inf, p_all)
@@ -1235,12 +1231,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
       dfun1 = dfun1,
       dfun2 = dfun2,
       goal_fun_s = goal_fun_s,
-      start_pars = start_pars,
-      LB = LB, UB = UB,
+      start_pars = start_LB_UB$start_pars,
+      LB = start_LB_UB$LB, UB = start_LB_UB$UB,
       ineqfun = constr_fun,
       ineqLB = ineqLB,
       ineqUB = ineqUB,
-      rt_core = rt_core,
+      rt_core = split_data$rt_core,
       control = control
     )}, message = function(m1) {
       if (grepl("E_asy or E_mag are NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
@@ -1263,15 +1259,15 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
     result <- withCallingHandlers({tryCatch(
       expr = {suppressWarnings(Rsolnp::solnp(
-        pars = start_pars,
+        pars = start_LB_UB$start_pars,
         fun = goal_fun,
-        LB = LB,
-        UB = UB,
+        LB = start_LB_UB$LB,
+        UB = start_LB_UB$UB,
         ineqfun = constr_fun,
         ineqLB = ineqLB,    # abs. values of roots must be outside of unit circle
         ineqUB = ineqUB,
         control = control,
-        rt = rt_core
+        rt = split_data$rt_core
       ))},
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
@@ -1298,7 +1294,7 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
   # log-likelihood at the optimum for the scaled data, which is too large by
   # "n * log(scale_const)" in comparison to original data
-  llhood <- -tail(result$values, 1) - n * log(scale_const)
+  llhood <- -tail(result$values, 1) - n * log(split_data$scale_const)
 
 
   psi_names <- if (q > 1) {paste0("psi", 1:(q - 1))} else {NULL}
@@ -1315,16 +1311,16 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   )
 
   par_names <- c(
-    list(NULL, "mu")[[incl_mean + 1]],
-    names_ar,
-    names_ma,
-    D_par_name,
+    list(NULL, "mu")[[arma_sets$incl_mean + 1]],
+    arma_sets$names_ar,
+    arma_sets$names_ma,
+    arma_sets$D_par_name,
     "omega_sig",
     paste0("phi", 1:p),
     psi_names,
     "kappa",
     "gamma",
-    d_name,
+    pars_and_restr$d_name,
     extra_par_name,
     list(NULL, "skew")[[skew_par + 1]]
   )
@@ -1361,13 +1357,13 @@ setMethod("fEGarch_fit", "egarch_type_spec",
 
   final_series <- sigt_fun_adj(
     theta = unname(pars),
-    x = rt_core,
+    x = split_data$rt_core,
     dfun = fdfun1,
     p = p,
     q = q,
-    p_ar = p_ar,
-    q_ma = q_ma,
-    incl_mean = incl_mean,
+    p_ar = arma_sets$p_ar,
+    q_ma = arma_sets$q_ma,
+    incl_mean = arma_sets$incl_mean,
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
@@ -1381,12 +1377,12 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   )
 
   # Also updates "pars", if ald or sald
-  compute_vcov(
+  vcov_output <- compute_vcov(
     goal_fun = goal_fun,
     pars = pars,
-    rt_core = rt_core,
-    scale_const = scale_const,
-    incl_mean = incl_mean,
+    rt_core = split_data$rt_core,
+    scale_const = split_data$scale_const,
+    incl_mean = arma_sets$incl_mean,
     P_sel = P_sel,
     cond_d = cond_d,
     par_names = par_names,
@@ -1395,30 +1391,34 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   )
 
   # Create rescaled final parameters and results
-  rescale_estim(
-    pars = pars,
-    rt_core_o = rt_core_o,
+  rescale_output <- rescale_estim(
+    pars = vcov_output$pars,
+    rt_core_o = split_data$rt_core_o,
     sigt = final_series$sigt,
     cmeans = final_series$cmeans,
-    scale_const = scale_const,
-    n_arma_pars = n_arma_pars,
-    incl_mean = incl_mean,
+    scale_const = split_data$scale_const,
+    n_arma_pars = arma_sets$n_arma_pars,
+    incl_mean = arma_sets$incl_mean,
     model_type = model_type
   )
 
-  names(pars) <- par_names
+  names(rescale_output$pars) <- par_names
 
   # Makes "aic" and "bic" available
-  crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
+  sel_criteria <- crit_calc(
+    pars = rescale_output$pars,
+    rt = split_data$rt_core_o,
+    llhood = llhood
+  )
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = train_obs,
+    rt = split_data$train_obs,
     list_of_ts = list(
-      "cmeans" = cmeans,
-      "sigt" = sigt,
-      "etat" = etat
+      "cmeans" = rescale_output$cmeans,
+      "sigt" = rescale_output$sigt,
+      "etat" = rescale_output$etat
     )
   )
   cmeans <- series_out$cmeans
@@ -1426,23 +1426,23 @@ setMethod("fEGarch_fit", "egarch_type_spec",
   etat <- series_out$etat
 
   list_out <- fEGarch_fit_egarch(
-    pars = pars,
-    se = serrors,
-    vcov_mat = vcov_mat,
-    rt = train_obs,
+    pars = rescale_output$pars,
+    se = vcov_output$serrors,
+    vcov_mat = vcov_output$vcov_mat,
+    rt = split_data$train_obs,
     cmeans = cmeans,
     scale_fun = NULL,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
-    inf_criteria = c("aic" = aic, "bic" = bic),
+    inf_criteria = c("aic" = sel_criteria$aic, "bic" = sel_criteria$bic),
     cond_dist = cond_d,
     orders = order,
     powers = pow,
     modulus = mod,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = test_obs,
+    test_obs = split_data$test_obs,
     nonpar_model = NULL,
     trunc = trunc_i
   )
@@ -1665,17 +1665,10 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # or shifted by a constant. This transformation just shifts the
   # entire log-likelihood by a constant and therefore does not affect
   # the shape of the log-likelihood.
-
-  # Makes available
-  # - rt_core_o: pure original obs. of the training set,
-  # - rt_core: pure rescaled obs.,
-  # - scale_const: the scaling constant used,
-  # - test_obs: the test obs. with keeping initial formatting,
-  # - train_obs: the train obs. with keeping initial formatting
-  initial_split(rt, n_test)
+  split_data <- initial_split(rt, n_test)
 
 
-  n <- length(rt_core)
+  n <- length(split_data$rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
 
@@ -1691,11 +1684,11 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
   # environment
-  identify_arma_settings(meanspec = meanspec, Drange = Drange)
+  arma_sets <- identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
-  if ((lm || lm_arma) && is.character(trunc) && trunc == "none") {
+  if ((lm || arma_sets$lm_arma) && is.character(trunc) && trunc == "none") {
     trunc <- n + presample - 1
-  } else if ((lm || lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
+  } else if ((lm || arma_sets$lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
     trunc <- n + presample - 1
     message("trunc reduced to n + ", presample, " - 1")
   }
@@ -1714,10 +1707,11 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Adjust (if ARMA relevant)
   model_type <- c("loggarch", "filoggarch")[[lm + 1]]
   sigt_fun_adj <- adj_sigt_fun(
-    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
-    lm_arma = lm_arma, incl_mean = incl_mean,
-    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
-    arma_fun = cmean_fun,
+    p_ar = arma_sets$p_ar, q_ma = arma_sets$q_ma,
+    pg0 = arma_sets$pg0, qg0 = arma_sets$qg0,
+    lm_arma = arma_sets$lm_arma, incl_mean = arma_sets$incl_mean,
+    n_arma_pars = arma_sets$n_arma_pars, grab_fun = arma_sets$arma_grab_fun,
+    arma_fun = arma_sets$cmean_fun,
     model_type = model_type
   )
 
@@ -1731,21 +1725,21 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   # Initialize ln(sig_t^2) with some reasonable, fixed value
   # Initialize ln(sig_t^2) with some reasonable, fixed value
-  mean_req_1 <- (!lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
-  mean_req_2 <- lm_arma
+  mean_req_1 <- (!arma_sets$lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
+  mean_req_2 <- arma_sets$lm_arma
   mean_res <- if (!lm && mean_req_1) {   # run an initial ARMA to get better pre-sample values for the volatility step
-    init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    init_arma <- suppressWarnings(stats::arima(split_data$rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     init_arma$residuals
   } else if (!lm && mean_req_2) {
     init_farima <- tryCatch({
-      suppressWarnings(prelim_farima(x = rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
+      suppressWarnings(prelim_farima(x = split_data$rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
     },
     error = {
-      suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+      suppressWarnings(stats::arima(split_data$rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     })
     init_farima$residuals
   } else {
-    rt_core
+    split_data$rt_core
   }
   lnsig2_init <- log(var(mean_res))
 
@@ -1761,9 +1755,9 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       dfun2 = dfun2,
       p = p,
       q = q,
-      p_ar = p_ar,
-      q_ma = q_ma,
-      incl_mean = incl_mean,
+      p_ar = arma_sets$p_ar,
+      q_ma = arma_sets$q_ma,
+      incl_mean = arma_sets$incl_mean,
       extra_par = extra_par,
       skew_par = skew_par,
       int_fun = int_fun,
@@ -1781,62 +1775,60 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Make further starting parameter values and restrictions available
   # using internally saved table function
   pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
-  list2env(pars_and_restr, envir = environment())
-  suppressWarnings(rm("pars_and_restr", envir = environment()))
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
-    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
-    min_rt <- list(NULL, suppressWarnings(0.2 * min(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
-    max_rt <- list(NULL, suppressWarnings(0.2 * max(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
+    mean_rt <- list(NULL, mean(split_data$rt_core))[[arma_sets$incl_mean + 1]]
+    min_rt <- list(NULL, suppressWarnings(0.2 * min(split_data$rt_core - mean_rt) + mean_rt))[[arma_sets$incl_mean + 1]]
+    max_rt <- list(NULL, suppressWarnings(0.2 * max(split_data$rt_core - mean_rt) + mean_rt))[[arma_sets$incl_mean + 1]]
     skew_start <- list(NULL, 0.98)[[skew_par + 1]]
     skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
     skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
     start_LB_UB <- set_start_LB_UB(
       mean_val = mean_rt,
-      ar_start = ar_start,
-      ma_start = ma_start,
-      D_start = D_start,
-      omega_val = omega_start,
-      phi_start = phi_start,
-      psi_start = psi_start,
-      add_pars_start = add_pars_start,
-      d_start = d_spar,
-      sval = sval,
+      ar_start = arma_sets$ar_start,
+      ma_start = arma_sets$ma_start,
+      D_start = arma_sets$D_start,
+      omega_val = pars_and_restr$omega_start,
+      phi_start = pars_and_restr$phi_start,
+      psi_start = pars_and_restr$psi_start,
+      add_pars_start = pars_and_restr$add_pars_start,
+      d_start = pars_and_restr$d_spar,
+      sval = cond_d_vals$sval,
       skew_start = skew_start,
       mean_low = min_rt,
-      ar_low = ar_lb,
-      ma_low = ma_lb,
-      D_low = D_low,
-      omega_low = omega_low,
-      phi_low = phi_low,
-      psi_low = psi_low,
-      add_low = add_low,
-      d_low = d_low,
-      lval = lval, skew_low = skew_low,
+      ar_low = arma_sets$ar_lb,
+      ma_low = arma_sets$ma_lb,
+      D_low = arma_sets$D_low,
+      omega_low = pars_and_restr$omega_low,
+      phi_low = pars_and_restr$phi_low,
+      psi_low = pars_and_restr$psi_low,
+      add_low = pars_and_restr$add_low,
+      d_low = pars_and_restr$d_low,
+      lval = cond_d_vals$lval, skew_low = skew_low,
       mean_up = max_rt,
-      ar_up = ar_ub, ma_up = ma_ub,
-      D_up = D_up,
-      omega_up = omega_up,
-      phi_up = phi_up, psi_up = psi_up,
-      add_up = add_up,
-      d_up = d_up,
-      uval = uval, skew_up = skew_up,
+      ar_up = arma_sets$ar_ub, ma_up = arma_sets$ma_ub,
+      D_up = arma_sets$D_up,
+      omega_up = pars_and_restr$omega_up,
+      phi_up = pars_and_restr$phi_up, psi_up = pars_and_restr$psi_up,
+      add_up = pars_and_restr$add_up,
+      d_up = pars_and_restr$d_up,
+      uval = cond_d_vals$uval, skew_up = skew_up,
       start_pars = start_pars, LB = LB, UB = UB
     )
 
 
   }
 
-  low_phi <- 2 + n_arma_pars
-  up_phi <- 1 + n_arma_pars + p
+  low_phi <- 2 + arma_sets$n_arma_pars
+  up_phi <- 1 + arma_sets$n_arma_pars + p
 
   # For stationarity, restrict phi / AR values
   constr_fun <- function(theta, rt) {
     phi <- c(1, -theta[low_phi:up_phi])
     c1 <- abs(polyroot(phi)) - 1
-    if (pg0) {
-      ar <- c(1, -theta[low_ar:up_ar])
+    if (arma_sets$pg0) {
+      ar <- c(1, -theta[arma_sets$ar_pos_low:arma_sets$ar_pos_up])
       c2 <- abs(polyroot(ar)) - 1
     } else {
       c2 <- numeric(0)
@@ -1846,7 +1838,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
   if (is.null(control$trace)) {control$trace <- FALSE}
 
-  p_all <- p + p_ar
+  p_all <- p + arma_sets$p_ar
 
   ineqLB <- rep(1e-6, p_all)
   ineqUB <- rep(Inf, p_all)
@@ -1863,12 +1855,12 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
       dfun1 = dfun1,
       dfun2 = dfun2,
       goal_fun_s = goal_fun_s,
-      start_pars = start_pars,
-      LB = LB, UB = UB,
+      start_pars = start_LB_UB$start_pars,
+      LB = start_LB_UB$LB, UB = start_LB_UB$UB,
       ineqfun = constr_fun,
       ineqLB = ineqLB,
       ineqUB = ineqUB,
-      rt_core = rt_core,
+      rt_core = split_data$rt_core,
       control = control
     )}, message = function(m1) {
       if (grepl("Elneta2 is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
@@ -1891,15 +1883,15 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
 
     result <- withCallingHandlers({tryCatch(
       expr = {suppressWarnings(Rsolnp::solnp(
-        pars = start_pars,
+        pars = start_LB_UB$start_pars,
         fun = goal_fun,
-        LB = LB,
-        UB = UB,
+        LB = start_LB_UB$LB,
+        UB = start_LB_UB$UB,
         ineqfun = constr_fun,
         ineqLB = ineqLB,    # abs. values of roots must be outside of unit circle
         ineqUB = ineqUB,
         control = control,
-        rt = rt_core
+        rt = split_data$rt_core
       ))},
       error = function(e1) {
         stop("Error during optimization. You may want to try different starting parameter and / or solver settings.", call. = FALSE)
@@ -1926,7 +1918,7 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
   # log-likelihood at the optimum for the scaled data, which is too large by
   # "n * log(scale_const)" in comparison to original data
-  llhood <- -tail(result$values, 1) - n * log(scale_const)
+  llhood <- -tail(result$values, 1) - n * log(split_data$scale_const)
 
 
   psi_names <- paste0("psi", 1:q)
@@ -1943,14 +1935,14 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   )
 
   par_names <- c(
-    list(NULL, "mu")[[incl_mean + 1]],
-    names_ar,
-    names_ma,
-    D_par_name,
+    list(NULL, "mu")[[arma_sets$incl_mean + 1]],
+    arma_sets$names_ar,
+    arma_sets$names_ma,
+    arma_sets$D_par_name,
     "omega_sig",
     paste0("phi", 1:p),
     psi_names,
-    d_name,
+    pars_and_restr$d_name,
     extra_par_name,
     list(NULL, "skew")[[skew_par + 1]]
   )
@@ -1985,13 +1977,13 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   # Compute the conditional standard deviations at the optimum
   final_series <- sigt_fun_adj(
     theta = unname(pars),
-    x = rt_core,
+    x = split_data$rt_core,
     dfun = fdfun1,
     p = p,
     q = q,
-    p_ar = p_ar,
-    q_ma = q_ma,
-    incl_mean = incl_mean,
+    p_ar = arma_sets$p_ar,
+    q_ma = arma_sets$q_ma,
+    incl_mean = arma_sets$incl_mean,
     extra_par = extra_par,
     skew_par = skew_par,
     trunc = trunc,
@@ -2001,12 +1993,12 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   )
 
   # Also updates "pars", if ald or sald
-  compute_vcov(
+  vcov_output <- compute_vcov(
     goal_fun = goal_fun,
     pars = pars,
-    rt_core = rt_core,
-    scale_const = scale_const,
-    incl_mean = incl_mean,
+    rt_core = split_data$rt_core,
+    scale_const = split_data$scale_const,
+    incl_mean = arma_sets$incl_mean,
     P_sel = P_sel,
     cond_d = cond_d,
     par_names = par_names,
@@ -2015,30 +2007,31 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   )
 
   # Create rescaled final parameters and results
-  rescale_estim(
-    pars = pars,
-    rt_core_o = rt_core_o,
+  rescale_output <- rescale_estim(
+    pars = vcov_output$pars,
+    rt_core_o = split_data$rt_core_o,
     sigt = final_series$sigt,
     cmeans = final_series$cmeans,
-    scale_const = scale_const,
-    n_arma_pars = n_arma_pars,
-    incl_mean = incl_mean,
+    scale_const = split_data$scale_const,
+    n_arma_pars = arma_sets$n_arma_pars,
+    incl_mean = arma_sets$incl_mean,
     model_type = model_type
   )
 
-  names(pars) <- par_names
+  names(rescale_output$pars) <- par_names
 
   # Makes "aic" and "bic" available
-  crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
+  sel_criteria <- crit_calc(pars = rescale_output$pars, rt = split_data$rt_core_o,
+                            llhood = llhood)
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = train_obs,
+    rt = split_data$train_obs,
     list_of_ts = list(
-      "cmeans" = cmeans,
-      "sigt" = sigt,
-      "etat" = etat
+      "cmeans" = rescale_output$cmeans,
+      "sigt" = rescale_output$sigt,
+      "etat" = rescale_output$etat
     )
   )
   cmeans <- series_out$cmeans
@@ -2046,21 +2039,21 @@ setMethod("fEGarch_fit", "loggarch_type_spec",
   etat <- series_out$etat
 
   list_out <- fEGarch_fit_loggarch(
-    pars = pars,
-    se = serrors,
-    vcov_mat = vcov_mat,
-    rt = train_obs,
+    pars = rescale_output$pars,
+    se = vcov_output$serrors,
+    vcov_mat = vcov_output$vcov_mat,
+    rt = split_data$train_obs,
     cmeans = cmeans,
     scale_fun = NULL,
     sigt = sigt,
     etat = etat,
     llhood = llhood,
-    inf_criteria = c("aic" = aic, "bic" = bic),
+    inf_criteria = c("aic" = sel_criteria$aic, "bic" = sel_criteria$bic),
     cond_dist = cond_d,
     orders = order,
     long_memo = lm,
     meanspec = meanspec,
-    test_obs = test_obs,
+    test_obs = split_data$test_obs,
     nonpar_model = NULL,
     trunc = trunc_i
   )
