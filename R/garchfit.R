@@ -23,9 +23,8 @@ garch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_garch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, presample, ...) {
-
-  list2env(list(...), envir = environment())
+              incl_mean, extra_par, skew_par, trunc, presample, sig2_init,
+              dens_fun = NULL) {
 
   all_pars <- garch_grab_pars(
     theta = theta,

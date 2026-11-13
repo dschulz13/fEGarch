@@ -709,7 +709,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   fargs <- c(list(
       theta = unname(pars),
       x = split_data$rt_core,
-      dfun = dfun1,
       p = p,
       q = q,
       p_ar = arma_sets$p_ar,

@@ -8,12 +8,7 @@ afitgarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_afitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, presample, ...) {
-
-  cur_env <- environment()
-  list2env(list(...), envir = cur_env)
-  stopifnot("No object 'dens_fun' passed to conditional standard deviation function." =
-              (exists("dens_fun", envir = cur_env, inherits = FALSE)))
+              trunc, presample, presample_val, dens_fun) {
 
   all_pars <- afitgarch_grab_pars(
     theta = theta,
@@ -50,7 +45,7 @@ sigt_afitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
     skew = skew,
     gamma = gamma,
     delta = delta,
-    dens_fun = dens_fun   # !!! Check later that this works out
+    dens_fun = dens_fun
   )
 
   if (is.na(Czd) || is.nan(Czd)) {
@@ -63,10 +58,6 @@ sigt_afitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
     delta = delta,
     Czd = Czd
   )
-
-  # if (!exists("presample_val", inherits = FALSE)) {
-  #   presample_val <- mean(z_sc)
-  # }
 
   lc <- length(coef_inf)
   np2 <- nextpow2(2 * n - 1)
@@ -85,22 +76,6 @@ sigt_afitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
     length(x_dm)
   ) / np2
 
-  # inside_sc <- omega_sig + conv_part
-
-  # if (any(!is.finite(inside_sc)) || any(inside_sc <= 0)) {
-  #   return(list(
-  #     sigt = rep(NaN, length(x_dm)),
-  #     mu = mu,
-  #     skew = skew,
-  #     shape = shape,
-  #     cmeans = rep(mu, length(x_dm)),
-  #     inside_sc = inside_sc,
-  #     z_sc = z_sc,
-  #     coef_inf = coef_inf,
-  #     Czd = Czd,
-  #     presample_val = presample_val
-  #   ))
-  # }
 
   list(
     sigt = omega_sig + conv_part,
@@ -108,11 +83,7 @@ sigt_afitgarch_R <- function(theta, x, p, q, p_ar, q_ma,
     skew = skew,
     shape = shape,
     cmeans = rep(mu, length(conv_part)),
-    # inside_sc = inside_sc,
-    # z_sc = z_sc,
-    # coef_inf = coef_inf,
-    Czd = Czd   #,        !!! Check later, if we need to return this
-#    presample_val = presample_val
+    Czd = Czd
   )
 
 }

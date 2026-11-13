@@ -27,9 +27,8 @@ ngarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_ngarch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, presample, ...) {
-
-  list2env(list(...), envir = environment())
+              trunc, presample, sigd_init, etransf_init,
+              dens_fun = NULL) {
 
   all_pars <- ngarch_grab_pars(
     theta = theta,

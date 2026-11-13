@@ -29,9 +29,9 @@ fingarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_fingarch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, presample, ...) {
+              trunc, presample, presample_val,
+              dens_fun = NULL) {
 
-  list2env(list(...), envir = environment())
 
   all_pars <- fingarch_grab_pars(
     theta = theta,

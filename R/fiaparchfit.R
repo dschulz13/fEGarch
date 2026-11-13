@@ -30,9 +30,8 @@ fiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_fiaparch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, presample, ...) {
-
-  list2env(list(...), envir = environment())
+              trunc, presample, presample_val,
+              dens_fun = NULL) {
 
   all_pars <- fiaparch_grab_pars(
     theta = theta,

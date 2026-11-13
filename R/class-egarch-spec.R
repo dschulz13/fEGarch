@@ -807,13 +807,9 @@ expect_calc_egarch <- function(int_fun_asy, int_fun_mag, dfun, shape, skew, pows
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a short-memory EGARCH specification
 sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, presample, ...) {
-
-  # Make ellipsis objects available
-  cur_env <- environment()
-  list2env(list(...), envir = cur_env)
-  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
-              (exists("dfun", envir = cur_env, inherits = FALSE)))
+              incl_mean, extra_par, skew_par, trunc, presample,
+              dfun, pows, mods, lnsig2_init,
+              int_fun_asy, int_fun_mag, mode) {
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -870,14 +866,10 @@ sigt_egarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
 # Given parameters, observations, etc., calculate conditional standard
 # deviations following a long-memory EGARCH specification
 sigt_egarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, presample, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample,
+              dfun, pows, mods, int_fun_asy, int_fun_mag, mode,
+              lnsig2_init = NULL) {
 
-  # Make ellipsis objects available
-  # Make ellipsis objects available
-  cur_env <- environment()
-  list2env(list(...), envir = cur_env)
-  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
-              (exists("dfun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- egarch_grab_pars(
     theta = theta,
@@ -1480,14 +1472,9 @@ loggarch_grab_pars <- function(theta, p, q, incl_mean, d_par, extra_par, skew_pa
 }
 
 sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, presample, ...) {
+              incl_mean, extra_par, skew_par, trunc, presample,
+              dfun, int_fun, lnsig2_init) {
 
-  # Make ellipsis objects available
-  # Make ellipsis objects available
-  cur_env <- environment()
-  list2env(list(...), envir = cur_env)
-  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
-              (exists("dfun", envir = cur_env, inherits = FALSE)))
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
@@ -1536,14 +1523,8 @@ sigt_loggarch_short_R <- function(theta, x, p, q, p_ar, q_ma,
 }
 
 sigt_loggarch_long_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, presample, ...) {
-
-  # Make ellipsis objects available
-  # Make ellipsis objects available
-  cur_env <- environment()
-  list2env(list(...), envir = cur_env)
-  stopifnot("No object 'dfun' passed to conditional standard deviation function." =
-              (exists("dfun", envir = cur_env, inherits = FALSE)))
+              incl_mean, extra_par, skew_par, trunc, presample,
+              dfun, int_fun, lnsig2_init = NULL) {
 
   all_pars <- loggarch_grab_pars(
     theta = theta,
