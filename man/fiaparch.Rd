@@ -224,9 +224,13 @@ for \eqn{\gamma_0} and
 \eqn{\delta_0} as initial guesses for \eqn{\gamma} and \eqn{\delta} are obtained
 from a previous fitting of a short-memory APARCH.
 
-A standard FIAPARCH model is theoretically not well defined for \eqn{C_z>1}, because then
+A standard FIAPARCH model is theoretically not well defined for \eqn{C_z>1},
+with \eqn{C_z = E\left\{(|\eta_1|-\gamma \eta_1)^{\delta}\right\}},
+because then
 \eqn{E(\sigma_{t}^{\delta}) = \omega + C_{z} E(\sigma_{t}^{\delta})}
-has no solution. \eqn{C_z} is provided in the
+has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+theoretical disadvantages or even problems (see Feng et al., 2026).
+\eqn{C_z} is provided in the
 function output as \code{Cz} and in the corresponding printing method. In addition,
 a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, denoted
 as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
@@ -359,6 +363,9 @@ and a new model. Journal of Empirical Finance, 1(1),
 \item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 Trend Stationary Time Series. The R Journal,
 14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with
+finite \eqn{2\delta}th moment and long memory in volatility implemented in R.
+Unpublished manuscript at Paderborn University.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}

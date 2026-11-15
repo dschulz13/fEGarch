@@ -236,9 +236,13 @@ goal_fun_creator_figjrgarch <- function(
 #'for \eqn{\gamma_0} as initial guess for \eqn{\gamma} is obtained
 #'from a previous fitting of a short-memory GJR-GARCH.
 #'
-#'A standard FIGJR-GARCH model is theoretically not well defined for \eqn{C_z>1}, because then
+#'A standard FIGJR-GARCH model is theoretically not well defined for \eqn{C_z>1},
+#'with \eqn{C_z = E\left\{(|\eta_1|-\gamma \eta_1)^{2}\right\}},
+#'because then
 #'\eqn{E(\sigma_{t}^{2}) = \omega + C_{z} E(\sigma_{t}^{2})}
-#'has no solution. \eqn{C_z} is provided in the
+#'has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+#'theoretical disadvantages or even problems (see Feng et al., 2026).
+#'\eqn{C_z} is provided in the
 #'function output as \code{Cz} and in the corresponding printing method. In addition,
 #'a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, denoted
 #'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
@@ -411,6 +415,9 @@ goal_fun_creator_figjrgarch <- function(
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with
+#'finite \eqn{2\delta}th moment and long memory in volatility implemented in R.
+#'Unpublished manuscript at Paderborn University.}
 #'\item{Glosten, L. R., Jagannathan, R., & Runkle, D. E. (1993). On The Relation between The Expected Value and The
 #'Volatility of Nominal Excess Return on stocks. Journal of Finance 48(5), 1779-1801.
 #'DOI: 10.1111/j.1540-6261.1993.tb05128.x.}

@@ -245,7 +245,9 @@ A standard FITGARCH model is theoretically not well defined for \eqn{C_z>1},
 because then
 \eqn{E(\sigma_{t}) = \omega + C_{z} E(\sigma_{t})}, where
 \eqn{\omega} is the intercept in the equation of \eqn{\sigma_{t}},
-has no solution. An AFITGARCH model is always well defined in this regard
+has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+theoretical disadvantages or even problems (see Feng et al., 2026).
+An AFITGARCH model is always well defined in this regard
 due to the rescaling with \eqn{C_z^{-1}} following
 \eqn{C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]}
 in the definition of \eqn{\sigma_{t}}. \eqn{C_z} is provided in the

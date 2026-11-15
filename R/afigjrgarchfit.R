@@ -287,7 +287,9 @@ goal_fun_creator_afigjrgarch <- function(
 #'because then
 #'\eqn{E(\sigma_{t}^{2}) = \omega + C_{z} E(\sigma_{t}^{2})}, where
 #'\eqn{\omega} is the intercept in the equation of \eqn{\sigma_{t}^{2}},
-#'has no solution. An AFIGJR-GARCH model is always well defined in this regard
+#'has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+#'theoretical disadvantages or even problems (see Feng et al., 2026).
+#'An AFIGJR-GARCH model is always well defined in this regard
 #'due to the rescaling with \eqn{C_z^{-1}} following
 #'\eqn{C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{2}}
 #'in the definition of \eqn{\sigma_{t}^{2}}. \eqn{C_z} is provided in the
