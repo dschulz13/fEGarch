@@ -237,6 +237,16 @@ goal_fun_creator_fingarch <- function(
 #'for \eqn{\delta_0} as an initial guess for \eqn{\delta} is obtained
 #'from a previous fitting of a short-memory NGARCH.
 #'
+#'A standard FINGARCH model is theoretically not well defined for \eqn{C_z>1}, because then
+#'\eqn{E(\sigma_{t}^2) = \omega + C_{z} E(\sigma_{t}^2)}
+#'has no solution. \eqn{C_z} is provided in the
+#'function output as \code{Cz} and in the corresponding printing method. In addition,
+#'a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, denoted
+#'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+#'estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted FINGARCH model is
+#'numerically stable. For an adjusted FINGARCH (AFINGARCH) that avoids the issues
+#'related to having \eqn{C_z>1}, see \code{\link{afingarch}}.
+#'
 #'The truncated infinite order polynomial is computed following the idea
 #'by Nielsen
 #'and Noel (2021) as is the series of conditional variances for most

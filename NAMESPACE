@@ -174,23 +174,29 @@ exportMethods(trafflight_test)
 exportMethods(uncond_cov_test)
 exportMethods(vcov_mat)
 import(methods)
-importFrom(Rcpp,evalCpp)
-importFrom(Rcpp,sourceCpp)
+importFrom(Rcpp,
+  evalCpp,
+  sourceCpp
+)
 importFrom(ggplot2,autoplot)
 importFrom(magrittr,`%>%`)
-importFrom(methods,new)
-importFrom(methods,validObject)
+importFrom(methods,
+  new,
+  validObject
+)
 importFrom(rlang,.data)
-importFrom(stats,fitted)
-importFrom(stats,integrate)
-importFrom(stats,pnorm)
-importFrom(stats,residuals)
-importFrom(stats,rnorm)
-importFrom(stats,rt)
-importFrom(stats,runif)
-importFrom(stats,sigma)
-importFrom(stats,time)
-importFrom(stats,uniroot)
-importFrom(stats,var)
+importFrom(stats,
+  fitted,
+  integrate,
+  pnorm,
+  residuals,
+  rnorm,
+  rt,
+  runif,
+  sigma,
+  time,
+  uniroot,
+  var
+)
 importFrom(utils,tail)
 useDynLib(fEGarch)

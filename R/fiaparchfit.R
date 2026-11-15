@@ -243,6 +243,16 @@ goal_fun_creator_fiaparch <- function(
 #'\eqn{\delta_0} as initial guesses for \eqn{\gamma} and \eqn{\delta} are obtained
 #'from a previous fitting of a short-memory APARCH.
 #'
+#'A standard FIAPARCH model is theoretically not well defined for \eqn{C_z>1}, because then
+#'\eqn{E(\sigma_{t}^{\delta}) = \omega + C_{z} E(\sigma_{t}^{\delta})}
+#'has no solution. \eqn{C_z} is provided in the
+#'function output as \code{Cz} and in the corresponding printing method. In addition,
+#'a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, denoted
+#'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+#'estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted FIAPARCH model is
+#'numerically stable. For an adjusted FIAPARCH (AFIAPARCH) that avoids the issues
+#'related to having \eqn{C_z>1}, see \code{\link{afiaparch}}.
+#'
 #'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 #'to ensure the non-negativity of all of the infinite-order coefficient series
 #'\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination

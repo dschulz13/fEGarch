@@ -283,6 +283,20 @@ goal_fun_creator_afigjrgarch <- function(
 #'\code{integrate} function using the fitted
 #'parameters from the initial fit.
 #'
+#'A standard FIGJR-GARCH model is theoretically not well defined for \eqn{C_z>1},
+#'because then
+#'\eqn{E(\sigma_{t}^{2}) = \omega + C_{z} E(\sigma_{t}^{2})}, where
+#'\eqn{\omega} is the intercept in the equation of \eqn{\sigma_{t}^{2}},
+#'has no solution. An AFIGJR-GARCH model is always well defined in this regard
+#'due to the rescaling with \eqn{C_z^{-1}} following
+#'\eqn{C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{2}}
+#'in the definition of \eqn{\sigma_{t}^{2}}. \eqn{C_z} is provided in the
+#'function output as \code{Cz} and in the corresponding printing method. In addition,
+#'a constant \eqn{C_{\text{em}} = \sum_{i=1}^{K}\lambda_i} is provided, denoted
+#'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+#'estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted AFIGJR-GARCH model is
+#'numerically stable.
+#'
 #'The truncated infinite order polynomial is computed following the idea
 #'by Nielsen
 #'and Noel (2021) as is the series of conditional variances for most
