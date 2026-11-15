@@ -407,7 +407,8 @@ ald_fit <- function(Prange, parallel, ncores, dfun1, dfun2, goal_fun_s, start_pa
 
 compute_vcov <- function(goal_fun, pars, rt_core, scale_const, incl_mean, P_sel,
                          cond_d, par_names, model_type, skip_vcov,
-                         n_arma_pars = NULL, sc_delta = NULL) {
+                         n_arma_pars = NULL, sc_delta = NULL, delta_pos = NULL,
+                         adj_fun_delta = NULL, delta_inp = NULL) {
 
   if (skip_vcov) {   # skip over variance-covariance matrix computation
 
@@ -420,21 +421,43 @@ compute_vcov <- function(goal_fun, pars, rt_core, scale_const, incl_mean, P_sel,
     # Compute the (negative) hessian at the optimum using a finite-difference
     # approximation via "hessian" from "numDeriv"; is usually more stable
 
-    nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+    model_check <- !(model_type %in% c("aparch", "fiaparch"))
 
     # Obtain the variance-covariance matrix as the inverse of the
     # negative hessian
-    I_mat <- diag(length(pars))    # Transformation matrix to rescale variance-covariance-matrix
-    if (incl_mean) {
-      I_mat[1, 1] <- scale_const   # For mean; not required for omega_sig, because that transformation is just an added constant
-    }
-    if (model_type %in% c("aparch", "fiaparch")) {
-      n_arma_im1 <- n_arma_pars + 1
-      I_mat[n_arma_im1, n_arma_im1] <- sc_delta
+
+    vcov_mat <- if (model_check) {
+      nhess <- hessCalc(func = goal_fun, pars = unname(pars), rt = rt_core)
+      I_mat <- diag(length(pars))    # Transformation matrix to rescale variance-covariance-matrix
+      if (incl_mean) {
+        I_mat[1, 1] <- scale_const   # For mean; not required for omega_sig, because that transformation is just an added constant
+      }
+      I_mat %*% solve(nhess) %*% I_mat   # Retransformation included
+    } else {
+      pars_c <- unname(pars)
+      if (incl_mean) {
+        pars_c[[1]] <- pars_c[[1]] * scale_const
+      }
+      pars_c[[n_arma_pars + 1]] <- pars_c[[n_arma_pars + 1]] * sc_delta
+      n <- length(rt_core)
+      force(goal_fun)
+      force(adj_fun_delta)
+      force(delta_inp)
+      force(delta_pos)
+      goal_fun_upd <- function(theta, rt) {
+        if (incl_mean) {
+          theta[[1]] <- theta[[1]] / scale_const
+        }
+        theta[[n_arma_pars + 1]] <- theta[[n_arma_pars + 1]] /
+          adj_fun_delta(theta = theta, scale_const = scale_const,
+                        delta_pos = delta_pos, delta_inp = delta_inp)
+
+        goal_fun(theta = theta, rt = rt) + n * log(scale_const)
+      }
+      nhess <- hessCalc(func = goal_fun_upd, pars = pars_c, rt = rt_core)
+      solve(nhess)
     }
 
-
-    vcov_mat <- I_mat %*% solve(nhess) %*% I_mat   # Retransformation included
     diag_vcov <- diag(vcov_mat)
 
     if (all(!is.na(diag_vcov)) && any(diag_vcov < 0)) {

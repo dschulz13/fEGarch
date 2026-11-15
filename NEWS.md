@@ -23,6 +23,8 @@
 - The output of the adjusted AFIAPARCH-class models printed to the console
   include the obtained scaling constant $C_z$ for the estimated model as denoted
   in the manual.
+- Fixed the standard error computation under (FI)APARCH-type models, where
+  the delta parameter is being estimated.
 - Change in maintainer email address from dominik.schulz@uni-paderborn.de to
   dominik.schulz.r@gmail.com; the maintainer is, however, still the same person.
 

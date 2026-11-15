@@ -285,7 +285,10 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'shape parameter,
 #'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
-#'in \code{start_pars}, \code{LB} and \code{UB}.
+#'in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+#'\code{UB} should be defined with respect to the input data scaled to have
+#'(sample) variance equal to one, which affects the mean estimate (if present)
+#'and the volatility intercept.
 #'
 #'@examples
 #'window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

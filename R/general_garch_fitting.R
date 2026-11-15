@@ -307,8 +307,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         n_test = n_test,
         skip_vcov = TRUE
       ))
-      # For AFITGARCH we need all distribution parameters to obtain
-      # presample values due to the rescaling
       delta0 <- est_s@pars[["delta"]]
       gamma0 <- 0    # fixed
       shape_nam <- c("norm" = "NULL", "snorm" = "NULL", "std" = "df", "sstd" = "df",
@@ -356,7 +354,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     }
   )
 
-  goal_fun_s <- if (model_type %in% c("afiaparch", "afingarch", "afigjrgarch", "afitgarch")) {
+  adjusted_model_check <- model_type %in% c("afiaparch", "afingarch", "afigjrgarch", "afitgarch")
+
+  goal_fun_s <- if (adjusted_model_check) {
       function(theta, rt, dfun1, dfun2) {
 
         do.call(
@@ -383,6 +383,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
       }
     }
+
 
   # Get cond. distribution restrictions and starting values
   # as objects sval, lval and uval in the environment
@@ -753,7 +754,31 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   sc_delta <- split_data$scale_const^delta
 
   type_inp <- c("aparch", "fiaparch")[[lm + 1]]
-  # Also updates "pars", if ald or sald
+  if (model_type %in% c("aparch", "ngarch", "fiaparch", "fingarch", "afiaparch", "afingarch")) {
+    delta_pos <- which(par_names == "delta")
+    delta_inp <- NULL
+    adj_fun_delta <- function(theta, delta_pos, scale_const, delta_inp) {
+      scale_const^theta[[delta_pos]]
+    }
+  } else {
+    delta_pos <- NULL
+    delta_inp <- switch(
+      model_type,
+      "garch" = 2,
+      "figarch" = 2,
+      "tgarch" = 1,
+      "fitgarch" = 1,
+      "afitgarch" = 1,
+      "gjrgarch" = 2,
+      "figjrgarch" = 2,
+      "afigjrgarch" = 2
+    )
+    adj_fun_delta <- function(theta, delta_pos, scale_const, delta_inp) {
+      scale_const^delta_inp
+    }
+  }
+  delta_pos <- which(par_names == "delta")
+
   vcov_output <- compute_vcov(
     goal_fun = goal_fun,
     pars = pars,
@@ -764,6 +789,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     cond_d = cond_d,
     par_names = par_names,
     sc_delta = sc_delta,
+    delta_pos = delta_pos,
+    delta_inp = delta_inp,
+    adj_fun_delta = adj_fun_delta,
     n_arma_pars = arma_sets$n_arma_pars,
     model_type = type_inp,     # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
     skip_vcov = skip_vcov

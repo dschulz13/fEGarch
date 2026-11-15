@@ -236,7 +236,8 @@ a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, deno
 as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
 estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted FIAPARCH model is
 numerically stable. For an adjusted FIAPARCH (AFIAPARCH) that avoids the issues
-related to having \eqn{C_z>1}, see \code{\link{afiaparch}}.
+related to having \eqn{C_z>1} and the theoretical disadvantages of \eqn{C_z\leq 1},
+see \code{\link{afiaparch}}.
 
 Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 to ensure the non-negativity of all of the infinite-order coefficient series

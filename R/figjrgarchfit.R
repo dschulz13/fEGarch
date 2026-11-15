@@ -248,7 +248,8 @@ goal_fun_creator_figjrgarch <- function(
 #'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
 #'estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted FIGJR-GARCH model is
 #'numerically stable. For an adjusted FIGJR-GARCH (AFGJR-GARCH) that avoids the issues
-#'related to having \eqn{C_z>1}, see \code{\link{afigjrgarch}}.
+#'related to having \eqn{C_z>1} and the theoretical disadvantages of \eqn{C_z\leq 1},
+#'see \code{\link{afigjrgarch}}.
 #'
 #'The truncated infinite order polynomial is computed following the idea
 #'by Nielsen
