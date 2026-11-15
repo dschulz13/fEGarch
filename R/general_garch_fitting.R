@@ -793,7 +793,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     delta_inp = delta_inp,
     adj_fun_delta = adj_fun_delta,
     n_arma_pars = arma_sets$n_arma_pars,
-    model_type = type_inp,     # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
+    model_type = type_inp,
     skip_vcov = skip_vcov
   )
 

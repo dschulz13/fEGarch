@@ -452,7 +452,7 @@ compute_vcov <- function(goal_fun, pars, rt_core, scale_const, incl_mean, P_sel,
           adj_fun_delta(theta = theta, scale_const = scale_const,
                         delta_pos = delta_pos, delta_inp = delta_inp)
 
-        goal_fun(theta = theta, rt = rt) + n * log(scale_const)
+        suppressWarnings(goal_fun(theta = theta, rt = rt)) + n * log(scale_const)
       }
       nhess <- hessCalc(func = goal_fun_upd, pars = pars_c, rt = rt_core)
       solve(nhess)

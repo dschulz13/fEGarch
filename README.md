@@ -359,6 +359,42 @@ model_fiaparch2 <- fAParch_spec(model_type = "aparch", orders = c(1, 1),
   fAParch(rt)
 model_figarch <- rt %>%
   figarch(orders = c(1, 1), cond_dist = "std")
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
+#> Warning in sqrt(omega + Re(utils::tail(utils::head(stats::fft(stats::fft(c_adj)
+#> * : NaNs wurden erzeugt
 model_figarch
 #> *************************************
 #> *        Fitted FIGARCH Model       *
@@ -378,10 +414,10 @@ model_figarch
 #> 
 #>          par     se    tval   pval
 #> mu    0.0008 0.0001  8.3454 0.0000
-#> omega 0.0000 0.0000  3.3310 0.0009
-#> phi1  0.0261 0.0328  0.7944 0.4269
+#> omega 0.0000 0.0000  3.3312 0.0009
+#> phi1  0.0261 0.0328  0.7946 0.4269
 #> beta1 0.6088 0.0557 10.9287 0.0000
-#> d     0.6437 0.0571 11.2682 0.0000
+#> d     0.6437 0.0571 11.2685 0.0000
 #> df    6.4693 0.4858 13.3159 0.0000
 #>  
 #> Information criteria (parametric part):
