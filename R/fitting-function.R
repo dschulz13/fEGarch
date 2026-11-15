@@ -203,6 +203,10 @@ nonpar_est <- function(rt, lm, nonparspec, n_test, control_nonpar) {
 #'models are first fitted to data that is scaled to have sample variance
 #'1. Parameter estimates and other quantities are then either
 #'retransformed or recalculated afterwards for the original data.
+#'In particular for the models provided by this function, the
+#'variance-covariance matrix is estimated from the
+#'log-likelihood of the data scaled to have (sample) variance one and is
+#'then retransformed to the scale of the original data.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
 #'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
