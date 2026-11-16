@@ -2,7 +2,7 @@ Package: fEGarch
 Type: Package
 Title: SM/LM EGARCH & GARCH, VaR/ES Backtesting & Dual LM Extensions
 Version: 1.0.7
-Date: 2026-05-07
+Date: 2026-11-16
 Authors@R:
     c(person(given = "Dominik",
         family = "Schulz",
