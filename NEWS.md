@@ -1,4 +1,4 @@
-# fEGarch 1.0.7 (2026-11-16)
+# fEGarch 1.0.7 (2026-11-17)
 - A vignette "Introduction to fEGarch" has been added to the package.
 - Fixed a bug in `predict_roll`, where for non-EGF models the volatility model
   orders of the input object were not copied properly under model refitting, if
