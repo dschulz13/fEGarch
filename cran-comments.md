@@ -1,7 +1,7 @@
 # Check for new package version patch 1.0.7
 
 ## Test environments
-* local Windows install, R 4.5.1
+* local Windows install, R 4.6.1
 * win-builder (oldrelease, release and devel)
 * R-hub (linux, windows, ubuntu-clang, ubuntu-release)
 
