@@ -26,18 +26,10 @@
 - The output of the (adjusted) FIAPARCH-class models printed to the console
   include the obtained numerical stability constant $C_{\text{em}}$ for the
   estimated model as denoted in the manual.
-- Fixed the variance-covariance matrix estimation under (FI)APARCH-type models.
-  In particular for models, where the power parameter $\delta$ was estimated, the
-  retransformation of the estimated variance-covariance matrix was not fully
-  correct due to the estimate $\hat\delta$, which is involved in the retransformation
-  of the estimate $\hat \omega$, being treated as a constant in the previous package
-  version. For all models except the exponential GARCH family models (for EGF models
-  the approach is fully correct as the intercept's variance is not affected by
-  the transformation), the retransformation of the estimated variance-covariance
-  matrix is dropped in the new package version. Instead, the estimated
-  variance-covariance matrix is in these cases obtained directly following the
-  retransformed parameter estimates and the original-scale negative
-  log-likelihood, so that no retransformation is needed.
+- A small adjustment to the default in the general hessian estimation for values
+  close to zero.
+- Fixed the variance-covariance matrix estimation under (FI)APARCH-type models;
+  in particular for models, where the power parameter $\delta$ is estimated.
 - Change in maintainer email address from dominik.schulz@uni-paderborn.de to
   dominik.schulz.r@gmail.com; the maintainer is, however, still the same person.
 

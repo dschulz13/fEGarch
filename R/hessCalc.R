@@ -1,7 +1,7 @@
 # Calculation of Hessian matrix using numDeriv::hessian;
 # usually produces more stable hessian matrix.
 hessCalc <- function(pars, func, control.args = list(
-				eps = 1e-4,
+				eps = 1e-6,
 				d = 1e-3,
 				zero.tol = sqrt(.Machine$double.eps / 7e-7),
 				r = 4,

@@ -777,7 +777,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       scale_const^delta_inp
     }
   }
-  delta_pos <- which(par_names == "delta")
 
   vcov_output <- compute_vcov(
     goal_fun = goal_fun,
@@ -805,7 +804,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     scale_const = split_data$scale_const,
     n_arma_pars = arma_sets$n_arma_pars,
     incl_mean = arma_sets$incl_mean,
-    model_type = type_inp,  # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
+    model_type = type_inp,
     sc_delta = sc_delta
   )
 
