@@ -3,7 +3,7 @@
 ## Test environments
 * local Windows install, R 4.6.1
 * win-builder (oldrelease, release and devel)
-* R-hub (linux, windows, ubuntu-clang, ubuntu-release)
+* R-hub (linux, m1-san, macos, macos-arm64, windows, ubuntu-next, ubuntu-release)
 
 ## R CMD check results
 
