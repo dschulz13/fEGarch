@@ -40,7 +40,10 @@ Description: Implement and fit a variety of short-memory (SM) and long-memory
   EGARCH), FIEGARCH (fractionally integrated EGARCH), FIMLog-GARCH (fractionally
   integrated modulus Log-GARCH), and more. The FIMLog-GARCH as part of the
   EGARCH family is discussed in Feng et al. (2023)
-  <https://econpapers.repec.org/paper/pdnciepap/156.htm>. For convenience and
+  <https://econpapers.repec.org/paper/pdnciepap/156.htm>. Details on the package
+  are provided in Schulz et al. (2026)
+  <https://groups.uni-paderborn.de/wp-wiwi/RePEc/pdf/ciepap/WP171.pdf>.
+  For convenience and
   the purpose of comparison, a variety of other popular SM and LM GARCH-type
   models, like an APARCH model, a fractionally integrated
   APARCH (FIAPARCH) model, standard GARCH and fractionally integrated GARCH
