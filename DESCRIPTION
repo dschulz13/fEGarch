@@ -147,3 +147,5 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.0
+URL: https://github.com/dschulz13/fEGarch
+BugReports: https://github.com/dschulz13/fEGarch/issues
