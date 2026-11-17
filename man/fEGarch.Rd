@@ -201,6 +201,10 @@ applicability to a huge variety of differently scaled data, parametric
 models are first fitted to data that is scaled to have sample variance
 1. Parameter estimates and other quantities are then either
 retransformed or recalculated afterwards for the original data.
+In particular for the models provided by this function, the
+variance-covariance matrix is estimated from the
+log-likelihood of the data scaled to have (sample) variance one and is
+then retransformed to the scale of the original data.
 
 For a conditional average Laplace distribution, an optimal model for each
 distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
@@ -283,7 +287,10 @@ II models, we have \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p^{*}}},
 shape parameter,
 skewness parameter. Depending on the exact model specification,
 parameters irrelevant for the specification at hand should be dropped
-in \code{start_pars}, \code{LB} and \code{UB}.
+in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+\code{UB} should be defined with respect to the input data scaled to have
+(sample) variance equal to one, which affects the mean estimate (if present)
+and the volatility intercept.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))

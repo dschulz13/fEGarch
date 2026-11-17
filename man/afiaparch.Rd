@@ -245,6 +245,22 @@ and \eqn{p_p E(|\eta_t|^{\delta} \mid \eta_t \geq 0)} numerically via the
 \code{integrate} function using the fitted
 parameters from the initial fit.
 
+A standard FIAPARCH model is theoretically not well defined for \eqn{C_z>1},
+because then
+\eqn{E(\sigma_{t}^{\delta}) = \omega + C_{z} E(\sigma_{t}^{\delta})}, where
+\eqn{\omega} is the intercept in the equation of \eqn{\sigma_{t}^{\delta}},
+has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+theoretical disadvantages or even problems (see Feng et al., 2026).
+An AFIAPARCH model is always well defined in this regard
+due to the rescaling with \eqn{C_z^{-1}} following
+\eqn{C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{\delta}}
+in the definition of \eqn{\sigma_{t}^{\delta}}. \eqn{C_z} is provided in the
+function output as \code{Cz} and in the corresponding printing method. In addition,
+a constant \eqn{C_{\text{em}} = \sum_{i=1}^{K}\lambda_i} is provided, denoted
+as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted AFIAPARCH model is
+numerically stable.
+
 Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 to ensure the non-negativity of all of the infinite-order coefficient series
 \eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
@@ -273,7 +289,9 @@ computed from the Hessian at the optimum of the log-likelihood using
 applicability to a huge variety of differently scaled data, parametric
 models are first fitted to data that is scaled to have sample variance
 1. Parameter estimates and other quantities are then either
-retransformed or recalculated afterwards for the original data.
+retransformed or recalculated afterwards for the original data. In particular
+for this model, the variance-covariance matrix is estimated from the
+log-likelihood of the original data directly.
 
 For a conditional average Laplace distribution, an optimal model for each
 distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
@@ -345,7 +363,10 @@ is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p
 shape parameter,
 skewness parameter. Depending on the exact model specification,
 parameters irrelevant for the specification at hand should be dropped
-in \code{start_pars}, \code{LB} and \code{UB}.
+in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+\code{UB} should be defined with respect to the input data scaled to have
+(sample) variance equal to one, which affects the mean estimate (if present)
+and the volatility intercept.
 }
 \examples{
 \donttest{

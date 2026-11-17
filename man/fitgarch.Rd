@@ -218,6 +218,21 @@ mean of \eqn{r_t^{*}}. An initial value
 for \eqn{\gamma_0} as initial guess for \eqn{\gamma} is obtained
 from a previous fitting of a short-memory TGARCH.
 
+A standard FITGARCH model is theoretically not well defined for \eqn{C_z>1},
+with \eqn{C_z = E\left\{|\eta_1|-\gamma \eta_1\right\}},
+because then
+\eqn{E(\sigma_{t}) = \omega + C_{z} E(\sigma_{t})}
+has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+theoretical disadvantages or even problems (see Feng et al., 2026).
+\eqn{C_z} is provided in the
+function output as \code{Cz} and in the corresponding printing method. In addition,
+a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, denoted
+as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted FITGARCH model is
+numerically stable. For an adjusted FITGARCH (AFITGARCH) that avoids the issues
+related to having \eqn{C_z>1} and the theoretical disadvantages of \eqn{C_z\leq 1},
+see \code{\link{afitgarch}}.
+
 The truncated infinite order polynomial is computed following the idea
 by Nielsen
 and Noel (2021) as is the series of conditional variances for most
@@ -248,6 +263,9 @@ applicability to a huge variety of differently scaled data, parametric
 models are first fitted to data that is scaled to have sample variance
 1. Parameter estimates and other quantities are then either
 retransformed or recalculated afterwards for the original data.
+In particular
+for this model, the variance-covariance matrix is estimated from the
+log-likelihood of the original data directly.
 
 For a conditional average Laplace distribution, an optimal model for each
 distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
@@ -319,7 +337,10 @@ is crucial. The correct order is: \eqn{\mu}, \eqn{\text{ar}_1,\dots,\text{ar}_{p
 shape parameter,
 skewness parameter. Depending on the exact model specification,
 parameters irrelevant for the specification at hand should be dropped
-in \code{start_pars}, \code{LB} and \code{UB}.
+in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+\code{UB} should be defined with respect to the input data scaled to have
+(sample) variance equal to one, which affects the mean estimate (if present)
+and the volatility intercept.
 }
 \examples{
 window.zoo <- get("window.zoo", envir = asNamespace("zoo"))
@@ -344,6 +365,9 @@ and a new model. Journal of Empirical Finance, 1(1),
 \item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 Trend Stationary Time Series. The R Journal,
 14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with
+finite \eqn{2\delta}th moment and long memory in volatility implemented in R.
+Unpublished manuscript at Paderborn University.}
 \item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application
 in R. Communications in Statistics - Theory and Methods,
 53(22), 7914–7926. DOI: 10.1080/03610926.2023.2276049.}

@@ -1,4 +1,4 @@
-# fEGarch 1.0.7 (2026-05-05)
+# fEGarch 1.0.7 (2026-11-17)
 - A vignette "Introduction to fEGarch" has been added to the package.
 - Fixed a bug in `predict_roll`, where for non-EGF models the volatility model
   orders of the input object were not copied properly under model refitting, if
@@ -20,9 +20,16 @@
 - The printed output to the R console for all fitted models now also shows
   LLH as the obtained log-likelihood (divided by the number of training
   observations) for the estimated parameters in addition to the AIC and the BIC.
-- The output of the adjusted AFIAPARCH-class models printed to the console
+- The output of the (adjusted) FIAPARCH-class models printed to the console
   include the obtained scaling constant $C_z$ for the estimated model as denoted
   in the manual.
+- The output of the (adjusted) FIAPARCH-class models printed to the console
+  include the obtained numerical stability constant $C_{\text{em}}$ for the
+  estimated model as denoted in the manual.
+- A small adjustment to the default in the general hessian estimation for values
+  close to zero.
+- Fixed the variance-covariance matrix estimation under (FI)APARCH-type models;
+  in particular for models, where the power parameter $\delta$ is estimated.
 - Change in maintainer email address from dominik.schulz@uni-paderborn.de to
   dominik.schulz.r@gmail.com; the maintainer is, however, still the same person.
 

@@ -325,7 +325,7 @@ garchm_estim <- function(rt,
 #'\code{\link{fingarch}}, \code{\link{afigjrgarch}}, \code{\link{afitgarch}},
 #'\code{\link{afiaparch}} and \code{\link{afingarch}} for more detailed
 #'information on the corresponding models and functions selectable through this
-#'function function.
+#'function.
 #'
 #'@export
 #'
@@ -367,8 +367,18 @@ garchm_estim <- function(rt,
 #'\item{\code{C_z}:}{the obtained constant \eqn{C_z} for the estimated model; helpful in
 #'analyzing further properties of the fitted model; note that this element is only returned
 #'for objects of class \code{"fEGarch_fit_afigjrgarch"},
-#'\code{"fEGarch_fit_afitgarch"}, \code{"fEGarch_fit_afiaparch"} or
-#'\code{"fEGarch_fit_afingarch"}; otherwise, it does not exist in the output object.}
+#'\code{"fEGarch_fit_afitgarch"}, \code{"fEGarch_fit_afiaparch"},
+#'\code{"fEGarch_fit_afingarch"}, \code{"fEGarch_fit_afigjrgarch"},
+#'\code{"fEGarch_fit_fitgarch"}, \code{"fEGarch_fit_fiaparch"} or
+#'\code{"fEGarch_fit_fingarch"}; otherwise, it does not exist in the output object.}
+#'\item{\code{Cem}:}{a further constant \eqn{C_{\text{em}}}, which provides information
+#'about the numerical stability of a fitted model; a fitted model is
+#'numerically stable, if \eqn{C_{\text{em}}<1}; note that this element is only returned
+#'for objects of class \code{"fEGarch_fit_afigjrgarch"},
+#'\code{"fEGarch_fit_afitgarch"}, \code{"fEGarch_fit_afiaparch"},
+#'\code{"fEGarch_fit_afingarch"}, \code{"fEGarch_fit_afigjrgarch"},
+#'\code{"fEGarch_fit_fitgarch"}, \code{"fEGarch_fit_fiaparch"} or
+#'\code{"fEGarch_fit_fingarch"}; otherwise, it does not exist in the output object.}
 #'}
 #'
 #'@references

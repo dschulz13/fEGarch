@@ -54,15 +54,7 @@ afiaparch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, skew_par,
-                                trunc, presample, ...) {
-  cur_env <- environment()
-  list2env(list(...), envir = cur_env)
-  stopifnot("No object 'dens_fun' passed to conditional standard deviation function." =
-              (exists("dens_fun", envir = cur_env, inherits = FALSE)))
-
-  # if (!exists("cond_dist", inherits = FALSE)) {
-  #   stop("cond_dist must be supplied to my_sigt_afiaparch_R().", call. = FALSE)
-  # }
+                                trunc, presample, presample_val, dens_fun) {
 
   all_pars <- afiaparch_grab_pars(
     theta = theta,
@@ -100,7 +92,7 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     skew = skew,
     gamma = gamma,
     delta = delta,
-    dens_fun = dens_fun   # !!! Check later that this works out
+    dens_fun = dens_fun
   )
 
   if (is.na(Czd) || is.nan(Czd)) {
@@ -113,10 +105,6 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     delta = delta,
     Czd = Czd
   )
-
-  # if (!exists("presample_val", inherits = FALSE)) {
-  #   presample_val <- mean(z_sc)
-  # }
 
   lc <- length(coef_inf)
   np2 <- nextpow2(2 * n - 1)
@@ -135,22 +123,6 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     length(x_dm)
   ) / np2
 
-  # inside_sc <- omega_sig + conv_part
-
-  # if (any(!is.finite(inside_sc)) || any(inside_sc <= 0)) {
-  #   return(list(
-  #     sigt = rep(NaN, length(x_dm)),
-  #     mu = mu,
-  #     skew = skew,
-  #     shape = shape,
-  #     cmeans = rep(mu, length(x_dm)),
-  #     inside_sc = inside_sc,
-  #     z_sc = z_sc,
-  #     coef_inf = coef_inf,
-  #     Czd = Czd,
-  #     presample_val = presample_val
-  #   ))
-  # }
 
   list(
     sigt = (omega_sig + conv_part)^(1 / delta),
@@ -158,11 +130,7 @@ sigt_afiaparch_R <- function(theta, x, p, q, p_ar, q_ma, incl_mean, extra_par, s
     skew = skew,
     shape = shape,
     cmeans = rep(mu, length(conv_part)),
-    # inside_sc = inside_sc,
-    # z_sc = z_sc,
-    # coef_inf = coef_inf,
-    Czd = Czd   #,        !!! Check later, if we need to return this
-#    presample_val = presample_val
+    Czd = Czd
   )
 }
 
@@ -363,6 +331,22 @@ goal_fun_creator_afiaparch <- function(
 #'\code{integrate} function using the fitted
 #'parameters from the initial fit.
 #'
+#'A standard FIAPARCH model is theoretically not well defined for \eqn{C_z>1},
+#'because then
+#'\eqn{E(\sigma_{t}^{\delta}) = \omega + C_{z} E(\sigma_{t}^{\delta})}, where
+#'\eqn{\omega} is the intercept in the equation of \eqn{\sigma_{t}^{\delta}},
+#'has no solution. Also for \eqn{C_z=1} or \eqn{C_z<1}, the model can have
+#'theoretical disadvantages or even problems (see Feng et al., 2026).
+#'An AFIAPARCH model is always well defined in this regard
+#'due to the rescaling with \eqn{C_z^{-1}} following
+#'\eqn{C_z^{-1}\left[\left(1 + S_t \gamma\right)\left| \varepsilon_t \right|\right]^{\delta}}
+#'in the definition of \eqn{\sigma_{t}^{\delta}}. \eqn{C_z} is provided in the
+#'function output as \code{Cz} and in the corresponding printing method. In addition,
+#'a constant \eqn{C_{\text{em}} = \sum_{i=1}^{K}\lambda_i} is provided, denoted
+#'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+#'estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted AFIAPARCH model is
+#'numerically stable.
+#'
 #'Currently, only a model of orders \eqn{p=1} with \eqn{q=1} can be fitted;
 #'to ensure the non-negativity of all of the infinite-order coefficient series
 #'\eqn{\left[1-\beta^{-1}(B)\phi(B)(1-B)^{d}\right]}, which in combination
@@ -391,7 +375,9 @@ goal_fun_creator_afiaparch <- function(
 #'applicability to a huge variety of differently scaled data, parametric
 #'models are first fitted to data that is scaled to have sample variance
 #'1. Parameter estimates and other quantities are then either
-#'retransformed or recalculated afterwards for the original data.
+#'retransformed or recalculated afterwards for the original data. In particular
+#'for this model, the variance-covariance matrix is estimated from the
+#'log-likelihood of the original data directly.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
 #'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
@@ -463,7 +449,10 @@ goal_fun_creator_afiaparch <- function(
 #'shape parameter,
 #'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
-#'in \code{start_pars}, \code{LB} and \code{UB}.
+#'in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+#'\code{UB} should be defined with respect to the input data scaled to have
+#'(sample) variance equal to one, which affects the mean estimate (if present)
+#'and the volatility intercept.
 #'
 #'@export
 #'

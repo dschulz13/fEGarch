@@ -35,19 +35,19 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   }
 
-  initial_split(rt, n_test)
+  split_data <- initial_split(rt, n_test)
 
-  n <- length(rt_core)
+  n <- length(split_data$rt_core)
   if (Prange[[1]] < 1) {Prange[[1]] <- 1}
   trunc_i <- trunc
 
   # Settings for ARMA / FARIMA part in the mean; makes objects available in this
   # environment
-  identify_arma_settings(meanspec = meanspec, Drange = Drange)
+  arma_sets <- identify_arma_settings(meanspec = meanspec, Drange = Drange)
 
-  if ((lm || lm_arma) && is.character(trunc) && trunc == "none") {
+  if ((lm || arma_sets$lm_arma) && is.character(trunc) && trunc == "none") {
     trunc <- n + presample - 1
-  } else if ((lm || lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
+  } else if ((lm || arma_sets$lm_arma) && is.numeric(trunc) && trunc >= n + presample) {
     trunc <- n + presample - 1
     message("trunc reduced to n + ", presample, " - 1")
   }
@@ -59,10 +59,12 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   extra_par <- lookup_table[["extra_par"]][[cond_d]]
 
   sigt_fun_adj <- adj_sigt_fun(
-    p_ar = p_ar, q_ma = q_ma, pg0 = pg0, qg0 = qg0,
-    lm_arma = lm_arma, incl_mean = incl_mean,
-    n_arma_pars = n_arma_pars, grab_fun = arma_grab_fun,
-    arma_fun = cmean_fun,
+    p_ar = arma_sets$p_ar, q_ma = arma_sets$q_ma,
+    pg0 = arma_sets$pg0, qg0 = arma_sets$qg0,
+    lm_arma = arma_sets$lm_arma, incl_mean = arma_sets$incl_mean,
+    n_arma_pars = arma_sets$n_arma_pars,
+    grab_fun = arma_sets$arma_grab_fun,
+    arma_fun = arma_sets$cmean_fun,
     model_type = model_type
   )
 
@@ -87,9 +89,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   base_args <- list(
     p = p,
     q = q,
-    p_ar = p_ar,
-    q_ma = q_ma,
-    incl_mean = incl_mean,
+    p_ar = arma_sets$p_ar,
+    q_ma = arma_sets$q_ma,
+    incl_mean = arma_sets$incl_mean,
     extra_par = extra_par,
     skew_par = skew_par,
     sig_fun = sigt_fun_adj,
@@ -97,21 +99,21 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     presample = presample
   )
 
-  mean_req_1 <- (!lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
-  mean_req_2 <- lm_arma
+  mean_req_1 <- (!arma_sets$lm_arma && (meanspec@orders[[1]] > 0 || meanspec@orders[[2]]))
+  mean_req_2 <- arma_sets$lm_arma
   mean_res <- if (mean_req_1) {   # run an initial ARMA to get better pre-sample values for the volatility step
-    init_arma <- suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+    init_arma <- suppressWarnings(stats::arima(split_data$rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     init_arma$residuals
   } else if (mean_req_2) {
     init_farima <- tryCatch({
-      suppressWarnings(prelim_farima(x = rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
+      suppressWarnings(prelim_farima(x = split_data$rt_core, p = meanspec@orders[[1]], q = meanspec@orders[[2]], include_mean = meanspec@include_mean, presample = presample, trunc = trunc, Drange = Drange))
     },
     error = {
-      suppressWarnings(stats::arima(rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
+      suppressWarnings(stats::arima(split_data$rt_core, order = c(meanspec@orders[[1]], 0, meanspec@orders[[2]]), include.mean = meanspec@include_mean, method = "ML"))
     })
     init_farima$residuals
   } else {
-    rt_core
+    split_data$rt_core
   }
 
   extra_args <- switch(
@@ -134,7 +136,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       list(sigd_init = sigd_init, etransf_init = etransf_init)
     },
     "ngarch" = {
-      delta0 <- 2    # use delta0 = 1
+      delta0 <- 2    # use delta0 = 2
       gamma0 <- 0  # use gamma0 = 0   as suitable initial guesses
       sigd_init <- stats::sd(mean_res)^delta0
       rt_dm <- mean_res - mean(mean_res)
@@ -305,8 +307,6 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
         n_test = n_test,
         skip_vcov = TRUE
       ))
-      # For AFITGARCH we need all distribution parameters to obtain
-      # presample values due to the rescaling
       delta0 <- est_s@pars[["delta"]]
       gamma0 <- 0    # fixed
       shape_nam <- c("norm" = "NULL", "snorm" = "NULL", "std" = "df", "sstd" = "df",
@@ -354,7 +354,9 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     }
   )
 
-  goal_fun_s <- if (model_type %in% c("afiaparch", "afingarch", "afigjrgarch", "afitgarch")) {
+  adjusted_model_check <- model_type %in% c("afiaparch", "afingarch", "afigjrgarch", "afitgarch")
+
+  goal_fun_s <- if (adjusted_model_check) {
       function(theta, rt, dfun1, dfun2) {
 
         do.call(
@@ -382,6 +384,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       }
     }
 
+
   # Get cond. distribution restrictions and starting values
   # as objects sval, lval and uval in the environment
   cond_d_vals <- cond_d_par_restr(cond_d)
@@ -389,65 +392,59 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   # Make further starting parameter values and restrictions available
   # using internally saved table function
   pars_and_restr <- start_pars_and_restr[[model_type]](drange, p, q)
-  list2env(pars_and_restr, envir = environment())
-  suppressWarnings(rm("pars_and_restr", envir = environment()))
-
 
   if (is.null(start_pars) || is.null(LB) || is.null(UB)) {
-    mean_rt <- list(NULL, mean(rt_core))[[incl_mean + 1]]
-    min_rt <- list(NULL, suppressWarnings(0.2 * min(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
-    max_rt <- list(NULL, suppressWarnings(0.2 * max(rt_core - mean_rt) + mean_rt))[[incl_mean + 1]]
+    mean_rt <- list(NULL, mean(split_data$rt_core))[[arma_sets$incl_mean + 1]]
+    min_rt <- list(NULL, suppressWarnings(0.2 * min(split_data$rt_core - mean_rt) + mean_rt))[[arma_sets$incl_mean + 1]]
+    max_rt <- list(NULL, suppressWarnings(0.2 * max(split_data$rt_core - mean_rt) + mean_rt))[[arma_sets$incl_mean + 1]]
     skew_start <- list(NULL, 0.98)[[skew_par + 1]]
     skew_low <- list(NULL, 1e-15)[[skew_par + 1]]
     skew_up <- list(NULL, Inf)[[skew_par + 1]]
 
-    set_start_LB_UB(
+    start_LB_UB <- set_start_LB_UB(
       mean_val = mean_rt,
-      ar_start = ar_start,
-      ma_start = ma_start,
-      D_start = D_start,
-      omega_val = omega_start,
-      phi_start = phi_start,
-      psi_start = psi_start,
-      add_pars_start = add_pars_start,
-      d_start = d_spar,
-      sval = sval,
+      ar_start = arma_sets$ar_start,
+      ma_start = arma_sets$ma_start,
+      D_start = arma_sets$D_start,
+      omega_val = pars_and_restr$omega_start,
+      phi_start = pars_and_restr$phi_start,
+      psi_start = pars_and_restr$psi_start,
+      add_pars_start = pars_and_restr$add_pars_start,
+      d_start = pars_and_restr$d_spar,
+      sval = cond_d_vals$sval,
       skew_start = skew_start,
       mean_low = min_rt,
-      ar_low = ar_lb,
-      ma_low = ma_lb,
-      D_low = D_low,
-      omega_low = omega_low,
-      phi_low = phi_low,
-      psi_low = psi_low,
-      add_low = add_low,
-      d_low = d_low,
-      lval = lval, skew_low = skew_low,
+      ar_low = arma_sets$ar_lb,
+      ma_low = arma_sets$ma_lb,
+      D_low = arma_sets$D_low,
+      omega_low = pars_and_restr$omega_low,
+      phi_low = pars_and_restr$phi_low,
+      psi_low = pars_and_restr$psi_low,
+      add_low = pars_and_restr$add_low,
+      d_low = pars_and_restr$d_low,
+      lval = cond_d_vals$lval, skew_low = skew_low,
       mean_up = max_rt,
-      ar_up = ar_ub, ma_up = ma_ub,
-      D_up = D_up,
-      omega_up = omega_up,
-      phi_up = phi_up, psi_up = psi_up,
-      add_up = add_up,
-      d_up = d_up,
-      uval = uval, skew_up = skew_up,
+      ar_up = arma_sets$ar_ub, ma_up = arma_sets$ma_ub,
+      D_up = arma_sets$D_up,
+      omega_up = pars_and_restr$omega_up,
+      phi_up = pars_and_restr$phi_up, psi_up = pars_and_restr$psi_up,
+      add_up = pars_and_restr$add_up,
+      d_up = pars_and_restr$d_up,
+      uval = cond_d_vals$uval, skew_up = skew_up,
       start_pars = start_pars, LB = LB, UB = UB
     )
 
 
   }
 
-  constr_mean <- if (pg0) {
+  constr_mean <- if (arma_sets$pg0) {
 
-    low_ar <- 1 + incl_mean
-    up_ar <- low_ar + p_ar - 1
-
-    ineqLB_mean <- rep(1e-6, p_ar)
-    ineqUB_mean <- rep(Inf, p_ar)
+    ineqLB_mean <- rep(1e-6, arma_sets$p_ar)
+    ineqUB_mean <- rep(Inf, arma_sets$p_ar)
 
     # Stationarity constraint
     function(theta) {
-      ar <- c(1, -theta[low_ar:up_ar])
+      ar <- c(1, -theta[arma_sets$ar_pos_low:arma_sets$ar_pos_up])
       abs(polyroot(ar)) - 1
     }
 
@@ -465,7 +462,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   constr_vol <- if (lm) {
 
-    low_phi <- 2 + n_arma_pars
+    low_phi <- 2 + arma_sets$n_arma_pars
     up_phi <- low_phi
     low_beta <- low_phi + 1
     up_beta <- low_beta
@@ -504,7 +501,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   } else {
 
       if (model_type == "garch") {
-        low_phi <- 2 + n_arma_pars
+        low_phi <- 2 + arma_sets$n_arma_pars
         up_phi <- low_phi - 1 + p
         low_beta <- low_phi + 1
         up_beta <- low_beta - 1 + q
@@ -534,7 +531,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   ineqUB <- c(ineqUB_mean, ineqUB_vol)
 
   # Combined constraint function
-  constr_fun <- if (lm || pg0) {
+  constr_fun <- if (lm || arma_sets$pg0) {
     function(theta, rt) {
 
       constr1 <- constr_mean(theta)
@@ -563,12 +560,12 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
       dfun1 = dfun1,
       dfun2 = dfun2,
       goal_fun_s = goal_fun_s,
-      start_pars = start_pars,
-      LB = LB, UB = UB,
+      start_pars = start_LB_UB$start_pars,
+      LB = start_LB_UB$LB, UB = start_LB_UB$UB,
       ineqfun = constr_fun,
       ineqLB = ineqLB,
       ineqUB = ineqUB,
-      rt_core = rt_core,
+      rt_core = split_data$rt_core,
       control = control
     )}, message = function(m1) {
       if (grepl("Czd is NA or NaN on some iterations", conditionMessage(m1), fixed = TRUE)) {
@@ -597,15 +594,15 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     result <- withCallingHandlers({tryCatch(
       expr = {
         suppressWarnings(Rsolnp::solnp(
-          pars = start_pars,
+          pars = start_LB_UB$start_pars,
           fun = goal_fun,
-          LB = LB,
-          UB = UB,
+          LB = start_LB_UB$LB,
+          UB = start_LB_UB$UB,
           control = control,
           ineqfun = constr_fun,
           ineqLB = ineqLB,
           ineqUB = ineqUB,
-          rt = rt_core
+          rt = split_data$rt_core
         ))
       },
       error = function(e1) {
@@ -645,7 +642,7 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   # log-likelihood at the optimum; "-tail(result$values, 1)" is the
   # log-likelihood at the optimum for the scaled data, which is too large by
   # "n * log(scale_const)" in comparison to original data
-  llhood <- -tail(result$values, 1) - n * log(scale_const)
+  llhood <- -tail(result$values, 1) - n * log(split_data$scale_const)
 
   beta_names <- paste0("beta", 1:q)
 
@@ -676,16 +673,16 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   }
 
   par_names <- c(
-    list(NULL, "mu")[[incl_mean + 1]],
-    names_ar,
-    names_ma,
-    D_par_name,
+    list(NULL, "mu")[[arma_sets$incl_mean + 1]],
+    arma_sets$names_ar,
+    arma_sets$names_ma,
+    arma_sets$D_par_name,
     "omega",
     paste0("phi", 1:p),
     beta_names,
     gamma_name,
     delta_name,
-    d_name,
+    pars_and_restr$d_name,
     extra_par_name,
     list(NULL, "skew")[[skew_par + 1]]
   )
@@ -712,13 +709,12 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
   fargs <- c(list(
       theta = unname(pars),
-      x = rt_core,
-      dfun = dfun1,
+      x = split_data$rt_core,
       p = p,
       q = q,
-      p_ar = p_ar,
-      q_ma = q_ma,
-      incl_mean = incl_mean,
+      p_ar = arma_sets$p_ar,
+      q_ma = arma_sets$q_ma,
+      incl_mean = arma_sets$incl_mean,
       extra_par = extra_par,
       skew_par = skew_par,
       trunc = trunc,
@@ -742,63 +738,90 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     "garch" = 2,
     "gjrgarch" = 2,
     "tgarch" = 1,
-    "aparch" = pars[[n_arma_pars + 2 * p + q + 2]],
+    "aparch" = pars[[arma_sets$n_arma_pars + 2 * p + q + 2]],
     "figarch" = 2,
     "figjrgarch" = 2,
     "afigjrgarch" = 2,
     "fitgarch" = 1,
     "afitgarch" = 1,
-    "fiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
-    "afiaparch" = pars[[n_arma_pars + 2 * p + q + 2]],
-    "ngarch" = pars[[n_arma_pars + 2 + p + q]],
-    "afingarch" = pars[[n_arma_pars + 2 + p + q]],
-    "fingarch" = pars[[n_arma_pars + 2 + p + q]],
+    "fiaparch" = pars[[arma_sets$n_arma_pars + 2 * p + q + 2]],
+    "afiaparch" = pars[[arma_sets$n_arma_pars + 2 * p + q + 2]],
+    "ngarch" = pars[[arma_sets$n_arma_pars + 2 + p + q]],
+    "afingarch" = pars[[arma_sets$n_arma_pars + 2 + p + q]],
+    "fingarch" = pars[[arma_sets$n_arma_pars + 2 + p + q]],
   )
 
-  sc_delta <- scale_const^delta
+  sc_delta <- split_data$scale_const^delta
 
   type_inp <- c("aparch", "fiaparch")[[lm + 1]]
-  # Also updates "pars", if ald or sald
-  compute_vcov(
+  if (model_type %in% c("aparch", "ngarch", "fiaparch", "fingarch", "afiaparch", "afingarch")) {
+    delta_pos <- which(par_names == "delta")
+    delta_inp <- NULL
+    adj_fun_delta <- function(theta, delta_pos, scale_const, delta_inp) {
+      scale_const^theta[[delta_pos]]
+    }
+  } else {
+    delta_pos <- NULL
+    delta_inp <- switch(
+      model_type,
+      "garch" = 2,
+      "figarch" = 2,
+      "tgarch" = 1,
+      "fitgarch" = 1,
+      "afitgarch" = 1,
+      "gjrgarch" = 2,
+      "figjrgarch" = 2,
+      "afigjrgarch" = 2
+    )
+    adj_fun_delta <- function(theta, delta_pos, scale_const, delta_inp) {
+      scale_const^delta_inp
+    }
+  }
+
+  vcov_output <- compute_vcov(
     goal_fun = goal_fun,
     pars = pars,
-    rt_core = rt_core,
-    scale_const = scale_const,
-    incl_mean = incl_mean,
+    rt_core = split_data$rt_core,
+    scale_const = split_data$scale_const,
+    incl_mean = arma_sets$incl_mean,
     P_sel = P_sel,
     cond_d = cond_d,
     par_names = par_names,
     sc_delta = sc_delta,
-    n_arma_pars = n_arma_pars,
-    model_type = type_inp,     # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
+    delta_pos = delta_pos,
+    delta_inp = delta_inp,
+    adj_fun_delta = adj_fun_delta,
+    n_arma_pars = arma_sets$n_arma_pars,
+    model_type = type_inp,
     skip_vcov = skip_vcov
   )
 
-  rescale_estim(
-    pars = pars,
-    rt_core_o = rt_core_o,
+  rescale_output <- rescale_estim(
+    pars = vcov_output$pars,
+    rt_core_o = split_data$rt_core_o,
     sigt = final_series$sigt,
     cmeans = final_series$cmeans,
-    scale_const = scale_const,
-    n_arma_pars = n_arma_pars,
-    incl_mean = incl_mean,
-    model_type = type_inp,  # treat as APARCH / FIAPARCH with delta fixed at 2 for rescaling
+    scale_const = split_data$scale_const,
+    n_arma_pars = arma_sets$n_arma_pars,
+    incl_mean = arma_sets$incl_mean,
+    model_type = type_inp,
     sc_delta = sc_delta
   )
 
-  names(pars) <- par_names
+  names(rescale_output$pars) <- par_names
 
   # Makes "aic" and "bic" available
-  crit_calc(pars = pars, rt = rt_core_o, llhood = llhood)
+  sel_criteria <- crit_calc(pars = rescale_output$pars, rt = split_data$rt_core_o,
+                            llhood = llhood)
 
   # Apply time series formatting (if relevant) to all
   # estimated series
   series_out <- format_applier_ts(
-    rt = train_obs,
+    rt = split_data$train_obs,
     list_of_ts = list(
-      "cmeans" = cmeans,
-      "sigt" = sigt,
-      "etat" = etat
+      "cmeans" = rescale_output$cmeans,
+      "sigt" = rescale_output$sigt,
+      "etat" = rescale_output$etat
     )
   )
 
@@ -827,16 +850,16 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   final_Cz <- if (model_type %in% c("afiaparch", "afigjrgarch", "afitgarch", "afingarch")) {
     final_series$Czd
   } else if (model_type %in% c("fiaparch", "figjrgarch", "fitgarch", "fingarch")) {
-    shape_o <- if (cond_d %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {pars[[extra_par_name]]} else {0}
-    skew_o <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {pars[["skew"]]} else {0}
+    shape_o <- if (cond_d %in% c("std", "sstd", "ged", "sged", "ald", "sald")) {rescale_output$pars[[extra_par_name]]} else {0}
+    skew_o <- if (cond_d %in% c("snorm", "sstd", "sged", "sald")) {rescale_output$pars[["skew"]]} else {0}
     delta_o <- if (model_type %in% c("fiaparch", "fingarch")) {
-      pars[["delta"]]
+      rescale_output$pars[["delta"]]
     } else if (model_type == "fitgarch") {
       1
     } else if (model_type == "figjrgarch") {
       2
     }
-    gamma_o <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch")) {pars[["gamma"]]} else {0}
+    gamma_o <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch")) {rescale_output$pars[["gamma"]]} else {0}
 
     comp_C_zd(shape = shape_o, skew = skew_o, gamma = gamma_o, delta = delta_o, dens_fun = dfun1)
   } else {
@@ -846,13 +869,13 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
   list_out <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch", "fingarch", "afiaparch", "afitgarch", "afigjrgarch", "afingarch")) {
 
     max_c_len <- if (is.null(trunc) || trunc == "none") {
-      presample + length(train_obs) - 1
+      presample + length(split_data$train_obs) - 1
     } else {
-      min(trunc, presample + length(train_obs) - 1)
+      min(trunc, presample + length(split_data$train_obs) - 1)
     }
-    d_coef <- unname(pars[["d"]])
-    phi_coef <- unname(pars[["phi1"]])
-    beta_coef <- -unname(pars[["beta1"]])
+    d_coef <- unname(rescale_output$pars[["d"]])
+    phi_coef <- unname(rescale_output$pars[["phi1"]])
+    beta_coef <- -unname(rescale_output$pars[["beta1"]])
     coef_inf <- ar_infty(ar = phi_coef, ma = beta_coef, d = d_coef, max_i = max_c_len)[-1]
     C_em <- if (model_type %in% c("fiaparch", "fitgarch", "figjrgarch", "fingarch")) {
       final_Cz * sum(coef_inf)
@@ -862,21 +885,21 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
 
 
     construct_fun(
-      pars = pars,
-      se = serrors,
-      vcov_mat = vcov_mat,
-      rt = train_obs,
+      pars = rescale_output$pars,
+      se = vcov_output$serrors,
+      vcov_mat = vcov_output$vcov_mat,
+      rt = split_data$train_obs,
       sigt = sigt,
       cmeans = cmeans,
       scale_fun = NULL,
       etat = etat,
       llhood = llhood,
-      inf_criteria = c("aic" = aic, "bic" = bic),
+      inf_criteria = c("aic" = sel_criteria$aic, "bic" = sel_criteria$bic),
       cond_dist = cond_d,
       orders = orders,
       long_memo = lm,
       meanspec = meanspec,
-      test_obs = test_obs,
+      test_obs = split_data$test_obs,
       nonpar_model = NULL,
       trunc = trunc_i,
       Cz = final_Cz,
@@ -884,21 +907,21 @@ general_garch_fitting <- function(rt, model_type, orders = c(1, 1),
     )
   } else {
     construct_fun(
-      pars = pars,
-      se = serrors,
-      vcov_mat = vcov_mat,
-      rt = train_obs,
+      pars = rescale_output$pars,
+      se = vcov_output$serrors,
+      vcov_mat = vcov_output$vcov_mat,
+      rt = split_data$train_obs,
       sigt = sigt,
       cmeans = cmeans,
       scale_fun = NULL,
       etat = etat,
       llhood = llhood,
-      inf_criteria = c("aic" = aic, "bic" = bic),
+      inf_criteria = c("aic" = sel_criteria$aic, "bic" = sel_criteria$bic),
       cond_dist = cond_d,
       orders = orders,
       long_memo = lm,
       meanspec = meanspec,
-      test_obs = test_obs,
+      test_obs = split_data$test_obs,
       nonpar_model = NULL,
       trunc = trunc_i
     )

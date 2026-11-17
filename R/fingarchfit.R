@@ -29,9 +29,9 @@ fingarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 
 sigt_fingarch_R <- function(theta, x, p, q, p_ar, q_ma,
               incl_mean, extra_par, skew_par,
-              trunc, presample, ...) {
+              trunc, presample, presample_val,
+              dens_fun = NULL) {
 
-  list2env(list(...), envir = environment())
 
   all_pars <- fingarch_grab_pars(
     theta = theta,
@@ -237,6 +237,19 @@ goal_fun_creator_fingarch <- function(
 #'for \eqn{\delta_0} as an initial guess for \eqn{\delta} is obtained
 #'from a previous fitting of a short-memory NGARCH.
 #'
+#'A standard FINGARCH model is theoretically already well defined.
+#'However, for \eqn{C_z<1},
+#'with \eqn{C_z = E\left\{|\eta_1|^{\delta}\right\}},
+#'the model has
+#'theoretical disadvantages, such as being a short-memory model (see Feng et al., 2026).
+#'\eqn{C_z} is provided in the
+#'function output as \code{Cz} and in the corresponding printing method. In addition,
+#'a constant \eqn{C_{\text{em}} = C_{z} \sum_{i=1}^{K}\lambda_i} is provided, denoted
+#'as \code{Cem}, where \eqn{K} is the maximum filter length considered in the
+#'estimation procedure. If \eqn{C_{\text{em}} < 1}, a fitted FINGARCH model is
+#'numerically stable. For an adjusted FINGARCH (AFINGARCH) that avoids the issues
+#'related to \eqn{C_z}, see \code{\link{afingarch}}.
+#'
 #'The truncated infinite order polynomial is computed following the idea
 #'by Nielsen
 #'and Noel (2021) as is the series of conditional variances for most
@@ -267,6 +280,9 @@ goal_fun_creator_fingarch <- function(
 #'models are first fitted to data that is scaled to have sample variance
 #'1. Parameter estimates and other quantities are then either
 #'retransformed or recalculated afterwards for the original data.
+#'In particular
+#'for this model, the variance-covariance matrix is estimated from the
+#'log-likelihood of the original data directly.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
 #'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
@@ -338,7 +354,10 @@ goal_fun_creator_fingarch <- function(
 #'shape parameter,
 #'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
-#'in \code{start_pars}, \code{LB} and \code{UB}.
+#'in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+#'\code{UB} should be defined with respect to the input data scaled to have
+#'(sample) variance equal to one, which affects the mean estimate (if present)
+#'and the volatility intercept.
 #'
 #'@export
 #'
@@ -403,6 +422,9 @@ goal_fun_creator_fingarch <- function(
 #'\item{Feng, Y., Gries, T., Letmathe, S., & Schulz, D. (2022). The smoots Package in R for Semiparametric Modeling of
 #'Trend Stationary Time Series. The R Journal,
 #'14(1), 182-195. URL: https://journal.r-project.org/articles/RJ-2022-017/.}
+#'\item{Feng, Y., Ayensu, O. K., & Schulz, D. (2026). An adjusted FIAPARCH with
+#'finite \eqn{2\delta}th moment and long memory in volatility implemented in R.
+#'Unpublished manuscript at Paderborn University.}
 #'\item{Higgins, M. L., & Bera, A. K. (1992). A Class of Nonlinear ARCH Models.
 #'International Economic Review, 33(1), 137–158. DOI: 10.2307/2526988.}
 #'\item{Letmathe, S., Beran, J., & Feng, Y. (2023). An extended exponential SEMIFAR model with application

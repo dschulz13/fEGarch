@@ -25,9 +25,8 @@ figarch_grab_pars <- function(theta, p, q, incl_mean, extra_par, skew_par) {
 }
 
 sigt_figarch_R <- function(theta, x, p, q, p_ar, q_ma,
-              incl_mean, extra_par, skew_par, trunc, presample, ...) {
-
-  list2env(list(...), envir = environment())
+              incl_mean, extra_par, skew_par, trunc, presample, presample_val,
+              dens_fun = NULL) {
 
   all_pars <- figarch_grab_pars(
     theta = theta,
@@ -250,6 +249,9 @@ goal_fun_creator_figarch <- function(
 #'models are first fitted to data that is scaled to have sample variance
 #'1. Parameter estimates and other quantities are then either
 #'retransformed or recalculated afterwards for the original data.
+#'In particular
+#'for this model, the variance-covariance matrix is estimated from the
+#'log-likelihood of the original data directly.
 #'
 #'For a conditional average Laplace distribution, an optimal model for each
 #'distribution parameter \eqn{P} from 1 to 5 is estimated (assuming that
@@ -320,7 +322,10 @@ goal_fun_creator_figarch <- function(
 #'\eqn{\phi}, \eqn{\beta}, \eqn{d}, shape parameter,
 #'skewness parameter. Depending on the exact model specification,
 #'parameters irrelevant for the specification at hand should be dropped
-#'in \code{start_pars}, \code{LB} and \code{UB}.
+#'in \code{start_pars}, \code{LB} and \code{UB}. \code{start_pars}, \code{LB} and
+#'\code{UB} should be defined with respect to the input data scaled to have
+#'(sample) variance equal to one, which affects the mean estimate (if present)
+#'and the volatility intercept.
 #'
 #'@export
 #'
